@@ -1,0 +1,42 @@
+# editor
+.idea
+.vscode
+
+# dependencies
+**/node_modules
+**/package-lock.json
+**/yarn.lock
+
+## logs
+**/*.log
+
+## build
+**/dist
+**/build
+
+## temp
+**/tmp
+**/temp
+
+## test
+**/coverage
+
+# misc
+.DS_Store
+
+## env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+
+## turbo
+.turbo
+
+## secrets
+**/*.key
+**/api.json
+
+## compressed
+**/*.tgz

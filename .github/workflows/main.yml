@@ -1,0 +1,36 @@
+name: Node CI
+
+on:
+    push:
+        branches:
+            - master
+
+    pull_request:
+        branches:
+            - '*'
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                platform: [ubuntu-latest]
+                node-version: [14.x, 16.x]
+        runs-on: ${{ matrix.platform }}
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - run: npm i -g yarn
+
+            - run: yarn install --ignore-engines
+
+            - run: yarn lint
+
+            - run: yarn build

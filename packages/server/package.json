@@ -1,0 +1,70 @@
+{
+    "name": "flowise",
+    "version": "1.0.0",
+    "description": "Flowiseai Server",
+    "main": "dist/index",
+    "types": "dist/index.d.ts",
+    "bin": {
+        "flowise": "./bin/run"
+    },
+    "files": [
+        "bin",
+        "dist",
+        "npm-shrinkwrap.json",
+        "oclif.manifest.json",
+        "oauth2.html",
+        ".env"
+    ],
+    "oclif": {
+        "bin": "flowise",
+        "commands": "./dist/commands"
+    },
+    "scripts": {
+        "build": "tsc",
+        "start": "run-script-os",
+        "start:windows": "cd bin && run start",
+        "start:default": "cd bin && ./run start",
+        "dev": "concurrently \"yarn watch\" \"nodemon\"",
+        "oclif-dev": "run-script-os",
+        "oclif-dev:windows": "cd bin && dev start",
+        "oclif-dev:default": "cd bin && ./dev start",
+        "postpack": "shx rm -f oclif.manifest.json",
+        "prepack": "yarn build && oclif manifest && oclif readme",
+        "typeorm": "typeorm-ts-node-commonjs",
+        "watch": "tsc --watch",
+        "version": "oclif readme && git add README.md"
+    },
+    "keywords": [],
+    "homepage": "https://flowiseai.com",
+    "author": {
+        "name": "Henry Heng",
+        "email": "henryheng@flowiseai.com"
+    },
+    "engines": {
+        "node": ">=18.15.0"
+    },
+    "license": "SEE LICENSE IN LICENSE.md",
+    "dependencies": {
+        "@oclif/core": "^1.13.10",
+        "axios": "^0.27.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.3",
+        "flowise-components": "*",
+        "flowise-ui": "*",
+        "moment-timezone": "^0.5.34",
+        "reflect-metadata": "^0.1.13",
+        "sqlite3": "^5.1.6",
+        "typeorm": "^0.3.6"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.12",
+        "concurrently": "^7.1.0",
+        "nodemon": "^2.0.15",
+        "oclif": "^3",
+        "run-script-os": "^1.1.6",
+        "shx": "^0.3.3",
+        "ts-node": "^10.7.0",
+        "typescript": "^4.8.4"
+    }
+}

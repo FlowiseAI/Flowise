@@ -1,0 +1,23 @@
+version: '3.1'
+
+services:
+    mongo:
+        image: mongo
+        ports:
+            - '27017:27017'
+        restart: always
+        environment:
+            - MONGO_INITDB_DATABASE=flowiseai
+
+    flowise:
+        image: flowiseai/flowise
+        restart: always
+        environment:
+            - PORT=${PORT}
+        ports:
+            - '${PORT}:${PORT}'
+        links:
+            - mongo
+        volumes:
+            - ~/.flowise:/root/.flowise
+        command: /bin/sh -c "sleep 3; flowise start"

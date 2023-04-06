@@ -1,0 +1,34 @@
+{
+    "name": "flowise-components",
+    "version": "1.0.0",
+    "description": "Flowiseai Components",
+    "main": "dist/src/index",
+    "types": "dist/src/index.d.ts",
+    "scripts": {
+        "build": "tsc && gulp",
+        "dev": "tsc --watch"
+    },
+    "keywords": [],
+    "homepage": "https://flowiseai.com",
+    "author": {
+        "name": "Henry Heng",
+        "email": "henryheng@flowiseai.com"
+    },
+    "license": "SEE LICENSE IN LICENSE.md",
+    "dependencies": {
+        "axios": "^0.27.2",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.3",
+        "form-data": "^4.0.0",
+        "langchain": "^0.0.44",
+        "moment": "^2.29.3",
+        "node-fetch": "2",
+        "ws": "^8.9.0"
+    },
+    "devDependencies": {
+        "@types/gulp": "4.0.9",
+        "@types/ws": "^8.5.3",
+        "gulp": "^4.0.2",
+        "typescript": "^4.8.4"
+    }
+}
