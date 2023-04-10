@@ -1,4 +1,4 @@
-import { Command, Flags } from '@oclif/core'
+import { Command } from '@oclif/core'
 import path from 'path'
 import * as Server from '../index'
 import * as DataSource from '../DataSource'
@@ -13,10 +13,6 @@ enum EXIT_CODE {
 let processExitCode = EXIT_CODE.SUCCESS
 
 export default class Start extends Command {
-    static flags = {
-        mongourl: Flags.string()
-    }
-
     static args = []
 
     async stopProcess() {
@@ -46,9 +42,6 @@ export default class Start extends Command {
         process.on('uncaughtException', (err) => {
             console.error('uncaughtException: ', err)
         })
-
-        const { flags } = await this.parse(Start)
-        if (flags.mongourl) process.env.MONGO_URL = flags.mongourl
 
         await (async () => {
             try {

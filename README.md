@@ -25,9 +25,8 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 1. Go to `docker` folder at the root of the project
 2. `docker-compose up -d`
-3. This will automatically spins up mongodb and flowise containers
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
+3. Open [http://localhost:3000](http://localhost:3000)
+4. You can bring the containers down by `docker-compose stop`
 
 ## 👨‍💻 Developers
 
