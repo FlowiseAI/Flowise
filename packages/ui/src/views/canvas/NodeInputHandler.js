@@ -8,6 +8,7 @@ import { Box, Typography, Tooltip } from '@mui/material'
 
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { Input } from 'ui-component/input/Input'
+import { File } from 'ui-component/file/File'
 import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection } from 'utils/genericHelper'
 
@@ -73,6 +74,13 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
                             {inputParam.label}
                             {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                         </Typography>
+                        {inputParam.type === 'file' && (
+                            <File
+                                fileType={inputParam.fileType || '*'}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
+                            />
+                        )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 inputParam={inputParam}

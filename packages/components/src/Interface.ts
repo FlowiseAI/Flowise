@@ -17,6 +17,8 @@ export type NodeParamsType =
 
 export type CommonType = string | number | boolean | undefined | null
 
+export type MessageType = 'apiMessage' | 'userMessage'
+
 /**
  * Others
  */
@@ -49,6 +51,7 @@ export interface INodeParams {
     rows?: number
     list?: boolean
     placeholder?: string
+    fileType?: string
 }
 
 export interface INodeExecutionData {
@@ -74,10 +77,15 @@ export interface INode extends INodeProperties {
     inputs?: INodeParams[]
     getBaseClasses?(): Promise<string[]>
     getInstance?(nodeData: INodeData): Promise<string>
-    run?(nodeData: INodeData, input: string): Promise<string>
+    run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string>
 }
 
 export interface INodeData extends INodeProperties {
     inputs?: ICommonObject
     instance?: any
+}
+
+export interface IMessage {
+    message: string
+    type: MessageType
 }

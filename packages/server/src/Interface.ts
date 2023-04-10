@@ -22,7 +22,7 @@ export interface IChatMessage {
     createdDate: Date
 }
 
-export interface IComponentNodesPool {
+export interface IComponentNodes {
     [key: string]: INode
 }
 
@@ -95,7 +95,19 @@ export interface INodeQueue {
     depth: number
 }
 
+export interface IMessage {
+    message: string
+    type: MessageType
+}
+
 export interface IncomingInput {
     question: string
-    history: string[]
+    history: IMessage[]
+}
+
+export interface IActiveChatflows {
+    [key: string]: {
+        endingNodeData: INodeData
+        inSync: boolean
+    }
 }

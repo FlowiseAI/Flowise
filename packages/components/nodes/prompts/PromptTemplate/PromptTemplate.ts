@@ -17,15 +17,14 @@ class PromptTemplate_Prompts implements INode {
         this.type = 'PromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
-        this.description = 'Schema to represent a basic prompt for an LLM. Template can only contains 1 literal string {}'
+        this.description = 'Schema to represent a basic prompt for an LLM'
         this.inputs = [
             {
                 label: 'Template',
                 name: 'template',
                 type: 'string',
                 rows: 5,
-                default: 'What is a good name for a company that makes {product}?',
-                placeholder: 'What is a good name for a company that makes {product}?'
+                placeholder: `What is a good name for a company that makes {product}?`
             }
         ]
     }
@@ -42,10 +41,11 @@ class PromptTemplate_Prompts implements INode {
         const inputVariables = getInputVariables(template)
 
         try {
-            const prompt = new PromptTemplate({
+            const options = {
                 template,
-                inputVariables: inputVariables
-            })
+                inputVariables
+            }
+            const prompt = new PromptTemplate(options)
             return prompt
         } catch (e) {
             throw new Error(e)

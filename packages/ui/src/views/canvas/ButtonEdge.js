@@ -1,7 +1,9 @@
 import { getBezierPath, EdgeText } from 'reactflow'
 import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux'
-import { REMOVE_EDGE } from 'store/actions'
+import { useContext } from 'react'
+import { SET_DIRTY } from 'store/actions'
+import { flowContext } from 'store/context/ReactFlowContext'
 
 import './index.css'
 
@@ -17,11 +19,14 @@ const ButtonEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
         targetPosition
     })
 
+    const { deleteEdge } = useContext(flowContext)
+
     const dispatch = useDispatch()
 
     const onEdgeClick = (evt, id) => {
         evt.stopPropagation()
-        dispatch({ type: REMOVE_EDGE, edgeId: `${id}:${Date.now()}` })
+        deleteEdge(id)
+        dispatch({ type: SET_DIRTY })
     }
 
     return (

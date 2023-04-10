@@ -1,4 +1,4 @@
-import { IComponentNodesPool } from './Interface'
+import { IComponentNodes } from './Interface'
 
 import path from 'path'
 import { Dirent } from 'fs'
@@ -6,7 +6,7 @@ import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
 
 export class NodesPool {
-    componentNodes: IComponentNodesPool = {}
+    componentNodes: IComponentNodes = {}
 
     /**
      * Initialize to get all nodes

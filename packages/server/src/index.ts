@@ -3,17 +3,20 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 
-import { IChatFlow, IComponentNodesPool, IncomingInput, IReactFlowNode, IReactFlowObject } from './Interface'
+import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject } from './Interface'
 import { getNodeModulesPackagePath, getStartingNode, buildLangchain, getEndingNode, constructGraphs } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
+import { ChatflowPool } from './ChatflowPool'
+import { INodeData } from 'flowise-components'
 
 export class App {
     app: express.Application
-    componentNodes: IComponentNodesPool = {}
+    nodesPool: NodesPool
+    chatflowPool: ChatflowPool
     AppDataSource = getDataSource()
 
     constructor() {
@@ -26,10 +29,11 @@ export class App {
             .then(async () => {
                 console.info('📦[server]: Data Source has been initialized!')
 
-                // Initialize node instances
-                const nodesPool = new NodesPool()
-                await nodesPool.initialize()
-                this.componentNodes = nodesPool.componentNodes
+                // Initialize pools
+                this.nodesPool = new NodesPool()
+                await this.nodesPool.initialize()
+
+                this.chatflowPool = new ChatflowPool()
             })
             .catch((err) => {
                 console.error('❌[server]: Error during Data Source initialization:', err)
@@ -53,8 +57,8 @@ export class App {
         // Get all component nodes
         this.app.get('/api/v1/nodes', (req: Request, res: Response) => {
             const returnData = []
-            for (const nodeName in this.componentNodes) {
-                const clonedNode = cloneDeep(this.componentNodes[nodeName])
+            for (const nodeName in this.nodesPool.componentNodes) {
+                const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
                 returnData.push(clonedNode)
             }
             return res.json(returnData)
@@ -62,8 +66,8 @@ export class App {
 
         // Get specific component node via name
         this.app.get('/api/v1/nodes/:name', (req: Request, res: Response) => {
-            if (Object.prototype.hasOwnProperty.call(this.componentNodes, req.params.name)) {
-                return res.json(this.componentNodes[req.params.name])
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
+                return res.json(this.nodesPool.componentNodes[req.params.name])
             } else {
                 throw new Error(`Node ${req.params.name} not found`)
             }
@@ -71,8 +75,8 @@ export class App {
 
         // Returns specific component node icon via name
         this.app.get('/api/v1/node-icon/:name', (req: Request, res: Response) => {
-            if (Object.prototype.hasOwnProperty.call(this.componentNodes, req.params.name)) {
-                const nodeInstance = this.componentNodes[req.params.name]
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
+                const nodeInstance = this.nodesPool.componentNodes[req.params.name]
                 if (nodeInstance.icon === undefined) {
                     throw new Error(`Node ${req.params.name} icon not found`)
                 }
@@ -137,6 +141,9 @@ export class App {
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
+            // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+            this.chatflowPool.updateInSync(chatflow.id, false)
+
             return res.json(result)
         })
 
@@ -183,30 +190,45 @@ export class App {
         // Send input message and get prediction result
         this.app.post('/api/v1/prediction/:id', async (req: Request, res: Response) => {
             try {
+                const chatflowid = req.params.id
                 const incomingInput: IncomingInput = req.body
 
-                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                    id: req.params.id
-                })
-                if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+                let nodeToExecuteData: INodeData
 
-                const flowData = chatflow.flowData
-                const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-                const { graph, nodeDependencies } = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges)
+                if (
+                    Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
+                    this.chatflowPool.activeChatflows[chatflowid].inSync
+                ) {
+                    nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                } else {
+                    const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                        id: chatflowid
+                    })
+                    if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-                const startingNodeIds = getStartingNode(nodeDependencies)
-                const endingNodeId = getEndingNode(nodeDependencies, graph)
-                if (!endingNodeId) return res.status(500).send(`Ending node must be either Chain or Agent`)
+                    const flowData = chatflow.flowData
+                    const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+                    const { graph, nodeDependencies } = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges)
 
-                const reactFlowNodes = await buildLangchain(startingNodeIds, parsedFlowData.nodes, graph, this.componentNodes)
-                const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
-                if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
+                    const startingNodeIds = getStartingNode(nodeDependencies)
+                    const endingNodeId = getEndingNode(nodeDependencies, graph)
+                    if (!endingNodeId) return res.status(500).send(`Ending node must be either Chain or Agent`)
 
-                const nodeInstanceFilePath = this.componentNodes[nodeToExecute.data.name].filePath as string
+                    const reactFlowNodes = await buildLangchain(startingNodeIds, parsedFlowData.nodes, graph, this.nodesPool.componentNodes)
+
+                    const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
+                    if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
+
+                    nodeToExecuteData = nodeToExecute.data
+
+                    this.chatflowPool.add(chatflowid, nodeToExecuteData)
+                }
+
+                const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
                 const nodeModule = await import(nodeInstanceFilePath)
                 const nodeInstance = new nodeModule.nodeClass()
 
-                const result = await nodeInstance.run(nodeToExecute.data, incomingInput.question)
+                const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
 
                 return res.json(result)
             } catch (e: any) {

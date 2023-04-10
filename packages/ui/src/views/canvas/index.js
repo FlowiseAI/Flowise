@@ -124,7 +124,6 @@ const Canvas = () => {
         )
 
         setEdges((eds) => addEdge(newEdge, eds))
-        setDirty()
     }
 
     const handleLoadFlow = (file) => {
@@ -388,18 +387,6 @@ const Canvas = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [testChatflowApi.error])
-
-    // Listen to edge button click remove redux event
-    useEffect(() => {
-        if (reactFlowInstance) {
-            const edges = reactFlowInstance.getEdges()
-            const toRemoveEdgeId = canvasDataStore.removeEdgeId.split(':')[0]
-            setEdges(edges.filter((edge) => edge.id !== toRemoveEdgeId))
-            setDirty()
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasDataStore.removeEdgeId])
 
     useEffect(() => setChatflow(canvasDataStore.chatflow), [canvasDataStore.chatflow])
 

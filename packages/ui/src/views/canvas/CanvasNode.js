@@ -47,7 +47,7 @@ const CanvasNode = ({ data }) => {
             >
                 <Box>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box item style={{ width: 50, marginRight: 10, padding: 5 }}>
+                        <Box style={{ width: 50, marginRight: 10, padding: 5 }}>
                             <div
                                 style={{
                                     ...theme.typography.commonAvatar,

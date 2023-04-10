@@ -28,6 +28,17 @@ class LLMChain_Chains implements INode {
                 label: 'Prompt',
                 name: 'prompt',
                 type: 'BasePromptTemplate'
+            },
+            {
+                label: 'Format Prompt Values',
+                name: 'promptValues',
+                type: 'string',
+                rows: 5,
+                placeholder: `{
+  "input_language": "English",
+  "output_language": "French"
+}`,
+                optional: true
             }
         ]
     }
@@ -48,13 +59,39 @@ class LLMChain_Chains implements INode {
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
-        const prompt = nodeData.instance.prompt.inputVariables // ["product"]
-        if (prompt.length > 1) throw new Error('Prompt can only contains 1 literal string {}. Multiples are found')
-
+        const inputVariables = nodeData.instance.prompt.inputVariables // ["product"]
         const chain = nodeData.instance
-        const res = await chain.run(input)
 
-        return res
+        if (inputVariables.length === 1) {
+            const res = await chain.run(input)
+            return res
+        } else if (inputVariables.length > 1) {
+            const promptValuesStr = nodeData.inputs?.promptValues as string
+            if (!promptValuesStr) throw new Error('Please provide Prompt Values')
+
+            const promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+
+            let seen = []
+
+            for (const variable of inputVariables) {
+                seen.push(variable)
+                if (promptValues[variable]) {
+                    seen.pop()
+                }
+            }
+
+            if (seen.length === 1) {
+                const options = {
+                    ...promptValues,
+                    [seen.pop()]: input
+                }
+                const res = await chain.call(options)
+                return res?.text
+            } else throw new Error('Please provide Prompt Values')
+        } else {
+            const res = await chain.run(input)
+            return res
+        }
     }
 }
 

@@ -46,7 +46,6 @@ export const ChatMessage = ({ chatflowid }) => {
 
     const [open, setOpen] = useState(false)
     const [userInput, setUserInput] = useState('')
-    const [history, setHistory] = useState([])
     const [loading, setLoading] = useState(false)
     const [messages, setMessages] = useState([
         {
@@ -157,7 +156,10 @@ export const ChatMessage = ({ chatflowid }) => {
 
         // Send user question and history to API
         try {
-            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, { question: userInput, history: history })
+            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, {
+                question: userInput,
+                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
+            })
             if (response.data) {
                 const data = response.data
                 setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
@@ -203,13 +205,6 @@ export const ChatMessage = ({ chatflowid }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatmessageApi.data])
 
-    // Keep history in sync with messages
-    useEffect(() => {
-        if (messages.length >= 3) {
-            setHistory([[messages[messages.length - 2].message, messages[messages.length - 1].message]])
-        }
-    }, [messages])
-
     // Auto scroll chat to bottom
     useEffect(() => {
         scrollToBottom()
@@ -229,7 +224,6 @@ export const ChatMessage = ({ chatflowid }) => {
 
         return () => {
             setUserInput('')
-            setHistory([])
             setLoading(false)
             setMessages([
                 {

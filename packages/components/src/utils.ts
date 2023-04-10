@@ -4,6 +4,13 @@ import * as path from 'path'
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
 
+/**
+ * Get base classes of components
+ *
+ * @export
+ * @param {any} targetClass
+ * @returns {string[]}
+ */
 export const getBaseClasses = (targetClass: any) => {
     const baseClasses: string[] = []
 

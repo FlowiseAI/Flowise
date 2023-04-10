@@ -4,7 +4,8 @@ import PropTypes from 'prop-types'
 const initialValue = {
     reactFlowInstance: null,
     setReactFlowInstance: () => {},
-    deleteNode: () => {}
+    deleteNode: () => {},
+    deleteEdge: () => {}
 }
 
 export const flowContext = createContext(initialValue)
@@ -17,12 +18,17 @@ export const ReactFlowContext = ({ children }) => {
         reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((ns) => ns.source !== id && ns.target !== id))
     }
 
+    const deleteEdge = (id) => {
+        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((edge) => edge.id !== id))
+    }
+
     return (
         <flowContext.Provider
             value={{
                 reactFlowInstance,
                 setReactFlowInstance,
-                deleteNode
+                deleteNode,
+                deleteEdge
             }}
         >
             {children}

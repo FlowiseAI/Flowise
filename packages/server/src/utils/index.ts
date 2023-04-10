@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import {
-    IComponentNodesPool,
+    IComponentNodes,
     IExploredNode,
     INodeDependencies,
     INodeDirectedGraph,
@@ -98,8 +98,13 @@ export const getStartingNode = (nodeDependencies: INodeDependencies) => {
     return startingNodeIds
 }
 
+/**
+ * Get ending node and check if flow is valid
+ * @param {INodeDependencies} nodeDependencies
+ * @param {INodeDirectedGraph} graph
+ */
 export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeDirectedGraph) => {
-    // Find starting node
+    // Find ending node
     let endingNodeId = ''
     Object.keys(graph).forEach((nodeId) => {
         if (!graph[nodeId].length && nodeDependencies[nodeId] > 0) {
@@ -113,17 +118,14 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * Build langchain from start to end
  * @param {string} startingNodeId
  * @param {IReactFlowNode[]} reactFlowNodes
- * @param {IReactFlowEdge[]} reactFlowEdges
  * @param {INodeDirectedGraph} graph
- * @param {IComponentNodesPool} componentNodes
- * @param {string} clientId
- * @param {any} io
+ * @param {IComponentNodes} componentNodes
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
     reactFlowNodes: IReactFlowNode[],
     graph: INodeDirectedGraph,
-    componentNodes: IComponentNodesPool
+    componentNodes: IComponentNodes
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -190,8 +192,6 @@ export const buildLangchain = async (
  * Get variable value from outputResponses.output
  * @param {string} paramValue
  * @param {IReactFlowNode[]} reactFlowNodes
- * @param {string} key
- * @param {number} loopIndex
  * @returns {string}
  */
 export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowNode[]) => {

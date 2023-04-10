@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 
-class MRLKAgentLLM implements INode {
+class MRLKAgentLLM_Agents implements INode {
     label: string
     name: string
     description: string
@@ -55,4 +55,4 @@ class MRLKAgentLLM implements INode {
     }
 }
 
-module.exports = { nodeClass: MRLKAgentLLM }
+module.exports = { nodeClass: MRLKAgentLLM_Agents }
