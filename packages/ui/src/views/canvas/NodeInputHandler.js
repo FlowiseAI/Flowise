@@ -14,7 +14,7 @@ import { isValidConnection } from 'utils/genericHelper'
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
+const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
     const theme = useTheme()
     const ref = useRef(null)
     const updateNodeInternals = useUpdateNodeInternals()
@@ -76,6 +76,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
                         </Typography>
                         {inputParam.type === 'file' && (
                             <File
+                                disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
@@ -83,6 +84,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
                         )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
+                                disabled={disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
@@ -90,6 +92,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
                         )}
                         {inputParam.type === 'options' && (
                             <Dropdown
+                                disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
@@ -106,7 +109,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data }) => {
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
     inputParam: PropTypes.object,
-    data: PropTypes.object
+    data: PropTypes.object,
+    disabled: PropTypes.bool
 }
 
 export default NodeInputHandler

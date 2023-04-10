@@ -1,0 +1,252 @@
+{
+    "description": "An agent that uses the ReAct Framework to decide what action to take",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 279,
+            "id": "mrlkAgentLLM_0",
+            "position": {
+                "x": 1520.156054894558,
+                "y": 466.34196346475386
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrlkAgentLLM_0",
+                "label": "MRLK Agent for LLMs",
+                "name": "mrlkAgentLLM",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrlkAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "LLM Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrlkAgentLLM_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{calculator_0.data.instance}}", "{{serpAPI_0.data.instance}}"],
+                    "model": "{{openAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrlkAgentLLM_0-output-mrlkAgentLLM-AgentExecutor",
+                        "name": "mrlkAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1520.156054894558,
+                "y": 466.34196346475386
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 142,
+            "id": "calculator_0",
+            "position": {
+                "x": 1141.0497522733922,
+                "y": 172.32224599434292
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_0",
+                "label": "Calculator",
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Tool"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_0-output-calculator-Tool",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1141.0497522733922,
+                "y": 172.32224599434292
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 277,
+            "id": "serpAPI_0",
+            "position": {
+                "x": 797.0350733284566,
+                "y": 199.36655049779267
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serpAPI_0",
+                "label": "Serp API",
+                "name": "serpAPI",
+                "type": "SerpAPI",
+                "baseClasses": ["Tool"],
+                "category": "Tools",
+                "description": "Wrapper around SerpAPI - a real-time API to access Google search results",
+                "inputParams": [
+                    {
+                        "label": "Serp Api Key",
+                        "name": "apiKey",
+                        "type": "password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serpAPI_0-output-serpAPI-Tool",
+                        "name": "serpAPI",
+                        "label": "SerpAPI",
+                        "type": "Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 797.0350733284566,
+                "y": 199.36655049779267
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 471,
+            "id": "openAI_0",
+            "position": {
+                "x": 917.6484006031452,
+                "y": 522.1507882519595
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_0",
+                "label": "OpenAI",
+                "name": "openAI",
+                "type": "OpenAI",
+                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": 0.7
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "BaseLLM | BaseLanguageModel"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 917.6484006031452,
+                "y": 522.1507882519595
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+            "target": "mrlkAgentLLM_0",
+            "targetHandle": "mrlkAgentLLM_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-mrlkAgentLLM_0-mrlkAgentLLM_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Tool",
+            "target": "mrlkAgentLLM_0",
+            "targetHandle": "mrlkAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_0-calculator_0-output-calculator-Tool-mrlkAgentLLM_0-mrlkAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serpAPI_0",
+            "sourceHandle": "serpAPI_0-output-serpAPI-Tool",
+            "target": "mrlkAgentLLM_0",
+            "targetHandle": "mrlkAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-Tool-mrlkAgentLLM_0-mrlkAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

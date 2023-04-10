@@ -18,7 +18,7 @@ const StyledPopper = styled(Popper)({
     }
 })
 
-export const Dropdown = ({ name, value, options, onSelect }) => {
+export const Dropdown = ({ name, value, options, onSelect, disabled = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
@@ -28,6 +28,7 @@ export const Dropdown = ({ name, value, options, onSelect }) => {
         <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
             <Autocomplete
                 id={name}
+                disabled={disabled}
                 size='small'
                 options={options || []}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
@@ -57,5 +58,6 @@ Dropdown.propTypes = {
     name: PropTypes.string,
     value: PropTypes.string,
     options: PropTypes.array,
-    onSelect: PropTypes.func
+    onSelect: PropTypes.func,
+    disabled: PropTypes.bool
 }

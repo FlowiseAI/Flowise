@@ -45,9 +45,10 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 <CardWrapper border={false} content={false} onClick={onClick}>
                     <Box sx={{ p: 2.25 }}>
                         <Grid container direction='column'>
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <div>
                                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 500 }}>{data.name}</Typography>
                             </div>
+                            {data.description && <span style={{ marginTop: 10 }}>{data.description}</span>}
                             <Grid sx={{ mt: 1, mb: 1 }} container direction='row'>
                                 {data.deployed && (
                                     <Grid item>

@@ -5,7 +5,7 @@ import { FormControl, Button } from '@mui/material'
 import { IconUpload } from '@tabler/icons'
 import { getFileName } from 'utils/genericHelper'
 
-export const File = ({ value, fileType, onChange }) => {
+export const File = ({ value, fileType, onChange, disabled = false }) => {
     const theme = useTheme()
 
     const [myValue, setMyValue] = useState(value ?? '')
@@ -42,7 +42,14 @@ export const File = ({ value, fileType, onChange }) => {
             >
                 {myValue ? getFileName(myValue) : 'Choose a file to upload'}
             </span>
-            <Button variant='outlined' component='label' fullWidth startIcon={<IconUpload />} sx={{ marginRight: '1rem' }}>
+            <Button
+                disabled={disabled}
+                variant='outlined'
+                component='label'
+                fullWidth
+                startIcon={<IconUpload />}
+                sx={{ marginRight: '1rem' }}
+            >
                 {'Upload File'}
                 <input type='file' accept={fileType} hidden onChange={(e) => handleFileUpload(e)} />
             </Button>
@@ -53,5 +60,6 @@ export const File = ({ value, fileType, onChange }) => {
 File.propTypes = {
     value: PropTypes.string,
     fileType: PropTypes.string,
-    onChange: PropTypes.func
+    onChange: PropTypes.func,
+    disabled: PropTypes.bool
 }

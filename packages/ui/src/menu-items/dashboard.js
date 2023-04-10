@@ -1,8 +1,8 @@
 // assets
-import { IconHierarchy, IconKey, IconBook, IconListCheck } from '@tabler/icons'
+import { IconHierarchy, IconBuildingStore } from '@tabler/icons'
 
 // constant
-const icons = { IconHierarchy, IconKey, IconBook, IconListCheck }
+const icons = { IconHierarchy, IconBuildingStore }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -17,6 +17,14 @@ const dashboard = {
             type: 'item',
             url: '/chatflows',
             icon: icons.IconHierarchy,
+            breadcrumbs: true
+        },
+        {
+            id: 'marketplaces',
+            title: 'Marketplaces',
+            type: 'item',
+            url: '/marketplaces',
+            icon: icons.IconBuildingStore,
             breadcrumbs: true
         }
     ]

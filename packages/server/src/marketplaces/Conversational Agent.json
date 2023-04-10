@@ -1,0 +1,315 @@
+{
+    "description": "A conversational agent for a chat model which utilize chat specific prompts",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 277,
+            "id": "serpAPI_0",
+            "position": {
+                "x": 738.3791942291381,
+                "y": 61.26790912730354
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serpAPI_0",
+                "label": "Serp API",
+                "name": "serpAPI",
+                "type": "SerpAPI",
+                "baseClasses": ["Tool"],
+                "category": "Tools",
+                "description": "Wrapper around SerpAPI - a real-time API to access Google search results",
+                "inputParams": [
+                    {
+                        "label": "Serp Api Key",
+                        "name": "apiKey",
+                        "type": "password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serpAPI_0-output-serpAPI-Tool",
+                        "name": "serpAPI",
+                        "label": "SerpAPI",
+                        "type": "Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 738.3791942291381,
+                "y": 61.26790912730354
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 142,
+            "id": "calculator_0",
+            "position": {
+                "x": 1088.946090950564,
+                "y": 63.99579982092973
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_0",
+                "label": "Calculator",
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Tool"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_0-output-calculator-Tool",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1088.946090950564,
+                "y": 63.99579982092973
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 471,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 741.0274881835038,
+                "y": 365.0891876953251
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 741.0274881835038,
+                "y": 365.0891876953251
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 753.3628847860326,
+                "y": 864.8446075184364
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Perform calculations on response",
+                "inputParams": [
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history"
+                    },
+                    {
+                        "label": "Input Key",
+                        "name": "inputKey",
+                        "type": "string",
+                        "default": "input"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "memoryKey": "chat_history",
+                    "inputKey": "input"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "type": "BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 753.3628847860326,
+                "y": 864.8446075184364
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 330,
+            "id": "conversationalAgent_0",
+            "position": {
+                "x": 1487.0651648211865,
+                "y": 497.1658250180486
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalAgent_0",
+                "label": "Conversational Agent",
+                "name": "conversationalAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor"],
+                "category": "Agents",
+                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "conversationalAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationalAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{calculator_0.data.instance}}", "{{serpAPI_0.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor",
+                        "name": "conversationalAgent",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1487.0651648211865,
+                "y": 497.1658250180486
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Tool",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_0-calculator_0-output-calculator-Tool-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serpAPI_0",
+            "sourceHandle": "serpAPI_0-output-serpAPI-Tool",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-Tool-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BaseChatMemory|BaseMemory",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BaseChatMemory|BaseMemory-conversationalAgent_0-conversationalAgent_0-input-memory-BaseChatMemory",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

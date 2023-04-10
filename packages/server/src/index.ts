@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
+import * as fs from 'fs'
 
 import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject } from './Interface'
 import { getNodeModulesPackagePath, getStartingNode, buildLangchain, getEndingNode, constructGraphs } from './utils'
@@ -234,6 +235,30 @@ export class App {
             } catch (e: any) {
                 return res.status(500).send(e.message)
             }
+        })
+
+        // ----------------------------------------
+        // Marketplaces
+        // ----------------------------------------
+
+        // Get all chatflows for marketplaces
+        this.app.get('/api/v1/marketplaces', async (req: Request, res: Response) => {
+            const marketplaceDir = path.join(__dirname, '..', 'src/marketplaces')
+            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            const templates: any[] = []
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'src/marketplaces', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    id: index,
+                    name: file.split('.json')[0],
+                    flowData: fileData.toString(),
+                    description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+            return res.json(templates)
         })
 
         // ----------------------------------------

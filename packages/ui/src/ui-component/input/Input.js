@@ -2,13 +2,14 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { FormControl, OutlinedInput } from '@mui/material'
 
-export const Input = ({ inputParam, value, onChange }) => {
+export const Input = ({ inputParam, value, onChange, disabled = false }) => {
     const [myValue, setMyValue] = useState(value ?? '')
     return (
         <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
             <OutlinedInput
                 id={inputParam.name}
                 size='small'
+                disabled={disabled}
                 type={inputParam.type === 'string' ? 'text' : inputParam.type}
                 placeholder={inputParam.placeholder}
                 multiline={!!inputParam.rows}
@@ -28,5 +29,6 @@ export const Input = ({ inputParam, value, onChange }) => {
 Input.propTypes = {
     inputParam: PropTypes.object,
     value: PropTypes.string,
-    onChange: PropTypes.func
+    onChange: PropTypes.func,
+    disabled: PropTypes.bool
 }

@@ -3,7 +3,7 @@ import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState 
 import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { usePrompt } from '../../utils/usePrompt'
 import {
     REMOVE_DIRTY,
@@ -50,6 +50,9 @@ const Canvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
 
+    const { state } = useLocation()
+    const templateFlowData = state ? state.templateFlowData : ''
+
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId = URLpath[URLpath.length - 1] === 'canvas' ? '' : URLpath[URLpath.length - 1]
 
@@ -59,6 +62,7 @@ const Canvas = () => {
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
+
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| Snackbar ||============================== //
@@ -436,6 +440,14 @@ const Canvas = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        if (templateFlowData && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
+            handleLoadFlow(templateFlowData)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [templateFlowData])
 
     usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
 

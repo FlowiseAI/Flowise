@@ -1,0 +1,313 @@
+{
+    "description": "Output antonym of given user input using few-shot prompt template built with examples",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 885,
+            "id": "fewShotPromptTemplate_0",
+            "position": {
+                "x": 495.78246013667433,
+                "y": 168.3684510250569
+            },
+            "type": "customNode",
+            "data": {
+                "id": "fewShotPromptTemplate_0",
+                "label": "Few Shot Prompt Template",
+                "name": "fewShotPromptTemplate",
+                "type": "FewShotPromptTemplate",
+                "baseClasses": ["BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Prompt template you can build with examples",
+                "inputParams": [
+                    {
+                        "label": "Examples",
+                        "name": "examples",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "[\n  { word: \"happy\", antonym: \"sad\" },\n  { word: \"tall\", antonym: \"short\" },\n]"
+                    },
+                    {
+                        "label": "Prefix",
+                        "name": "prefix",
+                        "type": "string",
+                        "rows": 3,
+                        "placeholder": "Give the antonym of every input"
+                    },
+                    {
+                        "label": "Suffix",
+                        "name": "suffix",
+                        "type": "string",
+                        "rows": 3,
+                        "placeholder": "Word: {input}\nAntonym:"
+                    },
+                    {
+                        "label": "Example Seperator",
+                        "name": "exampleSeparator",
+                        "type": "string",
+                        "placeholder": "\n\n"
+                    },
+                    {
+                        "label": "Template Format",
+                        "name": "templateFormat",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "f-string",
+                                "name": "f-string"
+                            },
+                            {
+                                "label": "jinja-2",
+                                "name": "jinja-2"
+                            }
+                        ],
+                        "default": "f-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Example Prompt",
+                        "name": "examplePrompt",
+                        "type": "BasePromptTemplate",
+                        "id": "fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "examples": "[\n    { \"word\": \"happy\", \"antonym\": \"sad\" },\n    { \"word\": \"tall\", \"antonym\": \"short\" }\n]",
+                    "examplePrompt": "{{promptTemplate_0.data.instance}}",
+                    "prefix": "Give the antonym of every input",
+                    "suffix": "Word: {input}\\nAntonym:",
+                    "exampleSeparator": "\\n\\n",
+                    "templateFormat": "f-string"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "fewShotPromptTemplate",
+                        "label": "FewShotPromptTemplate",
+                        "type": "BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 495.78246013667433,
+                "y": 168.3684510250569
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 359,
+            "id": "promptTemplate_0",
+            "position": {
+                "x": 13.229214123006699,
+                "y": 171.79555808656028
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_0",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "type": "PromptTemplate",
+                "baseClasses": ["BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "What is a good name for a company that makes {product}?"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Word: {word}\\nAntonym: {antonym}\\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 13.229214123006699,
+                "y": 171.79555808656028
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "llmChain_0",
+            "position": {
+                "x": 1237.4411644942688,
+                "y": 508.82448993622904
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "LLM",
+                        "name": "llm",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-llm-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "llm": "{{openAI_0.data.instance}}",
+                    "prompt": "{{fewShotPromptTemplate_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmChain_0-output-llmChain-BaseChain",
+                        "name": "llmChain",
+                        "label": "LLMChain",
+                        "type": "BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1237.4411644942688,
+                "y": 508.82448993622904
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 471,
+            "id": "openAI_0",
+            "position": {
+                "x": 859.220671981777,
+                "y": 166.25170842824588
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_0",
+                "label": "OpenAI",
+                "name": "openAI",
+                "type": "OpenAI",
+                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": 0.7
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "BaseLLM | BaseLanguageModel"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 859.220671981777,
+                "y": 166.25170842824588
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "fewShotPromptTemplate_0",
+            "targetHandle": "fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_0-fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "fewShotPromptTemplate_0",
+            "sourceHandle": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "fewShotPromptTemplate_0-fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-llm-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-llm-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

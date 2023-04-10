@@ -203,12 +203,14 @@ export const generateExportFlowData = (flowData) => {
             selected: false
         }
 
-        // Remove password
+        // Remove password, file & folder
         if (node.data.inputs && Object.keys(node.data.inputs).length) {
             const nodeDataInputs = {}
             for (const input in node.data.inputs) {
                 const inputParam = node.data.inputParams.find((inp) => inp.name === input)
                 if (inputParam && inputParam.type === 'password') continue
+                if (inputParam && inputParam.type === 'file') continue
+                if (inputParam && inputParam.type === 'folder') continue
                 nodeDataInputs[input] = node.data.inputs[input]
             }
             newNodeData.inputs = nodeDataInputs
