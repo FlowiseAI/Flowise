@@ -2,7 +2,7 @@
 # docker build --no-cache -t  flowise .
 # Run image
 # docker run -d -p 3000:3000 flowise
-FROM node:16
+FROM node:18-alpine
 
 WORKDIR /usr/src/packages
 
