@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -9,6 +9,7 @@
     },
     "files": [
         "bin",
+        "marketplaces",
         "dist",
         "npm-shrinkwrap.json",
         "oclif.manifest.json",

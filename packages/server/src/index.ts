@@ -243,11 +243,11 @@ export class App {
 
         // Get all chatflows for marketplaces
         this.app.get('/api/v1/marketplaces', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'src/marketplaces')
+            const marketplaceDir = path.join(__dirname, '..', 'marketplaces')
             const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
             const templates: any[] = []
             jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'src/marketplaces', file)
+                const filePath = path.join(__dirname, '..', 'marketplaces', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
