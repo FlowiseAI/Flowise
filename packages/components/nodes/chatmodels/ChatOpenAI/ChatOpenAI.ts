@@ -30,6 +30,18 @@ class ChatOpenAI_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
+                        label: 'gpt-4',
+                        name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-0314',
+                        name: 'gpt-4-0314'
+                    },
+                    {
+                        label: 'gpt-4-32k-0314',
+                        name: 'gpt-4-32k-0314'
+                    },
+                    {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
                     },

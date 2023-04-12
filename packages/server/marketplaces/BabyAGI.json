@@ -1,0 +1,104 @@
+{
+    "description": "Given an objective, tasks will be created, stored into Pinecone and reprioritized",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 769,
+            "id": "babyAGI_0",
+            "position": {
+                "x": 542.130412774738,
+                "y": 154.52145148106695
+            },
+            "type": "customNode",
+            "data": {
+                "id": "babyAGI_0",
+                "label": "BabyAGI",
+                "name": "babyAGI",
+                "type": "BabyAGI",
+                "baseClasses": ["AgentExecutor"],
+                "category": "Agents",
+                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "inputParams": [
+                    {
+                        "label": "Task Loop",
+                        "name": "taskLoop",
+                        "type": "number",
+                        "default": 3
+                    },
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Pinecone Api Key",
+                        "name": "pineconeApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Pinecone Environment",
+                        "name": "pineconeEnv",
+                        "type": "string"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "taskLoop": "3",
+                    "pineconeEnv": "us-west4-gcp",
+                    "pineconeIndex": "test",
+                    "modelName": "gpt-3.5-turbo"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "babyAGI_0-output-babyAGI-AgentExecutor",
+                        "name": "babyAGI",
+                        "label": "BabyAGI",
+                        "type": "AgentExecutor"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 542.130412774738,
+                "y": 154.52145148106695
+            }
+        }
+    ],
+    "edges": []
+}
