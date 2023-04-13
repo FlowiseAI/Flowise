@@ -3,7 +3,6 @@ import { PineconeClient } from '@pinecone-database/pinecone'
 import { PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
 
 class PineconeUpsert_VectorStores implements INode {
     label: string
@@ -22,7 +21,7 @@ class PineconeUpsert_VectorStores implements INode {
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Pinecone'
-        this.baseClasses = [this.type, ...getBaseClasses(PineconeStore)]
+        this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Document',

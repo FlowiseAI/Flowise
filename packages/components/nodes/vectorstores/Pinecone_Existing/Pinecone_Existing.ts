@@ -2,7 +2,6 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
 import { PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
@@ -21,7 +20,7 @@ class Pinecone_Existing_VectorStores implements INode {
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
-        this.baseClasses = [this.type, ...getBaseClasses(PineconeStore)]
+        this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Embeddings',

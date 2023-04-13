@@ -2,7 +2,6 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { Chroma } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
 
 class ChromaUpsert_VectorStores implements INode {
     label: string
@@ -21,7 +20,7 @@ class ChromaUpsert_VectorStores implements INode {
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Chroma'
-        this.baseClasses = [this.type, ...getBaseClasses(Chroma)]
+        this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Document',
