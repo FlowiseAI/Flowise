@@ -1,5 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { LLMChain } from 'langchain/chains'
+import { BaseLanguageModel } from 'langchain/base_language'
+import { BasePromptTemplate } from 'langchain/prompts'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -18,10 +21,11 @@ class LLMChain_Chains implements INode {
         this.icon = 'chain.svg'
         this.category = 'Chains'
         this.description = 'Chain to run queries against LLMs'
+        this.baseClasses = [this.type, ...getBaseClasses(LLMChain)]
         this.inputs = [
             {
-                label: 'LLM',
-                name: 'llm',
+                label: 'Language Model',
+                name: 'model',
                 type: 'BaseLanguageModel'
             },
             {
@@ -43,24 +47,17 @@ class LLMChain_Chains implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { LLMChain } = await import('langchain/chains')
-        return getBaseClasses(LLMChain)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { LLMChain } = await import('langchain/chains')
+        const model = nodeData.inputs?.model as BaseLanguageModel
+        const prompt = nodeData.inputs?.prompt as BasePromptTemplate
 
-        const llm = nodeData.inputs?.llm
-        const prompt = nodeData.inputs?.prompt
-
-        const chain = new LLMChain({ llm, prompt })
+        const chain = new LLMChain({ llm: model, prompt })
         return chain
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
-        const inputVariables = nodeData.instance.prompt.inputVariables // ["product"]
-        const chain = nodeData.instance
+        const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
+        const chain = nodeData.instance as LLMChain
 
         if (inputVariables.length === 1) {
             const res = await chain.run(input)
@@ -71,7 +68,7 @@ class LLMChain_Chains implements INode {
 
             const promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
 
-            let seen = []
+            let seen: string[] = []
 
             for (const variable of inputVariables) {
                 seen.push(variable)
@@ -81,13 +78,17 @@ class LLMChain_Chains implements INode {
             }
 
             if (seen.length === 1) {
+                const lastValue = seen.pop()
+                if (!lastValue) throw new Error('Please provide Prompt Values')
                 const options = {
                     ...promptValues,
-                    [seen.pop()]: input
+                    [lastValue]: input
                 }
                 const res = await chain.call(options)
                 return res?.text
-            } else throw new Error('Please provide Prompt Values')
+            } else {
+                throw new Error('Please provide Prompt Values')
+            }
         } else {
             const res = await chain.run(input)
             return res

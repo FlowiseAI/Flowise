@@ -3,11 +3,58 @@
     "nodes": [
         {
             "width": 300,
-            "height": 885,
+            "height": 360,
+            "id": "promptTemplate_0",
+            "position": {
+                "x": 294.38456937448433,
+                "y": 66.5400435451831
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_0",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "What is a good name for a company that makes {product}?"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Word: {word}\\nAntonym: {antonym}\\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 294.38456937448433,
+                "y": 66.5400435451831
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 886,
             "id": "fewShotPromptTemplate_0",
             "position": {
-                "x": 495.78246013667433,
-                "y": 168.3684510250569
+                "x": 719.2200337843097,
+                "y": 67.20405755860693
             },
             "type": "customNode",
             "data": {
@@ -15,7 +62,7 @@
                 "label": "Few Shot Prompt Template",
                 "name": "fewShotPromptTemplate",
                 "type": "FewShotPromptTemplate",
-                "baseClasses": ["BaseStringPromptTemplate", "BasePromptTemplate"],
+                "baseClasses": ["FewShotPromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
                 "description": "Prompt template you can build with examples",
                 "inputParams": [
@@ -24,7 +71,7 @@
                         "name": "examples",
                         "type": "string",
                         "rows": 5,
-                        "placeholder": "[\n  { word: \"happy\", antonym: \"sad\" },\n  { word: \"tall\", antonym: \"short\" },\n]"
+                        "placeholder": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" },\n]"
                     },
                     {
                         "label": "Prefix",
@@ -67,12 +114,12 @@
                     {
                         "label": "Example Prompt",
                         "name": "examplePrompt",
-                        "type": "BasePromptTemplate",
-                        "id": "fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate"
+                        "type": "PromptTemplate",
+                        "id": "fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate"
                     }
                 ],
                 "inputs": {
-                    "examples": "[\n    { \"word\": \"happy\", \"antonym\": \"sad\" },\n    { \"word\": \"tall\", \"antonym\": \"short\" }\n]",
+                    "examples": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" }\n]",
                     "examplePrompt": "{{promptTemplate_0.data.instance}}",
                     "prefix": "Give the antonym of every input",
                     "suffix": "Word: {input}\\nAntonym:",
@@ -81,128 +128,28 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+                        "id": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
                         "name": "fewShotPromptTemplate",
                         "label": "FewShotPromptTemplate",
-                        "type": "BaseStringPromptTemplate | BasePromptTemplate"
+                        "type": "FewShotPromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 495.78246013667433,
-                "y": 168.3684510250569
+                "x": 719.2200337843097,
+                "y": 67.20405755860693
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 359,
-            "id": "promptTemplate_0",
-            "position": {
-                "x": 13.229214123006699,
-                "y": 171.79555808656028
-            },
-            "type": "customNode",
-            "data": {
-                "id": "promptTemplate_0",
-                "label": "Prompt Template",
-                "name": "promptTemplate",
-                "type": "PromptTemplate",
-                "baseClasses": ["BaseStringPromptTemplate", "BasePromptTemplate"],
-                "category": "Prompts",
-                "description": "Schema to represent a basic prompt for an LLM",
-                "inputParams": [
-                    {
-                        "label": "Template",
-                        "name": "template",
-                        "type": "string",
-                        "rows": 5,
-                        "placeholder": "What is a good name for a company that makes {product}?"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "template": "Word: {word}\\nAntonym: {antonym}\\n"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
-                        "name": "promptTemplate",
-                        "label": "PromptTemplate",
-                        "type": "BaseStringPromptTemplate | BasePromptTemplate"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 13.229214123006699,
-                "y": 171.79555808656028
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 279,
-            "id": "llmChain_0",
-            "position": {
-                "x": 1237.4411644942688,
-                "y": 508.82448993622904
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["BaseChain"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-llm-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "llm": "{{openAI_0.data.instance}}",
-                    "prompt": "{{fewShotPromptTemplate_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "llmChain_0-output-llmChain-BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "BaseChain"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1237.4411644942688,
-                "y": 508.82448993622904
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 471,
+            "height": 472,
             "id": "openAI_0",
             "position": {
-                "x": 859.220671981777,
-                "y": 166.25170842824588
+                "x": 1089.6434062122398,
+                "y": 27.515288538129425
             },
             "type": "customNode",
             "data": {
@@ -210,7 +157,7 @@
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
@@ -259,18 +206,81 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "BaseLLM | BaseLanguageModel"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 859.220671981777,
-                "y": 166.25170842824588
+                "x": 1089.6434062122398,
+                "y": 27.515288538129425
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 461,
+            "id": "llmChain_0",
+            "position": {
+                "x": 1499.2654451385026,
+                "y": 356.3275374721362
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_0.data.instance}}",
+                    "prompt": "{{fewShotPromptTemplate_0.data.instance}}",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                        "name": "llmChain",
+                        "label": "LLMChain",
+                        "type": "LLMChain | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1499.2654451385026,
+                "y": 356.3275374721362
             },
             "dragging": false
         }
@@ -278,33 +288,33 @@
     "edges": [
         {
             "source": "promptTemplate_0",
-            "sourceHandle": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
             "target": "fewShotPromptTemplate_0",
-            "targetHandle": "fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate",
+            "targetHandle": "fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_0-fewShotPromptTemplate_0-input-examplePrompt-BasePromptTemplate",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "fewShotPromptTemplate_0",
-            "sourceHandle": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
-            "type": "buttonedge",
-            "id": "fewShotPromptTemplate_0-fewShotPromptTemplate_0-output-fewShotPromptTemplate-BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_0-fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
             "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-llm-BaseLanguageModel",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-llm-BaseLanguageModel",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "fewShotPromptTemplate_0",
+            "sourceHandle": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "fewShotPromptTemplate_0-fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }

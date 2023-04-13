@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { BufferMemory } from 'langchain/memory'
 
 class BufferMemory_Memory implements INode {
     label: string
@@ -17,7 +18,8 @@ class BufferMemory_Memory implements INode {
         this.type = 'BufferMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
-        this.description = 'Perform calculations on response'
+        this.description = 'Remembers previous conversational back and forths directly'
+        this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
         this.inputs = [
             {
                 label: 'Memory Key',
@@ -34,13 +36,7 @@ class BufferMemory_Memory implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { BufferMemory } = await import('langchain/memory')
-        return getBaseClasses(BufferMemory)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { BufferMemory } = await import('langchain/memory')
         const memoryKey = nodeData.inputs?.memoryKey as string
         const inputKey = nodeData.inputs?.inputKey as string
         return new BufferMemory({

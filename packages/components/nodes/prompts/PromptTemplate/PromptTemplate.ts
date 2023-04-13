@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts'
 
 class PromptTemplate_Prompts implements INode {
     label: string
@@ -18,6 +19,7 @@ class PromptTemplate_Prompts implements INode {
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
         this.description = 'Schema to represent a basic prompt for an LLM'
+        this.baseClasses = [this.type, ...getBaseClasses(PromptTemplate)]
         this.inputs = [
             {
                 label: 'Template',
@@ -29,19 +31,12 @@ class PromptTemplate_Prompts implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { PromptTemplate } = await import('langchain/prompts')
-        return getBaseClasses(PromptTemplate)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { PromptTemplate } = await import('langchain/prompts')
-
         const template = nodeData.inputs?.template as string
         const inputVariables = getInputVariables(template)
 
         try {
-            const options = {
+            const options: PromptTemplateInput = {
                 template,
                 inputVariables
             }

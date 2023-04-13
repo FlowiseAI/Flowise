@@ -1,4 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { TextSplitter } from 'langchain/text_splitter'
+import { GithubRepoLoader, GithubRepoLoaderParams } from 'langchain/document_loaders/web/github'
 
 class Github_DocumentLoaders implements INode {
     label: string
@@ -13,10 +15,11 @@ class Github_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Github'
         this.name = 'github'
-        this.type = 'Github'
+        this.type = 'Document'
         this.icon = 'github.png'
         this.category = 'Document Loaders'
         this.description = `Load data from a GitHub repository`
+        this.baseClasses = [this.type]
         this.inputs = [
             {
                 label: 'Repo Link',
@@ -46,23 +49,17 @@ class Github_DocumentLoaders implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['Document']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { GithubRepoLoader } = await import('langchain/document_loaders')
-
         const repoLink = nodeData.inputs?.repoLink as string
         const branch = nodeData.inputs?.branch as string
         const accessToken = nodeData.inputs?.accessToken as string
-        const textSplitter = nodeData.inputs?.textSplitter
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
 
-        const options = {
+        const options: GithubRepoLoaderParams = {
             branch,
             recursive: false,
             unknown: 'warn'
-        } as any
+        }
 
         if (accessToken) options.accessToken = accessToken
 
