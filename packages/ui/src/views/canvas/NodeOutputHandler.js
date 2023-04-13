@@ -3,10 +3,17 @@ import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 import { useEffect, useRef, useState, useContext } from 'react'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip } from '@mui/material'
+import { tooltipClasses } from '@mui/material/Tooltip'
 import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection } from 'utils/genericHelper'
+
+const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
+    [`& .${tooltipClasses.tooltip}`]: {
+        maxWidth: 500
+    }
+})
 
 // ===========================|| NodeOutputHandler ||=========================== //
 
@@ -34,14 +41,7 @@ const NodeOutputHandler = ({ outputAnchor, data }) => {
 
     return (
         <div ref={ref}>
-            <Tooltip
-                placement='right'
-                title={
-                    <Typography sx={{ color: 'white', p: 1 }} variant='h5'>
-                        {'Type: ' + outputAnchor.type}
-                    </Typography>
-                }
-            >
+            <CustomWidthTooltip placement='right' title={outputAnchor.type}>
                 <Handle
                     type='source'
                     position={Position.Right}
@@ -55,7 +55,7 @@ const NodeOutputHandler = ({ outputAnchor, data }) => {
                         top: position
                     }}
                 />
-            </Tooltip>
+            </CustomWidthTooltip>
             <Box sx={{ p: 2, textAlign: 'end' }}>
                 <Typography>{outputAnchor.label}</Typography>
             </Box>

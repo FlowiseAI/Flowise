@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { HuggingFaceInference } from 'langchain/llms/hf'
 
 class HuggingFaceInference_LLMs implements INode {
     label: string
@@ -17,7 +18,8 @@ class HuggingFaceInference_LLMs implements INode {
         this.type = 'HuggingFaceInference'
         this.icon = 'huggingface.png'
         this.category = 'LLMs'
-        this.description = 'Wrapper around OpenAI large language models'
+        this.description = 'Wrapper around HuggingFace large language models'
+        this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]
         this.inputs = [
             {
                 label: 'Model',
@@ -42,14 +44,7 @@ class HuggingFaceInference_LLMs implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { HuggingFaceInference } = await import('langchain/llms')
-        return getBaseClasses(HuggingFaceInference)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { HuggingFaceInference } = await import('langchain/llms')
-
         const temperature = nodeData.inputs?.temperature as string
         const model = nodeData.inputs?.model as string
 

@@ -1,5 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
+import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses } from '../../../src/utils'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
@@ -18,6 +21,7 @@ class Pinecone_Existing_VectorStores implements INode {
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
+        this.baseClasses = [this.type, ...getBaseClasses(PineconeStore)]
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -42,17 +46,11 @@ class Pinecone_Existing_VectorStores implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['BaseRetriever']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { PineconeStore } = await import('langchain/vectorstores')
-
         const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
         const pineconeEnv = nodeData.inputs?.pineconeEnv as string
         const index = nodeData.inputs?.pineconeIndex as string
-        const embeddings = nodeData.inputs?.embeddings
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
 
         const client = new PineconeClient()
         await client.init({

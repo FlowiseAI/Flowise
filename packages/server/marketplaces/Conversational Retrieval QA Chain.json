@@ -6,8 +6,8 @@
             "height": 376,
             "id": "recursiveCharacterTextSplitter_0",
             "position": {
-                "x": 542.7867965644035,
-                "y": 239.47308806541884
+                "x": 483.2031495359837,
+                "y": 208.70988551611597
             },
             "type": "customNode",
             "data": {
@@ -15,7 +15,7 @@
                 "label": "Recursive Character Text Splitter",
                 "name": "recursiveCharacterTextSplitter",
                 "type": "RecursiveCharacterTextSplitter",
-                "baseClasses": ["TextSplitter"],
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
                 "category": "Text Splitters",
                 "description": "Split documents recursively by different characters - starting with \"\n\n\", then \"\n\", then \" \"",
                 "inputParams": [
@@ -40,35 +40,35 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-TextSplitter",
+                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
                         "name": "recursiveCharacterTextSplitter",
                         "label": "RecursiveCharacterTextSplitter",
-                        "type": "TextSplitter"
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 542.7867965644035,
-                "y": 239.47308806541884
+                "x": 483.2031495359837,
+                "y": 208.70988551611597
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 358,
+            "height": 359,
             "id": "textFile_0",
             "position": {
-                "x": 928.3774169979697,
-                "y": 473.8284271247462
+                "x": 858.2160149124683,
+                "y": 215.870325304158
             },
             "type": "customNode",
             "data": {
                 "id": "textFile_0",
                 "label": "Text File",
                 "name": "textFile",
-                "type": "Text",
+                "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
                 "description": "Load data from text files",
@@ -96,7 +96,7 @@
                     {
                         "id": "textFile_0-output-textFile-Document",
                         "name": "textFile",
-                        "label": "Text",
+                        "label": "Document",
                         "type": "Document"
                     }
                 ],
@@ -104,61 +104,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 928.3774169979697,
-                "y": 473.8284271247462
+                "x": 858.2160149124683,
+                "y": 215.870325304158
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 277,
-            "id": "openAIEmbeddings_0",
-            "position": {
-                "x": 924.7825209307788,
-                "y": 870.671152679558
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIEmbeddings_0",
-                "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
-                "type": "OpenAIEmbeddings",
-                "baseClasses": ["Embeddings"],
-                "category": "Embeddings",
-                "description": "OpenAI API to generate embeddings for a given text",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-Embeddings",
-                        "name": "openAIEmbeddings",
-                        "label": "OpenAIEmbeddings",
-                        "type": "Embeddings"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 924.7825209307788,
-                "y": 870.671152679558
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 471,
+            "height": 472,
             "id": "openAI_0",
             "position": {
-                "x": 1296.7206878349027,
-                "y": 167.80701218012993
+                "x": 1207.112878089014,
+                "y": 19.892224585997383
             },
             "type": "customNode",
             "data": {
@@ -166,7 +123,7 @@
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
@@ -215,28 +172,71 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "BaseLLM | BaseLanguageModel"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1296.7206878349027,
-                "y": 167.80701218012993
+                "x": 1207.112878089014,
+                "y": 19.892224585997383
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 576,
+            "height": 278,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 758.2670802362803,
+                "y": 635.7886850619154
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 758.2670802362803,
+                "y": 635.7886850619154
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 577,
             "id": "pineconeUpsert_0",
             "position": {
-                "x": 1293.8922607101565,
-                "y": 692.4802438205481
+                "x": 1212.220130988712,
+                "y": 526.8130243230098
             },
             "type": "customNode",
             "data": {
@@ -296,18 +296,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1293.8922607101565,
-                "y": 692.4802438205481
+                "x": 1212.220130988712,
+                "y": 526.8130243230098
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 279,
+            "height": 280,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
-                "x": 1742.1979599824272,
-                "y": 607.6274300781624
+                "x": 1608.0332939239609,
+                "y": 410.3973881655837
             },
             "type": "customNode",
             "data": {
@@ -315,7 +315,7 @@
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["BaseChain"],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [],
@@ -323,8 +323,8 @@
                     {
                         "label": "LLM",
                         "name": "llm",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalRetrievalQAChain_0-input-llm-BaseLanguageModel"
+                        "type": "BaseLLM",
+                        "id": "conversationalRetrievalQAChain_0-input-llm-BaseLLM"
                     },
                     {
                         "label": "Vector Store Retriever",
@@ -339,18 +339,18 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-BaseChain",
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
                         "name": "conversationalRetrievalQAChain",
                         "label": "ConversationalRetrievalQAChain",
-                        "type": "BaseChain"
+                        "type": "ConversationalRetrievalQAChain | BaseChain"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1742.1979599824272,
-                "y": 607.6274300781624
+                "x": 1608.0332939239609,
+                "y": 410.3973881655837
             },
             "dragging": false
         }
@@ -358,33 +358,11 @@
     "edges": [
         {
             "source": "recursiveCharacterTextSplitter_0",
-            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-TextSplitter",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
             "target": "textFile_0",
             "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
             "type": "buttonedge",
-            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-llm-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-llm-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "pineconeUpsert_0",
-            "sourceHandle": "pineconeUpsert_0-output-pineconeUpsert-BaseRetriever",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "type": "buttonedge",
-            "id": "pineconeUpsert_0-pineconeUpsert_0-output-pineconeUpsert-BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
             "data": {
                 "label": ""
             }
@@ -402,11 +380,33 @@
         },
         {
             "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-Embeddings",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
             "target": "pineconeUpsert_0",
             "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-llm-BaseLLM",
+            "type": "buttonedge",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-llm-BaseLLM",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeUpsert_0",
+            "sourceHandle": "pineconeUpsert_0-output-pineconeUpsert-BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-pineconeUpsert-BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

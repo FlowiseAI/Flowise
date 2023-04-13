@@ -14,8 +14,7 @@
         "strictPropertyInitialization": false,
         "useUnknownInCatchVariables": false,
         "declaration": true,
-        "module": "commonjs",
-        "moduleResolution": "node16"
+        "module": "commonjs"
     },
     "include": ["src", "nodes"]
 }

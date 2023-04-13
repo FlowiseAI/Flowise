@@ -1,7 +1,3 @@
-.cloudform {
-    position: relative;
-}
-
 .messagelist {
     width: 100%;
     height: 100%;
@@ -113,13 +109,11 @@
     position: relative;
     flex-direction: column;
     padding: 10px;
-    max-width: 500px;
 }
 
 .cloud {
-    width: '100%';
-    max-width: 500px;
-    height: 73vh;
+    width: 400px;
+    height: calc(100vh - 260px);
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;

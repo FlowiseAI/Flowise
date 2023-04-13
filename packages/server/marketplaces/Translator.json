@@ -4,143 +4,10 @@
         {
             "width": 300,
             "height": 460,
-            "id": "llmChain_0",
-            "position": {
-                "x": 1301.8762472836022,
-                "y": 772.7199253009146
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["BaseChain"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Format Prompt Values",
-                        "name": "promptValues",
-                        "type": "string",
-                        "rows": 5,
-                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-llm-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "llm": "{{chatOpenAI_0.data.instance}}",
-                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
-                    "promptValues": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"Italian\"\n}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "llmChain_0-output-llmChain-BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "BaseChain"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1301.8762472836022,
-                "y": 772.7199253009146
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 471,
-            "id": "chatOpenAI_0",
-            "position": {
-                "x": 821.5000372338304,
-                "y": 369.8333649665954
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chatOpenAI_0",
-                "label": "ChatOpenAI",
-                "name": "chatOpenAI",
-                "type": "ChatOpenAI",
-                "baseClasses": ["BaseChatModel", "BaseLanguageModel"],
-                "category": "Chat Models",
-                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
-                            }
-                        ],
-                        "default": "gpt-3.5-turbo",
-                        "optional": true
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.9,
-                        "optional": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "gpt-3.5-turbo",
-                    "temperature": "0"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel",
-                        "name": "chatOpenAI",
-                        "label": "ChatOpenAI",
-                        "type": "BaseChatModel | BaseLanguageModel"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 821.5000372338304,
-                "y": 369.8333649665954
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 459,
             "id": "chatPromptTemplate_0",
             "position": {
-                "x": 821.3479428749118,
-                "y": 871.7203878238932
+                "x": 524,
+                "y": 237
             },
             "type": "customNode",
             "data": {
@@ -148,7 +15,7 @@
                 "label": "Chat Prompt Template",
                 "name": "chatPromptTemplate",
                 "type": "ChatPromptTemplate",
-                "baseClasses": ["BasePromptTemplate"],
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
                 "description": "Schema to represent a chat prompt",
                 "inputParams": [
@@ -174,18 +41,163 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-BasePromptTemplate",
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
                         "name": "chatPromptTemplate",
                         "label": "ChatPromptTemplate",
-                        "type": "BasePromptTemplate"
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 524,
+                "y": 237
+            }
+        },
+        {
+            "width": 300,
+            "height": 472,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 855.1997276913991,
+                "y": 24.090553068402556
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 821.3479428749118,
-                "y": 871.7203878238932
+                "x": 855.1997276913991,
+                "y": 24.090553068402556
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 461,
+            "id": "llmChain_0",
+            "position": {
+                "x": 1192.2235692202612,
+                "y": 361.71736677076257
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "promptValues": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                        "name": "llmChain",
+                        "label": "LLMChain",
+                        "type": "LLMChain | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1192.2235692202612,
+                "y": 361.71736677076257
             },
             "dragging": false
         }
@@ -193,22 +205,22 @@
     "edges": [
         {
             "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-llm-BaseLanguageModel",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-BaseChatModel|BaseLanguageModel-llmChain_0-llmChain_0-input-llm-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "chatPromptTemplate_0",
-            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-BasePromptTemplate",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
             "target": "llmChain_0",
             "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }

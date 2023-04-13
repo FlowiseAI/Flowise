@@ -107,7 +107,9 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
     // Find ending node
     let endingNodeId = ''
     Object.keys(graph).forEach((nodeId) => {
-        if (!graph[nodeId].length && nodeDependencies[nodeId] > 0) {
+        if (Object.keys(nodeDependencies).length === 1) {
+            endingNodeId = nodeId
+        } else if (!graph[nodeId].length && nodeDependencies[nodeId] > 0) {
             endingNodeId = nodeId
         }
     })

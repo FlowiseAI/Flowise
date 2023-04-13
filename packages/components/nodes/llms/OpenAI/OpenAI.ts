@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { OpenAI } from 'langchain/llms/openai'
 
 class OpenAI_LLMs implements INode {
     label: string
@@ -18,6 +19,7 @@ class OpenAI_LLMs implements INode {
         this.icon = 'openai.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around OpenAI large language models'
+        this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
         this.inputs = [
             {
                 label: 'OpenAI Api Key',
@@ -59,14 +61,7 @@ class OpenAI_LLMs implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { OpenAI } = await import('langchain/llms')
-        return getBaseClasses(OpenAI)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { OpenAI } = await import('langchain/llms')
-
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const openAIApiKey = nodeData.inputs?.openAIApiKey as string

@@ -1,5 +1,9 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
+import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from 'langchain/document'
+import { getBaseClasses } from '../../../src/utils'
 
 class PineconeUpsert_VectorStores implements INode {
     label: string
@@ -18,6 +22,7 @@ class PineconeUpsert_VectorStores implements INode {
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Pinecone'
+        this.baseClasses = [this.type, ...getBaseClasses(PineconeStore)]
         this.inputs = [
             {
                 label: 'Document',
@@ -47,19 +52,12 @@ class PineconeUpsert_VectorStores implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['BaseRetriever']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { PineconeStore } = await import('langchain/vectorstores')
-        const { Document } = await import('langchain/document')
-
         const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
         const pineconeEnv = nodeData.inputs?.pineconeEnv as string
         const index = nodeData.inputs?.pineconeIndex as string
-        const docs = nodeData.inputs?.document
-        const embeddings = nodeData.inputs?.embeddings
+        const docs = nodeData.inputs?.document as Document[]
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
 
         const client = new PineconeClient()
         await client.init({
@@ -74,11 +72,10 @@ class PineconeUpsert_VectorStores implements INode {
             finalDocs.push(new Document(docs[i]))
         }
 
-        const result = await PineconeStore.fromDocuments(finalDocs, embeddings, {
+        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, {
             pineconeIndex
         })
-
-        const retriever = result.asRetriever()
+        const retriever = vectorStore.asRetriever()
         return retriever
     }
 }

@@ -1,5 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { FewShotPromptTemplate, FewShotPromptTemplateInput, PromptTemplate } from 'langchain/prompts'
+import { Example } from 'langchain/schema'
+import { TemplateFormat } from 'langchain/dist/prompts/template'
 
 class FewShotPromptTemplate_Prompts implements INode {
     label: string
@@ -18,6 +21,7 @@ class FewShotPromptTemplate_Prompts implements INode {
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
         this.description = 'Prompt template you can build with examples'
+        this.baseClasses = [this.type, ...getBaseClasses(FewShotPromptTemplate)]
         this.inputs = [
             {
                 label: 'Examples',
@@ -32,7 +36,7 @@ class FewShotPromptTemplate_Prompts implements INode {
             {
                 label: 'Example Prompt',
                 name: 'examplePrompt',
-                type: 'BasePromptTemplate'
+                type: 'PromptTemplate'
             },
             {
                 label: 'Prefix',
@@ -73,27 +77,19 @@ class FewShotPromptTemplate_Prompts implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { FewShotPromptTemplate } = await import('langchain/prompts')
-        return getBaseClasses(FewShotPromptTemplate)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { FewShotPromptTemplate } = await import('langchain/prompts')
-
         const examplesStr = nodeData.inputs?.examples as string
-
         const prefix = nodeData.inputs?.prefix as string
         const suffix = nodeData.inputs?.suffix as string
         const exampleSeparator = nodeData.inputs?.exampleSeparator as string
-        const templateFormat = nodeData.inputs?.templateFormat
-        const examplePrompt = nodeData.inputs?.examplePrompt
+        const templateFormat = nodeData.inputs?.templateFormat as TemplateFormat
+        const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate
 
         const inputVariables = getInputVariables(suffix)
-        const examples = JSON.parse(examplesStr.replace(/\s/g, ''))
+        const examples: Example[] = JSON.parse(examplesStr.replace(/\s/g, ''))
 
         try {
-            const prompt = new FewShotPromptTemplate({
+            const obj: FewShotPromptTemplateInput = {
                 examples,
                 examplePrompt,
                 prefix,
@@ -101,7 +97,8 @@ class FewShotPromptTemplate_Prompts implements INode {
                 inputVariables,
                 exampleSeparator,
                 templateFormat
-            })
+            }
+            const prompt = new FewShotPromptTemplate(obj)
             return prompt
         } catch (e) {
             throw new Error(e)

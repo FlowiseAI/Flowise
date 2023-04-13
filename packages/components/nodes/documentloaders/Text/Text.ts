@@ -1,4 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { TextSplitter } from 'langchain/text_splitter'
+import { TextLoader } from 'langchain/document_loaders/fs/text'
 
 class Text_DocumentLoaders implements INode {
     label: string
@@ -13,10 +15,11 @@ class Text_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Text File'
         this.name = 'textFile'
-        this.type = 'Text'
+        this.type = 'Document'
         this.icon = 'textFile.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from text files`
+        this.baseClasses = [this.type]
         this.inputs = [
             {
                 label: 'Txt File',
@@ -33,13 +36,8 @@ class Text_DocumentLoaders implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['Document']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { TextLoader } = await import('langchain/document_loaders')
-        const textSplitter = nodeData.inputs?.textSplitter
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const txtFileBase64 = nodeData.inputs?.txtFile as string
         const splitDataURI = txtFileBase64.split(',')
         splitDataURI.pop()

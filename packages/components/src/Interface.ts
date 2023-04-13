@@ -75,7 +75,6 @@ export interface INodeProperties {
 
 export interface INode extends INodeProperties {
     inputs?: INodeParams[]
-    getBaseClasses?(): Promise<string[]>
     getInstance?(nodeData: INodeData): Promise<string>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string>
 }
