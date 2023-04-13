@@ -63,7 +63,8 @@ class Pdf_DocumentLoaders implements INode {
         const blob = new Blob([bf])
 
         if (usage === 'perFile') {
-            const loader = new PDFLoader(blob, { splitPages: false })
+            // @ts-ignore
+            const loader = new PDFLoader(blob, { splitPages: false, pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
             if (textSplitter) {
                 const docs = await loader.loadAndSplit(textSplitter)
                 return docs
@@ -72,7 +73,8 @@ class Pdf_DocumentLoaders implements INode {
                 return docs
             }
         } else {
-            const loader = new PDFLoader(blob)
+            // @ts-ignore
+            const loader = new PDFLoader(blob, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
             if (textSplitter) {
                 const docs = await loader.loadAndSplit(textSplitter)
                 return docs
