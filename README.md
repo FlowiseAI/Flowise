@@ -13,7 +13,7 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
     ```bash
     npm install -g flowise
     ```
-2. Start FlowiseAI
+2. Start Flowise
 
     ```bash
     npx flowise start
