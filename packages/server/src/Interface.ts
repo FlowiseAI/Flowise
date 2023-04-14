@@ -95,6 +95,10 @@ export interface INodeQueue {
     depth: number
 }
 
+export interface IDepthQueue {
+    [key: string]: number
+}
+
 export interface IMessage {
     message: string
     type: MessageType
