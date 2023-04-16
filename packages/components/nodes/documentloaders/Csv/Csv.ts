@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
+import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -38,7 +38,7 @@ class Csv_DocumentLoaders implements INode {
                 name: 'columnName',
                 type: 'string',
                 description: 'Extracting a single column',
-                placeholder: "Enter column name",
+                placeholder: 'Enter column name',
                 optional: true
             }
         ]
