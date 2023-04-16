@@ -1,9 +1,8 @@
-import { INodeData } from 'flowise-components'
-import { IActiveChatflows } from './Interface'
+import { IActiveChatflows, INodeData } from './Interface'
 
 /**
- * This pool is to keep track of active test triggers (event listeners),
- * so we can clear the event listeners whenever user refresh or exit page
+ * This pool is to keep track of active chatflow pools
+ * so we can prevent building langchain flow all over again
  */
 export class ChatflowPool {
     activeChatflows: IActiveChatflows = {}

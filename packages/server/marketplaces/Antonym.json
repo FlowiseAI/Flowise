@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 360,
+            "height": 366,
             "id": "promptTemplate_0",
             "position": {
                 "x": 294.38456937448433,
@@ -50,7 +50,7 @@
         },
         {
             "width": 300,
-            "height": 886,
+            "height": 905,
             "id": "fewShotPromptTemplate_0",
             "position": {
                 "x": 719.2200337843097,
@@ -223,11 +223,11 @@
         },
         {
             "width": 300,
-            "height": 461,
+            "height": 592,
             "id": "llmChain_0",
             "position": {
-                "x": 1499.2654451385026,
-                "y": 356.3275374721362
+                "x": 1489.0277667172852,
+                "y": 357.461975349771
             },
             "type": "customNode",
             "data": {
@@ -240,12 +240,23 @@
                 "description": "Chain to run queries against LLMs",
                 "inputParams": [
                     {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Task Creation Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "type": "string",
                         "rows": 5,
                         "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "llmChain_0-input-promptValues-string"
                     }
                 ],
                 "inputAnchors": [
@@ -265,22 +276,40 @@
                 "inputs": {
                     "model": "{{openAI_0.data.instance}}",
                     "prompt": "{{fewShotPromptTemplate_0.data.instance}}",
+                    "chainName": "",
                     "promptValues": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "LLMChain | BaseChain"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string"
+                            }
+                        ],
+                        "default": "llmChain"
                     }
                 ],
+                "outputs": {
+                    "output": "llmChain"
+                },
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1499.2654451385026,
-                "y": 356.3275374721362
+                "x": 1489.0277667172852,
+                "y": 357.461975349771
             },
             "dragging": false
         }

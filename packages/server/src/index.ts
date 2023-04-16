@@ -4,15 +4,22 @@ import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
 
-import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject } from './Interface'
-import { getNodeModulesPackagePath, getStartingNodes, buildLangchain, getEndingNode, constructGraphs } from './utils'
+import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject, INodeData } from './Interface'
+import {
+    getNodeModulesPackagePath,
+    getStartingNodes,
+    buildLangchain,
+    getEndingNode,
+    constructGraphs,
+    resolveVariables,
+    checkIfFlowNeedToRebuild
+} from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
-import { INodeData } from 'flowise-components'
 
 export class App {
     app: express.Application
@@ -196,44 +203,61 @@ export class App {
 
                 let nodeToExecuteData: INodeData
 
+                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                    id: chatflowid
+                })
+                if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
+
+                const flowData = chatflow.flowData
+                const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+                const nodes = parsedFlowData.nodes
+                const edges = parsedFlowData.edges
+
+                // Check if node data exists in pool && not out of sync, prevent building whole flow again
                 if (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
-                    this.chatflowPool.activeChatflows[chatflowid].inSync
+                    this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                    !checkIfFlowNeedToRebuild(nodes, this.chatflowPool.activeChatflows[chatflowid].endingNodeData)
                 ) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                 } else {
-                    const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                        id: chatflowid
-                    })
-                    if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
-
-                    const flowData = chatflow.flowData
-                    const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-
                     /*** Get Ending Node with Directed Graph  ***/
-                    const { graph, nodeDependencies } = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges)
+                    const { graph, nodeDependencies } = constructGraphs(nodes, edges)
                     const directedGraph = graph
                     const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
                     if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
 
+                    const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
+                    if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                    if (!Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)) {
+                        return res
+                            .status(500)
+                            .send(
+                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                            )
+                    }
+
                     /*** Get Starting Nodes with Non-Directed Graph ***/
-                    const constructedObj = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges, true)
+                    const constructedObj = constructGraphs(nodes, edges, true)
                     const nonDirectedGraph = constructedObj.graph
                     const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
 
                     /*** BFS to traverse from Starting Nodes to Ending Node ***/
                     const reactFlowNodes = await buildLangchain(
                         startingNodeIds,
-                        parsedFlowData.nodes,
+                        nodes,
                         graph,
                         depthQueue,
-                        this.nodesPool.componentNodes
+                        this.nodesPool.componentNodes,
+                        incomingInput.question
                     )
 
                     const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                     if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
-                    nodeToExecuteData = nodeToExecute.data
+                    const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
+                    nodeToExecuteData = reactFlowNodeData
 
                     this.chatflowPool.add(chatflowid, nodeToExecuteData)
                 }

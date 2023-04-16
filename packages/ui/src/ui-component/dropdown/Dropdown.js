@@ -18,7 +18,7 @@ const StyledPopper = styled(Popper)({
     }
 })
 
-export const Dropdown = ({ name, value, options, onSelect, disabled = false }) => {
+export const Dropdown = ({ name, value, options, onSelect, disabled = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
@@ -29,6 +29,7 @@ export const Dropdown = ({ name, value, options, onSelect, disabled = false }) =
             <Autocomplete
                 id={name}
                 disabled={disabled}
+                disableClearable={disableClearable}
                 size='small'
                 options={options || []}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
@@ -59,5 +60,6 @@ Dropdown.propTypes = {
     value: PropTypes.string,
     options: PropTypes.array,
     onSelect: PropTypes.func,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    disableClearable: PropTypes.bool
 }

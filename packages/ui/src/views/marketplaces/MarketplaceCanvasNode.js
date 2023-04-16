@@ -88,7 +88,7 @@ const MarketplaceCanvasNode = ({ data }) => {
                         </>
                     )}
                     {data.inputAnchors.map((inputAnchor, index) => (
-                        <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
+                        <NodeInputHandler disabled={true} key={index} inputAnchor={inputAnchor} data={data} />
                     ))}
                     {data.inputParams.map((inputParam, index) => (
                         <NodeInputHandler disabled={true} key={index} inputParam={inputParam} data={data} />
@@ -108,7 +108,7 @@ const MarketplaceCanvasNode = ({ data }) => {
                     <Divider />
 
                     {data.outputAnchors.map((outputAnchor, index) => (
-                        <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
+                        <NodeOutputHandler disabled={true} key={index} outputAnchor={outputAnchor} data={data} />
                     ))}
                 </Box>
             </CardWrapper>

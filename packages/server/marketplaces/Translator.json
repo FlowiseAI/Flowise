@@ -1,13 +1,14 @@
 {
     "description": "Language translation using LLM Chain with a Chat Prompt Template and Chat Model",
+
     "nodes": [
         {
             "width": 300,
-            "height": 460,
+            "height": 473,
             "id": "chatPromptTemplate_0",
             "position": {
-                "x": 524,
-                "y": 237
+                "x": 906.3845860429262,
+                "y": 522.7223115041937
             },
             "type": "customNode",
             "data": {
@@ -52,8 +53,8 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 524,
-                "y": 237
+                "x": 906.3845860429262,
+                "y": 522.7223115041937
             }
         },
         {
@@ -61,8 +62,8 @@
             "height": 472,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 855.1997276913991,
-                "y": 24.090553068402556
+                "x": 909.2168811101023,
+                "y": 10.159813502526418
             },
             "type": "customNode",
             "data": {
@@ -133,18 +134,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 855.1997276913991,
-                "y": 24.090553068402556
+                "x": 909.2168811101023,
+                "y": 10.159813502526418
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 461,
+            "height": 592,
             "id": "llmChain_0",
             "position": {
-                "x": 1192.2235692202612,
-                "y": 361.71736677076257
+                "x": 1318.8661313433918,
+                "y": 323.51085023894643
             },
             "type": "customNode",
             "data": {
@@ -157,12 +158,23 @@
                 "description": "Chain to run queries against LLMs",
                 "inputParams": [
                     {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Task Creation Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "type": "string",
                         "rows": 5,
                         "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "llmChain_0-input-promptValues-string"
                     }
                 ],
                 "inputAnchors": [
@@ -182,22 +194,40 @@
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "chainName": "",
                     "promptValues": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "LLMChain | BaseChain"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string"
+                            }
+                        ],
+                        "default": "llmChain"
                     }
                 ],
+                "outputs": {
+                    "output": "llmChain"
+                },
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1192.2235692202612,
-                "y": 361.71736677076257
+                "x": 1318.8661313433918,
+                "y": 323.51085023894643
             },
             "dragging": false
         }
