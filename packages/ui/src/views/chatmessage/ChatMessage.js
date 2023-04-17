@@ -55,7 +55,6 @@ export const ChatMessage = ({ chatflowid }) => {
         }
     ])
 
-    const messagesEndRef = useRef(null)
     const inputRef = useRef(null)
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
