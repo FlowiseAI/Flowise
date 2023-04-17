@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } from 'langchain/prompts'
 
 class ChatPromptTemplate_Prompts implements INode {
     label: string
@@ -18,6 +19,7 @@ class ChatPromptTemplate_Prompts implements INode {
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
         this.description = 'Schema to represent a chat prompt'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatPromptTemplate)]
         this.inputs = [
             {
                 label: 'System Message',
@@ -36,13 +38,7 @@ class ChatPromptTemplate_Prompts implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { ChatPromptTemplate } = await import('langchain/prompts')
-        return getBaseClasses(ChatPromptTemplate)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } = await import('langchain/prompts')
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const humanMessagePrompt = nodeData.inputs?.humanMessagePrompt as string
 

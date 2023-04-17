@@ -336,13 +336,13 @@ export const ChatMessage = ({ chatflowid }) => {
                                     </div>
                                     <Divider />
                                     <div className='center'>
-                                        <div className='cloudform'>
-                                            <form onSubmit={handleSubmit}>
+                                        <div style={{ width: '100%' }}>
+                                            <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                                                 <OutlinedInput
                                                     inputRef={inputRef}
                                                     // eslint-disable-next-line
                                                     autoFocus
-                                                    sx={{ width: '50vh' }}
+                                                    sx={{ width: '100%' }}
                                                     disabled={loading || !chatflowid}
                                                     onKeyDown={handleEnter}
                                                     id='userInput'

@@ -3,74 +3,11 @@
     "nodes": [
         {
             "width": 300,
-            "height": 460,
-            "id": "llmChain_0",
-            "position": {
-                "x": 1515.563392772433,
-                "y": 334.61150897841924
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["BaseChain"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Format Prompt Values",
-                        "name": "promptValues",
-                        "type": "string",
-                        "rows": 5,
-                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-llm-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "llm": "{{openAI_0.data.instance}}",
-                    "prompt": "{{promptTemplate_0.data.instance}}",
-                    "promptValues": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "llmChain_0-output-llmChain-BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "BaseChain"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1515.563392772433,
-                "y": 334.61150897841924
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 471,
+            "height": 472,
             "id": "openAI_0",
             "position": {
-                "x": 954.7026430819806,
-                "y": 6.975032607064918
+                "x": 968.1753795547951,
+                "y": -8.62176310944858
             },
             "type": "customNode",
             "data": {
@@ -78,7 +15,7 @@
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
@@ -127,28 +64,28 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "BaseLLM | BaseLanguageModel"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 954.7026430819806,
-                "y": 6.975032607064918
+                "x": 968.1753795547951,
+                "y": -8.62176310944858
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 359,
+            "height": 360,
             "id": "promptTemplate_0",
             "position": {
-                "x": 954.1542757936061,
-                "y": 515.2247261712328
+                "x": 970.576876549135,
+                "y": 502.493937944275
             },
             "type": "customNode",
             "data": {
@@ -156,7 +93,7 @@
                 "label": "Prompt Template",
                 "name": "promptTemplate",
                 "type": "PromptTemplate",
-                "baseClasses": ["BaseStringPromptTemplate", "BasePromptTemplate"],
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
                 "description": "Schema to represent a basic prompt for an LLM",
                 "inputParams": [
@@ -174,41 +111,104 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
                         "name": "promptTemplate",
                         "label": "PromptTemplate",
-                        "type": "BaseStringPromptTemplate | BasePromptTemplate"
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 954.1542757936061,
-                "y": 515.2247261712328
+                "x": 970.576876549135,
+                "y": 502.493937944275
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 461,
+            "id": "llmChain_0",
+            "position": {
+                "x": 1414.1175742139496,
+                "y": 340.4040954840462
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 5,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                        "name": "llmChain",
+                        "label": "LLMChain",
+                        "type": "LLMChain | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1414.1175742139496,
+                "y": 340.4040954840462
             },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
             "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-llm-BaseLanguageModel",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-llm-BaseLanguageModel",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "promptTemplate_0",
-            "sourceHandle": "promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate",
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
             "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }

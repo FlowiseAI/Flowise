@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",

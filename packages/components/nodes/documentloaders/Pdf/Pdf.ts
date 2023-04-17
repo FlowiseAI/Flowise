@@ -1,4 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { TextSplitter } from 'langchain/text_splitter'
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
 
 class Pdf_DocumentLoaders implements INode {
     label: string
@@ -13,10 +15,11 @@ class Pdf_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Pdf File'
         this.name = 'pdfFile'
-        this.type = 'PDF'
+        this.type = 'Document'
         this.icon = 'pdf.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from PDF files`
+        this.baseClasses = [this.type]
         this.inputs = [
             {
                 label: 'Pdf File',
@@ -49,14 +52,8 @@ class Pdf_DocumentLoaders implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['Document']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { PDFLoader } = await import('langchain/document_loaders')
-
-        const textSplitter = nodeData.inputs?.textSplitter
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const pdfFileBase64 = nodeData.inputs?.pdfFile as string
         const usage = nodeData.inputs?.usage as string
 
@@ -66,7 +63,8 @@ class Pdf_DocumentLoaders implements INode {
         const blob = new Blob([bf])
 
         if (usage === 'perFile') {
-            const loader = new PDFLoader(blob, { splitPages: false })
+            // @ts-ignore
+            const loader = new PDFLoader(blob, { splitPages: false, pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
             if (textSplitter) {
                 const docs = await loader.loadAndSplit(textSplitter)
                 return docs
@@ -75,7 +73,8 @@ class Pdf_DocumentLoaders implements INode {
                 return docs
             }
         } else {
-            const loader = new PDFLoader(blob)
+            // @ts-ignore
+            const loader = new PDFLoader(blob, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
             if (textSplitter) {
                 const docs = await loader.loadAndSplit(textSplitter)
                 return docs

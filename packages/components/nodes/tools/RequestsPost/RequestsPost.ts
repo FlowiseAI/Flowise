@@ -1,7 +1,8 @@
 import { INode } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { RequestsPostTool } from 'langchain/tools'
 
-class RequestsPost implements INode {
+class RequestsPost_Tools implements INode {
     label: string
     name: string
     description: string
@@ -17,17 +18,12 @@ class RequestsPost implements INode {
         this.icon = 'requestspost.svg'
         this.category = 'Tools'
         this.description = 'Execute HTTP POST requests'
-    }
-
-    async getBaseClasses(): Promise<string[]> {
-        const { RequestsPostTool } = await import('langchain/tools')
-        return getBaseClasses(RequestsPostTool)
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsPostTool)]
     }
 
     async init(): Promise<any> {
-        const { RequestsPostTool } = await import('langchain/tools')
         return new RequestsPostTool()
     }
 }
 
-module.exports = { nodeClass: RequestsPost }
+module.exports = { nodeClass: RequestsPost_Tools }

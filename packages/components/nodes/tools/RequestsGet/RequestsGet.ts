@@ -1,7 +1,8 @@
 import { INode } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { RequestsGetTool } from 'langchain/tools'
 
-class RequestsGet implements INode {
+class RequestsGet_Tools implements INode {
     label: string
     name: string
     description: string
@@ -17,17 +18,12 @@ class RequestsGet implements INode {
         this.icon = 'requestsget.svg'
         this.category = 'Tools'
         this.description = 'Execute HTTP GET requests'
-    }
-
-    async getBaseClasses(): Promise<string[]> {
-        const { RequestsGetTool } = await import('langchain/tools')
-        return getBaseClasses(RequestsGetTool)
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsGetTool)]
     }
 
     async init(): Promise<any> {
-        const { RequestsGetTool } = await import('langchain/tools')
         return new RequestsGetTool()
     }
 }
 
-module.exports = { nodeClass: RequestsGet }
+module.exports = { nodeClass: RequestsGet_Tools }

@@ -1,7 +1,8 @@
 import { INode } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { Calculator } from 'langchain/tools/calculator'
 
-class Calculator implements INode {
+class Calculator_Tools implements INode {
     label: string
     name: string
     description: string
@@ -17,17 +18,12 @@ class Calculator implements INode {
         this.icon = 'calculator.svg'
         this.category = 'Tools'
         this.description = 'Perform calculations on response'
-    }
-
-    async getBaseClasses(): Promise<string[]> {
-        const { Calculator } = await import('langchain/tools')
-        return getBaseClasses(Calculator)
+        this.baseClasses = [this.type, ...getBaseClasses(Calculator)]
     }
 
     async init(): Promise<any> {
-        const { Calculator } = await import('langchain/tools')
         return new Calculator()
     }
 }
 
-module.exports = { nodeClass: Calculator }
+module.exports = { nodeClass: Calculator_Tools }
