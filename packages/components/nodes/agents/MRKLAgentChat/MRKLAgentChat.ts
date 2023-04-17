@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutor, AgentExecutor } from 'langchain/agents'
-import { Tool } from 'langchain/tools'
+import { AIPluginTool } from 'langchain/tools'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { getBaseClasses } from '../../../src/utils'
 
@@ -39,9 +39,20 @@ class MRKLAgentChat_Agents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseChatModel
-        const tools = nodeData.inputs?.tools as Tool[]
+        const tools = nodeData.inputs?.tools
 
-        const executor = await initializeAgentExecutor(tools, model, 'chat-zero-shot-react-description', true)
+        const allowedTools = []
+        for (let i = 0; i < tools.length; i += 1) {
+            if (tools[i].pluginUrl) {
+                const pluginURL: string = tools[i].pluginUrl
+                const aiplugin = await AIPluginTool.fromPluginUrl(pluginURL)
+                allowedTools.push(aiplugin)
+            } else {
+                allowedTools.push(tools[i])
+            }
+        }
+
+        const executor = await initializeAgentExecutor(allowedTools, model, 'chat-zero-shot-react-description', true)
         return executor
     }
 

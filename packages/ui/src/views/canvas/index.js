@@ -38,7 +38,7 @@ import useConfirm from 'hooks/useConfirm'
 import { IconX } from '@tabler/icons'
 
 // utils
-import { getUniqueNodeId, initNode, getEdgeLabelName } from 'utils/genericHelper'
+import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 
 const nodeTypes = { customNode: CanvasNode }
@@ -110,7 +110,11 @@ const Canvas = () => {
                     const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
                     if (inputAnchor && inputAnchor.list) {
                         const newValues = node.data.inputs[targetInput] || []
-                        newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                        if (targetInput === 'tools') {
+                            rearrangeToolsOrdering(newValues, sourceNodeId)
+                        } else {
+                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                        }
                         value = newValues
                     } else {
                         value = `{{${sourceNodeId}.data.instance}}`

@@ -1,4 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { AIPluginTool } from 'langchain/tools'
+import { getBaseClasses } from '../../../src/utils'
 
 class AIPlugin implements INode {
     label: string
@@ -17,6 +19,7 @@ class AIPlugin implements INode {
         this.icon = 'aiplugin.svg'
         this.category = 'Tools'
         this.description = 'Execute actions using ChatGPT Plugin Url'
+        this.baseClasses = [this.type, ...getBaseClasses(AIPluginTool)]
         this.inputs = [
             {
                 label: 'Plugin Url',
@@ -27,15 +30,13 @@ class AIPlugin implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['Tool']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { AIPluginTool } = await import('langchain/tools')
         const pluginUrl = nodeData.inputs?.pluginUrl as string
-
-        const aiplugin = await AIPluginTool.fromPluginUrl(pluginUrl)
+        // Doesn't work currently
+        // const aiplugin = await AIPluginTool.fromPluginUrl(pluginUrl)
+        const aiplugin = {
+            pluginUrl: pluginUrl
+        }
         return aiplugin
     }
 }
