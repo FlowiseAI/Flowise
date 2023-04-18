@@ -1,0 +1,163 @@
+{
+    "description": "Answer questions over a SQL database",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 424,
+            "id": "sqlDatabaseChain_0",
+            "position": {
+                "x": 1271.2742585099204,
+                "y": 232.91561199714107
+            },
+            "type": "customNode",
+            "data": {
+                "id": "sqlDatabaseChain_0",
+                "label": "Sql Database Chain",
+                "name": "sqlDatabaseChain",
+                "type": "SqlDatabaseChain",
+                "baseClasses": ["SqlDatabaseChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Answer questions over a SQL database",
+                "inputParams": [
+                    {
+                        "label": "Database",
+                        "name": "database",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "SQlite",
+                                "name": "sqlite"
+                            }
+                        ],
+                        "default": "sqlite"
+                    },
+                    {
+                        "label": "Database File Path",
+                        "name": "dbFilePath",
+                        "type": "string",
+                        "placeholder": "C:/Users/chinook.db"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "LLM",
+                        "name": "llm",
+                        "type": "BaseLLM",
+                        "id": "sqlDatabaseChain_0-input-llm-BaseLLM"
+                    }
+                ],
+                "inputs": {
+                    "llm": "{{openAI_0.data.instance}}",
+                    "database": "sqlite",
+                    "dbFilePath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "sqlDatabaseChain_0-output-sqlDatabaseChain-SqlDatabaseChain|BaseChain",
+                        "name": "sqlDatabaseChain",
+                        "label": "SqlDatabaseChain",
+                        "type": "SqlDatabaseChain | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1271.2742585099204,
+                "y": 232.91561199714107
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 472,
+            "id": "openAI_0",
+            "position": {
+                "x": 867.8574087065126,
+                "y": 209.58625096303308
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_0",
+                "label": "OpenAI",
+                "name": "openAI",
+                "type": "OpenAI",
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": "0"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 867.8574087065126,
+                "y": 209.58625096303308
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+            "target": "sqlDatabaseChain_0",
+            "targetHandle": "sqlDatabaseChain_0-input-llm-BaseLLM",
+            "type": "buttonedge",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-sqlDatabaseChain_0-sqlDatabaseChain_0-input-llm-BaseLLM",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}
