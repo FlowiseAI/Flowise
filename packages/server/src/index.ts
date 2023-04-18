@@ -230,7 +230,7 @@ export class App {
                     const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
                     if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
 
-                    if (!Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)) {
+                    if (endingNodeData.outputs && !Object.values(endingNodeData.outputs).includes(endingNodeData.name)) {
                         return res
                             .status(500)
                             .send(
