@@ -6,8 +6,8 @@
             "height": 472,
             "id": "openAI_0",
             "position": {
-                "x": 968.1753795547951,
-                "y": -8.62176310944858
+                "x": 618,
+                "y": 97
             },
             "type": "customNode",
             "data": {
@@ -22,7 +22,8 @@
                     {
                         "label": "OpenAI Api Key",
                         "name": "openAIApiKey",
-                        "type": "password"
+                        "type": "password",
+                        "id": "openAI_0-input-openAIApiKey-password"
                     },
                     {
                         "label": "Model Name",
@@ -47,14 +48,16 @@
                             }
                         ],
                         "default": "text-davinci-003",
-                        "optional": true
+                        "optional": true,
+                        "id": "openAI_0-input-modelName-options"
                     },
                     {
                         "label": "Temperature",
                         "name": "temperature",
                         "type": "number",
                         "default": 0.7,
-                        "optional": true
+                        "optional": true,
+                        "id": "openAI_0-input-temperature-number"
                     }
                 ],
                 "inputAnchors": [],
@@ -70,69 +73,23 @@
                         "type": "OpenAI | BaseLLM | BaseLanguageModel"
                     }
                 ],
+                "outputs": {},
                 "selected": false
             },
             "selected": false,
+            "dragging": false,
             "positionAbsolute": {
-                "x": 968.1753795547951,
-                "y": -8.62176310944858
-            },
-            "dragging": false
+                "x": 618,
+                "y": 97
+            }
         },
         {
             "width": 300,
-            "height": 366,
-            "id": "promptTemplate_0",
-            "position": {
-                "x": 970.576876549135,
-                "y": 502.493937944275
-            },
-            "type": "customNode",
-            "data": {
-                "id": "promptTemplate_0",
-                "label": "Prompt Template",
-                "name": "promptTemplate",
-                "type": "PromptTemplate",
-                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
-                "category": "Prompts",
-                "description": "Schema to represent a basic prompt for an LLM",
-                "inputParams": [
-                    {
-                        "label": "Template",
-                        "name": "template",
-                        "type": "string",
-                        "rows": 5,
-                        "placeholder": "What is a good name for a company that makes {product}?"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "template": "What is a good name for a company that makes {product}?"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
-                        "name": "promptTemplate",
-                        "label": "PromptTemplate",
-                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 970.576876549135,
-                "y": 502.493937944275
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 592,
+            "height": 405,
             "id": "llmChain_0",
             "position": {
-                "x": 1386.5063477084716,
-                "y": 211.47670100294192
+                "x": 998.3768292410252,
+                "y": 426.849642225371
             },
             "type": "customNode",
             "data": {
@@ -148,20 +105,9 @@
                         "label": "Chain Name",
                         "name": "chainName",
                         "type": "string",
-                        "placeholder": "Task Creation Chain",
+                        "placeholder": "Name Your Chain",
                         "optional": true,
                         "id": "llmChain_0-input-chainName-string"
-                    },
-                    {
-                        "label": "Format Prompt Values",
-                        "name": "promptValues",
-                        "type": "string",
-                        "rows": 5,
-                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "list": true,
-                        "id": "llmChain_0-input-promptValues-string"
                     }
                 ],
                 "inputAnchors": [
@@ -181,8 +127,7 @@
                 "inputs": {
                     "model": "{{openAI_0.data.instance}}",
                     "prompt": "{{promptTemplate_0.data.instance}}",
-                    "chainName": "CompanyName Chain",
-                    "promptValues": ""
+                    "chainName": ""
                 },
                 "outputAnchors": [
                     {
@@ -213,8 +158,69 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1386.5063477084716,
-                "y": 211.47670100294192
+                "x": 998.3768292410252,
+                "y": 426.849642225371
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 533,
+            "id": "promptTemplate_0",
+            "position": {
+                "x": 618.658978699234,
+                "y": 589.2586352262571
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_0",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "What is a good name for a company that makes {product}?",
+                        "id": "promptTemplate_0-input-template-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "promptTemplate_0-input-promptValues-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "What is a good name for a company that makes {product}?",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 618.658978699234,
+                "y": 589.2586352262571
             },
             "dragging": false
         }

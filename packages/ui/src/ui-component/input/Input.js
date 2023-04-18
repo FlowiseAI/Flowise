@@ -36,6 +36,11 @@ export const Input = ({ inputParam, value, onChange, disabled = false, showDialo
                         setMyValue(e.target.value)
                         onChange(e.target.value)
                     }}
+                    inputProps={{
+                        style: {
+                            height: inputParam.rows ? '90px' : 'inherit'
+                        }
+                    }}
                 />
             </FormControl>
             <EditPromptValuesDialog

@@ -88,3 +88,17 @@ export interface IMessage {
     message: string
     type: MessageType
 }
+
+/**
+ * Classes
+ */
+
+import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
+
+export class PromptTemplate extends LangchainPromptTemplate {
+    promptValues: ICommonObject
+
+    constructor(input: PromptTemplateInput) {
+        super(input)
+    }
+}

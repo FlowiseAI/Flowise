@@ -1,8 +1,7 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
-import { BasePromptTemplate } from 'langchain/prompts'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -38,21 +37,8 @@ class LLMChain_Chains implements INode {
                 label: 'Chain Name',
                 name: 'chainName',
                 type: 'string',
-                placeholder: 'Task Creation Chain',
+                placeholder: 'Name Your Chain',
                 optional: true
-            },
-            {
-                label: 'Format Prompt Values',
-                name: 'promptValues',
-                type: 'string',
-                rows: 5,
-                placeholder: `{
-  "input_language": "English",
-  "output_language": "French"
-}`,
-                optional: true,
-                acceptVariable: true,
-                list: true
             }
         ]
         this.outputs = [
@@ -71,9 +57,9 @@ class LLMChain_Chains implements INode {
 
     async init(nodeData: INodeData, input: string): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const prompt = nodeData.inputs?.prompt as BasePromptTemplate
+        const prompt = nodeData.inputs?.prompt
         const output = nodeData.outputs?.output as string
-        const promptValuesStr = nodeData.inputs?.promptValues as string
+        const promptValues = prompt.promptValues as ICommonObject
 
         if (output === this.name) {
             const chain = new LLMChain({ llm: model, prompt })
@@ -81,7 +67,7 @@ class LLMChain_Chains implements INode {
         } else if (output === 'outputPrediction') {
             const chain = new LLMChain({ llm: model, prompt })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
-            const res = await runPrediction(inputVariables, chain, input, promptValuesStr)
+            const res = await runPrediction(inputVariables, chain, input, promptValues)
             // eslint-disable-next-line no-console
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
@@ -93,8 +79,9 @@ class LLMChain_Chains implements INode {
     async run(nodeData: INodeData, input: string): Promise<string> {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
-        const promptValuesStr = nodeData.inputs?.promptValues as string
-        const res = await runPrediction(inputVariables, chain, input, promptValuesStr)
+        const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
+
+        const res = await runPrediction(inputVariables, chain, input, promptValues)
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
@@ -103,14 +90,11 @@ class LLMChain_Chains implements INode {
     }
 }
 
-const runPrediction = async (inputVariables: string[], chain: LLMChain, input: string, promptValuesStr: string) => {
+const runPrediction = async (inputVariables: string[], chain: LLMChain, input: string, promptValues: ICommonObject) => {
     if (inputVariables.length === 1) {
         const res = await chain.run(input)
         return res
     } else if (inputVariables.length > 1) {
-        if (!promptValuesStr) throw new Error('Please provide Prompt Values')
-        const promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
-
         let seen: string[] = []
 
         for (const variable of inputVariables) {

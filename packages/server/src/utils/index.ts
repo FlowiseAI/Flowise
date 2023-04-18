@@ -13,7 +13,7 @@ import {
     INodeData
 } from '../Interface'
 import { cloneDeep, get } from 'lodash'
-import { ICommonObject } from 'flowise-components'
+import { ICommonObject, getInputVariables } from 'flowise-components'
 
 const QUESTION_VAR_PREFIX = 'question'
 
@@ -351,19 +351,16 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
  * Rebuild flow if LLMChain has dependency on other chains
  * User Question => Prompt_0 => LLMChain_0 => Prompt-1 => LLMChain_1
  * @param {IReactFlowNode[]} nodes
- * @param {INodeData} nodeData
+ * @param {string[]} startingNodeIds
  * @returns {boolean}
  */
-export const checkIfFlowNeedToRebuild = (nodes: IReactFlowNode[], nodeData: INodeData) => {
-    if (nodeData.name !== 'llmChain') return false
-
-    const node = nodes.find((nd) => nd.id === nodeData.id)
-    if (!node) throw new Error(`Node ${nodeData.id} not found`)
-
-    const inputs = node.data.inputs
-    for (const key in inputs) {
-        const isInputAcceptVariable = node.data.inputParams.find((param) => param.name === key)?.acceptVariable || false
-        if (isInputAcceptVariable && inputs[key].includes('{{') && inputs[key].includes('}}')) return true
+export const checkStartNodeDependOnInput = (nodes: IReactFlowNode[], startingNodeIds: string[]) => {
+    const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id) && nd.id.toLowerCase().includes('prompttemplate'))
+    for (const node of startingNodes) {
+        for (const inputName in node.data.inputs) {
+            const inputVariables = getInputVariables(node.data.inputs[inputName])
+            if (inputVariables.length > 0) return true
+        }
     }
     return false
 }

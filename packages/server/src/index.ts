@@ -12,7 +12,7 @@ import {
     getEndingNode,
     constructGraphs,
     resolveVariables,
-    checkIfFlowNeedToRebuild
+    checkStartNodeDependOnInput
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -203,6 +203,7 @@ export class App {
 
                 let nodeToExecuteData: INodeData
 
+                /*** Get chatflows and prepare data  ***/
                 const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                     id: chatflowid
                 })
@@ -213,36 +214,40 @@ export class App {
                 const nodes = parsedFlowData.nodes
                 const edges = parsedFlowData.edges
 
-                // Check if node data exists in pool && not out of sync, prevent building whole flow again
+                /*** Get Ending Node with Directed Graph  ***/
+                const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+                const directedGraph = graph
+                const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
+                if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
+                if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                if (endingNodeData.outputs && !Object.values(endingNodeData.outputs).includes(endingNodeData.name)) {
+                    return res
+                        .status(500)
+                        .send(
+                            `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                        )
+                }
+
+                /*** Get Starting Nodes with Non-Directed Graph ***/
+                const constructedObj = constructGraphs(nodes, edges, true)
+                const nonDirectedGraph = constructedObj.graph
+                const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+
+                /* Check if:
+                 * - Node Data already exists in pool
+                 * - Still in sync (i.e the flow has not been modified since)
+                 * - Flow doesn't start with nodes that depend on incomingInput.question
+                 ***/
                 if (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
-                    !checkIfFlowNeedToRebuild(nodes, this.chatflowPool.activeChatflows[chatflowid].endingNodeData)
+                    !checkStartNodeDependOnInput(nodes, startingNodeIds)
                 ) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                 } else {
-                    /*** Get Ending Node with Directed Graph  ***/
-                    const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-                    const directedGraph = graph
-                    const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
-                    if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
-
-                    const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-                    if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
-
-                    if (endingNodeData.outputs && !Object.values(endingNodeData.outputs).includes(endingNodeData.name)) {
-                        return res
-                            .status(500)
-                            .send(
-                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                            )
-                    }
-
-                    /*** Get Starting Nodes with Non-Directed Graph ***/
-                    const constructedObj = constructGraphs(nodes, edges, true)
-                    const nonDirectedGraph = constructedObj.graph
-                    const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
-
                     /*** BFS to traverse from Starting Nodes to Ending Node ***/
                     const reactFlowNodes = await buildLangchain(
                         startingNodeIds,
