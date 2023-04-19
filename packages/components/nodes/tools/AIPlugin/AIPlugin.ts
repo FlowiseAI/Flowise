@@ -32,11 +32,8 @@ class AIPlugin implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const pluginUrl = nodeData.inputs?.pluginUrl as string
-        // Doesn't work currently
-        // const aiplugin = await AIPluginTool.fromPluginUrl(pluginUrl)
-        const aiplugin = {
-            pluginUrl: pluginUrl
-        }
+        const aiplugin = await AIPluginTool.fromPluginUrl(pluginUrl)
+
         return aiplugin
     }
 }
