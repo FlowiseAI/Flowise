@@ -61,12 +61,13 @@ export const initNode = (nodeData, newNodeId) => {
                 let baseClasses = ''
                 let type = ''
 
-                if (whitelistTypes.includes(nodeData.outputs[j].type)) {
-                    baseClasses = nodeData.outputs[j].type
-                    type = nodeData.outputs[j].type
-                } else {
-                    baseClasses = nodeData.baseClasses.join('|')
-                    type = nodeData.baseClasses.join(' | ')
+                const outputBaseClasses = nodeData.outputs[j].baseClasses ?? []
+                if (outputBaseClasses.length > 1) {
+                    baseClasses = outputBaseClasses.join('|')
+                    type = outputBaseClasses.join(' | ')
+                } else if (outputBaseClasses.length === 1) {
+                    baseClasses = outputBaseClasses[0]
+                    type = outputBaseClasses[0]
                 }
 
                 const newOutputOption = {

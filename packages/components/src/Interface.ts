@@ -32,7 +32,7 @@ export interface INodeOptionsValue {
 export interface INodeOutputsValue {
     label: string
     name: string
-    type: string
+    baseClasses: string[]
     description?: string
 }
 

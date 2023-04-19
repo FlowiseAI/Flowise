@@ -43,14 +43,14 @@ class LLMChain_Chains implements INode {
         ]
         this.outputs = [
             {
-                label: this.label,
-                name: this.name,
-                type: this.type
+                label: 'LLM Chain',
+                name: 'llmChain',
+                baseClasses: [this.type, ...getBaseClasses(LLMChain)]
             },
             {
                 label: 'Output Prediction',
                 name: 'outputPrediction',
-                type: 'string'
+                baseClasses: ['string']
             }
         ]
     }
