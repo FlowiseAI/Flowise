@@ -249,8 +249,6 @@ export class BabyAGI {
             if (this.maxIterations !== null && numIters === this.maxIterations) {
                 // eslint-disable-next-line no-console
                 console.log('\x1b[91m\x1b[1m\n*****TASK ENDING*****\n\x1b[0m\x1b[0m')
-                // eslint-disable-next-line no-console
-                console.log(this.maxIterations)
                 loop = false
                 this.taskList = []
             }
