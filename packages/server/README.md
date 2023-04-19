@@ -38,7 +38,7 @@ Feel free to ask any questions, raise problems, and request new features in [dis
 
 ## 🙌 Contributing
 
-See [contributing guide](https://github.com/FlowiseAI/Flowise/blob/master/CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/GWcGczPk) if you have any questions or issues.
+See [contributing guide](https://github.com/FlowiseAI/Flowise/blob/master/CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/7C5xTWP8) if you have any questions or issues.
 
 ## 📄 License
 

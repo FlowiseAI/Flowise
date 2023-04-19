@@ -39,6 +39,7 @@ export const ChatMessage = ({ chatflowid }) => {
     const customization = useSelector((state) => state.customization)
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
+    const ps = useRef()
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -54,7 +55,6 @@ export const ChatMessage = ({ chatflowid }) => {
         }
     ])
 
-    const messagesEndRef = useRef(null)
     const inputRef = useRef(null)
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -115,7 +115,9 @@ export const ChatMessage = ({ chatflowid }) => {
     }
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (ps.current) {
+            ps.current.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: 'smooth' })
+        }
     }
 
     const addChatMessage = async (message, type) => {
@@ -286,7 +288,7 @@ export const ChatMessage = ({ chatflowid }) => {
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                                     <div className='cloud'>
-                                        <div className='messagelist'>
+                                        <div ref={ps} className='messagelist'>
                                             {messages.map((message, index) => {
                                                 return (
                                                     // The latest message sent by the user will be animated while waiting for a response
@@ -331,7 +333,6 @@ export const ChatMessage = ({ chatflowid }) => {
                                                     </Box>
                                                 )
                                             })}
-                                            <div ref={messagesEndRef} />
                                         </div>
                                     </div>
                                     <Divider />

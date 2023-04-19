@@ -1,6 +1,10 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { initializeAgentExecutor, AgentExecutor } from 'langchain/agents'
+import { Tool } from 'langchain/tools'
+import { BaseChatModel } from 'langchain/chat_models/base'
+import { getBaseClasses } from '../../../src/utils'
 
-class MRLKAgentChat_Agents implements INode {
+class MRKLAgentChat_Agents implements INode {
     label: string
     name: string
     description: string
@@ -11,12 +15,13 @@ class MRLKAgentChat_Agents implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'MRLK Agent for Chat Models'
-        this.name = 'mrlkAgentChat'
+        this.label = 'MRKL Agent for Chat Models'
+        this.name = 'mrklAgentChat'
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
         this.description = 'Agent that uses the ReAct Framework to decide what action to take, optimized to be used with Chat Models'
+        this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {
                 label: 'Allowed Tools',
@@ -32,27 +37,20 @@ class MRLKAgentChat_Agents implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['AgentExecutor']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { initializeAgentExecutor } = await import('langchain/agents')
-
-        const model = nodeData.inputs?.model
-        const tools = nodeData.inputs?.tools
+        const model = nodeData.inputs?.model as BaseChatModel
+        const tools = nodeData.inputs?.tools as Tool[]
 
         const executor = await initializeAgentExecutor(tools, model, 'chat-zero-shot-react-description', true)
-
         return executor
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
-        const executor = nodeData.instance
+        const executor = nodeData.instance as AgentExecutor
         const result = await executor.call({ input })
 
         return result?.output
     }
 }
 
-module.exports = { nodeClass: MRLKAgentChat_Agents }
+module.exports = { nodeClass: MRKLAgentChat_Agents }

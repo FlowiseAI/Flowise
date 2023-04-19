@@ -1,7 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { SerpAPI } from 'langchain/tools'
 
-class SerpAPI implements INode {
+class SerpAPI_Tools implements INode {
     label: string
     name: string
     description: string
@@ -25,18 +26,13 @@ class SerpAPI implements INode {
                 type: 'password'
             }
         ]
-    }
-
-    async getBaseClasses(): Promise<string[]> {
-        const { SerpAPI } = await import('langchain/tools')
-        return getBaseClasses(SerpAPI)
+        this.baseClasses = [this.type, ...getBaseClasses(SerpAPI)]
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const { SerpAPI } = await import('langchain/tools')
         const apiKey = nodeData.inputs?.apiKey as string
         return new SerpAPI(apiKey)
     }
 }
 
-module.exports = { nodeClass: SerpAPI }
+module.exports = { nodeClass: SerpAPI_Tools }

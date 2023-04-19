@@ -1,5 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { ChatOpenAI } from 'langchain/chat_models/openai'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -18,6 +19,7 @@ class ChatOpenAI_ChatModels implements INode {
         this.icon = 'openai.png'
         this.category = 'Chat Models'
         this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.inputs = [
             {
                 label: 'OpenAI Api Key',
@@ -63,14 +65,7 @@ class ChatOpenAI_ChatModels implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        const { ChatOpenAI } = await import('langchain/chat_models')
-        return getBaseClasses(ChatOpenAI)
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { ChatOpenAI } = await import('langchain/chat_models')
-
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const openAIApiKey = nodeData.inputs?.openAIApiKey as string

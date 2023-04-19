@@ -23,9 +23,6 @@ export class NodesPool {
                         const newNodeInstance = new nodeModule.nodeClass()
                         newNodeInstance.filePath = file
 
-                        const baseClasses = await newNodeInstance.getBaseClasses!.call(newNodeInstance)
-                        newNodeInstance.baseClasses = baseClasses
-
                         this.componentNodes[newNodeInstance.name] = newNodeInstance
 
                         // Replace file icon with absolute path

@@ -3,102 +3,11 @@
     "nodes": [
         {
             "width": 300,
-            "height": 279,
-            "id": "mrlkAgentLLM_0",
-            "position": {
-                "x": 1520.156054894558,
-                "y": 466.34196346475386
-            },
-            "type": "customNode",
-            "data": {
-                "id": "mrlkAgentLLM_0",
-                "label": "MRLK Agent for LLMs",
-                "name": "mrlkAgentLLM",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor"],
-                "category": "Agents",
-                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "mrlkAgentLLM_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "LLM Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "mrlkAgentLLM_0-input-model-BaseLanguageModel"
-                    }
-                ],
-                "inputs": {
-                    "tools": ["{{calculator_0.data.instance}}", "{{serpAPI_0.data.instance}}"],
-                    "model": "{{openAI_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "mrlkAgentLLM_0-output-mrlkAgentLLM-AgentExecutor",
-                        "name": "mrlkAgentLLM",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1520.156054894558,
-                "y": 466.34196346475386
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 142,
-            "id": "calculator_0",
-            "position": {
-                "x": 1141.0497522733922,
-                "y": 172.32224599434292
-            },
-            "type": "customNode",
-            "data": {
-                "id": "calculator_0",
-                "label": "Calculator",
-                "name": "calculator",
-                "type": "Calculator",
-                "baseClasses": ["Tool"],
-                "category": "Tools",
-                "description": "Perform calculations on response",
-                "inputParams": [],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "calculator_0-output-calculator-Tool",
-                        "name": "calculator",
-                        "label": "Calculator",
-                        "type": "Tool"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1141.0497522733922,
-                "y": 172.32224599434292
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 277,
+            "height": 278,
             "id": "serpAPI_0",
             "position": {
-                "x": 797.0350733284566,
-                "y": 199.36655049779267
+                "x": 571.585786437627,
+                "y": 127.14213562373095
             },
             "type": "customNode",
             "data": {
@@ -106,7 +15,7 @@
                 "label": "Serp API",
                 "name": "serpAPI",
                 "type": "SerpAPI",
-                "baseClasses": ["Tool"],
+                "baseClasses": ["SerpAPI", "Tool"],
                 "category": "Tools",
                 "description": "Wrapper around SerpAPI - a real-time API to access Google search results",
                 "inputParams": [
@@ -120,28 +29,119 @@
                 "inputs": {},
                 "outputAnchors": [
                     {
-                        "id": "serpAPI_0-output-serpAPI-Tool",
+                        "id": "serpAPI_0-output-serpAPI-SerpAPI|Tool",
                         "name": "serpAPI",
                         "label": "SerpAPI",
-                        "type": "Tool"
+                        "type": "SerpAPI | Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 571.585786437627,
+                "y": 127.14213562373095
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 143,
+            "id": "calculator_0",
+            "position": {
+                "x": 904.7519886598635,
+                "y": 135.4705627484772
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_0",
+                "label": "Calculator",
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_0-output-calculator-Calculator|Tool",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Calculator | Tool"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 797.0350733284566,
-                "y": 199.36655049779267
+                "x": 904.7519886598635,
+                "y": 135.4705627484772
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 471,
+            "height": 280,
+            "id": "mrklAgentLLM_0",
+            "position": {
+                "x": 1251.3621617151298,
+                "y": 323.8137084989848
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_0",
+                "label": "MRKL Agent for LLMs",
+                "name": "mrklAgentLLM",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "LLM Model",
+                        "name": "model",
+                        "type": "BaseLLM",
+                        "id": "mrklAgentLLM_0-input-model-BaseLLM"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{calculator_0.data.instance}}", "{{serpAPI_0.data.instance}}"],
+                    "model": "{{openAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain",
+                        "name": "mrklAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1251.3621617151298,
+                "y": 323.8137084989848
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 472,
             "id": "openAI_0",
             "position": {
-                "x": 917.6484006031452,
-                "y": 522.1507882519595
+                "x": 708.9235615351174,
+                "y": 438.84314575050763
             },
             "type": "customNode",
             "data": {
@@ -149,7 +149,7 @@
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
@@ -198,52 +198,52 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "BaseLLM | BaseLanguageModel"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 917.6484006031452,
-                "y": 522.1507882519595
+                "x": 708.9235615351174,
+                "y": 438.84314575050763
             },
+            "selected": false,
             "dragging": false
         }
     ],
     "edges": [
         {
             "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-BaseLLM|BaseLanguageModel",
-            "target": "mrlkAgentLLM_0",
-            "targetHandle": "mrlkAgentLLM_0-input-model-BaseLanguageModel",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLLM",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-BaseLLM|BaseLanguageModel-mrlkAgentLLM_0-mrlkAgentLLM_0-input-model-BaseLanguageModel",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLLM",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "calculator_0",
-            "sourceHandle": "calculator_0-output-calculator-Tool",
-            "target": "mrlkAgentLLM_0",
-            "targetHandle": "mrlkAgentLLM_0-input-tools-Tool",
+            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_0-calculator_0-output-calculator-Tool-mrlkAgentLLM_0-mrlkAgentLLM_0-input-tools-Tool",
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "serpAPI_0",
-            "sourceHandle": "serpAPI_0-output-serpAPI-Tool",
-            "target": "mrlkAgentLLM_0",
-            "targetHandle": "mrlkAgentLLM_0-input-tools-Tool",
+            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serpAPI_0-serpAPI_0-output-serpAPI-Tool-mrlkAgentLLM_0-mrlkAgentLLM_0-input-tools-Tool",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
             "data": {
                 "label": ""
             }

@@ -1,4 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { Chroma } from 'langchain/vectorstores/chroma'
+import { Embeddings } from 'langchain/embeddings/base'
 
 class Chroma_Existing_VectorStores implements INode {
     label: string
@@ -17,6 +19,7 @@ class Chroma_Existing_VectorStores implements INode {
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Chroma (i.e: Document has been upserted)'
+        this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -31,15 +34,9 @@ class Chroma_Existing_VectorStores implements INode {
         ]
     }
 
-    async getBaseClasses(): Promise<string[]> {
-        return ['BaseRetriever']
-    }
-
     async init(nodeData: INodeData): Promise<any> {
-        const { Chroma } = await import('langchain/vectorstores')
-
         const collectionName = nodeData.inputs?.collectionName as string
-        const embeddings = nodeData.inputs?.embeddings
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
 
         const vectorStore = await Chroma.fromExistingCollection(embeddings, {
             collectionName

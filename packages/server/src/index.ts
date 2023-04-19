@@ -5,7 +5,7 @@ import http from 'http'
 import * as fs from 'fs'
 
 import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject } from './Interface'
-import { getNodeModulesPackagePath, getStartingNode, buildLangchain, getEndingNode, constructGraphs } from './utils'
+import { getNodeModulesPackagePath, getStartingNodes, buildLangchain, getEndingNode, constructGraphs } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
@@ -209,13 +209,26 @@ export class App {
 
                     const flowData = chatflow.flowData
                     const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+
+                    /*** Get Ending Node with Directed Graph  ***/
                     const { graph, nodeDependencies } = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges)
+                    const directedGraph = graph
+                    const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
+                    if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
 
-                    const startingNodeIds = getStartingNode(nodeDependencies)
-                    const endingNodeId = getEndingNode(nodeDependencies, graph)
-                    if (!endingNodeId) return res.status(500).send(`Ending node must be either Chain or Agent`)
+                    /*** Get Starting Nodes with Non-Directed Graph ***/
+                    const constructedObj = constructGraphs(parsedFlowData.nodes, parsedFlowData.edges, true)
+                    const nonDirectedGraph = constructedObj.graph
+                    const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
 
-                    const reactFlowNodes = await buildLangchain(startingNodeIds, parsedFlowData.nodes, graph, this.nodesPool.componentNodes)
+                    /*** BFS to traverse from Starting Nodes to Ending Node ***/
+                    const reactFlowNodes = await buildLangchain(
+                        startingNodeIds,
+                        parsedFlowData.nodes,
+                        graph,
+                        depthQueue,
+                        this.nodesPool.componentNodes
+                    )
 
                     const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                     if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)

@@ -3,14 +3,20 @@ import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 import { useEffect, useRef, useState, useContext } from 'react'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip } from '@mui/material'
-
+import { tooltipClasses } from '@mui/material/Tooltip'
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
 import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection } from 'utils/genericHelper'
+
+const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
+    [`& .${tooltipClasses.tooltip}`]: {
+        maxWidth: 500
+    }
+})
 
 // ===========================|| NodeInputHandler ||=========================== //
 
@@ -36,14 +42,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
         <div ref={ref}>
             {inputAnchor && (
                 <>
-                    <Tooltip
-                        placement='left'
-                        title={
-                            <Typography sx={{ color: 'white', p: 1 }} variant='h5'>
-                                {'Type: ' + inputAnchor.type}
-                            </Typography>
-                        }
-                    >
+                    <CustomWidthTooltip placement='left' title={inputAnchor.type}>
                         <Handle
                             type='target'
                             position={Position.Left}
@@ -57,7 +56,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                                 top: position
                             }}
                         />
-                    </Tooltip>
+                    </CustomWidthTooltip>
                     <Box sx={{ p: 2 }}>
                         <Typography>
                             {inputAnchor.label}
