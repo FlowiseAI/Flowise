@@ -136,8 +136,6 @@ export async function get_top_tasks(vectorStore: VectorStore, query: string, k: 
 
 async function executeTask(vectorStore: VectorStore, executionChain: LLMChain, objective: string, task: string, k = 5): Promise<string> {
     const context = await get_top_tasks(vectorStore, objective, k)
-    //const docContent = await retrieve_embeddings(table, task, 0.5);
-    //console.log(docContent);
     return executionChain.predict({ objective, context, task })
 }
 
@@ -175,17 +173,23 @@ export class BabyAGI {
     }
 
     printTaskList() {
+        // eslint-disable-next-line no-console
         console.log('\x1b[95m\x1b[1m\n*****TASK LIST*****\n\x1b[0m\x1b[0m')
+        // eslint-disable-next-line no-console
         this.taskList.forEach((t) => console.log(`${t.task_id}: ${t.task_name}`))
     }
 
     printNextTask(task: Task) {
+        // eslint-disable-next-line no-console
         console.log('\x1b[92m\x1b[1m\n*****NEXT TASK*****\n\x1b[0m\x1b[0m')
+        // eslint-disable-next-line no-console
         console.log(`${task.task_id}: ${task.task_name}`)
     }
 
     printTaskResult(result: string) {
+        // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****TASK RESULT*****\n\x1b[0m\x1b[0m')
+        // eslint-disable-next-line no-console
         console.log(result)
     }
 
@@ -243,7 +247,9 @@ export class BabyAGI {
 
             numIters += 1
             if (this.maxIterations !== null && numIters === this.maxIterations) {
+                // eslint-disable-next-line no-console
                 console.log('\x1b[91m\x1b[1m\n*****TASK ENDING*****\n\x1b[0m\x1b[0m')
+                // eslint-disable-next-line no-console
                 console.log(this.maxIterations)
                 loop = false
                 this.taskList = []
