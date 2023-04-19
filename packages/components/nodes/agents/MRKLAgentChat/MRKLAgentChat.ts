@@ -1,6 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { initializeAgentExecutor, AgentExecutor } from 'langchain/agents'
-import { Tool } from 'langchain/tools'
+import { initializeAgentExecutor, AgentExecutor, Tool } from 'langchain/agents'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { getBaseClasses } from '../../../src/utils'
 
