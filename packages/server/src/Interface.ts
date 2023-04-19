@@ -117,6 +117,7 @@ export interface IncomingInput {
 
 export interface IActiveChatflows {
     [key: string]: {
+        startingNodes: IReactFlowNode[]
         endingNodeData: INodeData
         inSync: boolean
     }

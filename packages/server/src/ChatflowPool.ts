@@ -1,4 +1,4 @@
-import { IActiveChatflows, INodeData } from './Interface'
+import { IActiveChatflows, INodeData, IReactFlowNode } from './Interface'
 
 /**
  * This pool is to keep track of active chatflow pools
@@ -11,9 +11,11 @@ export class ChatflowPool {
      * Add to the pool
      * @param {string} chatflowid
      * @param {INodeData} endingNodeData
+     * @param {IReactFlowNode[]} startingNodes
      */
-    add(chatflowid: string, endingNodeData: INodeData) {
+    add(chatflowid: string, endingNodeData: INodeData, startingNodes: IReactFlowNode[]) {
         this.activeChatflows[chatflowid] = {
+            startingNodes,
             endingNodeData,
             inSync: true
         }

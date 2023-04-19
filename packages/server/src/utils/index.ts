@@ -350,12 +350,10 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
 /**
  * Rebuild flow if LLMChain has dependency on other chains
  * User Question => Prompt_0 => LLMChain_0 => Prompt-1 => LLMChain_1
- * @param {IReactFlowNode[]} nodes
- * @param {string[]} startingNodeIds
+ * @param {IReactFlowNode[]} startingNodes
  * @returns {boolean}
  */
-export const checkStartNodeDependOnInput = (nodes: IReactFlowNode[], startingNodeIds: string[]) => {
-    const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id) && nd.id.toLowerCase().includes('prompttemplate'))
+export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
