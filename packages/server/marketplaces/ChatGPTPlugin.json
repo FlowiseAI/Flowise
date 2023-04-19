@@ -1,0 +1,307 @@
+{
+    "description": "Use ChatGPT Plugins within LangChain abstractions with GET and POST Tools",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 278,
+            "id": "aiPlugin_0",
+            "position": {
+                "x": 992.9213747553727,
+                "y": 115.80946637479596
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aiPlugin_0",
+                "label": "AI Plugin",
+                "name": "aiPlugin",
+                "type": "AIPlugin",
+                "baseClasses": ["AIPlugin", "Tool"],
+                "category": "Tools",
+                "description": "Execute actions using ChatGPT Plugin Url",
+                "inputParams": [
+                    {
+                        "label": "Plugin Url",
+                        "name": "pluginUrl",
+                        "type": "string",
+                        "placeholder": "https://www.klarna.com/.well-known/ai-plugin.json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "pluginUrl": "https://www.klarna.com/.well-known/ai-plugin.json"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aiPlugin_0-output-aiPlugin-AIPlugin|Tool",
+                        "name": "aiPlugin",
+                        "label": "AIPlugin",
+                        "type": "AIPlugin | Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 992.9213747553727,
+                "y": 115.80946637479596
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 143,
+            "id": "requestsPost_0",
+            "position": {
+                "x": 638.2831241951309,
+                "y": 294.0784991300699
+            },
+            "type": "customNode",
+            "data": {
+                "id": "requestsPost_0",
+                "label": "Requests Post",
+                "name": "requestsPost",
+                "type": "RequestsPost",
+                "baseClasses": ["RequestsPost", "Tool"],
+                "category": "Tools",
+                "description": "Execute HTTP POST requests",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "requestsPost_0-output-requestsPost-RequestsPost|Tool",
+                        "name": "requestsPost",
+                        "label": "RequestsPost",
+                        "type": "RequestsPost | Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 638.2831241951309,
+                "y": 294.0784991300699
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 143,
+            "id": "requestsGet_0",
+            "position": {
+                "x": 703.0477667387721,
+                "y": 476.8955204497346
+            },
+            "type": "customNode",
+            "data": {
+                "id": "requestsGet_0",
+                "label": "Requests Get",
+                "name": "requestsGet",
+                "type": "RequestsGet",
+                "baseClasses": ["RequestsGet", "Tool"],
+                "category": "Tools",
+                "description": "Execute HTTP GET requests",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "requestsGet_0-output-requestsGet-RequestsGet|Tool",
+                        "name": "requestsGet",
+                        "label": "RequestsGet",
+                        "type": "RequestsGet | Tool"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 703.0477667387721,
+                "y": 476.8955204497346
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentChat_0",
+            "position": {
+                "x": 1363.057715565282,
+                "y": 479.27393467974
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentChat_0",
+                "label": "MRKL Agent for Chat Models",
+                "name": "mrklAgentChat",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with Chat Models",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentChat_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "mrklAgentChat_0-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{requestsGet_0.data.instance}}", "{{requestsPost_0.data.instance}}", "{{aiPlugin_0.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentChat_0-output-mrklAgentChat-AgentExecutor|BaseChain",
+                        "name": "mrklAgentChat",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1363.057715565282,
+                "y": 479.27393467974
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 472,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 724.4534948088211,
+                "y": 668.3578659651726
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": "0"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 724.4534948088211,
+                "y": 668.3578659651726
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "aiPlugin_0",
+            "sourceHandle": "aiPlugin_0-output-aiPlugin-AIPlugin|Tool",
+            "target": "mrklAgentChat_0",
+            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "aiPlugin_0-aiPlugin_0-output-aiPlugin-AIPlugin|Tool-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "requestsGet_0",
+            "sourceHandle": "requestsGet_0-output-requestsGet-RequestsGet|Tool",
+            "target": "mrklAgentChat_0",
+            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "requestsGet_0-requestsGet_0-output-requestsGet-RequestsGet|Tool-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "requestsPost_0",
+            "sourceHandle": "requestsPost_0-output-requestsPost-RequestsPost|Tool",
+            "target": "mrklAgentChat_0",
+            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "requestsPost_0-requestsPost_0-output-requestsPost-RequestsPost|Tool-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "mrklAgentChat_0",
+            "targetHandle": "mrklAgentChat_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-mrklAgentChat_0-mrklAgentChat_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

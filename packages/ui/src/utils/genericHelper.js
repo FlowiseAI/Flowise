@@ -285,3 +285,20 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle)
     }
     return parentNodes
 }
+
+export const rearrangeToolsOrdering = (newValues, sourceNodeId) => {
+    // RequestsGet and RequestsPost have to be in order before other tools
+    newValues.push(`{{${sourceNodeId}.data.instance}}`)
+
+    const sortKey = (item) => {
+        if (item.includes('requestsGet')) {
+            return 0
+        } else if (item.includes('requestsPost')) {
+            return 1
+        } else {
+            return 2
+        }
+    }
+
+    newValues.sort((a, b) => sortKey(a) - sortKey(b))
+}
