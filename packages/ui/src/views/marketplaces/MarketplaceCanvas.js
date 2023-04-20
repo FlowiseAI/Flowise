@@ -83,6 +83,7 @@ const MarketplaceCanvas = () => {
                                 nodeTypes={nodeTypes}
                                 edgeTypes={edgeTypes}
                                 fitView
+                                minZoom={0.1}
                             >
                                 <Controls
                                     style={{

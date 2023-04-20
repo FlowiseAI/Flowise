@@ -4,13 +4,17 @@ import { useEffect, useRef, useState, useContext } from 'react'
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
-import { Box, Typography, Tooltip } from '@mui/material'
+import { Box, Typography, Tooltip, IconButton } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
+import { IconArrowsMaximize } from '@tabler/icons'
+
+// project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
+import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
-import { isValidConnection } from 'utils/genericHelper'
+import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -23,9 +27,35 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
     const theme = useTheme()
     const ref = useRef(null)
+    const { reactFlowInstance } = useContext(flowContext)
     const updateNodeInternals = useUpdateNodeInternals()
     const [position, setPosition] = useState(0)
-    const { reactFlowInstance } = useContext(flowContext)
+    const [showExpandDialog, setShowExpandDialog] = useState(false)
+    const [expandDialogProps, setExpandDialogProps] = useState({})
+
+    const onExpandDialogClicked = (value, inputParam) => {
+        const dialogProp = {
+            value,
+            inputParam,
+            disabled,
+            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancel'
+        }
+
+        if (!disabled) {
+            const nodes = reactFlowInstance.getNodes()
+            const edges = reactFlowInstance.getEdges()
+            const nodesForVariable = inputParam.acceptVariable ? getAvailableNodesForVariable(nodes, edges, data.id, inputParam.id) : []
+            dialogProp.availableNodesForVariable = nodesForVariable
+        }
+        setExpandDialogProps(dialogProp)
+        setShowExpandDialog(true)
+    }
+
+    const onExpandDialogSave = (newValue, inputParamName) => {
+        setShowExpandDialog(false)
+        data.inputs[inputParamName] = newValue
+    }
 
     useEffect(() => {
         if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
@@ -68,11 +98,47 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
 
             {inputParam && (
                 <>
+                    {inputParam.acceptVariable && (
+                        <CustomWidthTooltip placement='left' title={inputParam.type}>
+                            <Handle
+                                type='target'
+                                position={Position.Left}
+                                key={inputParam.id}
+                                id={inputParam.id}
+                                isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
+                                style={{
+                                    height: 10,
+                                    width: 10,
+                                    backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                                    top: position
+                                }}
+                            />
+                        </CustomWidthTooltip>
+                    )}
                     <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                            <Typography>
+                                {inputParam.label}
+                                {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                            </Typography>
+                            <div style={{ flexGrow: 1 }}></div>
+                            {inputParam.type === 'string' && inputParam.rows && (
+                                <IconButton
+                                    size='small'
+                                    sx={{
+                                        height: 25,
+                                        width: 25
+                                    }}
+                                    title='Expand'
+                                    color='primary'
+                                    onClick={() =>
+                                        onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
+                                    }
+                                >
+                                    <IconArrowsMaximize />
+                                </IconButton>
+                            )}
+                        </div>
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}
@@ -81,12 +147,23 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
                         )}
+                        {inputParam.type === 'boolean' && (
+                            <SwitchInput
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
+                            />
+                        )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 disabled={disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                showDialog={showExpandDialog}
+                                dialogProps={expandDialogProps}
+                                onDialogCancel={() => setShowExpandDialog(false)}
+                                onDialogConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
                             />
                         )}
                         {inputParam.type === 'options' && (

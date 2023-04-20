@@ -38,7 +38,7 @@ import useConfirm from 'hooks/useConfirm'
 import { IconX } from '@tabler/icons'
 
 // utils
-import { getUniqueNodeId, initNode, getEdgeLabelName } from 'utils/genericHelper'
+import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 
 const nodeTypes = { customNode: CanvasNode }
@@ -108,10 +108,18 @@ const Canvas = () => {
                     setTimeout(() => setDirty(), 0)
                     let value
                     const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+
                     if (inputAnchor && inputAnchor.list) {
                         const newValues = node.data.inputs[targetInput] || []
-                        newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                        if (targetInput === 'tools') {
+                            rearrangeToolsOrdering(newValues, sourceNodeId)
+                        } else {
+                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                        }
                         value = newValues
+                    } else if (inputParam && inputParam.acceptVariable) {
+                        value = node.data.inputs[targetInput] || ''
                     } else {
                         value = `{{${sourceNodeId}.data.instance}}`
                     }
@@ -489,6 +497,7 @@ const Canvas = () => {
                                 onConnect={onConnect}
                                 onInit={setReactFlowInstance}
                                 fitView
+                                minZoom={0.1}
                             >
                                 <Controls
                                     style={{

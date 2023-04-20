@@ -8,11 +8,12 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX } from '@tabler/icons'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconWorldWww } from '@tabler/icons'
 
 // project imports
 import Settings from 'views/settings'
 import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
+import APICodeDialog from 'ui-component/dialog/APICodeDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -35,6 +36,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [flowName, setFlowName] = useState('')
     const [isSettingsOpen, setSettingsOpen] = useState(false)
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
+    const [apiDialogOpen, setAPIDialogOpen] = useState(false)
+    const [apiDialogProps, setAPIDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -74,6 +77,14 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             }
             updateChatflowApi.request(chatflow.id, updateBody)
         }
+    }
+
+    const onAPIDialogClick = () => {
+        setAPIDialogProps({
+            title: 'Use this chatflow with API',
+            chatflowid: chatflow.id
+        })
+        setAPIDialogOpen(true)
     }
 
     const onSaveChatflowClick = () => {
@@ -219,6 +230,26 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 )}
             </Box>
             <Box>
+                <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                    <Avatar
+                        variant='rounded'
+                        sx={{
+                            ...theme.typography.commonAvatar,
+                            ...theme.typography.mediumAvatar,
+                            transition: 'all .2s ease-in-out',
+                            background: theme.palette.canvasHeader.deployLight,
+                            color: theme.palette.canvasHeader.deployDark,
+                            '&:hover': {
+                                background: theme.palette.canvasHeader.deployDark,
+                                color: theme.palette.canvasHeader.deployLight
+                            }
+                        }}
+                        color='inherit'
+                        onClick={onAPIDialogClick}
+                    >
+                        <IconWorldWww stroke={1.5} size='1.3rem' />
+                    </Avatar>
+                </ButtonBase>
                 <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
                     <Avatar
                         variant='rounded'
@@ -277,6 +308,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />
+            <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
         </>
     )
 }

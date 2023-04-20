@@ -27,7 +27,7 @@ class FewShotPromptTemplate_Prompts implements INode {
                 label: 'Examples',
                 name: 'examples',
                 type: 'string',
-                rows: 5,
+                rows: 4,
                 placeholder: `[
   { "word": "happy", "antonym": "sad" },
   { "word": "tall", "antonym": "short" },
@@ -42,14 +42,14 @@ class FewShotPromptTemplate_Prompts implements INode {
                 label: 'Prefix',
                 name: 'prefix',
                 type: 'string',
-                rows: 3,
+                rows: 4,
                 placeholder: `Give the antonym of every input`
             },
             {
                 label: 'Suffix',
                 name: 'suffix',
                 type: 'string',
-                rows: 3,
+                rows: 4,
                 placeholder: `Word: {input}\nAntonym:`
             },
             {

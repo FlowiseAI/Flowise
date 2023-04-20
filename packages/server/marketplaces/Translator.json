@@ -3,66 +3,91 @@
     "nodes": [
         {
             "width": 300,
-            "height": 460,
-            "id": "chatPromptTemplate_0",
+            "height": 405,
+            "id": "llmChain_0",
             "position": {
-                "x": 524,
-                "y": 237
+                "x": 1136.5578350285277,
+                "y": 619.2492937692573
             },
             "type": "customNode",
             "data": {
-                "id": "chatPromptTemplate_0",
-                "label": "Chat Prompt Template",
-                "name": "chatPromptTemplate",
-                "type": "ChatPromptTemplate",
-                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate"],
-                "category": "Prompts",
-                "description": "Schema to represent a chat prompt",
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
                 "inputParams": [
                     {
-                        "label": "System Message",
-                        "name": "systemMessagePrompt",
+                        "label": "Chain Name",
+                        "name": "chainName",
                         "type": "string",
-                        "rows": 3,
-                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}."
-                    },
-                    {
-                        "label": "Human Message",
-                        "name": "humanMessagePrompt",
-                        "type": "string",
-                        "rows": 3,
-                        "placeholder": "{text}"
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
                 "inputs": {
-                    "systemMessagePrompt": "You are a helpful assistant that translates {input_language} to {output_language}.",
-                    "humanMessagePrompt": "{input}"
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "chainName": "Language Translation"
                 },
                 "outputAnchors": [
                     {
-                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
-                        "name": "chatPromptTemplate",
-                        "label": "ChatPromptTemplate",
-                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string"
+                            }
+                        ],
+                        "default": "llmChain"
                     }
                 ],
+                "outputs": {
+                    "output": "llmChain"
+                },
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 524,
-                "y": 237
-            }
+                "x": 1136.5578350285277,
+                "y": 619.2492937692573
+            },
+            "dragging": false
         },
         {
             "width": 300,
             "height": 472,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 855.1997276913991,
-                "y": 24.090553068402556
+                "x": 776.3729862229602,
+                "y": 290.4580650723551
             },
             "type": "customNode",
             "data": {
@@ -77,7 +102,8 @@
                     {
                         "label": "OpenAI Api Key",
                         "name": "openAIApiKey",
-                        "type": "password"
+                        "type": "password",
+                        "id": "chatOpenAI_0-input-openAIApiKey-password"
                     },
                     {
                         "label": "Model Name",
@@ -106,20 +132,22 @@
                             }
                         ],
                         "default": "gpt-3.5-turbo",
-                        "optional": true
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
                         "label": "Temperature",
                         "name": "temperature",
                         "type": "number",
                         "default": 0.9,
-                        "optional": true
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
-                    "temperature": 0.9
+                    "temperature": "0"
                 },
                 "outputAnchors": [
                     {
@@ -129,75 +157,83 @@
                         "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
                     }
                 ],
+                "outputs": {},
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 855.1997276913991,
-                "y": 24.090553068402556
+                "x": 776.3729862229602,
+                "y": 290.4580650723551
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 461,
-            "id": "llmChain_0",
+            "height": 710,
+            "id": "chatPromptTemplate_0",
             "position": {
-                "x": 1192.2235692202612,
-                "y": 361.71736677076257
+                "x": 428.40848918154023,
+                "y": 291.77611240963313
             },
             "type": "customNode",
             "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
                 "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
                     {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "type": "string",
-                        "rows": 5,
+                        "rows": 4,
                         "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
-                        "optional": true
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-string"
                     }
                 ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
+                "inputAnchors": [],
                 "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "systemMessagePrompt": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                    "humanMessagePrompt": "{input}",
                     "promptValues": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
-                        "name": "llmChain",
-                        "label": "LLMChain",
-                        "type": "LLMChain | BaseChain"
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate"
                     }
                 ],
+                "outputs": {},
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1192.2235692202612,
-                "y": 361.71736677076257
+                "x": 428.40848918154023,
+                "y": 291.77611240963313
             },
             "dragging": false
         }

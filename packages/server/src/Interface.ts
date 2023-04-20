@@ -1,4 +1,4 @@
-import { INode, INodeData } from 'flowise-components'
+import { INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -36,6 +36,12 @@ export interface INodeDependencies {
 
 export interface INodeDirectedGraph {
     [key: string]: string[]
+}
+
+export interface INodeData extends INodeDataFromComponent {
+    inputAnchors: INodeParams[]
+    inputParams: INodeParams[]
+    outputAnchors: INodeParams[]
 }
 
 export interface IReactFlowNode {
@@ -111,6 +117,7 @@ export interface IncomingInput {
 
 export interface IActiveChatflows {
     [key: string]: {
+        startingNodes: IReactFlowNode[]
         endingNodeData: INodeData
         inSync: boolean
     }

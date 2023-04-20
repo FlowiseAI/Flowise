@@ -12,7 +12,7 @@ import NodeOutputHandler from './NodeOutputHandler'
 
 // const
 import { baseURL } from 'store/constant'
-import { IconTrash } from '@tabler/icons'
+import { IconTrash, IconCopy } from '@tabler/icons'
 import { flowContext } from 'store/context/ReactFlowContext'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -33,7 +33,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
-    const { deleteNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode } = useContext(flowContext)
 
     return (
         <>
@@ -76,10 +76,22 @@ const CanvasNode = ({ data }) => {
                         </Box>
                         <div style={{ flexGrow: 1 }}></div>
                         <IconButton
+                            title='Duplicate'
+                            onClick={() => {
+                                duplicateNode(data.id)
+                            }}
+                            sx={{ height: 35, width: 35, '&:hover': { color: theme?.palette.primary.main } }}
+                            color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                        >
+                            <IconCopy />
+                        </IconButton>
+                        <IconButton
+                            title='Delete'
                             onClick={() => {
                                 deleteNode(data.id)
                             }}
-                            sx={{ height: 35, width: 35, mr: 1 }}
+                            sx={{ height: 35, width: 35, mr: 1, '&:hover': { color: 'red' } }}
+                            color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                         >
                             <IconTrash />
                         </IconButton>

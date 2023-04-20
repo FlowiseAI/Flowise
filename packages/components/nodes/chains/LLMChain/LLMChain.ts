@@ -1,8 +1,7 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
-import { BasePromptTemplate } from 'langchain/prompts'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -13,6 +12,7 @@ class LLMChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'LLM Chain'
@@ -34,65 +34,99 @@ class LLMChain_Chains implements INode {
                 type: 'BasePromptTemplate'
             },
             {
-                label: 'Format Prompt Values',
-                name: 'promptValues',
+                label: 'Chain Name',
+                name: 'chainName',
                 type: 'string',
-                rows: 5,
-                placeholder: `{
-  "input_language": "English",
-  "output_language": "French"
-}`,
+                placeholder: 'Name Your Chain',
                 optional: true
+            }
+        ]
+        this.outputs = [
+            {
+                label: 'LLM Chain',
+                name: 'llmChain',
+                baseClasses: [this.type, ...getBaseClasses(LLMChain)]
+            },
+            {
+                label: 'Output Prediction',
+                name: 'outputPrediction',
+                baseClasses: ['string']
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const prompt = nodeData.inputs?.prompt as BasePromptTemplate
+        const prompt = nodeData.inputs?.prompt
+        const output = nodeData.outputs?.output as string
+        const promptValues = prompt.promptValues as ICommonObject
 
-        const chain = new LLMChain({ llm: model, prompt })
-        return chain
+        if (output === this.name) {
+            const chain = new LLMChain({ llm: model, prompt })
+            return chain
+        } else if (output === 'outputPrediction') {
+            const chain = new LLMChain({ llm: model, prompt })
+            const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
+            const res = await runPrediction(inputVariables, chain, input, promptValues)
+            // eslint-disable-next-line no-console
+            console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
+            // eslint-disable-next-line no-console
+            console.log(res)
+            return res
+        }
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
+        const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
 
-        if (inputVariables.length === 1) {
-            const res = await chain.run(input)
-            return res
-        } else if (inputVariables.length > 1) {
-            const promptValuesStr = nodeData.inputs?.promptValues as string
-            if (!promptValuesStr) throw new Error('Please provide Prompt Values')
+        const res = await runPrediction(inputVariables, chain, input, promptValues)
+        // eslint-disable-next-line no-console
+        console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
+        // eslint-disable-next-line no-console
+        console.log(res)
+        return res
+    }
+}
 
-            const promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+const runPrediction = async (inputVariables: string[], chain: LLMChain, input: string, promptValues: ICommonObject) => {
+    if (inputVariables.length === 1) {
+        const res = await chain.run(input)
+        return res
+    } else if (inputVariables.length > 1) {
+        let seen: string[] = []
 
-            let seen: string[] = []
-
-            for (const variable of inputVariables) {
-                seen.push(variable)
-                if (promptValues[variable]) {
-                    seen.pop()
-                }
+        for (const variable of inputVariables) {
+            seen.push(variable)
+            if (promptValues[variable]) {
+                seen.pop()
             }
-
-            if (seen.length === 1) {
-                const lastValue = seen.pop()
-                if (!lastValue) throw new Error('Please provide Prompt Values')
-                const options = {
-                    ...promptValues,
-                    [lastValue]: input
-                }
-                const res = await chain.call(options)
-                return res?.text
-            } else {
-                throw new Error('Please provide Prompt Values')
-            }
-        } else {
-            const res = await chain.run(input)
-            return res
         }
+
+        if (seen.length === 0) {
+            // All inputVariables have fixed values specified
+            const options = {
+                ...promptValues
+            }
+            const res = await chain.call(options)
+            return res?.text
+        } else if (seen.length === 1) {
+            // If one inputVariable is not specify, use input (user's question) as value
+            const lastValue = seen.pop()
+            if (!lastValue) throw new Error('Please provide Prompt Values')
+            const options = {
+                ...promptValues,
+                [lastValue]: input
+            }
+            const res = await chain.call(options)
+            return res?.text
+        } else {
+            throw new Error(`Please provide Prompt Values for: ${seen.join(', ')}`)
+        }
+    } else {
+        const res = await chain.run(input)
+        return res
     }
 }
 
