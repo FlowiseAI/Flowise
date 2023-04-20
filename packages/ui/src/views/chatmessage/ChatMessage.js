@@ -34,6 +34,8 @@ import useApi from 'hooks/useApi'
 import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
+import { maxScroll } from 'store/constant'
+
 export const ChatMessage = ({ chatflowid }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -116,7 +118,7 @@ export const ChatMessage = ({ chatflowid }) => {
 
     const scrollToBottom = () => {
         if (ps.current) {
-            ps.current.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: 'smooth' })
+            ps.current.scrollTo({ top: maxScroll, behavior: 'smooth' })
         }
     }
 
