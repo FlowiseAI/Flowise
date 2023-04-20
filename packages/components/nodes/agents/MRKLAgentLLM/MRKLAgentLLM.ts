@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { initializeAgentExecutor, AgentExecutor } from 'langchain/agents'
+import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
 import { BaseLLM } from 'langchain/llms/base'
 import { getBaseClasses } from '../../../src/utils'
@@ -41,7 +41,10 @@ class MRKLAgentLLM_Agents implements INode {
         const model = nodeData.inputs?.model as BaseLLM
         const tools = nodeData.inputs?.tools as Tool[]
 
-        const executor = await initializeAgentExecutor(tools, model, 'zero-shot-react-description', true)
+        const executor = await initializeAgentExecutorWithOptions(tools, model, {
+            agentType: 'zero-shot-react-description',
+            verbose: true
+        })
         return executor
     }
 

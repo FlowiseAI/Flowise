@@ -1,6 +1,7 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Chroma } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses } from '../../../src/utils'
 
 class Chroma_Existing_VectorStores implements INode {
     label: string
@@ -11,6 +12,7 @@ class Chroma_Existing_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Chroma Load Existing Index'
@@ -32,17 +34,36 @@ class Chroma_Existing_VectorStores implements INode {
                 type: 'string'
             }
         ]
+        this.outputs = [
+            {
+                label: 'Chroma Retriever',
+                name: 'retriever',
+                baseClasses: [this.type, 'BaseRetriever']
+            },
+            {
+                label: 'Chroma Vector Store',
+                name: 'vectorStore',
+                baseClasses: [this.type, ...getBaseClasses(Chroma)]
+            }
+        ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
         const collectionName = nodeData.inputs?.collectionName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const output = nodeData.outputs?.output as string
 
         const vectorStore = await Chroma.fromExistingCollection(embeddings, {
             collectionName
         })
-        const retriever = vectorStore.asRetriever()
-        return retriever
+
+        if (output === 'retriever') {
+            const retriever = vectorStore.asRetriever()
+            return retriever
+        } else if (output === 'vectorStore') {
+            return vectorStore
+        }
+        return vectorStore
     }
 }
 
