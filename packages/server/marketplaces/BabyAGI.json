@@ -1,49 +1,28 @@
 {
-    "description": "Given an objective, tasks will be created, stored into Pinecone and reprioritized",
+    "description": "Use BabyAGI to create tasks and reprioritize for a given objective",
     "nodes": [
         {
             "width": 300,
-            "height": 769,
-            "id": "babyAGI_0",
+            "height": 472,
+            "id": "chatOpenAI_0",
             "position": {
-                "x": 542.130412774738,
-                "y": 154.52145148106695
+                "x": 623.4625717728469,
+                "y": -384.9179263816219
             },
             "type": "customNode",
             "data": {
-                "id": "babyAGI_0",
-                "label": "BabyAGI",
-                "name": "babyAGI",
-                "type": "BabyAGI",
-                "baseClasses": ["AgentExecutor"],
-                "category": "Agents",
-                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
-                    {
-                        "label": "Task Loop",
-                        "name": "taskLoop",
-                        "type": "number",
-                        "default": 3
-                    },
                     {
                         "label": "OpenAI Api Key",
                         "name": "openAIApiKey",
                         "type": "password"
-                    },
-                    {
-                        "label": "Pinecone Api Key",
-                        "name": "pineconeApiKey",
-                        "type": "password"
-                    },
-                    {
-                        "label": "Pinecone Environment",
-                        "name": "pineconeEnv",
-                        "type": "string"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
-                        "type": "string"
                     },
                     {
                         "label": "Model Name",
@@ -73,32 +52,260 @@
                         ],
                         "default": "gpt-3.5-turbo",
                         "optional": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "taskLoop": "3",
-                    "pineconeEnv": "us-west4-gcp",
-                    "pineconeIndex": "test",
-                    "modelName": "gpt-3.5-turbo"
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": "0"
                 },
                 "outputAnchors": [
                     {
-                        "id": "babyAGI_0-output-babyAGI-AgentExecutor",
-                        "name": "babyAGI",
-                        "label": "BabyAGI",
-                        "type": "AgentExecutor"
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
                     }
                 ],
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 542.130412774738,
-                "y": 154.52145148106695
-            }
+                "x": 623.4625717728469,
+                "y": -384.9179263816219
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 278,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": -85.14926831129219,
+                "y": -175.8984338500009
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -85.14926831129219,
+                "y": -175.8984338500009
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 552,
+            "id": "pineconeExistingIndex_0",
+            "position": {
+                "x": 264.86118448732543,
+                "y": -305.52350050145094
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeExistingIndex_0",
+                "label": "Pinecone Load Existing Index",
+                "name": "pineconeExistingIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Pinecone Api Key",
+                        "name": "pineconeApiKey",
+                        "type": "password",
+                        "id": "pineconeExistingIndex_0-input-pineconeApiKey-password"
+                    },
+                    {
+                        "label": "Pinecone Environment",
+                        "name": "pineconeEnv",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_0-input-pineconeEnv-string"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeEnv": "us-west4-gcp",
+                    "pineconeIndex": "test"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 264.86118448732543,
+                "y": -305.52350050145094
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 379,
+            "id": "babyAGI_0",
+            "position": {
+                "x": 982.9913269506158,
+                "y": -53.95939754784533
+            },
+            "type": "customNode",
+            "data": {
+                "id": "babyAGI_0",
+                "label": "BabyAGI",
+                "name": "babyAGI",
+                "type": "BabyAGI",
+                "baseClasses": ["BabyAGI"],
+                "category": "Agents",
+                "description": "Task Driven Autonomous Agent which creates new task and reprioritizes task list based on objective",
+                "inputParams": [
+                    {
+                        "label": "Task Loop",
+                        "name": "taskLoop",
+                        "type": "number",
+                        "default": 3,
+                        "id": "babyAGI_0-input-taskLoop-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "babyAGI_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "babyAGI_0-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
+                    "taskLoop": 3
+                },
+                "outputAnchors": [
+                    {
+                        "id": "babyAGI_0-output-babyAGI-BabyAGI",
+                        "name": "babyAGI",
+                        "label": "BabyAGI",
+                        "type": "BabyAGI"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 982.9913269506158,
+                "y": -53.95939754784533
+            },
+            "selected": false
         }
     ],
-    "edges": []
+    "edges": [
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeExistingIndex_0",
+            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "babyAGI_0",
+            "targetHandle": "babyAGI_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-babyAGI_0-babyAGI_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeExistingIndex_0",
+            "sourceHandle": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+            "target": "babyAGI_0",
+            "targetHandle": "babyAGI_0-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore-babyAGI_0-babyAGI_0-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
 }
