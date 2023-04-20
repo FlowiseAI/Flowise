@@ -22,23 +22,12 @@ export const getUniqueNodeId = (nodeData, nodes) => {
     return nodeId
 }
 
-export const initializeNodeData = (nodeParams) => {
+export const initializeDefaultNodeData = (nodeParams) => {
     const initialValues = {}
 
     for (let i = 0; i < nodeParams.length; i += 1) {
         const input = nodeParams[i]
-
-        // Load from nodeParams default values
         initialValues[input.name] = input.default || ''
-
-        // Special case for array, always initialize the item if default is not set
-        if (input.type === 'array' && !input.default) {
-            const newObj = {}
-            for (let j = 0; j < input.array.length; j += 1) {
-                newObj[input.array[j].name] = input.array[j].default || ''
-            }
-            initialValues[input.name] = [newObj]
-        }
     }
 
     return initialValues
@@ -46,61 +35,118 @@ export const initializeNodeData = (nodeParams) => {
 
 export const initNode = (nodeData, newNodeId) => {
     const inputAnchors = []
+    const inputParams = []
     const incoming = nodeData.inputs ? nodeData.inputs.length : 0
     const outgoing = 1
 
-    const whitelistTypes = ['asyncOptions', 'options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
+    const whitelistTypes = ['options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
 
     for (let i = 0; i < incoming; i += 1) {
-        if (whitelistTypes.includes(nodeData.inputs[i].type)) continue
         const newInput = {
             ...nodeData.inputs[i],
             id: `${newNodeId}-input-${nodeData.inputs[i].name}-${nodeData.inputs[i].type}`
         }
-        inputAnchors.push(newInput)
+        if (whitelistTypes.includes(nodeData.inputs[i].type)) {
+            inputParams.push(newInput)
+        } else {
+            inputAnchors.push(newInput)
+        }
     }
 
     const outputAnchors = []
     for (let i = 0; i < outgoing; i += 1) {
-        const newOutput = {
-            id: `${newNodeId}-output-${nodeData.name}-${nodeData.baseClasses.join('|')}`,
-            name: nodeData.name,
-            label: nodeData.type,
-            type: nodeData.baseClasses.join(' | ')
+        if (nodeData.outputs && nodeData.outputs.length) {
+            const options = []
+            for (let j = 0; j < nodeData.outputs.length; j += 1) {
+                let baseClasses = ''
+                let type = ''
+
+                const outputBaseClasses = nodeData.outputs[j].baseClasses ?? []
+                if (outputBaseClasses.length > 1) {
+                    baseClasses = outputBaseClasses.join('|')
+                    type = outputBaseClasses.join(' | ')
+                } else if (outputBaseClasses.length === 1) {
+                    baseClasses = outputBaseClasses[0]
+                    type = outputBaseClasses[0]
+                }
+
+                const newOutputOption = {
+                    id: `${newNodeId}-output-${nodeData.outputs[j].name}-${baseClasses}`,
+                    name: nodeData.outputs[j].name,
+                    label: nodeData.outputs[j].label,
+                    type
+                }
+                options.push(newOutputOption)
+            }
+            const newOutput = {
+                name: 'output',
+                label: 'Output',
+                type: 'options',
+                options,
+                default: nodeData.outputs[0].name
+            }
+            outputAnchors.push(newOutput)
+        } else {
+            const newOutput = {
+                id: `${newNodeId}-output-${nodeData.name}-${nodeData.baseClasses.join('|')}`,
+                name: nodeData.name,
+                label: nodeData.type,
+                type: nodeData.baseClasses.join(' | ')
+            }
+            outputAnchors.push(newOutput)
         }
-        outputAnchors.push(newOutput)
     }
 
-    nodeData.id = newNodeId
-    nodeData.inputAnchors = inputAnchors
-    nodeData.outputAnchors = outputAnchors
-
-    /*
-    Initial inputs = [
+    /* Initial
+    inputs = [
         {
-            label: 'field_label',
-            name: 'field'
+            label: 'field_label_1',
+            name: 'string'
+        },
+        {
+            label: 'field_label_2',
+            name: 'CustomType'
         }
     ]
 
-    // Turn into inputs object with default values
-    Converted inputs = { 'field': 'defaultvalue' }
+    =>  Convert to inputs, inputParams, inputAnchors
+
+    =>  inputs = { 'field': 'defaultvalue' } // Turn into inputs object with default values
     
-    // Move remaining inputs that are not part of inputAnchors to inputParams 
-    inputParams = [
-        {
-            label: 'field_label',
-            name: 'field'
-        }
-    ]
+    =>  // For inputs that are part of whitelistTypes
+        inputParams = [
+            {
+                label: 'field_label_1',
+                name: 'string'
+            }
+        ]
+
+    =>  // For inputs that are not part of whitelistTypes
+        inputAnchors = [
+            {
+                label: 'field_label_2',
+                name: 'CustomType'
+            }
+        ]
     */
     if (nodeData.inputs) {
-        nodeData.inputParams = nodeData.inputs.filter(({ name }) => !nodeData.inputAnchors.some((exclude) => exclude.name === name))
-        nodeData.inputs = initializeNodeData(nodeData.inputs)
+        nodeData.inputAnchors = inputAnchors
+        nodeData.inputParams = inputParams
+        nodeData.inputs = initializeDefaultNodeData(nodeData.inputs)
     } else {
+        nodeData.inputAnchors = []
         nodeData.inputParams = []
         nodeData.inputs = {}
     }
+
+    if (nodeData.outputs) {
+        nodeData.outputs = initializeDefaultNodeData(outputAnchors)
+    } else {
+        nodeData.outputs = {}
+    }
+
+    nodeData.outputAnchors = outputAnchors
+    nodeData.id = newNodeId
 
     return nodeData
 }
@@ -133,7 +179,9 @@ export const isValidConnection = (connection, reactFlowInstance) => {
                 return true
             }
         } else {
-            const targetNodeInputAnchor = targetNode.data.inputAnchors.find((ancr) => ancr.id === targetHandle)
+            const targetNodeInputAnchor =
+                targetNode.data.inputAnchors.find((ancr) => ancr.id === targetHandle) ||
+                targetNode.data.inputParams.find((ancr) => ancr.id === targetHandle)
             if (
                 (targetNodeInputAnchor &&
                     !targetNodeInputAnchor?.list &&
@@ -144,7 +192,6 @@ export const isValidConnection = (connection, reactFlowInstance) => {
             }
         }
     }
-
     return false
 }
 
@@ -200,6 +247,7 @@ export const generateExportFlowData = (flowData) => {
             inputAnchors: node.data.inputAnchors,
             inputs: {},
             outputAnchors: node.data.outputAnchors,
+            outputs: node.data.outputs,
             selected: false
         }
 
@@ -225,13 +273,18 @@ export const generateExportFlowData = (flowData) => {
     return exportJson
 }
 
-export const copyToClipboard = (e) => {
-    const src = e.src
-    if (Array.isArray(src) || typeof src === 'object') {
-        navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
-    } else {
-        navigator.clipboard.writeText(src)
+export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle) => {
+    // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string-llmChain_1-llmChain_1-input-promptValues-string"
+    //                    {source}  -{sourceHandle}                           -{target}  -{targetHandle}
+    const parentNodes = []
+    const inputEdges = edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
+    if (inputEdges && inputEdges.length) {
+        for (let j = 0; j < inputEdges.length; j += 1) {
+            const node = nodes.find((nd) => nd.id === inputEdges[j].source)
+            parentNodes.push(node)
+        }
     }
+    return parentNodes
 }
 
 export const rearrangeToolsOrdering = (newValues, sourceNodeId) => {

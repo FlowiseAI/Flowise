@@ -8,11 +8,12 @@ import './prism-dark.css'
 import PropTypes from 'prop-types'
 import { useTheme } from '@mui/material/styles'
 
-export const DarkCodeEditor = ({ value, placeholder, type, style, onValueChange, onMouseUp, onBlur }) => {
+export const DarkCodeEditor = ({ value, placeholder, disabled = false, type, style, onValueChange, onMouseUp, onBlur }) => {
     const theme = useTheme()
 
     return (
         <Editor
+            disabled={disabled}
             value={value}
             placeholder={placeholder}
             highlight={(code) => highlight(code, type === 'json' ? languages.json : languages.js)}
@@ -32,6 +33,7 @@ export const DarkCodeEditor = ({ value, placeholder, type, style, onValueChange,
 DarkCodeEditor.propTypes = {
     value: PropTypes.string,
     placeholder: PropTypes.string,
+    disabled: PropTypes.bool,
     type: PropTypes.string,
     style: PropTypes.object,
     onValueChange: PropTypes.func,

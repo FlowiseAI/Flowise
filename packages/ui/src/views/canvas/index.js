@@ -108,6 +108,8 @@ const Canvas = () => {
                     setTimeout(() => setDirty(), 0)
                     let value
                     const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+
                     if (inputAnchor && inputAnchor.list) {
                         const newValues = node.data.inputs[targetInput] || []
                         if (targetInput === 'tools') {
@@ -116,6 +118,8 @@ const Canvas = () => {
                             newValues.push(`{{${sourceNodeId}.data.instance}}`)
                         }
                         value = newValues
+                    } else if (inputParam && inputParam.acceptVariable) {
+                        value = node.data.inputs[targetInput] || ''
                     } else {
                         value = `{{${sourceNodeId}.data.instance}}`
                     }

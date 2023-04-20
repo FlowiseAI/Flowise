@@ -9,13 +9,9 @@ export const TooltipWithParser = ({ title }) => {
 
     return (
         <Tooltip title={parser(title)} placement='right'>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton sx={{ height: 25, width: 25 }}>
-                    <Info
-                        style={{ background: 'transparent', color: customization.isDarkMode ? 'white' : 'inherit', height: 18, width: 18 }}
-                    />
-                </IconButton>
-            </div>
+            <IconButton sx={{ height: 25, width: 25 }}>
+                <Info style={{ background: 'transparent', color: customization.isDarkMode ? 'white' : 'inherit', height: 18, width: 18 }} />
+            </IconButton>
         </Tooltip>
     )
 }

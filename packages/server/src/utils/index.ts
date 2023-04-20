@@ -8,10 +8,14 @@ import {
     INodeDirectedGraph,
     INodeQueue,
     IReactFlowEdge,
-    IReactFlowNode
+    IReactFlowNode,
+    IVariableDict,
+    INodeData
 } from '../Interface'
 import { cloneDeep, get } from 'lodash'
-import { ICommonObject, INodeData } from 'flowise-components'
+import { ICommonObject, getInputVariables } from 'flowise-components'
+
+const QUESTION_VAR_PREFIX = 'question'
 
 /**
  * Returns the home folder path of the user if
@@ -166,13 +170,15 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {INodeDirectedGraph} graph
  * @param {IDepthQueue} depthQueue
  * @param {IComponentNodes} componentNodes
+ * @param {string} question
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
     reactFlowNodes: IReactFlowNode[],
     graph: INodeDirectedGraph,
     depthQueue: IDepthQueue,
-    componentNodes: IComponentNodes
+    componentNodes: IComponentNodes,
+    question: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -200,9 +206,9 @@ export const buildLangchain = async (
             const nodeModule = await import(nodeInstanceFilePath)
             const newNodeInstance = new nodeModule.nodeClass()
 
-            const reactFlowNodeData: INodeData = resolveVariables(reactFlowNode.data, flowNodes)
+            const reactFlowNodeData: INodeData = resolveVariables(reactFlowNode.data, flowNodes, question)
 
-            flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData)
+            flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question)
         } catch (e: any) {
             console.error(e)
             throw new Error(e)
@@ -247,11 +253,14 @@ export const buildLangchain = async (
  * Get variable value from outputResponses.output
  * @param {string} paramValue
  * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {string} question
+ * @param {boolean} isAcceptVariable
  * @returns {string}
  */
-export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowNode[]) => {
+export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowNode[], question: string, isAcceptVariable = false) => {
     let returnVal = paramValue
     const variableStack = []
+    const variableDict = {} as IVariableDict
     let startIdx = 0
     const endIdx = returnVal.length - 1
 
@@ -269,16 +278,35 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
 
+            if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
+                variableDict[`{{${variableFullPath}}}`] = question
+            }
+
             // Split by first occurence of '.' to get just nodeId
             const [variableNodeId, _] = variableFullPath.split('.')
             const executedNode = reactFlowNodes.find((nd) => nd.id === variableNodeId)
             if (executedNode) {
-                const variableInstance = get(executedNode.data, 'instance')
-                returnVal = variableInstance
+                const variableValue = get(executedNode.data, 'instance')
+                if (isAcceptVariable) {
+                    variableDict[`{{${variableFullPath}}}`] = variableValue
+                } else {
+                    returnVal = variableValue
+                }
             }
             variableStack.pop()
         }
         startIdx += 1
+    }
+
+    if (isAcceptVariable) {
+        const variablePaths = Object.keys(variableDict)
+        variablePaths.sort() // Sort by length of variable path because longer path could possibly contains nested variable
+        variablePaths.forEach((path) => {
+            const variableValue = variableDict[path]
+            // Replace all occurence
+            returnVal = returnVal.split(path).join(variableValue)
+        })
+        return returnVal
     }
     return returnVal
 }
@@ -287,25 +315,26 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
  * Loop through each inputs and resolve variable if neccessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {string} question
  * @returns {INodeData}
  */
-export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[]): INodeData => {
+export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
     const flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
             const paramValue: string = paramsObj[key]
-
             if (Array.isArray(paramValue)) {
                 const resolvedInstances = []
                 for (const param of paramValue) {
-                    const resolvedInstance = getVariableValue(param, reactFlowNodes)
+                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question)
                     resolvedInstances.push(resolvedInstance)
                 }
                 paramsObj[key] = resolvedInstances
             } else {
-                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes)
+                const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
+                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, isAcceptVariable)
                 paramsObj[key] = resolvedInstance
             }
         }
@@ -316,4 +345,20 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
     getParamValues(paramsObj)
 
     return flowNodeData
+}
+
+/**
+ * Rebuild flow if LLMChain has dependency on other chains
+ * User Question => Prompt_0 => LLMChain_0 => Prompt-1 => LLMChain_1
+ * @param {IReactFlowNode[]} startingNodes
+ * @returns {boolean}
+ */
+export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boolean => {
+    for (const node of startingNodes) {
+        for (const inputName in node.data.inputs) {
+            const inputVariables = getInputVariables(node.data.inputs[inputName])
+            if (inputVariables.length > 0) return true
+        }
+    }
+    return false
 }

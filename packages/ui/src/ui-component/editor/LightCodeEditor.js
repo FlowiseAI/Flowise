@@ -8,11 +8,12 @@ import './prism-light.css'
 import PropTypes from 'prop-types'
 import { useTheme } from '@mui/material/styles'
 
-export const LightCodeEditor = ({ value, placeholder, type, style, onValueChange, onMouseUp, onBlur }) => {
+export const LightCodeEditor = ({ value, placeholder, disabled = false, type, style, onValueChange, onMouseUp, onBlur }) => {
     const theme = useTheme()
 
     return (
         <Editor
+            disabled={disabled}
             value={value}
             placeholder={placeholder}
             highlight={(code) => highlight(code, type === 'json' ? languages.json : languages.js)}
@@ -32,6 +33,7 @@ export const LightCodeEditor = ({ value, placeholder, type, style, onValueChange
 LightCodeEditor.propTypes = {
     value: PropTypes.string,
     placeholder: PropTypes.string,
+    disabled: PropTypes.bool,
     type: PropTypes.string,
     style: PropTypes.object,
     onValueChange: PropTypes.func,

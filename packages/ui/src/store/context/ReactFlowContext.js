@@ -1,9 +1,12 @@
 import { createContext, useState } from 'react'
 import PropTypes from 'prop-types'
+import { getUniqueNodeId } from 'utils/genericHelper'
+import { cloneDeep } from 'lodash'
 
 const initialValue = {
     reactFlowInstance: null,
     setReactFlowInstance: () => {},
+    duplicateNode: () => {},
     deleteNode: () => {},
     deleteEdge: () => {}
 }
@@ -40,9 +43,13 @@ export const ReactFlowContext = ({ children }) => {
                     if (node.id === targetNodeId) {
                         let value
                         const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                        const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+
                         if (inputAnchor && inputAnchor.list) {
                             const values = node.data.inputs[targetInput] || []
                             value = values.filter((item) => !item.includes(sourceNodeId))
+                        } else if (inputParam && inputParam.acceptVariable) {
+                            value = node.data.inputs[targetInput].replace(`{{${sourceNodeId}.data.instance}}`, '') || ''
                         } else {
                             value = ''
                         }
@@ -60,13 +67,53 @@ export const ReactFlowContext = ({ children }) => {
         }
     }
 
+    const duplicateNode = (id) => {
+        const nodes = reactFlowInstance.getNodes()
+        const originalNode = nodes.find((n) => n.id === id)
+        if (originalNode) {
+            const newNodeId = getUniqueNodeId(originalNode.data, nodes)
+            const clonedNode = cloneDeep(originalNode)
+
+            const duplicatedNode = {
+                ...clonedNode,
+                id: newNodeId,
+                position: {
+                    x: clonedNode.position.x + 400,
+                    y: clonedNode.position.y
+                },
+                positionAbsolute: {
+                    x: clonedNode.positionAbsolute.x + 400,
+                    y: clonedNode.positionAbsolute.y
+                },
+                data: {
+                    ...clonedNode.data,
+                    id: newNodeId
+                },
+                selected: false
+            }
+
+            const dataKeys = ['inputParams', 'inputAnchors', 'outputAnchors']
+
+            for (const key of dataKeys) {
+                for (const item of duplicatedNode.data[key]) {
+                    if (item.id) {
+                        item.id = item.id.replace(id, newNodeId)
+                    }
+                }
+            }
+
+            reactFlowInstance.setNodes([...nodes, duplicatedNode])
+        }
+    }
+
     return (
         <flowContext.Provider
             value={{
                 reactFlowInstance,
                 setReactFlowInstance,
                 deleteNode,
-                deleteEdge
+                deleteEdge,
+                duplicateNode
             }}
         >
             {children}
