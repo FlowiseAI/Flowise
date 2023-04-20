@@ -497,6 +497,7 @@ const Canvas = () => {
                                 onConnect={onConnect}
                                 onInit={setReactFlowInstance}
                                 fitView
+                                minZoom={0.1}
                             >
                                 <Controls
                                     style={{

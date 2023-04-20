@@ -12,6 +12,7 @@ import { IconArrowsMaximize } from '@tabler/icons'
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
+import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
 
@@ -144,6 +145,13 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                                 fileType={inputParam.fileType || '*'}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
+                            />
+                        )}
+                        {inputParam.type === 'boolean' && (
+                            <SwitchInput
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (

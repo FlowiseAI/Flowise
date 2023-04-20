@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { initializeAgentExecutor, AgentExecutor } from 'langchain/agents'
+import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { BaseChatMemory } from 'langchain/memory'
@@ -48,7 +48,10 @@ class ConversationalAgent_Agents implements INode {
         const tools = nodeData.inputs?.tools as Tool[]
         const memory = nodeData.inputs?.memory as BaseChatMemory
 
-        const executor = await initializeAgentExecutor(tools, model, 'chat-conversational-react-description', true)
+        const executor = await initializeAgentExecutorWithOptions(tools, model, {
+            agentType: 'chat-conversational-react-description',
+            verbose: true
+        })
         executor.memory = memory
         return executor
     }

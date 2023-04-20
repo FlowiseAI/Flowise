@@ -1,7 +1,8 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
 import { PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses } from '../../../src/utils'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
@@ -12,6 +13,7 @@ class Pinecone_Existing_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Pinecone Load Existing Index'
@@ -43,6 +45,18 @@ class Pinecone_Existing_VectorStores implements INode {
                 type: 'string'
             }
         ]
+        this.outputs = [
+            {
+                label: 'Pinecone Retriever',
+                name: 'retriever',
+                baseClasses: [this.type, 'BaseRetriever']
+            },
+            {
+                label: 'Pinecone Vector Store',
+                name: 'vectorStore',
+                baseClasses: [this.type, ...getBaseClasses(PineconeStore)]
+            }
+        ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
@@ -50,6 +64,7 @@ class Pinecone_Existing_VectorStores implements INode {
         const pineconeEnv = nodeData.inputs?.pineconeEnv as string
         const index = nodeData.inputs?.pineconeIndex as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const output = nodeData.outputs?.output as string
 
         const client = new PineconeClient()
         await client.init({
@@ -62,8 +77,14 @@ class Pinecone_Existing_VectorStores implements INode {
         const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
             pineconeIndex
         })
-        const retriever = vectorStore.asRetriever()
-        return retriever
+
+        if (output === 'retriever') {
+            const retriever = vectorStore.asRetriever()
+            return retriever
+        } else if (output === 'vectorStore') {
+            return vectorStore
+        }
+        return vectorStore
     }
 }
 
