@@ -292,9 +292,9 @@ export const rearrangeToolsOrdering = (newValues, sourceNodeId) => {
     newValues.push(`{{${sourceNodeId}.data.instance}}`)
 
     const sortKey = (item) => {
-        if (item.includes('requestsGet')) {
+        if (item.includes('requestsGet') || item.includes('readFile')) {
             return 0
-        } else if (item.includes('requestsPost')) {
+        } else if (item.includes('requestsPost') || item.includes('writeFile')) {
             return 1
         } else {
             return 2

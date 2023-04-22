@@ -22,7 +22,7 @@ class ChromaUpsert_VectorStores implements INode {
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Chroma'
-        this.baseClasses = [this.type, 'BaseRetriever']
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Document',
@@ -44,7 +44,7 @@ class ChromaUpsert_VectorStores implements INode {
             {
                 label: 'Chroma Retriever',
                 name: 'retriever',
-                baseClasses: [this.type, 'BaseRetriever']
+                baseClasses: this.baseClasses
             },
             {
                 label: 'Chroma Vector Store',

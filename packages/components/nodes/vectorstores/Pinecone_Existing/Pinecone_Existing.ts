@@ -22,7 +22,7 @@ class Pinecone_Existing_VectorStores implements INode {
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
-        this.baseClasses = [this.type, 'BaseRetriever']
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -49,7 +49,7 @@ class Pinecone_Existing_VectorStores implements INode {
             {
                 label: 'Pinecone Retriever',
                 name: 'retriever',
-                baseClasses: [this.type, 'BaseRetriever']
+                baseClasses: this.baseClasses
             },
             {
                 label: 'Pinecone Vector Store',

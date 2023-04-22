@@ -27,7 +27,7 @@
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
         "form-data": "^4.0.0",
-        "langchain": "^0.0.59",
+        "langchain": "^0.0.60",
         "moment": "^2.29.3",
         "node-fetch": "2",
         "pdf-parse": "^1.1.1",
