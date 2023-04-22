@@ -24,33 +24,24 @@ class HuggingFaceInference_LLMs implements INode {
             {
                 label: 'Model',
                 name: 'model',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt2',
-                        name: 'gpt2'
-                    }
-                ],
-                default: 'gpt2',
-                optional: true
+                type: 'string',
+                placeholder: 'gpt2'
             },
             {
-                label: 'Temperature',
-                name: 'temperature',
-                type: 'number',
-                default: 0.7,
-                optional: true
+                label: 'HuggingFace Api Key',
+                name: 'apiKey',
+                type: 'password'
             }
         ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
         const model = nodeData.inputs?.model as string
+        const apiKey = nodeData.inputs?.apiKey as string
 
         const huggingFace = new HuggingFaceInference({
-            temperature: parseInt(temperature, 10),
-            model
+            model,
+            apiKey
         })
         return huggingFace
     }
