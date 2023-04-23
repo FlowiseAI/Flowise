@@ -116,7 +116,7 @@ In-Progress
 
 ## 🏷️ Pull Request process
 
-A member of the FlowiseAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/7C5xTWP8).
+A member of the FlowiseAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/jbaHfsRVBW).
 
 ## 📃 Contributor License Agreement
 
