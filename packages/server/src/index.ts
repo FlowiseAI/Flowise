@@ -55,7 +55,7 @@ export class App {
 
         // Allow access from ui when yarn run dev
         if (process.env.NODE_ENV !== 'production') {
-            this.app.use(cors({ credentials: true, origin: 'http://localhost:8080' }))
+            this.app.use(cors({ credentials: true, origin: ['http://localhost:8080', 'http://localhost:5678'] }))
         }
 
         // ----------------------------------------
