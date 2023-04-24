@@ -81,7 +81,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
 
     const onAPIDialogClick = () => {
         setAPIDialogProps({
-            title: 'Use this chatflow with API',
+            title: 'Embed in your application or use as API',
             chatflowid: chatflow.id
         })
         setAPIDialogOpen(true)
@@ -230,26 +230,28 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 )}
             </Box>
             <Box>
-                <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.deployLight,
-                            color: theme.palette.canvasHeader.deployDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.deployDark,
-                                color: theme.palette.canvasHeader.deployLight
-                            }
-                        }}
-                        color='inherit'
-                        onClick={onAPIDialogClick}
-                    >
-                        <IconWorldWww stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
+                {chatflow && chatflow.id && (
+                    <ButtonBase title='Embed/API' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.canvasHeader.deployLight,
+                                color: theme.palette.canvasHeader.deployDark,
+                                '&:hover': {
+                                    background: theme.palette.canvasHeader.deployDark,
+                                    color: theme.palette.canvasHeader.deployLight
+                                }
+                            }}
+                            color='inherit'
+                            onClick={onAPIDialogClick}
+                        >
+                            <IconWorldWww stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                )}
                 <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
                     <Avatar
                         variant='rounded'

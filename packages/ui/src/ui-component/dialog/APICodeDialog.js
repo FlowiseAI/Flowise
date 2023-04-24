@@ -8,6 +8,7 @@ import { baseURL } from 'store/constant'
 import pythonSVG from 'assets/images/python.svg'
 import javascriptSVG from 'assets/images/javascript.svg'
 import cURLSVG from 'assets/images/cURL.svg'
+import EmbedSVG from 'assets/images/embed.svg'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -39,7 +40,7 @@ function a11yProps(index) {
 
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
-    const codes = ['Python', 'JavaScript', 'cURL']
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL']
     const [value, setValue] = useState(0)
 
     const handleChange = (event, newValue) => {
@@ -75,6 +76,15 @@ output = query({
     return result;
 }
 `
+        } else if (codeLang === 'Embed') {
+            return `<script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    Chatbot.init({
+        chatflowid: "${dialogProps.chatflowid}",
+        apiHost: "${baseURL}",
+    })
+</script>
+`
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
@@ -86,7 +96,7 @@ output = query({
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
             return 'python'
-        } else if (codeLang === 'JavaScript') {
+        } else if (codeLang === 'JavaScript' || codeLang === 'Embed') {
             return 'javascript'
         } else if (codeLang === 'cURL') {
             return 'bash'
@@ -99,6 +109,8 @@ output = query({
             return pythonSVG
         } else if (codeLang === 'JavaScript') {
             return javascriptSVG
+        } else if (codeLang === 'Embed') {
+            return EmbedSVG
         } else if (codeLang === 'cURL') {
             return cURLSVG
         }
@@ -123,7 +135,7 @@ output = query({
                         <Tab
                             icon={
                                 <img
-                                    style={{ objectFit: 'cover', height: 'auto', width: 'auto', marginLeft: 10 }}
+                                    style={{ objectFit: 'cover', height: 15, width: 'auto', marginLeft: 10 }}
                                     src={getSVG(codeLang)}
                                     alt='code'
                                 />
@@ -138,6 +150,14 @@ output = query({
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
+                        {codeLang === 'Embed' && (
+                            <>
+                                <span>
+                                    Paste this anywhere in the <code>{`<body>`}</code> tag of your html file
+                                </span>
+                                <div style={{ height: 10 }}></div>
+                            </>
+                        )}
                         <CopyBlock
                             theme={atomOneDark}
                             text={getCode(codeLang)}
