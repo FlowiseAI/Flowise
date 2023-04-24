@@ -78,7 +78,7 @@ output = query({
 `
         } else if (codeLang === 'Embed') {
             return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed@latest/dist/web.js"
     Chatbot.init({
         chatflowid: "${dialogProps.chatflowid}",
         apiHost: "${baseURL}",
