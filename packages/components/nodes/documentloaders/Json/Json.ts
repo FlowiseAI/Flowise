@@ -55,7 +55,7 @@ class Json_DocumentLoaders implements INode {
         let pointers: string[] = []
         if (pointersName) {
             const outputString = pointersName.replace(/[^a-zA-Z0-9,]+/g, ',')
-            pointers = outputString.split(',').map((pointer) => "/" + pointer.trim())
+            pointers = outputString.split(',').map((pointer) => '/' + pointer.trim())
         }
 
         const blob = new Blob([bf])
