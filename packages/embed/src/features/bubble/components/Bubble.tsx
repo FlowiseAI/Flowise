@@ -37,7 +37,7 @@ export const Bubble = (props: BubbleProps) => {
                     'transform-origin': 'bottom right',
                     transform: isBotOpened() ? 'scale3d(1, 1, 1)' : 'scale3d(0, 0, 1)',
                     'box-shadow': 'rgb(0 0 0 / 16%) 0px 5px 40px',
-                    'background-color': bubbleProps.theme?.chatWindow?.backgroundColor,
+                    'background-color': bubbleProps.theme?.chatWindow?.backgroundColor || '#ffffff',
                     'z-index': 42424242
                 }}
                 class={
