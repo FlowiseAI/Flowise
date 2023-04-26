@@ -45,6 +45,22 @@ class BufferMemory_Memory implements INode {
             inputKey
         })
     }
+
+    jsCodeImport(): string {
+        return `import { BufferMemory } from 'langchain/memory'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const memoryKey = nodeData.inputs?.memoryKey as string
+        const inputKey = nodeData.inputs?.inputKey as string
+
+        const code = `new BufferMemory({
+    returnMessages: true,
+    memoryKey: "${memoryKey}",
+    inputKey: "${inputKey}"
+})`
+        return code
+    }
 }
 
 module.exports = { nodeClass: BufferMemory_Memory }

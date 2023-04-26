@@ -54,6 +54,30 @@ class MRKLAgentLLM_Agents implements INode {
 
         return result?.output
     }
+
+    jsCodeImport(): string {
+        return `import { initializeAgentExecutorWithOptions } from 'langchain/agents'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const tools = nodeData.inputs?.tools as string
+        const model = nodeData.inputs?.model as string
+
+        const code = `const input = "<your question>"
+const tools = ${tools}
+const model = ${model}
+
+const executor = await initializeAgentExecutorWithOptions(tools, model, {
+    agentType: 'zero-shot-react-description',
+    verbose: true
+})
+
+const result = await executor.call({ input })
+
+console.log(result)
+`
+        return code
+    }
 }
 
 module.exports = { nodeClass: MRKLAgentLLM_Agents }

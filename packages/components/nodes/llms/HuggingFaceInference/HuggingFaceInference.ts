@@ -45,6 +45,21 @@ class HuggingFaceInference_LLMs implements INode {
         })
         return huggingFace
     }
+
+    jsCodeImport(): string {
+        return `import { HuggingFaceInference } from 'langchain/llms/hf'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const model = nodeData.inputs?.model as string
+        const apiKey = nodeData.inputs?.apiKey as string
+
+        const code = `new HuggingFaceInference({
+    model: ${model},
+    apiKey: "${apiKey}"
+})`
+        return code
+    }
 }
 
 module.exports = { nodeClass: HuggingFaceInference_LLMs }

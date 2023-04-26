@@ -64,8 +64,6 @@ export const Bot = (props: BotProps) => {
             }
         })
 
-        console.log(data)
-
         if (data) {
             setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
             setLoading(false)

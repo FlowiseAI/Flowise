@@ -98,6 +98,40 @@ class PineconeUpsert_VectorStores implements INode {
         }
         return vectorStore
     }
+
+    jsCodeImport(): string {
+        return `import { PineconeClient } from '@pinecone-database/pinecone'
+import { PineconeStore } from 'langchain/vectorstores/pinecone'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
+        const pineconeEnv = nodeData.inputs?.pineconeEnv as string
+        const index = nodeData.inputs?.pineconeIndex as string
+        const docs = nodeData.inputs?.document as string
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const output = nodeData.outputs?.output as string
+
+        const code = `const client = new PineconeClient()
+await client.init({
+    apiKey: "${pineconeApiKey}",
+    environment: "${pineconeEnv}"
+})
+
+const pineconeIndex = client.Index("${index}")
+
+${docs}
+
+const embeddings = ${embeddings}
+
+const vectorStore = await PineconeStore.fromDocuments(docs, embeddings, {
+    pineconeIndex
+})`
+        if (output === 'retriever') {
+            return `${code}\nconst vectorStoreRetriever = vectorStore.asRetriever()`
+        }
+        return code
+    }
 }
 
 module.exports = { nodeClass: PineconeUpsert_VectorStores }

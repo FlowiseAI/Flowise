@@ -35,6 +35,16 @@ class CohereEmbedding_Embeddings implements INode {
         const model = new CohereEmbeddings({ apiKey })
         return model
     }
+
+    jsCodeImport(): string {
+        return `import { CohereEmbeddings } from 'langchain/embeddings/cohere'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const apiKey = nodeData.inputs?.cohereApiKey as string
+        const code = `new CohereEmbeddings({ apiKey: "${apiKey}" })`
+        return code
+    }
 }
 
 module.exports = { nodeClass: CohereEmbedding_Embeddings }

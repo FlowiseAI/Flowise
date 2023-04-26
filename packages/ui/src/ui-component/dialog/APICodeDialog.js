@@ -40,7 +40,7 @@ function a11yProps(index) {
 
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL']
+    const codes = ['Embed', 'Python API', 'JavaScript API', 'JavaScript Code', 'cURL']
     const [value, setValue] = useState(0)
 
     const handleChange = (event, newValue) => {
@@ -48,7 +48,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const getCode = (codeLang) => {
-        if (codeLang === 'Python') {
+        if (codeLang === 'Python API') {
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
@@ -61,7 +61,7 @@ output = query({
     "question": "Hey, how are you?",
 })
 `
-        } else if (codeLang === 'JavaScript') {
+        } else if (codeLang === 'JavaScript API') {
             return `async function query(data) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
@@ -89,14 +89,16 @@ output = query({
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}'`
+        } else if (codeLang === 'JavaScript Code') {
+            return dialogProps ? dialogProps.exportedCode : ''
         }
         return ''
     }
 
     const getLang = (codeLang) => {
-        if (codeLang === 'Python') {
+        if (codeLang === 'Python API') {
             return 'python'
-        } else if (codeLang === 'JavaScript' || codeLang === 'Embed') {
+        } else if (codeLang === 'JavaScript API' || codeLang === 'Embed' || codeLang === 'JavaScript Code') {
             return 'javascript'
         } else if (codeLang === 'cURL') {
             return 'bash'
@@ -105,9 +107,9 @@ output = query({
     }
 
     const getSVG = (codeLang) => {
-        if (codeLang === 'Python') {
+        if (codeLang === 'Python API') {
             return pythonSVG
-        } else if (codeLang === 'JavaScript') {
+        } else if (codeLang === 'JavaScript API' || codeLang === 'JavaScript Code') {
             return javascriptSVG
         } else if (codeLang === 'Embed') {
             return EmbedSVG

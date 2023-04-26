@@ -75,6 +75,8 @@ export interface INode extends INodeProperties {
     output?: INodeOutputsValue[]
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string>
+    jsCodeImport?(): string
+    jsCode?(nodeData: INodeData, input: string, options?: ICommonObject): string
 }
 
 export interface INodeData extends INodeProperties {

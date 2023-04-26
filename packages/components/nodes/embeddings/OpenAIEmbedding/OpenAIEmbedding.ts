@@ -35,6 +35,16 @@ class OpenAIEmbedding_Embeddings implements INode {
         const model = new OpenAIEmbeddings({ openAIApiKey })
         return model
     }
+
+    jsCodeImport(): string {
+        return `import { OpenAIEmbeddings } from 'langchain/embeddings/openai'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const openAIApiKey = nodeData.inputs?.openAIApiKey as string
+        const code = `new OpenAIEmbeddings({ openAIApiKey: "${openAIApiKey}" })`
+        return code
+    }
 }
 
 module.exports = { nodeClass: OpenAIEmbedding_Embeddings }

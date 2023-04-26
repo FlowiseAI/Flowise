@@ -12,7 +12,8 @@ import {
     getEndingNode,
     constructGraphs,
     resolveVariables,
-    isStartNodeDependOnInput
+    isStartNodeDependOnInput,
+    buildLangchainCode
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -279,6 +280,56 @@ export class App {
                 const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
 
                 return res.json(result)
+            } catch (e: any) {
+                return res.status(500).send(e.message)
+            }
+        })
+
+        this.app.get('/api/v1/exportcode/:id', async (req: Request, res: Response) => {
+            try {
+                const chatflowid = req.params.id
+
+                /*** Get chatflows and prepare data  ***/
+                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                    id: chatflowid
+                })
+                if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
+
+                const flowData = chatflow.flowData
+                const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+                const nodes = parsedFlowData.nodes
+                const edges = parsedFlowData.edges
+
+                /*** Get Ending Node with Directed Graph  ***/
+                const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+                const directedGraph = graph
+                const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
+                if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
+                if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                if (
+                    endingNodeData.outputs &&
+                    Object.keys(endingNodeData.outputs).length &&
+                    !Object.values(endingNodeData.outputs).includes(endingNodeData.name)
+                ) {
+                    return res
+                        .status(500)
+                        .send(
+                            `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                        )
+                }
+
+                /*** Get Starting Nodes with Non-Directed Graph ***/
+                const constructedObj = constructGraphs(nodes, edges, true)
+                const nonDirectedGraph = constructedObj.graph
+                const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+
+                /*** BFS to traverse from Starting Nodes to Ending Node ***/
+                const finalCode = await buildLangchainCode(startingNodeIds, nodes, graph, depthQueue, this.nodesPool.componentNodes)
+
+                return res.send(finalCode)
             } catch (e: any) {
                 return res.status(500).send(e.message)
             }

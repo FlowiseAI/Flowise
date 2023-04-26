@@ -36,6 +36,17 @@ class AIPlugin implements INode {
 
         return aiplugin
     }
+
+    jsCodeImport(): string {
+        return `import { AIPluginTool } from 'langchain/tools'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const pluginUrl = nodeData.inputs?.pluginUrl as string
+
+        const code = `await AIPluginTool.fromPluginUrl("${pluginUrl}")`
+        return code
+    }
 }
 
 module.exports = { nodeClass: AIPlugin }

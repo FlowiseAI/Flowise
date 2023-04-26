@@ -24,6 +24,15 @@ class Calculator_Tools implements INode {
     async init(): Promise<any> {
         return new Calculator()
     }
+
+    jsCodeImport(): string {
+        return `import { Calculator } from 'langchain/tools/calculator'`
+    }
+
+    jsCode(): string {
+        const code = `new Calculator()`
+        return code
+    }
 }
 
 module.exports = { nodeClass: Calculator_Tools }

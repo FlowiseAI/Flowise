@@ -65,6 +65,26 @@ class Chroma_Existing_VectorStores implements INode {
         }
         return vectorStore
     }
+
+    jsCodeImport(): string {
+        return `import { Chroma } from 'langchain/vectorstores/chroma'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const collectionName = nodeData.inputs?.collectionName as string
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const output = nodeData.outputs?.output as string
+
+        const code = `const embeddings = ${embeddings}
+
+const vectorStore = await Chroma.fromExistingCollection(embeddings, {
+    collectionName: "${collectionName}"
+})`
+        if (output === 'retriever') {
+            return `${code}\nconst vectorStoreRetriever = vectorStore.asRetriever()`
+        }
+        return code
+    }
 }
 
 module.exports = { nodeClass: Chroma_Existing_VectorStores }

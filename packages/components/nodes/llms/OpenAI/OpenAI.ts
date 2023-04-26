@@ -73,6 +73,23 @@ class OpenAI_LLMs implements INode {
         })
         return model
     }
+
+    jsCodeImport(): string {
+        return `import { OpenAI } from 'langchain/llms/openai'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
+        const openAIApiKey = nodeData.inputs?.openAIApiKey as string
+
+        const code = `new OpenAI({
+    temperature: ${temperature},
+    modelName: "${modelName}",
+    openAIApiKey: "${openAIApiKey}"
+})`
+        return code
+    }
 }
 
 module.exports = { nodeClass: OpenAI_LLMs }

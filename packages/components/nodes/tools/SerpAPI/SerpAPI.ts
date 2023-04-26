@@ -33,6 +33,15 @@ class SerpAPI_Tools implements INode {
         const apiKey = nodeData.inputs?.apiKey as string
         return new SerpAPI(apiKey)
     }
+
+    jsCodeImport(): string {
+        return `import { SerpAPI } from 'langchain/tools'`
+    }
+
+    jsCode(): string {
+        const code = `new SerpAPI()`
+        return code
+    }
 }
 
 module.exports = { nodeClass: SerpAPI_Tools }

@@ -77,6 +77,23 @@ class ChatOpenAI_ChatModels implements INode {
         })
         return model
     }
+
+    jsCodeImport(): string {
+        return `import { ChatOpenAI } from 'langchain/chat_models/openai'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
+        const openAIApiKey = nodeData.inputs?.openAIApiKey as string
+
+        const code = `new ChatOpenAI({
+    temperature: ${temperature},
+    modelName: "${modelName}",
+    openAIApiKey: "${openAIApiKey}"
+})`
+        return code
+    }
 }
 
 module.exports = { nodeClass: ChatOpenAI_ChatModels }

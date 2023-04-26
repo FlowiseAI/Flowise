@@ -84,6 +84,36 @@ class Pdf_DocumentLoaders implements INode {
             }
         }
     }
+
+    jsCodeImport(): string {
+        return `import { PDFLoader } from 'langchain/document_loaders/fs/pdf'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const usage = nodeData.inputs?.usage as string
+        const pdfFileBase64 = nodeData.inputs?.pdfFile as string
+
+        const splitDataURI = pdfFileBase64.split(',')
+        const filePath = splitDataURI.pop()
+        const fileName = filePath?.split('filename:')[1] ?? ''
+
+        if (usage === 'perFile') {
+            const code = `const loader = new PDFLoader("${fileName}", { splitPages: false })`
+            if (textSplitter) {
+                return `${code}\nconst docs = await loader.loadAndSplit(${textSplitter})`
+            } else {
+                return `${code}\nconst docs = await loader.load()`
+            }
+        } else {
+            const code = `const loader = new PDFLoader("${fileName}")`
+            if (textSplitter) {
+                return `${code}\nconst docs = await loader.loadAndSplit(${textSplitter})`
+            } else {
+                return `${code}\nconst docs = await loader.load()`
+            }
+        }
+    }
 }
 
 module.exports = { nodeClass: Pdf_DocumentLoaders }

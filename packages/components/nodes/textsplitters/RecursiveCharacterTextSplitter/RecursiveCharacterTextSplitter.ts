@@ -50,6 +50,23 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
 
         return splitter
     }
+
+    jsCodeImport(): string {
+        return `import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const chunkSize = nodeData.inputs?.chunkSize as string
+        const chunkOverlap = nodeData.inputs?.chunkOverlap as string
+
+        const obj = {} as RecursiveCharacterTextSplitterParams
+
+        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
+        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
+
+        const code = `new RecursiveCharacterTextSplitter(${JSON.stringify(obj)})`
+        return code
+    }
 }
 
 module.exports = { nodeClass: RecursiveCharacterTextSplitter_TextSplitters }

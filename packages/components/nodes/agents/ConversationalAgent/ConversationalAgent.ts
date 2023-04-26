@@ -62,6 +62,33 @@ class ConversationalAgent_Agents implements INode {
 
         return result?.output
     }
+
+    jsCodeImport(): string {
+        return `import { initializeAgentExecutorWithOptions } from 'langchain/agents'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const tools = nodeData.inputs?.tools as string
+        const model = nodeData.inputs?.model as string
+        const memory = nodeData.inputs?.memory as string
+
+        const code = `const input = "<your question>"
+const tools = ${tools}
+const model = ${model}
+const memory = ${memory}
+
+const executor = await initializeAgentExecutorWithOptions(tools, model, {
+    agentType: 'chat-conversational-react-description',
+    verbose: true
+})
+executor.memory = memory
+
+const result = await executor.call({ input })
+
+console.log(result)
+`
+        return code
+    }
 }
 
 module.exports = { nodeClass: ConversationalAgent_Agents }

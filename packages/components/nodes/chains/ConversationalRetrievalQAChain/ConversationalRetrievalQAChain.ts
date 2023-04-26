@@ -66,6 +66,30 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         return res?.text
     }
+
+    jsCodeImport(): string {
+        return `import { ConversationalRetrievalQAChain } from 'langchain/chains'`
+    }
+
+    jsCode(nodeData: INodeData): string {
+        const llm = nodeData.inputs?.llm as string
+        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as string
+
+        const code = `const input = "<your question>"
+const chatHistory = "<your chat history>"
+const llm = ${llm}
+${vectorStoreRetriever}
+
+const chain = await ConversationalRetrievalQAChain.fromLLM(llm, vectorStoreRetriever)
+const result = await chain.call({
+    question: input,
+    chat_history: chatHistory ? chatHistory : []
+})
+
+console.log(result)
+`
+        return code
+    }
 }
 
 module.exports = { nodeClass: ConversationalRetrievalQAChain_Chains }

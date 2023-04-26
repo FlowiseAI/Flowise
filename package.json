@@ -20,8 +20,8 @@
         "clean": "npm exec -ws -- rimraf dist build",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
         "test": "turbo run test",
-        "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\" && cd packages/embed && yarn lint",
-        "lint-fix": "yarn lint --fix && cd packages/embed && yarn lint-fix",
+        "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
+        "lint-fix": "yarn lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install"
     },
