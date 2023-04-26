@@ -137,6 +137,7 @@ export const ChatMessage = ({ chatflowid }) => {
 
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
+        message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
         setMessages((prevMessages) => [...prevMessages, { message, type: 'apiMessage' }])
         addChatMessage(message, 'apiMessage')
         setLoading(false)
