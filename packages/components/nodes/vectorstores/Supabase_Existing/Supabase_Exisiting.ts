@@ -1,11 +1,10 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
 
-class SupabaseUpsert_VectorStores implements INode {
+class Supabase_Existing_VectorStores implements INode {
     label: string
     name: string
     description: string
@@ -17,19 +16,14 @@ class SupabaseUpsert_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Supabase Upsert Document'
-        this.name = 'supabaseUpsert'
+        this.label = 'Supabase Load Existing Index'
+        this.name = 'supabaseExistingIndex'
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Supabase'
+        this.description = 'Load existing index from Supabase (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.inputs = [
-            {
-                label: 'Document',
-                name: 'document',
-                type: 'Document'
-            },
             {
                 label: 'Embeddings',
                 name: 'embeddings',
@@ -75,18 +69,12 @@ class SupabaseUpsert_VectorStores implements INode {
         const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
         const tableName = nodeData.inputs?.tableName as string
         const queryName = nodeData.inputs?.queryName as string
-        const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
-        const finalDocs = []
-        for (let i = 0; i < docs.length; i += 1) {
-            finalDocs.push(new Document(docs[i]))
-        }
-
-        const vectorStore = await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
+        const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
             client,
             tableName: tableName,
             queryName: queryName
@@ -102,4 +90,4 @@ class SupabaseUpsert_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: SupabaseUpsert_VectorStores }
+module.exports = { nodeClass: Supabase_Existing_VectorStores }
