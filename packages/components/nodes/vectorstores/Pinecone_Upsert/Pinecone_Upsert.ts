@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
-import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
@@ -46,9 +46,11 @@ class PineconeUpsert_VectorStores implements INode {
                 type: 'string'
             },
             {
-                label: 'Pinecone Index',
-                name: 'pineconeIndex',
-                type: 'string'
+                label: 'Pinecone Namespace',
+                name: 'pineconeNamespace',
+                type: 'string',
+                placeholder: 'my-first-namespace',
+                optional: true
             }
         ]
         this.outputs = [
@@ -69,6 +71,7 @@ class PineconeUpsert_VectorStores implements INode {
         const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
         const pineconeEnv = nodeData.inputs?.pineconeEnv as string
         const index = nodeData.inputs?.pineconeIndex as string
+        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
@@ -86,9 +89,13 @@ class PineconeUpsert_VectorStores implements INode {
             finalDocs.push(new Document(docs[i]))
         }
 
-        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, {
+        const obj: PineconeLibArgs = {
             pineconeIndex
-        })
+        }
+
+        if (pineconeNamespace) obj.namespace = pineconeNamespace
+
+        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever()
