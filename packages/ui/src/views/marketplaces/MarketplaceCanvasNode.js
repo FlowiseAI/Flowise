@@ -1,13 +1,15 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
-import { Box, Typography, Divider } from '@mui/material'
+import { Box, Typography, Divider, Button } from '@mui/material'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import NodeInputHandler from 'views/canvas/NodeInputHandler'
 import NodeOutputHandler from 'views/canvas/NodeOutputHandler'
+import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
 
 // const
 import { baseURL } from 'store/constant'
@@ -30,6 +32,21 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const MarketplaceCanvasNode = ({ data }) => {
     const theme = useTheme()
+
+    const [showDialog, setShowDialog] = useState(false)
+    const [dialogProps, setDialogProps] = useState({})
+
+    const onDialogClicked = () => {
+        const dialogProps = {
+            data,
+            inputParams: data.inputParams.filter((param) => param.additionalParams),
+            disabled: true,
+            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancel'
+        }
+        setDialogProps(dialogProps)
+        setShowDialog(true)
+    }
 
     return (
         <>
@@ -93,7 +110,13 @@ const MarketplaceCanvasNode = ({ data }) => {
                     {data.inputParams.map((inputParam, index) => (
                         <NodeInputHandler disabled={true} key={index} inputParam={inputParam} data={data} />
                     ))}
-
+                    {data.inputParams.find((param) => param.additionalParams) && (
+                        <div style={{ textAlign: 'center' }}>
+                            <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                Additional Parameters
+                            </Button>
+                        </div>
+                    )}
                     <Divider />
                     <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
                         <Typography
@@ -112,6 +135,11 @@ const MarketplaceCanvasNode = ({ data }) => {
                     ))}
                 </Box>
             </CardWrapper>
+            <AdditionalParamsDialog
+                show={showDialog}
+                dialogProps={dialogProps}
+                onCancel={() => setShowDialog(false)}
+            ></AdditionalParamsDialog>
         </>
     )
 }
