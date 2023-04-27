@@ -49,6 +49,7 @@ export interface INodeParams {
     acceptVariable?: boolean
     placeholder?: string
     fileType?: string
+    additionalParams?: boolean
 }
 
 export interface INodeExecutionData {

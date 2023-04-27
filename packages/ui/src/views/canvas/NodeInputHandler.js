@@ -24,7 +24,7 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
+const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isAdditionalParams = false }) => {
     const theme = useTheme()
     const ref = useRef(null)
     const { reactFlowInstance } = useContext(flowContext)
@@ -96,7 +96,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                 </>
             )}
 
-            {inputParam && (
+            {((inputParam && !inputParam.additionalParams) || isAdditionalParams) && (
                 <>
                     {inputParam.acceptVariable && (
                         <CustomWidthTooltip placement='left' title={inputParam.type}>
@@ -186,7 +186,8 @@ NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
     inputParam: PropTypes.object,
     data: PropTypes.object,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    isAdditionalParams: PropTypes.bool
 }
 
 export default NodeInputHandler

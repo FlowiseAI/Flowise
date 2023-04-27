@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
-import { IconButton, Box, Typography, Divider } from '@mui/material'
+import { IconButton, Box, Typography, Divider, Button } from '@mui/material'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import NodeInputHandler from './NodeInputHandler'
 import NodeOutputHandler from './NodeOutputHandler'
+import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
 
 // const
 import { baseURL } from 'store/constant'
@@ -34,6 +35,20 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
     const { deleteNode, duplicateNode } = useContext(flowContext)
+
+    const [showDialog, setShowDialog] = useState(false)
+    const [dialogProps, setDialogProps] = useState({})
+
+    const onDialogClicked = () => {
+        const dialogProps = {
+            data,
+            inputParams: data.inputParams.filter((param) => param.additionalParams),
+            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancel'
+        }
+        setDialogProps(dialogProps)
+        setShowDialog(true)
+    }
 
     return (
         <>
@@ -118,7 +133,13 @@ const CanvasNode = ({ data }) => {
                     {data.inputParams.map((inputParam, index) => (
                         <NodeInputHandler key={index} inputParam={inputParam} data={data} />
                     ))}
-
+                    {data.inputParams.find((param) => param.additionalParams) && (
+                        <div style={{ textAlign: 'center' }}>
+                            <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                Additional Parameters
+                            </Button>
+                        </div>
+                    )}
                     <Divider />
                     <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
                         <Typography
@@ -137,6 +158,11 @@ const CanvasNode = ({ data }) => {
                     ))}
                 </Box>
             </CardWrapper>
+            <AdditionalParamsDialog
+                show={showDialog}
+                dialogProps={dialogProps}
+                onCancel={() => setShowDialog(false)}
+            ></AdditionalParamsDialog>
         </>
     )
 }
