@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
-import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses } from '../../../src/utils'
 
@@ -43,6 +43,13 @@ class Pinecone_Existing_VectorStores implements INode {
                 label: 'Pinecone Index',
                 name: 'pineconeIndex',
                 type: 'string'
+            },
+            {
+                label: 'Pinecone Namespace',
+                name: 'pineconeNamespace',
+                type: 'string',
+                placeholder: 'my-first-namespace',
+                optional: true
             }
         ]
         this.outputs = [
@@ -63,6 +70,7 @@ class Pinecone_Existing_VectorStores implements INode {
         const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
         const pineconeEnv = nodeData.inputs?.pineconeEnv as string
         const index = nodeData.inputs?.pineconeIndex as string
+        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
@@ -74,9 +82,13 @@ class Pinecone_Existing_VectorStores implements INode {
 
         const pineconeIndex = client.Index(index)
 
-        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+        const obj: PineconeLibArgs = {
             pineconeIndex
-        })
+        }
+
+        if (pineconeNamespace) obj.namespace = pineconeNamespace
+
+        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever()
