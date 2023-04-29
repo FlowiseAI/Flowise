@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconWorldWww } from '@tabler/icons'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
 
 // project imports
 import Settings from 'views/settings'
@@ -82,7 +82,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const onAPIDialogClick = () => {
         setAPIDialogProps({
             title: 'Use this chatflow with API',
-            chatflowid: chatflow.id
+            chatflowid: chatflow.id,
+            chatflowApiKeyId: chatflow.apikeyid
         })
         setAPIDialogOpen(true)
     }
@@ -247,7 +248,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                         color='inherit'
                         onClick={onAPIDialogClick}
                     >
-                        <IconWorldWww stroke={1.5} size='1.3rem' />
+                        <IconCode stroke={1.5} size='1.3rem' />
                     </Avatar>
                 </ButtonBase>
                 <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>

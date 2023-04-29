@@ -13,6 +13,9 @@ export class ChatFlow implements IChatFlow {
     @Column()
     flowData: string
 
+    @Column({ nullable: true })
+    apikeyid: string
+
     @Column()
     deployed: boolean
 

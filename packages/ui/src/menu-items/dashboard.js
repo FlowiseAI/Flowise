@@ -1,8 +1,8 @@
 // assets
-import { IconHierarchy, IconBuildingStore } from '@tabler/icons'
+import { IconHierarchy, IconBuildingStore, IconKey } from '@tabler/icons'
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore }
+const icons = { IconHierarchy, IconBuildingStore, IconKey }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -25,6 +25,14 @@ const dashboard = {
             type: 'item',
             url: '/marketplaces',
             icon: icons.IconBuildingStore,
+            breadcrumbs: true
+        },
+        {
+            id: 'apikey',
+            title: 'API Keys',
+            type: 'item',
+            url: '/apikey',
+            icon: icons.IconKey,
             breadcrumbs: true
         }
     ]

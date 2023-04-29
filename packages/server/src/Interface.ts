@@ -9,6 +9,7 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
+    apikeyid: string
     deployed: boolean
     updatedDate: Date
     createdDate: Date
