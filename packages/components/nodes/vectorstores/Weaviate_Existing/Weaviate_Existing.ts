@@ -32,14 +32,24 @@ class Weaviate_Existing_VectorStores implements INode {
             {
                 label: 'Weaviate Scheme',
                 name: 'weaviateScheme',
-                type: 'string',
-                default: 'https'
+                type: 'options',
+                default: 'https',
+                options: [
+                    {
+                        label: 'https',
+                        name: 'https'
+                    },
+                    {
+                        label: 'http',
+                        name: 'http'
+                    }
+                ]
             },
             {
                 label: 'Weaviate Host',
                 name: 'weaviateHost',
                 type: 'string',
-                default: 'localhost'
+                placeholder: 'localhost:8080'
             },
             {
                 label: 'Weaviate Index',
@@ -96,11 +106,13 @@ class Weaviate_Existing_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
-        const client: WeaviateClient = weaviate.client({
-            scheme: weaviateScheme || 'https',
-            host: weaviateHost || 'localhost',
-            apiKey: new ApiKey(weaviateApiKey || 'default')
-        })
+        const clientConfig: any = {
+            scheme: weaviateScheme,
+            host: weaviateHost
+        }
+        if (weaviateApiKey) clientConfig.apiKey = new ApiKey(weaviateApiKey)
+
+        const client: WeaviateClient = weaviate.client(clientConfig)
 
         const obj: WeaviateLibArgs = {
             client,
