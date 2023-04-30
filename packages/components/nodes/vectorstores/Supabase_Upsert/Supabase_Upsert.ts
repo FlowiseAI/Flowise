@@ -28,7 +28,8 @@ class SupabaseUpsert_VectorStores implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                type: 'Document'
+                type: 'Document',
+                list: true
             },
             {
                 label: 'Embeddings',
@@ -81,9 +82,10 @@ class SupabaseUpsert_VectorStores implements INode {
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
+        const flattenDocs = docs.flat()
         const finalDocs = []
-        for (let i = 0; i < docs.length; i += 1) {
-            finalDocs.push(new Document(docs[i]))
+        for (let i = 0; i < flattenDocs.length; i += 1) {
+            finalDocs.push(new Document(flattenDocs[i]))
         }
 
         const vectorStore = await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
