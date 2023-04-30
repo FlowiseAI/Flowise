@@ -12,7 +12,12 @@ import {
     getEndingNode,
     constructGraphs,
     resolveVariables,
-    isStartNodeDependOnInput
+    isStartNodeDependOnInput,
+    getAPIKeys,
+    addAPIKey,
+    updateAPIKey,
+    deleteAPIKey,
+    compareKeys
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -42,6 +47,9 @@ export class App {
                 await this.nodesPool.initialize()
 
                 this.chatflowPool = new ChatflowPool()
+
+                // Initialize API keys
+                await getAPIKeys()
             })
             .catch((err) => {
                 console.error('❌[server]: Error during Data Source initialization:', err)
@@ -195,93 +203,14 @@ export class App {
         // Prediction
         // ----------------------------------------
 
-        // Send input message and get prediction result
+        // Send input message and get prediction result (External)
         this.app.post('/api/v1/prediction/:id', async (req: Request, res: Response) => {
-            try {
-                const chatflowid = req.params.id
-                const incomingInput: IncomingInput = req.body
+            await this.processPrediction(req, res)
+        })
 
-                let nodeToExecuteData: INodeData
-
-                /* Check if:
-                 * - Node Data already exists in pool
-                 * - Still in sync (i.e the flow has not been modified since)
-                 * - Flow doesn't start with nodes that depend on incomingInput.question
-                 ***/
-                if (
-                    Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
-                    this.chatflowPool.activeChatflows[chatflowid].inSync &&
-                    !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes)
-                ) {
-                    nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
-                } else {
-                    /*** Get chatflows and prepare data  ***/
-                    const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                        id: chatflowid
-                    })
-                    if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
-
-                    const flowData = chatflow.flowData
-                    const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-                    const nodes = parsedFlowData.nodes
-                    const edges = parsedFlowData.edges
-
-                    /*** Get Ending Node with Directed Graph  ***/
-                    const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-                    const directedGraph = graph
-                    const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
-                    if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
-
-                    const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-                    if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
-
-                    if (
-                        endingNodeData.outputs &&
-                        Object.keys(endingNodeData.outputs).length &&
-                        !Object.values(endingNodeData.outputs).includes(endingNodeData.name)
-                    ) {
-                        return res
-                            .status(500)
-                            .send(
-                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                            )
-                    }
-
-                    /*** Get Starting Nodes with Non-Directed Graph ***/
-                    const constructedObj = constructGraphs(nodes, edges, true)
-                    const nonDirectedGraph = constructedObj.graph
-                    const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
-
-                    /*** BFS to traverse from Starting Nodes to Ending Node ***/
-                    const reactFlowNodes = await buildLangchain(
-                        startingNodeIds,
-                        nodes,
-                        graph,
-                        depthQueue,
-                        this.nodesPool.componentNodes,
-                        incomingInput.question
-                    )
-
-                    const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
-                    if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
-
-                    const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
-                    nodeToExecuteData = reactFlowNodeData
-
-                    const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
-                    this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes)
-                }
-
-                const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
-                const nodeModule = await import(nodeInstanceFilePath)
-                const nodeInstance = new nodeModule.nodeClass()
-
-                const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
-
-                return res.json(result)
-            } catch (e: any) {
-                return res.status(500).send(e.message)
-            }
+        // Send input message and get prediction result (Internal)
+        this.app.post('/api/v1/internal-prediction/:id', async (req: Request, res: Response) => {
+            await this.processPrediction(req, res, true)
         })
 
         // ----------------------------------------
@@ -309,6 +238,34 @@ export class App {
         })
 
         // ----------------------------------------
+        // API Keys
+        // ----------------------------------------
+
+        // Get api keys
+        this.app.get('/api/v1/apikey', async (req: Request, res: Response) => {
+            const keys = await getAPIKeys()
+            return res.json(keys)
+        })
+
+        // Add new api key
+        this.app.post('/api/v1/apikey', async (req: Request, res: Response) => {
+            const keys = await addAPIKey(req.body.keyName)
+            return res.json(keys)
+        })
+
+        // Update api key
+        this.app.put('/api/v1/apikey/:id', async (req: Request, res: Response) => {
+            const keys = await updateAPIKey(req.params.id, req.body.keyName)
+            return res.json(keys)
+        })
+
+        // Delete new api key
+        this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
+            const keys = await deleteAPIKey(req.params.id)
+            return res.json(keys)
+        })
+
+        // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
 
@@ -322,6 +279,109 @@ export class App {
         this.app.use((req, res) => {
             res.sendFile(uiHtmlPath)
         })
+    }
+
+    async processPrediction(req: Request, res: Response, isInternal = false) {
+        try {
+            const chatflowid = req.params.id
+            const incomingInput: IncomingInput = req.body
+
+            let nodeToExecuteData: INodeData
+
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: chatflowid
+            })
+            if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
+
+            if (!isInternal) {
+                const chatFlowApiKeyId = chatflow.apikeyid
+                const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+
+                if (chatFlowApiKeyId && !authorizationHeader) return res.status(401).send(`Unauthorized`)
+
+                const suppliedKey = authorizationHeader.split(`Bearer `).pop()
+                if (chatFlowApiKeyId && suppliedKey) {
+                    const keys = await getAPIKeys()
+                    const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
+                    if (!compareKeys(apiSecret, suppliedKey)) return res.status(401).send(`Unauthorized`)
+                }
+            }
+
+            /* Check if:
+             * - Node Data already exists in pool
+             * - Still in sync (i.e the flow has not been modified since)
+             * - Flow doesn't start with nodes that depend on incomingInput.question
+             ***/
+            if (
+                Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
+                this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes)
+            ) {
+                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+            } else {
+                /*** Get chatflows and prepare data  ***/
+
+                const flowData = chatflow.flowData
+                const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+                const nodes = parsedFlowData.nodes
+                const edges = parsedFlowData.edges
+
+                /*** Get Ending Node with Directed Graph  ***/
+                const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+                const directedGraph = graph
+                const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
+                if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
+                if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+
+                if (
+                    endingNodeData.outputs &&
+                    Object.keys(endingNodeData.outputs).length &&
+                    !Object.values(endingNodeData.outputs).includes(endingNodeData.name)
+                ) {
+                    return res
+                        .status(500)
+                        .send(
+                            `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                        )
+                }
+
+                /*** Get Starting Nodes with Non-Directed Graph ***/
+                const constructedObj = constructGraphs(nodes, edges, true)
+                const nonDirectedGraph = constructedObj.graph
+                const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+
+                /*** BFS to traverse from Starting Nodes to Ending Node ***/
+                const reactFlowNodes = await buildLangchain(
+                    startingNodeIds,
+                    nodes,
+                    graph,
+                    depthQueue,
+                    this.nodesPool.componentNodes,
+                    incomingInput.question
+                )
+
+                const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
+                if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
+
+                const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
+                nodeToExecuteData = reactFlowNodeData
+
+                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
+                this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes)
+            }
+
+            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const nodeInstance = new nodeModule.nodeClass()
+
+            const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
+
+            return res.json(result)
+        } catch (e: any) {
+            return res.status(500).send(e.message)
+        }
     }
 
     async stopApp() {

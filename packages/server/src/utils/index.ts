@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import moment from 'moment'
 import {
     IComponentNodes,
     IDepthQueue,
@@ -14,6 +15,7 @@ import {
 } from '../Interface'
 import { cloneDeep, get } from 'lodash'
 import { ICommonObject, getInputVariables } from 'flowise-components'
+import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 
 const QUESTION_VAR_PREFIX = 'question'
 
@@ -361,4 +363,120 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boole
         }
     }
     return false
+}
+
+/**
+ * Returns the api key path
+ * @returns {string}
+ */
+export const getAPIKeyPath = (): string => {
+    return path.join(__dirname, '..', '..', 'api.json')
+}
+
+/**
+ * Generate the api key
+ * @returns {string}
+ */
+export const generateAPIKey = (): string => {
+    const buffer = randomBytes(32)
+    return buffer.toString('base64')
+}
+
+/**
+ * Generate the secret key
+ * @param {string} apiKey
+ * @returns {string}
+ */
+export const generateSecretHash = (apiKey: string): string => {
+    const salt = randomBytes(8).toString('hex')
+    const buffer = scryptSync(apiKey, salt, 64) as Buffer
+    return `${buffer.toString('hex')}.${salt}`
+}
+
+/**
+ * Verify valid keys
+ * @param {string} storedKey
+ * @param {string} suppliedKey
+ * @returns {boolean}
+ */
+export const compareKeys = (storedKey: string, suppliedKey: string): boolean => {
+    const [hashedPassword, salt] = storedKey.split('.')
+    const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
+    return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)
+}
+
+/**
+ * Get API keys
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const getAPIKeys = async (): Promise<ICommonObject[]> => {
+    try {
+        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
+        return JSON.parse(content)
+    } catch (error) {
+        const keyName = 'DefaultKey'
+        const apiKey = generateAPIKey()
+        const apiSecret = generateSecretHash(apiKey)
+        const content = [
+            {
+                keyName,
+                apiKey,
+                apiSecret,
+                createdAt: moment().format('DD-MMM-YY'),
+                id: randomBytes(16).toString('hex')
+            }
+        ]
+        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+        return content
+    }
+}
+
+/**
+ * Add new API key
+ * @param {string} keyName
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
+    const existingAPIKeys = await getAPIKeys()
+    const apiKey = generateAPIKey()
+    const apiSecret = generateSecretHash(apiKey)
+    const content = [
+        ...existingAPIKeys,
+        {
+            keyName,
+            apiKey,
+            apiSecret,
+            createdAt: moment().format('DD-MMM-YY'),
+            id: randomBytes(16).toString('hex')
+        }
+    ]
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+    return content
+}
+
+/**
+ * Update existing API key
+ * @param {string} keyIdToUpdate
+ * @param {string} newKeyName
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): Promise<ICommonObject[]> => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate)
+    if (keyIndex < 0) return []
+    existingAPIKeys[keyIndex].keyName = newKeyName
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8')
+    return existingAPIKeys
+}
+
+/**
+ * Delete API key
+ * @param {string} keyIdToDelete
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject[]> => {
+    const existingAPIKeys = await getAPIKeys()
+    const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
+    return result
 }
