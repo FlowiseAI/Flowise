@@ -284,7 +284,7 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
                 variableDict[`{{${variableFullPath}}}`] = question
             }
 
-            // Split by first occurence of '.' to get just nodeId
+            // Split by first occurrence of '.' to get just nodeId
             const [variableNodeId, _] = variableFullPath.split('.')
             const executedNode = reactFlowNodes.find((nd) => nd.id === variableNodeId)
             if (executedNode) {
@@ -305,7 +305,7 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
         variablePaths.sort() // Sort by length of variable path because longer path could possibly contains nested variable
         variablePaths.forEach((path) => {
             const variableValue = variableDict[path]
-            // Replace all occurence
+            // Replace all occurrence
             returnVal = returnVal.split(path).join(variableValue)
         })
         return returnVal
