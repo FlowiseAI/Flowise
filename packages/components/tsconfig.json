@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "lib": ["ES2020"],
+        "lib": ["ES2020", "ES2021.String"],
         "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
         "emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files. */,
         "target": "ES2020", // or higher
