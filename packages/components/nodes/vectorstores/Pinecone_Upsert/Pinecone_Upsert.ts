@@ -47,6 +47,11 @@ class PineconeUpsert_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'Pinecone Index',
+                name: 'pineconeIndex',
+                type: 'string'
+            },
+            {
                 label: 'Pinecone Namespace',
                 name: 'pineconeNamespace',
                 type: 'string',
