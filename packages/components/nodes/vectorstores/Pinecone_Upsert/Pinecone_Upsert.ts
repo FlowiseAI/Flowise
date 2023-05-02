@@ -85,7 +85,7 @@ class PineconeUpsert_VectorStores implements INode {
 
         const pineconeIndex = client.Index(index)
 
-        const flattenDocs = docs.flat()
+        const flattenDocs = docs && docs.length ? docs.flat() : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))

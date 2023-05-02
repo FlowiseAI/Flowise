@@ -55,7 +55,7 @@ class InMemoryVectorStore_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
-        const flattenDocs = docs.flat()
+        const flattenDocs = docs && docs.length ? docs.flat() : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))
