@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { DocxLoader } from 'langchain/document_loaders/fs/docx'
+import { getBlob } from '../../../src/utils'
 
 class Docx_DocumentLoaders implements INode {
     label: string
@@ -39,11 +40,8 @@ class Docx_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const docxFileBase64 = nodeData.inputs?.docxFile as string
-        const splitDataURI = docxFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
 
-        const blob = new Blob([bf])
+        const blob = new Blob(getBlob(docxFileBase64))
         const loader = new DocxLoader(blob)
 
         if (textSplitter) {

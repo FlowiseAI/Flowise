@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
+import { getBlob } from '../../../src/utils'
 
 class Json_DocumentLoaders implements INode {
     label: string
@@ -48,9 +49,6 @@ class Json_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const jsonFileBase64 = nodeData.inputs?.jsonFile as string
         const pointersName = nodeData.inputs?.pointersName as string
-        const splitDataURI = jsonFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
 
         let pointers: string[] = []
         if (pointersName) {
@@ -58,7 +56,7 @@ class Json_DocumentLoaders implements INode {
             pointers = outputString.split(',').map((pointer) => '/' + pointer.trim())
         }
 
-        const blob = new Blob([bf])
+        const blob = new Blob(getBlob(jsonFileBase64))
         const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
         if (textSplitter) {

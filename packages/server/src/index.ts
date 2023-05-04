@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express'
+import multer from 'multer'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
@@ -17,7 +18,10 @@ import {
     addAPIKey,
     updateAPIKey,
     deleteAPIKey,
-    compareKeys
+    compareKeys,
+    mapMimeTypeToInputField,
+    findAvailableConfigs,
+    isSameOverrideConfig
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -25,6 +29,7 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
+import { ICommonObject } from 'flowise-components'
 
 export class App {
     app: express.Application
@@ -65,6 +70,8 @@ export class App {
         if (process.env.NODE_ENV !== 'production') {
             this.app.use(cors({ credentials: true, origin: 'http://localhost:8080' }))
         }
+
+        const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
         // ----------------------------------------
         // Nodes
@@ -200,6 +207,47 @@ export class App {
         })
 
         // ----------------------------------------
+        // Configuration
+        // ----------------------------------------
+
+        this.app.get('/api/v1/flow-config/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            const flowData = chatflow.flowData
+            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+            const nodes = parsedFlowData.nodes
+            const availableConfigs = findAvailableConfigs(nodes)
+            return res.json(availableConfigs)
+        })
+
+        this.app.post('/api/v1/flow-config/:id', upload.array('files'), async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            await this.validateKey(req, res, chatflow)
+
+            const overrideConfig: ICommonObject = { ...req.body }
+            const files = req.files as any[]
+            if (!files || !files.length) return
+
+            for (const file of files) {
+                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
+                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+
+                const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                if (overrideConfig[fileInputField]) {
+                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
+                } else {
+                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
+                }
+            }
+            return res.json(overrideConfig)
+        })
+
+        // ----------------------------------------
         // Prediction
         // ----------------------------------------
 
@@ -281,6 +329,20 @@ export class App {
         })
     }
 
+    async validateKey(req: Request, res: Response, chatflow: ChatFlow) {
+        const chatFlowApiKeyId = chatflow.apikeyid
+        const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+
+        if (chatFlowApiKeyId && !authorizationHeader) return res.status(401).send(`Unauthorized`)
+
+        const suppliedKey = authorizationHeader.split(`Bearer `).pop()
+        if (chatFlowApiKeyId && suppliedKey) {
+            const keys = await getAPIKeys()
+            const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
+            if (!compareKeys(apiSecret, suppliedKey)) return res.status(401).send(`Unauthorized`)
+        }
+    }
+
     async processPrediction(req: Request, res: Response, isInternal = false) {
         try {
             const chatflowid = req.params.id
@@ -294,27 +356,19 @@ export class App {
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
             if (!isInternal) {
-                const chatFlowApiKeyId = chatflow.apikeyid
-                const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
-
-                if (chatFlowApiKeyId && !authorizationHeader) return res.status(401).send(`Unauthorized`)
-
-                const suppliedKey = authorizationHeader.split(`Bearer `).pop()
-                if (chatFlowApiKeyId && suppliedKey) {
-                    const keys = await getAPIKeys()
-                    const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
-                    if (!compareKeys(apiSecret, suppliedKey)) return res.status(401).send(`Unauthorized`)
-                }
+                await this.validateKey(req, res, chatflow)
             }
 
-            /* Check if:
+            /* Don't rebuild the flow (to avoid duplicated upsert, recomputation) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
+             * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with nodes that depend on incomingInput.question
              ***/
             if (
                 Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                 this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                isSameOverrideConfig(this.chatflowPool.activeChatflows[chatflowid].overrideConfig, incomingInput.overrideConfig) &&
                 !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes)
             ) {
                 nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
@@ -359,7 +413,8 @@ export class App {
                     graph,
                     depthQueue,
                     this.nodesPool.componentNodes,
-                    incomingInput.question
+                    incomingInput.question,
+                    incomingInput?.overrideConfig
                 )
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
@@ -369,7 +424,7 @@ export class App {
                 nodeToExecuteData = reactFlowNodeData
 
                 const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
-                this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes)
+                this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string

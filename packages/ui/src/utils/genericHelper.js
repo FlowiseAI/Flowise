@@ -206,9 +206,20 @@ export const convertDateStringToDateObject = (dateString) => {
 }
 
 export const getFileName = (fileBase64) => {
-    const splitDataURI = fileBase64.split(',')
-    const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
-    return filename
+    let fileNames = []
+    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+        const files = JSON.parse(fileBase64)
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+            fileNames.push(filename)
+        }
+        return fileNames.join(', ')
+    } else {
+        const splitDataURI = fileBase64.split(',')
+        const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+        return filename
+    }
 }
 
 export const getFolderName = (base64ArrayStr) => {

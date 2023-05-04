@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
+import { getBlob } from '../../../src/utils'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -48,11 +49,8 @@ class Csv_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const columnName = nodeData.inputs?.columnName as string
-        const splitDataURI = csvFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
 
-        const blob = new Blob([bf])
+        const blob = new Blob(getBlob(csvFileBase64))
         const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
         if (textSplitter) {

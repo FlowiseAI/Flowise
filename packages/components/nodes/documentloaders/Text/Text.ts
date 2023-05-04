@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
+import { getBlob } from '../../../src/utils'
 
 class Text_DocumentLoaders implements INode {
     label: string
@@ -39,11 +40,8 @@ class Text_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const txtFileBase64 = nodeData.inputs?.txtFile as string
-        const splitDataURI = txtFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
 
-        const blob = new Blob([bf])
+        const blob = new Blob(getBlob(txtFileBase64))
         const loader = new TextLoader(blob)
 
         if (textSplitter) {

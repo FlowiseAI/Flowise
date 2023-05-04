@@ -22,9 +22,12 @@ import cURLSVG from 'assets/images/cURL.svg'
 // API
 import apiKeyApi from 'api/apikey'
 import chatflowsApi from 'api/chatflows'
+import configApi from 'api/config'
 
 // Hooks
 import useApi from 'hooks/useApi'
+import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
+import { TableViewOnly } from 'ui-component/table/Table'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -54,6 +57,66 @@ function a11yProps(index) {
     }
 }
 
+const unshiftFiles = (configData) => {
+    const filesConfig = configData.find((config) => config.name === 'files')
+    if (filesConfig) {
+        configData = configData.filter((config) => config.name !== 'files')
+        configData.unshift(filesConfig)
+    }
+    return configData
+}
+
+const getFormDataExamplesForJS = (configData) => {
+    let finalStr = ''
+    configData = unshiftFiles(configData)
+    const loop = Math.min(configData.length, 4)
+    for (let i = 0; i < loop; i += 1) {
+        const config = configData[i]
+        let exampleVal = `"example"`
+        if (config.type === 'string') exampleVal = `"example"`
+        else if (config.type === 'boolean') exampleVal = `true`
+        else if (config.type === 'number') exampleVal = `1`
+        else if (config.name === 'files') exampleVal = `input.files[0]`
+        finalStr += `formData.append("${config.name}", ${exampleVal})\n`
+    }
+    return finalStr
+}
+
+const getFormDataExamplesForPython = (configData) => {
+    let finalStr = ''
+    configData = unshiftFiles(configData)
+    const loop = Math.min(configData.length, 4)
+    for (let i = 0; i < loop; i += 1) {
+        const config = configData[i]
+        let exampleVal = `"example"`
+        if (config.type === 'string') exampleVal = `"example"`
+        else if (config.type === 'boolean') exampleVal = `true`
+        else if (config.type === 'number') exampleVal = `1`
+        else if (config.name === 'files') exampleVal = `('example${config.type}', open('example${config.type}', 'rb'))`
+        finalStr += `\n    "${config.name}": ${exampleVal}`
+        if (i === loop - 1) finalStr += `\n`
+    }
+    return finalStr
+}
+
+const getFormDataExamplesForCurl = (configData) => {
+    let finalStr = ''
+    configData = unshiftFiles(configData)
+    const loop = Math.min(configData.length, 4)
+    for (let i = 0; i < loop; i += 1) {
+        const config = configData[i]
+        let exampleVal = `example`
+        if (config.type === 'string') exampleVal = `example`
+        else if (config.type === 'boolean') exampleVal = `true`
+        else if (config.type === 'number') exampleVal = `1`
+        else if (config.name === 'files') exampleVal = `@/home/user1/Desktop/example${config.type}`
+        finalStr += `\n     -F "${config.name}=${exampleVal}"`
+        if (i === loop - 1) finalStr += `)\n`
+        else finalStr += ` \\`
+    }
+    return finalStr
+}
+
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
@@ -64,9 +127,18 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [apiKeys, setAPIKeys] = useState([])
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
+    const [checkboxVal, setCheckbox] = useState(false)
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
+    const getConfigApi = useApi(configApi.getConfig)
+
+    const onCheckBoxChanged = (newVal) => {
+        setCheckbox(newVal)
+        if (newVal) {
+            getConfigApi.request(dialogProps.chatflowid)
+        }
+    }
 
     const onApiKeySelected = (keyValue) => {
         if (keyValue === 'addnewkey') {
@@ -106,7 +178,7 @@ output = query({
 })
 `
         } else if (codeLang === 'JavaScript') {
-            return `async function query(data) {
+            return `async function query() {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
@@ -190,6 +262,147 @@ output = query({
         return pythonSVG
     }
 
+    const getConfigCode = (codeLang, configData) => {
+        if (codeLang === 'Python') {
+            return `import requests
+form_data = {${getFormDataExamplesForPython(configData)}}
+
+def setConfig():
+    response = requests.post("${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}", files=form_data)
+    return response.json()
+
+def query(payload):
+    response = requests.post("${baseURL}/api/v1/prediction/${dialogProps.chatflowid}", json=payload)
+    return response.json()
+
+# Set initial config
+config = setConfig()
+
+# Run prediction with config
+output = query({
+    "question": "Hey, how are you?",
+    "overrideConfig": config
+})
+`
+        } else if (codeLang === 'JavaScript') {
+            return `let formData = new FormData();
+${getFormDataExamplesForJS(configData)}
+async function setConfig() {
+    const response = await fetch(
+        "${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}",
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+    const config = await response.json();
+    return config; //Returns a config object
+}
+
+async function query(config) {
+    const response = await fetch(
+        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        {
+            method: "POST",
+            body: {
+                "question": "Hey, how are you?",
+                "overrideConfig": config
+            },
+        }
+    );
+    const result = await response.json();
+    return result;
+}
+
+// Set initial config
+const config = await setConfig()
+
+// Run prediction with config
+const res = await query(config)
+`
+        } else if (codeLang === 'cURL') {
+            return `CONFIG=$(curl ${baseURL}/api/v1/flow-config/${dialogProps.chatflowid} \\
+     -X POST \\${getFormDataExamplesForCurl(configData)}
+curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+     -X POST \\
+     -d '{"question": "Hey, how are you?", "overrideConfig": $CONFIG}'`
+        }
+        return ''
+    }
+
+    const getConfigCodeWithAuthorization = (codeLang, configData) => {
+        if (codeLang === 'Python') {
+            return `import requests
+form_data = {${getFormDataExamplesForPython(configData)}}
+headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
+
+def setConfig():
+    response = requests.post("${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}", headers=headers, files=form_data)
+    return response.json()
+
+def query(payload):
+    response = requests.post("${baseURL}/api/v1/prediction/${dialogProps.chatflowid}", headers=headers, json=payload)
+    return response.json()
+
+# Set initial config
+config = setConfig()
+
+# Run prediction with config
+output = query({
+    "question": "Hey, how are you?",
+    "overrideConfig": config
+})
+`
+        } else if (codeLang === 'JavaScript') {
+            return `let formData = new FormData();
+${getFormDataExamplesForJS(configData)}
+async function setConfig() {
+    const response = await fetch(
+        "${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}",
+        {
+            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            method: "POST",
+            body: formData
+        }
+    );
+    const config = await response.json();
+    return config; //Returns a config object
+}
+
+async function query(config) {
+    const response = await fetch(
+        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        {
+            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            method: "POST",
+            body: {
+                "question": "Hey, how are you?",
+                "overrideConfig": config
+            },
+        }
+    );
+    const result = await response.json();
+    return result;
+}
+
+// Set initial config
+const config = await setConfig()
+
+// Run prediction with config
+const res = await query(config)
+`
+        } else if (codeLang === 'cURL') {
+            return `CONFIG=$(curl ${baseURL}/api/v1/flow-config/${dialogProps.chatflowid} \\
+     -X POST \\
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"\\${getFormDataExamplesForCurl(configData)}
+curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+     -X POST \\
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"
+     -d '{"question": "Hey, how are you?", "overrideConfig": $CONFIG}'`
+        }
+        return ''
+    }
+
     useEffect(() => {
         if (getAllAPIKeysApi.data) {
             const options = [
@@ -219,7 +432,9 @@ output = query({
     }, [dialogProps, getAllAPIKeysApi.data])
 
     useEffect(() => {
-        if (show) getAllAPIKeysApi.request()
+        if (show) {
+            getAllAPIKeysApi.request()
+        }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show])
@@ -277,6 +492,23 @@ output = query({
                             showLineNumbers={false}
                             wrapLines
                         />
+                        <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
+                        {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
+                            <>
+                                <TableViewOnly rows={getConfigApi.data} columns={Object.keys(getConfigApi.data[0])} />
+                                <CopyBlock
+                                    theme={atomOneDark}
+                                    text={
+                                        chatflowApiKeyId
+                                            ? getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
+                                            : getConfigCode(codeLang, getConfigApi.data)
+                                    }
+                                    language={getLang(codeLang)}
+                                    showLineNumbers={false}
+                                    wrapLines
+                                />
+                            </>
+                        )}
                     </TabPanel>
                 ))}
             </DialogContent>

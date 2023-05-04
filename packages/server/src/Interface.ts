@@ -1,4 +1,4 @@
-import { INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { ICommonObject, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -114,6 +114,7 @@ export interface IMessage {
 export interface IncomingInput {
     question: string
     history: IMessage[]
+    overrideConfig?: ICommonObject
 }
 
 export interface IActiveChatflows {
@@ -121,5 +122,13 @@ export interface IActiveChatflows {
         startingNodes: IReactFlowNode[]
         endingNodeData: INodeData
         inSync: boolean
+        overrideConfig?: ICommonObject
     }
+}
+
+export interface IOverrideConfig {
+    node: string
+    label: string
+    name: string
+    type: string
 }
