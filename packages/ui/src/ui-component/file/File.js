@@ -10,25 +10,48 @@ export const File = ({ value, fileType, onChange, disabled = false }) => {
 
     const [myValue, setMyValue] = useState(value ?? '')
 
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         if (!e.target.files) return
 
-        const file = e.target.files[0]
-        const { name } = file
+        if (e.target.files.length === 1) {
+            const file = e.target.files[0]
+            const { name } = file
 
-        const reader = new FileReader()
-        reader.onload = (evt) => {
-            if (!evt?.target?.result) {
-                return
+            const reader = new FileReader()
+            reader.onload = (evt) => {
+                if (!evt?.target?.result) {
+                    return
+                }
+                const { result } = evt.target
+
+                const value = result + `,filename:${name}`
+
+                setMyValue(value)
+                onChange(value)
             }
-            const { result } = evt.target
+            reader.readAsDataURL(file)
+        } else if (e.target.files.length > 0) {
+            let files = Array.from(e.target.files).map((file) => {
+                const reader = new FileReader()
+                const { name } = file
 
-            const value = result + `,filename:${name}`
+                return new Promise((resolve) => {
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) {
+                            return
+                        }
+                        const { result } = evt.target
+                        const value = result + `,filename:${name}`
+                        resolve(value)
+                    }
+                    reader.readAsDataURL(file)
+                })
+            })
 
-            setMyValue(value)
-            onChange(value)
+            const res = await Promise.all(files)
+            setMyValue(JSON.stringify(res))
+            onChange(JSON.stringify(res))
         }
-        reader.readAsDataURL(file)
     }
 
     return (
@@ -51,7 +74,7 @@ export const File = ({ value, fileType, onChange, disabled = false }) => {
                 sx={{ marginRight: '1rem' }}
             >
                 {'Upload File'}
-                <input type='file' accept={fileType} hidden onChange={(e) => handleFileUpload(e)} />
+                <input type='file' multiple accept={fileType} hidden onChange={(e) => handleFileUpload(e)} />
             </Button>
         </FormControl>
     )

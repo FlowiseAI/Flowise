@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
+import { getBlob } from '../../../src/utils'
 
 class Pdf_DocumentLoaders implements INode {
     label: string
@@ -57,10 +58,7 @@ class Pdf_DocumentLoaders implements INode {
         const pdfFileBase64 = nodeData.inputs?.pdfFile as string
         const usage = nodeData.inputs?.usage as string
 
-        const splitDataURI = pdfFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        const blob = new Blob([bf])
+        const blob = new Blob(getBlob(pdfFileBase64))
 
         if (usage === 'perFile') {
             // @ts-ignore

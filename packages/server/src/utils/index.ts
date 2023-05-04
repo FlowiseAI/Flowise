@@ -11,7 +11,8 @@ import {
     IReactFlowEdge,
     IReactFlowNode,
     IVariableDict,
-    INodeData
+    INodeData,
+    IOverrideConfig
 } from '../Interface'
 import { cloneDeep, get } from 'lodash'
 import { ICommonObject, getInputVariables } from 'flowise-components'
@@ -180,7 +181,8 @@ export const buildLangchain = async (
     graph: INodeDirectedGraph,
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
-    question: string
+    question: string,
+    overrideConfig?: ICommonObject
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -208,7 +210,9 @@ export const buildLangchain = async (
             const nodeModule = await import(nodeInstanceFilePath)
             const newNodeInstance = new nodeModule.nodeClass()
 
-            const reactFlowNodeData: INodeData = resolveVariables(reactFlowNode.data, flowNodes, question)
+            let flowNodeData = cloneDeep(reactFlowNode.data)
+            if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
 
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question)
         } catch (e: any) {
@@ -342,7 +346,24 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
         }
     }
 
-    const paramsObj = (flowNodeData as any)[types]
+    const paramsObj = flowNodeData[types] ?? {}
+
+    getParamValues(paramsObj)
+
+    return flowNodeData
+}
+
+export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
+    const types = 'inputs'
+
+    const getParamValues = (paramsObj: ICommonObject) => {
+        for (const key in paramsObj) {
+            const paramValue: string = paramsObj[key]
+            paramsObj[key] = overrideConfig[key] ?? paramValue
+        }
+    }
+
+    const paramsObj = flowNodeData[types] ?? {}
 
     getParamValues(paramsObj)
 
@@ -362,6 +383,24 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boole
             if (inputVariables.length > 0) return true
         }
     }
+    return false
+}
+
+/**
+ * Rebuild flow if new override config is provided
+ * @param {ICommonObject} existingOverrideConfig
+ * @param {ICommonObject} newOverrideConfig
+ * @returns {boolean}
+ */
+export const isSameOverrideConfig = (existingOverrideConfig?: ICommonObject, newOverrideConfig?: ICommonObject): boolean => {
+    if (
+        existingOverrideConfig &&
+        Object.keys(existingOverrideConfig).length &&
+        newOverrideConfig &&
+        Object.keys(newOverrideConfig).length &&
+        JSON.stringify(existingOverrideConfig) === JSON.stringify(newOverrideConfig)
+    )
+        return true
     return false
 }
 
@@ -479,4 +518,68 @@ export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject
     const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
     await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
     return result
+}
+
+/**
+ * Map MimeType to InputField
+ * @param {string} mimeType
+ * @returns {Promise<string>}
+ */
+export const mapMimeTypeToInputField = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txtFile'
+        case 'application/pdf':
+            return 'pdfFile'
+        case 'application/json':
+            return 'jsonFile'
+        case 'text/csv':
+            return 'csvFile'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docxFile'
+        default:
+            return ''
+    }
+}
+
+/**
+ * Find all available inpur params config
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @returns {Promise<IOverrideConfig[]>}
+ */
+export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
+    const configs: IOverrideConfig[] = []
+
+    for (const flowNode of reactFlowNodes) {
+        for (const inputParam of flowNode.data.inputParams) {
+            let obj: IOverrideConfig
+            if (inputParam.type === 'password' || inputParam.type === 'options') {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: 'string'
+                }
+            } else if (inputParam.type === 'file') {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: 'files',
+                    type: inputParam.fileType ?? inputParam.type
+                }
+            } else {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.type
+                }
+            }
+            if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
+                configs.push(obj)
+            }
+        }
+    }
+
+    return configs
 }

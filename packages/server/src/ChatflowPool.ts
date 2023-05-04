@@ -1,3 +1,4 @@
+import { ICommonObject } from 'flowise-components'
 import { IActiveChatflows, INodeData, IReactFlowNode } from './Interface'
 
 /**
@@ -12,13 +13,15 @@ export class ChatflowPool {
      * @param {string} chatflowid
      * @param {INodeData} endingNodeData
      * @param {IReactFlowNode[]} startingNodes
+     * @param {ICommonObject} overrideConfig
      */
-    add(chatflowid: string, endingNodeData: INodeData, startingNodes: IReactFlowNode[]) {
+    add(chatflowid: string, endingNodeData: INodeData, startingNodes: IReactFlowNode[], overrideConfig?: ICommonObject) {
         this.activeChatflows[chatflowid] = {
             startingNodes,
             endingNodeData,
             inSync: true
         }
+        if (overrideConfig) this.activeChatflows[chatflowid].overrideConfig = overrideConfig
     }
 
     /**
