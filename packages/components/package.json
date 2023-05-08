@@ -16,7 +16,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
-        "@dqbd/tiktoken": "^1.0.4",
+        "@dqbd/tiktoken": "^1.0.7",
         "@huggingface/inference": "^1.6.3",
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
