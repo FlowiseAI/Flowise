@@ -3,19 +3,473 @@
     "nodes": [
         {
             "width": 300,
-            "height": 280,
-            "id": "mrklAgentLLM_0",
+            "height": 331,
+            "id": "openAIEmbeddings_2",
             "position": {
-                "x": 2364.5095620121215,
-                "y": -46.710940607495274
+                "x": 155.07832615625986,
+                "y": -778.383353751991
             },
             "type": "customNode",
             "data": {
-                "id": "mrklAgentLLM_0",
+                "id": "openAIEmbeddings_2",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "openAIEmbeddings_2-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_2-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_2-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_2-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_2-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 155.07832615625986,
+                "y": -778.383353751991
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 356,
+            "id": "chromaExistingIndex_1",
+            "position": {
+                "x": 522.8177328694987,
+                "y": -548.8355398674973
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chromaExistingIndex_1",
+                "label": "Chroma Load Existing Index",
+                "name": "chromaExistingIndex",
+                "type": "Chroma",
+                "baseClasses": ["Chroma", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Chroma (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Collection Name",
+                        "name": "collectionName",
+                        "type": "string",
+                        "id": "chromaExistingIndex_1-input-collectionName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "chromaExistingIndex_1-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_2.data.instance}}",
+                    "collectionName": "ai-paper"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "chromaExistingIndex_1-output-retriever-Chroma|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Chroma Retriever",
+                                "type": "Chroma | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "chromaExistingIndex_1-output-vectorStore-Chroma|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Chroma Vector Store",
+                                "type": "Chroma | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 522.8177328694987,
+                "y": -548.8355398674973
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 526,
+            "id": "openAI_3",
+            "position": {
+                "x": 512.7434966474709,
+                "y": -1107.9938317347255
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_3",
+                "label": "OpenAI",
+                "name": "openAI",
+                "type": "OpenAI",
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "openAI_3-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true,
+                        "id": "openAI_3-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true,
+                        "id": "openAI_3-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-topP-number"
+                    },
+                    {
+                        "label": "Best Of",
+                        "name": "bestOf",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-bestOf-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": 0.7,
+                    "maxTokens": "",
+                    "topP": "",
+                    "bestOf": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "batchSize": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 512.7434966474709,
+                "y": -1107.9938317347255
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 281,
+            "id": "vectorDBQAChain_2",
+            "position": {
+                "x": 880.7795222381183,
+                "y": -823.6550506138045
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectorDBQAChain_2",
+                "label": "VectorDB QA Chain",
+                "name": "vectorDBQAChain",
+                "type": "VectorDBQAChain",
+                "baseClasses": ["VectorDBQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "QA chain for vector databases",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "vectorDBQAChain_2-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorDBQAChain_2-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_3.data.instance}}",
+                    "vectorStore": "{{chromaExistingIndex_1.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
+                        "name": "vectorDBQAChain",
+                        "label": "VectorDBQAChain",
+                        "type": "VectorDBQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 880.7795222381183,
+                "y": -823.6550506138045
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 603,
+            "id": "chainTool_2",
+            "position": {
+                "x": 1251.240972921597,
+                "y": -922.9180420195128
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chainTool_2",
+                "label": "Chain Tool",
+                "name": "chainTool",
+                "type": "ChainTool",
+                "baseClasses": ["ChainTool", "DynamicTool", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Use a chain as allowed tool for agent",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "name",
+                        "type": "string",
+                        "placeholder": "state-of-union-qa",
+                        "id": "chainTool_2-input-name-string"
+                    },
+                    {
+                        "label": "Chain Description",
+                        "name": "description",
+                        "type": "string",
+                        "rows": 3,
+                        "placeholder": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
+                        "id": "chainTool_2-input-description-string"
+                    },
+                    {
+                        "label": "Return Direct",
+                        "name": "returnDirect",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "chainTool_2-input-returnDirect-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Base Chain",
+                        "name": "baseChain",
+                        "type": "BaseChain",
+                        "id": "chainTool_2-input-baseChain-BaseChain"
+                    }
+                ],
+                "inputs": {
+                    "name": "ai-paper-qa",
+                    "description": "AI Paper QA - useful for when you need to ask questions about the AI-Generated Content paper.",
+                    "returnDirect": "",
+                    "baseChain": "{{vectorDBQAChain_2.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
+                        "name": "chainTool",
+                        "label": "ChainTool",
+                        "type": "ChainTool | DynamicTool | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1251.240972921597,
+                "y": -922.9180420195128
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 143,
+            "id": "calculator_1",
+            "position": {
+                "x": 1649.5389102641816,
+                "y": -835.8729983638877
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_1",
+                "label": "Calculator",
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Calculator | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1649.5389102641816,
+                "y": -835.8729983638877
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 281,
+            "id": "mrklAgentLLM_1",
+            "position": {
+                "x": 2058.9822318317824,
+                "y": -255.95459825821794
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_1",
                 "label": "MRKL Agent for LLMs",
                 "name": "mrklAgentLLM",
                 "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
                 "category": "Agents",
                 "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
                 "inputParams": [],
@@ -25,48 +479,49 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                        "id": "mrklAgentLLM_1-input-tools-Tool"
                     },
                     {
                         "label": "LLM Model",
                         "name": "model",
                         "type": "BaseLLM",
-                        "id": "mrklAgentLLM_0-input-model-BaseLLM"
+                        "id": "mrklAgentLLM_1-input-model-BaseLLM"
                     }
                 ],
                 "inputs": {
                     "tools": [
+                        "{{calculator_1.data.instance}}",
                         "{{serpAPI_0.data.instance}}",
-                        "{{calculator_0.data.instance}}",
-                        "{{chainTool_0.data.instance}}",
-                        "{{chainTool_1.data.instance}}"
+                        "{{chainTool_2.data.instance}}",
+                        "{{chainTool_3.data.instance}}"
                     ],
-                    "model": "{{openAI_0.data.instance}}"
+                    "model": "{{openAI_5.data.instance}}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain",
+                        "id": "mrklAgentLLM_1-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
                         "name": "mrklAgentLLM",
                         "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
+                        "type": "AgentExecutor | BaseChain | BaseLangChain"
                     }
                 ],
+                "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 2364.5095620121215,
-                "y": -46.710940607495274
+                "x": 2058.9822318317824,
+                "y": -255.95459825821794
             },
+            "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 278,
+            "height": 279,
             "id": "serpAPI_0",
             "position": {
-                "x": 1895.6273348203852,
-                "y": -424.5095222426859
+                "x": 1654.5273488033688,
+                "y": -622.1607096176143
             },
             "type": "customNode",
             "data": {
@@ -74,342 +529,25 @@
                 "label": "Serp API",
                 "name": "serpAPI",
                 "type": "SerpAPI",
-                "baseClasses": ["SerpAPI", "Tool"],
+                "baseClasses": ["SerpAPI", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
                 "description": "Wrapper around SerpAPI - a real-time API to access Google search results",
                 "inputParams": [
                     {
                         "label": "Serp Api Key",
                         "name": "apiKey",
-                        "type": "password"
+                        "type": "password",
+                        "id": "serpAPI_0-input-apiKey-password"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {},
                 "outputAnchors": [
                     {
-                        "id": "serpAPI_0-output-serpAPI-SerpAPI|Tool",
+                        "id": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
                         "name": "serpAPI",
                         "label": "SerpAPI",
-                        "type": "SerpAPI | Tool"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1895.6273348203852,
-                "y": -424.5095222426859
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 143,
-            "id": "calculator_0",
-            "position": {
-                "x": 1895.7396501948126,
-                "y": -601.6479551033939
-            },
-            "type": "customNode",
-            "data": {
-                "id": "calculator_0",
-                "label": "Calculator",
-                "name": "calculator",
-                "type": "Calculator",
-                "baseClasses": ["Calculator", "Tool"],
-                "category": "Tools",
-                "description": "Perform calculations on response",
-                "inputParams": [],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "calculator_0-output-calculator-Calculator|Tool",
-                        "name": "calculator",
-                        "label": "Calculator",
-                        "type": "Calculator | Tool"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1895.7396501948126,
-                "y": -601.6479551033939
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 280,
-            "id": "vectorDBQAChain_0",
-            "position": {
-                "x": 1034.1209991774203,
-                "y": 312.59111975871537
-            },
-            "type": "customNode",
-            "data": {
-                "id": "vectorDBQAChain_0",
-                "label": "VectorDB QA Chain",
-                "name": "vectorDBQAChain",
-                "type": "VectorDBQAChain",
-                "baseClasses": ["VectorDBQAChain", "BaseChain"],
-                "category": "Chains",
-                "description": "QA chain for vector databases",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "vectorDBQAChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Vector Store",
-                        "name": "vectorStore",
-                        "type": "VectorStore",
-                        "id": "vectorDBQAChain_0-input-vectorStore-VectorStore"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{openAI_1.data.instance}}",
-                    "vectorStore": "{{pineconeExistingIndex_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "vectorDBQAChain_0-output-vectorDBQAChain-VectorDBQAChain|BaseChain",
-                        "name": "vectorDBQAChain",
-                        "label": "VectorDBQAChain",
-                        "type": "VectorDBQAChain | BaseChain"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1034.1209991774203,
-                "y": 312.59111975871537
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 472,
-            "id": "openAI_0",
-            "position": {
-                "x": 2024.2530157999474,
-                "y": 579.0657481214333
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAI_0",
-                "label": "OpenAI",
-                "name": "openAI",
-                "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
-                "category": "LLMs",
-                "description": "Wrapper around OpenAI large language models",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
-                            },
-                            {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
-                            },
-                            {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
-                            }
-                        ],
-                        "default": "text-davinci-003",
-                        "optional": true
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.7,
-                        "optional": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "text-davinci-003",
-                    "temperature": "0"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-                        "name": "openAI",
-                        "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2024.2530157999474,
-                "y": 579.0657481214333
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 472,
-            "id": "openAI_1",
-            "position": {
-                "x": 649.0214134160765,
-                "y": -74.86211370060312
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAI_1",
-                "label": "OpenAI",
-                "name": "openAI",
-                "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
-                "category": "LLMs",
-                "description": "Wrapper around OpenAI large language models",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
-                            },
-                            {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
-                            },
-                            {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
-                            }
-                        ],
-                        "default": "text-davinci-003",
-                        "optional": true
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.7,
-                        "optional": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "text-davinci-003",
-                    "temperature": "0"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-                        "name": "openAI",
-                        "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 649.0214134160765,
-                "y": -74.86211370060312
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 602,
-            "id": "chainTool_0",
-            "position": {
-                "x": 1385.7876556310375,
-                "y": 301.1018172104151
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chainTool_0",
-                "label": "Chain Tool",
-                "name": "chainTool",
-                "type": "ChainTool",
-                "baseClasses": ["ChainTool", "Tool"],
-                "category": "Tools",
-                "description": "Use a chain as allowed tool for agent",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "name",
-                        "type": "string",
-                        "placeholder": "state-of-union-qa",
-                        "id": "chainTool_0-input-name-string"
-                    },
-                    {
-                        "label": "Chain Description",
-                        "name": "description",
-                        "type": "string",
-                        "rows": 3,
-                        "placeholder": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
-                        "id": "chainTool_0-input-description-string"
-                    },
-                    {
-                        "label": "Return Direct",
-                        "name": "returnDirect",
-                        "type": "boolean",
-                        "optional": true,
-                        "id": "chainTool_0-input-returnDirect-boolean"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Base Chain",
-                        "name": "baseChain",
-                        "type": "BaseChain",
-                        "id": "chainTool_0-input-baseChain-BaseChain"
-                    }
-                ],
-                "inputs": {
-                    "name": "state-of-union-qa",
-                    "description": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
-                    "returnDirect": false,
-                    "baseChain": "{{vectorDBQAChain_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "chainTool_0-output-chainTool-ChainTool|Tool",
-                        "name": "chainTool",
-                        "label": "ChainTool",
-                        "type": "ChainTool | Tool"
+                        "type": "SerpAPI | Tool | StructuredTool | BaseLangChain"
                     }
                 ],
                 "outputs": {},
@@ -417,26 +555,244 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1385.7876556310375,
-                "y": 301.1018172104151
+                "x": 1654.5273488033688,
+                "y": -622.1607096176143
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 552,
-            "id": "pineconeExistingIndex_0",
+            "height": 331,
+            "id": "openAIEmbeddings_3",
             "position": {
-                "x": 651.5547843299339,
-                "y": 424.6009806171603
+                "x": 163.902196956619,
+                "y": 318.66096921035574
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeExistingIndex_0",
+                "id": "openAIEmbeddings_3",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "openAIEmbeddings_3-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_3-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_3-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_3-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_3-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 163.902196956619,
+                "y": 318.66096921035574
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 526,
+            "id": "openAI_4",
+            "position": {
+                "x": 529.8870809493459,
+                "y": -137.8839994127831
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_4",
+                "label": "OpenAI",
+                "name": "openAI",
+                "type": "OpenAI",
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "openAI_4-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true,
+                        "id": "openAI_4-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true,
+                        "id": "openAI_4-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-topP-number"
+                    },
+                    {
+                        "label": "Best Of",
+                        "name": "bestOf",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-bestOf-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": 0.7,
+                    "maxTokens": "",
+                    "topP": "",
+                    "bestOf": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "batchSize": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 529.8870809493459,
+                "y": -137.8839994127831
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 652,
+            "id": "pineconeExistingIndex_1",
+            "position": {
+                "x": 539.4840212380209,
+                "y": 452.3690065882661
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeExistingIndex_1",
                 "label": "Pinecone Load Existing Index",
                 "name": "pineconeExistingIndex",
                 "type": "Pinecone",
-                "baseClasses": ["Pinecone", "BaseRetriever"],
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
                 "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
                 "inputParams": [
@@ -444,19 +800,27 @@
                         "label": "Pinecone Api Key",
                         "name": "pineconeApiKey",
                         "type": "password",
-                        "id": "pineconeExistingIndex_0-input-pineconeApiKey-password"
+                        "id": "pineconeExistingIndex_1-input-pineconeApiKey-password"
                     },
                     {
                         "label": "Pinecone Environment",
                         "name": "pineconeEnv",
                         "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeEnv-string"
+                        "id": "pineconeExistingIndex_1-input-pineconeEnv-string"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                        "id": "pineconeExistingIndex_1-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "optional": true,
+                        "id": "pineconeExistingIndex_1-input-pineconeNamespace-string"
                     }
                 ],
                 "inputAnchors": [
@@ -464,13 +828,14 @@
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                        "id": "pineconeExistingIndex_1-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
-                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "embeddings": "{{openAIEmbeddings_3.data.instance}}",
                     "pineconeEnv": "us-west4-gcp",
-                    "pineconeIndex": "test"
+                    "pineconeIndex": "state-of-union",
+                    "pineconeNamespace": ""
                 },
                 "outputAnchors": [
                     {
@@ -479,13 +844,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|BaseRetriever",
+                                "id": "pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
-                                "type": "Pinecone | BaseRetriever"
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -500,72 +865,81 @@
                 "selected": false
             },
             "selected": false,
+            "dragging": false,
             "positionAbsolute": {
-                "x": 651.5547843299339,
-                "y": 424.6009806171603
-            },
-            "dragging": false
+                "x": 539.4840212380209,
+                "y": 452.3690065882661
+            }
         },
         {
             "width": 300,
-            "height": 278,
-            "id": "openAIEmbeddings_0",
+            "height": 281,
+            "id": "vectorDBQAChain_3",
             "position": {
-                "x": 291.9693257708366,
-                "y": 298.91918778665286
+                "x": 896.3238465010572,
+                "y": 173.57643605877104
             },
             "type": "customNode",
             "data": {
-                "id": "openAIEmbeddings_0",
-                "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
-                "type": "OpenAIEmbeddings",
-                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
-                "category": "Embeddings",
-                "description": "OpenAI API to generate embeddings for a given text",
-                "inputParams": [
+                "id": "vectorDBQAChain_3",
+                "label": "VectorDB QA Chain",
+                "name": "vectorDBQAChain",
+                "type": "VectorDBQAChain",
+                "baseClasses": ["VectorDBQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "QA chain for vector databases",
+                "inputParams": [],
+                "inputAnchors": [
                     {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "openAIEmbeddings_0-input-openAIApiKey-password"
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "vectorDBQAChain_3-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorDBQAChain_3-input-vectorStore-VectorStore"
                     }
                 ],
-                "inputAnchors": [],
-                "inputs": {},
+                "inputs": {
+                    "model": "{{openAI_4.data.instance}}",
+                    "vectorStore": "{{pineconeExistingIndex_1.data.instance}}"
+                },
                 "outputAnchors": [
                     {
-                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-                        "name": "openAIEmbeddings",
-                        "label": "OpenAIEmbeddings",
-                        "type": "OpenAIEmbeddings | Embeddings"
+                        "id": "vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
+                        "name": "vectorDBQAChain",
+                        "label": "VectorDBQAChain",
+                        "type": "VectorDBQAChain | BaseChain | BaseLangChain"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 291.9693257708366,
-                "y": 298.91918778665286
+                "x": 896.3238465010572,
+                "y": 173.57643605877104
             },
+            "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 602,
-            "id": "chainTool_1",
+            "height": 603,
+            "id": "chainTool_3",
             "position": {
-                "x": 1389.4337532996956,
-                "y": -747.2926394544418
+                "x": 1260.8044270644157,
+                "y": -244.7000095631508
             },
             "type": "customNode",
             "data": {
-                "id": "chainTool_1",
+                "id": "chainTool_3",
                 "label": "Chain Tool",
                 "name": "chainTool",
                 "type": "ChainTool",
-                "baseClasses": ["ChainTool", "Tool"],
+                "baseClasses": ["ChainTool", "DynamicTool", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
                 "description": "Use a chain as allowed tool for agent",
                 "inputParams": [
@@ -574,7 +948,7 @@
                         "name": "name",
                         "type": "string",
                         "placeholder": "state-of-union-qa",
-                        "id": "chainTool_1-input-name-string"
+                        "id": "chainTool_3-input-name-string"
                     },
                     {
                         "label": "Chain Description",
@@ -582,14 +956,14 @@
                         "type": "string",
                         "rows": 3,
                         "placeholder": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
-                        "id": "chainTool_1-input-description-string"
+                        "id": "chainTool_3-input-description-string"
                     },
                     {
                         "label": "Return Direct",
                         "name": "returnDirect",
                         "type": "boolean",
                         "optional": true,
-                        "id": "chainTool_1-input-returnDirect-boolean"
+                        "id": "chainTool_3-input-returnDirect-boolean"
                     }
                 ],
                 "inputAnchors": [
@@ -597,55 +971,56 @@
                         "label": "Base Chain",
                         "name": "baseChain",
                         "type": "BaseChain",
-                        "id": "chainTool_1-input-baseChain-BaseChain"
+                        "id": "chainTool_3-input-baseChain-BaseChain"
                     }
                 ],
                 "inputs": {
-                    "name": "ai-paper-qa",
-                    "description": "AI Paper QA - useful for when you need to ask questions about the AI-Generated Content paper.",
-                    "returnDirect": false,
-                    "baseChain": "{{vectorDBQAChain_1.data.instance}}"
+                    "name": "state-of-union-qa",
+                    "description": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
+                    "returnDirect": "",
+                    "baseChain": "{{vectorDBQAChain_3.data.instance}}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "chainTool_1-output-chainTool-ChainTool|Tool",
+                        "id": "chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
                         "name": "chainTool",
                         "label": "ChainTool",
-                        "type": "ChainTool | Tool"
+                        "type": "ChainTool | DynamicTool | Tool | StructuredTool | BaseLangChain"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
             "selected": false,
+            "dragging": false,
             "positionAbsolute": {
-                "x": 1389.4337532996956,
-                "y": -747.2926394544418
-            },
-            "dragging": false
+                "x": 1260.8044270644157,
+                "y": -244.7000095631508
+            }
         },
         {
             "width": 300,
-            "height": 472,
-            "id": "openAI_2",
+            "height": 526,
+            "id": "openAI_5",
             "position": {
-                "x": 643.0214134160765,
-                "y": -1105.2621137006015
+                "x": 1683.95439713088,
+                "y": 329.0556949149878
             },
             "type": "customNode",
             "data": {
-                "id": "openAI_2",
+                "id": "openAI_5",
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
                     {
                         "label": "OpenAI Api Key",
                         "name": "openAIApiKey",
-                        "type": "password"
+                        "type": "password",
+                        "id": "openAI_5-input-openAIApiKey-password"
                     },
                     {
                         "label": "Model Name",
@@ -670,348 +1045,245 @@
                             }
                         ],
                         "default": "text-davinci-003",
-                        "optional": true
+                        "optional": true,
+                        "id": "openAI_5-input-modelName-options"
                     },
                     {
                         "label": "Temperature",
                         "name": "temperature",
                         "type": "number",
                         "default": 0.7,
-                        "optional": true
+                        "optional": true,
+                        "id": "openAI_5-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-topP-number"
+                    },
+                    {
+                        "label": "Best Of",
+                        "name": "bestOf",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-bestOf-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-timeout-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "text-davinci-003",
-                    "temperature": "0"
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "bestOf": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "batchSize": "",
+                    "timeout": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_2-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+                        "id": "openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 643.0214134160765,
-                "y": -1105.2621137006015
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 278,
-            "id": "openAIEmbeddings_1",
-            "position": {
-                "x": 271.9693257708366,
-                "y": -739.0808122133471
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIEmbeddings_1",
-                "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
-                "type": "OpenAIEmbeddings",
-                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
-                "category": "Embeddings",
-                "description": "OpenAI API to generate embeddings for a given text",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "openAIEmbeddings_1-input-openAIApiKey-password"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-                        "name": "openAIEmbeddings",
-                        "label": "OpenAIEmbeddings",
-                        "type": "OpenAIEmbeddings | Embeddings"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 271.9693257708366,
-                "y": -739.0808122133471
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 280,
-            "id": "vectorDBQAChain_1",
-            "position": {
-                "x": 1034.1209991774203,
-                "y": -747.4088802412846
-            },
-            "type": "customNode",
-            "data": {
-                "id": "vectorDBQAChain_1",
-                "label": "VectorDB QA Chain",
-                "name": "vectorDBQAChain",
-                "type": "VectorDBQAChain",
-                "baseClasses": ["VectorDBQAChain", "BaseChain"],
-                "category": "Chains",
-                "description": "QA chain for vector databases",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "vectorDBQAChain_1-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Vector Store",
-                        "name": "vectorStore",
-                        "type": "VectorStore",
-                        "id": "vectorDBQAChain_1-input-vectorStore-VectorStore"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{openAI_2.data.instance}}",
-                    "vectorStore": "{{chromaExistingIndex_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "vectorDBQAChain_1-output-vectorDBQAChain-VectorDBQAChain|BaseChain",
-                        "name": "vectorDBQAChain",
-                        "label": "VectorDBQAChain",
-                        "type": "VectorDBQAChain | BaseChain"
-                    }
-                ],
-                "selected": false
+                "x": 1683.95439713088,
+                "y": 329.0556949149878
             },
             "selected": false,
-            "positionAbsolute": {
-                "x": 1034.1209991774203,
-                "y": -747.4088802412846
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 355,
-            "id": "chromaExistingIndex_0",
-            "position": {
-                "x": 643.7296055499842,
-                "y": -602.9508117559833
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chromaExistingIndex_0",
-                "label": "Chroma Load Existing Index",
-                "name": "chromaExistingIndex",
-                "type": "Chroma",
-                "baseClasses": ["Chroma", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Load existing index from Chroma (i.e: Document has been upserted)",
-                "inputParams": [
-                    {
-                        "label": "Collection Name",
-                        "name": "collectionName",
-                        "type": "string",
-                        "id": "chromaExistingIndex_0-input-collectionName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "Embeddings",
-                        "id": "chromaExistingIndex_0-input-embeddings-Embeddings"
-                    }
-                ],
-                "inputs": {
-                    "embeddings": "{{openAIEmbeddings_1.data.instance}}",
-                    "collectionName": "ai-paper"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "chromaExistingIndex_0-output-retriever-Chroma|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Chroma Retriever",
-                                "type": "Chroma | BaseRetriever"
-                            },
-                            {
-                                "id": "chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Chroma Vector Store",
-                                "type": "Chroma | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": {
-                    "output": "vectorStore"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 643.7296055499842,
-                "y": -602.9508117559833
-            },
             "dragging": false
         }
     ],
     "edges": [
         {
+            "source": "openAIEmbeddings_2",
+            "sourceHandle": "openAIEmbeddings_2-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "chromaExistingIndex_1",
+            "targetHandle": "chromaExistingIndex_1-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_2-openAIEmbeddings_2-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-chromaExistingIndex_1-chromaExistingIndex_1-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chromaExistingIndex_1",
+            "sourceHandle": "chromaExistingIndex_1-output-vectorStore-Chroma|VectorStore",
+            "target": "vectorDBQAChain_2",
+            "targetHandle": "vectorDBQAChain_2-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "chromaExistingIndex_1-chromaExistingIndex_1-output-vectorStore-Chroma|VectorStore-vectorDBQAChain_2-vectorDBQAChain_2-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_3",
+            "sourceHandle": "openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "vectorDBQAChain_2",
+            "targetHandle": "vectorDBQAChain_2-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_3-openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-vectorDBQAChain_2-vectorDBQAChain_2-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "vectorDBQAChain_2",
+            "sourceHandle": "vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
+            "target": "chainTool_2",
+            "targetHandle": "chainTool_2-input-baseChain-BaseChain",
+            "type": "buttonedge",
+            "id": "vectorDBQAChain_2-vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain-chainTool_2-chainTool_2-input-baseChain-BaseChain",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "calculator_1",
+            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_1",
+            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
             "source": "serpAPI_0",
-            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool",
-            "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_1",
+            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "calculator_0",
-            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool",
-            "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "source": "chainTool_2",
+            "sourceHandle": "chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_1",
+            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "id": "chainTool_2-chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-            "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-model-BaseLLM",
+            "source": "openAI_4",
+            "sourceHandle": "openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "vectorDBQAChain_3",
+            "targetHandle": "vectorDBQAChain_3-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLLM",
+            "id": "openAI_4-openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-vectorDBQAChain_3-vectorDBQAChain_3-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-            "target": "vectorDBQAChain_0",
-            "targetHandle": "vectorDBQAChain_0-input-model-BaseLanguageModel",
+            "source": "openAIEmbeddings_3",
+            "sourceHandle": "openAIEmbeddings_3-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeExistingIndex_1",
+            "targetHandle": "pineconeExistingIndex_1-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-vectorDBQAChain_0-vectorDBQAChain_0-input-model-BaseLanguageModel",
+            "id": "openAIEmbeddings_3-openAIEmbeddings_3-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_1-pineconeExistingIndex_1-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "vectorDBQAChain_0",
-            "sourceHandle": "vectorDBQAChain_0-output-vectorDBQAChain-VectorDBQAChain|BaseChain",
-            "target": "chainTool_0",
-            "targetHandle": "chainTool_0-input-baseChain-BaseChain",
+            "source": "vectorDBQAChain_3",
+            "sourceHandle": "vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
+            "target": "chainTool_3",
+            "targetHandle": "chainTool_3-input-baseChain-BaseChain",
             "type": "buttonedge",
-            "id": "vectorDBQAChain_0-vectorDBQAChain_0-output-vectorDBQAChain-VectorDBQAChain|BaseChain-chainTool_0-chainTool_0-input-baseChain-BaseChain",
+            "id": "vectorDBQAChain_3-vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain-chainTool_3-chainTool_3-input-baseChain-BaseChain",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "chainTool_0",
-            "sourceHandle": "chainTool_0-output-chainTool-ChainTool|Tool",
-            "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "source": "chainTool_3",
+            "sourceHandle": "chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_1",
+            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
             "type": "buttonedge",
-            "id": "chainTool_0-chainTool_0-output-chainTool-ChainTool|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "id": "chainTool_3-chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "pineconeExistingIndex_0",
-            "sourceHandle": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
-            "target": "vectorDBQAChain_0",
-            "targetHandle": "vectorDBQAChain_0-input-vectorStore-VectorStore",
+            "source": "openAI_5",
+            "sourceHandle": "openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "mrklAgentLLM_1",
+            "targetHandle": "mrklAgentLLM_1-input-model-BaseLLM",
             "type": "buttonedge",
-            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore-vectorDBQAChain_0-vectorDBQAChain_0-input-vectorStore-VectorStore",
+            "id": "openAI_5-openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-model-BaseLLM",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeExistingIndex_0",
-            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "source": "pineconeExistingIndex_1",
+            "sourceHandle": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
+            "target": "vectorDBQAChain_3",
+            "targetHandle": "vectorDBQAChain_3-input-vectorStore-VectorStore",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "vectorDBQAChain_1",
-            "sourceHandle": "vectorDBQAChain_1-output-vectorDBQAChain-VectorDBQAChain|BaseChain",
-            "target": "chainTool_1",
-            "targetHandle": "chainTool_1-input-baseChain-BaseChain",
-            "type": "buttonedge",
-            "id": "vectorDBQAChain_1-vectorDBQAChain_1-output-vectorDBQAChain-VectorDBQAChain|BaseChain-chainTool_1-chainTool_1-input-baseChain-BaseChain",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAI_2",
-            "sourceHandle": "openAI_2-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-            "target": "vectorDBQAChain_1",
-            "targetHandle": "vectorDBQAChain_1-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "openAI_2-openAI_2-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-vectorDBQAChain_1-vectorDBQAChain_1-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chromaExistingIndex_0",
-            "sourceHandle": "chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore",
-            "target": "vectorDBQAChain_1",
-            "targetHandle": "vectorDBQAChain_1-input-vectorStore-VectorStore",
-            "type": "buttonedge",
-            "id": "chromaExistingIndex_0-chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore-vectorDBQAChain_1-vectorDBQAChain_1-input-vectorStore-VectorStore",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAIEmbeddings_1",
-            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "chromaExistingIndex_0",
-            "targetHandle": "chromaExistingIndex_0-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-chromaExistingIndex_0-chromaExistingIndex_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chainTool_1",
-            "sourceHandle": "chainTool_1-output-chainTool-ChainTool|Tool",
-            "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "chainTool_1-chainTool_1-output-chainTool-ChainTool|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore-vectorDBQAChain_3-vectorDBQAChain_3-input-vectorStore-VectorStore",
             "data": {
                 "label": ""
             }

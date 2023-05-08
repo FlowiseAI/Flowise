@@ -3,15 +3,15 @@
     "nodes": [
         {
             "width": 300,
-            "height": 533,
-            "id": "promptTemplate_0",
+            "height": 534,
+            "id": "promptTemplate_1",
             "position": {
-                "x": 567,
-                "y": 85
+                "x": 532.2791692529131,
+                "y": -31.128527027841372
             },
             "type": "customNode",
             "data": {
-                "id": "promptTemplate_0",
+                "id": "promptTemplate_1",
                 "label": "Prompt Template",
                 "name": "promptTemplate",
                 "type": "PromptTemplate",
@@ -25,7 +25,7 @@
                         "type": "string",
                         "rows": 4,
                         "placeholder": "What is a good name for a company that makes {product}?",
-                        "id": "promptTemplate_0-input-template-string"
+                        "id": "promptTemplate_1-input-template-string"
                     },
                     {
                         "label": "Format Prompt Values",
@@ -36,7 +36,7 @@
                         "optional": true,
                         "acceptVariable": true,
                         "list": true,
-                        "id": "promptTemplate_0-input-promptValues-string"
+                        "id": "promptTemplate_1-input-promptValues-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -46,7 +46,7 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "id": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
                         "name": "promptTemplate",
                         "label": "PromptTemplate",
                         "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
@@ -56,23 +56,23 @@
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 567,
-                "y": 85
-            }
+                "x": 532.2791692529131,
+                "y": -31.128527027841372
+            },
+            "dragging": false
         },
         {
             "width": 300,
-            "height": 955,
-            "id": "fewShotPromptTemplate_0",
+            "height": 956,
+            "id": "fewShotPromptTemplate_1",
             "position": {
-                "x": 942.9569947740308,
-                "y": 82.93222833361332
+                "x": 886.3229032369354,
+                "y": -32.18537399495787
             },
             "type": "customNode",
             "data": {
-                "id": "fewShotPromptTemplate_0",
+                "id": "fewShotPromptTemplate_1",
                 "label": "Few Shot Prompt Template",
                 "name": "fewShotPromptTemplate",
                 "type": "FewShotPromptTemplate",
@@ -86,7 +86,7 @@
                         "type": "string",
                         "rows": 4,
                         "placeholder": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" },\n]",
-                        "id": "fewShotPromptTemplate_0-input-examples-string"
+                        "id": "fewShotPromptTemplate_1-input-examples-string"
                     },
                     {
                         "label": "Prefix",
@@ -94,7 +94,7 @@
                         "type": "string",
                         "rows": 4,
                         "placeholder": "Give the antonym of every input",
-                        "id": "fewShotPromptTemplate_0-input-prefix-string"
+                        "id": "fewShotPromptTemplate_1-input-prefix-string"
                     },
                     {
                         "label": "Suffix",
@@ -102,14 +102,14 @@
                         "type": "string",
                         "rows": 4,
                         "placeholder": "Word: {input}\nAntonym:",
-                        "id": "fewShotPromptTemplate_0-input-suffix-string"
+                        "id": "fewShotPromptTemplate_1-input-suffix-string"
                     },
                     {
                         "label": "Example Seperator",
                         "name": "exampleSeparator",
                         "type": "string",
                         "placeholder": "\n\n",
-                        "id": "fewShotPromptTemplate_0-input-exampleSeparator-string"
+                        "id": "fewShotPromptTemplate_1-input-exampleSeparator-string"
                     },
                     {
                         "label": "Template Format",
@@ -126,7 +126,7 @@
                             }
                         ],
                         "default": "f-string",
-                        "id": "fewShotPromptTemplate_0-input-templateFormat-options"
+                        "id": "fewShotPromptTemplate_1-input-templateFormat-options"
                     }
                 ],
                 "inputAnchors": [
@@ -134,12 +134,12 @@
                         "label": "Example Prompt",
                         "name": "examplePrompt",
                         "type": "PromptTemplate",
-                        "id": "fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate"
+                        "id": "fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate"
                     }
                 ],
                 "inputs": {
                     "examples": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" }\n]",
-                    "examplePrompt": "{{promptTemplate_0.data.instance}}",
+                    "examplePrompt": "{{promptTemplate_1.data.instance}}",
                     "prefix": "Give the antonym of every input",
                     "suffix": "Word: {input}\\nAntonym:",
                     "exampleSeparator": "\\n\\n",
@@ -147,7 +147,7 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "id": "fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
                         "name": "fewShotPromptTemplate",
                         "label": "FewShotPromptTemplate",
                         "type": "FewShotPromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
@@ -158,26 +158,26 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 942.9569947740308,
-                "y": 82.93222833361332
+                "x": 886.3229032369354,
+                "y": -32.18537399495787
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 472,
-            "id": "openAI_0",
+            "height": 526,
+            "id": "openAI_1",
             "position": {
-                "x": 1304.9299247555505,
-                "y": 8.707397857674266
+                "x": 1224.5139327142097,
+                "y": -30.864315286062364
             },
             "type": "customNode",
             "data": {
-                "id": "openAI_0",
+                "id": "openAI_1",
                 "label": "OpenAI",
                 "name": "openAI",
                 "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
                 "category": "LLMs",
                 "description": "Wrapper around OpenAI large language models",
                 "inputParams": [
@@ -185,7 +185,7 @@
                         "label": "OpenAI Api Key",
                         "name": "openAIApiKey",
                         "type": "password",
-                        "id": "openAI_0-input-openAIApiKey-password"
+                        "id": "openAI_1-input-openAIApiKey-password"
                     },
                     {
                         "label": "Model Name",
@@ -211,7 +211,7 @@
                         ],
                         "default": "text-davinci-003",
                         "optional": true,
-                        "id": "openAI_0-input-modelName-options"
+                        "id": "openAI_1-input-modelName-options"
                     },
                     {
                         "label": "Temperature",
@@ -219,20 +219,83 @@
                         "type": "number",
                         "default": 0.7,
                         "optional": true,
-                        "id": "openAI_0-input-temperature-number"
+                        "id": "openAI_1-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-topP-number"
+                    },
+                    {
+                        "label": "Best Of",
+                        "name": "bestOf",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-bestOf-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_1-input-timeout-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "text-davinci-003",
-                    "temperature": "0"
+                    "temperature": 0.7,
+                    "maxTokens": "",
+                    "topP": "",
+                    "bestOf": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "batchSize": "",
+                    "timeout": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+                        "id": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
                         "name": "openAI",
                         "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
                     }
                 ],
                 "outputs": {},
@@ -240,26 +303,26 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1304.9299247555505,
-                "y": 8.707397857674266
+                "x": 1224.5139327142097,
+                "y": -30.864315286062364
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 405,
-            "id": "llmChain_0",
+            "height": 407,
+            "id": "llmChain_1",
             "position": {
-                "x": 1669.2177402155296,
-                "y": 338.65158088371567
+                "x": 1635.363191180743,
+                "y": 450.00105475193766
             },
             "type": "customNode",
             "data": {
-                "id": "llmChain_0",
+                "id": "llmChain_1",
                 "label": "LLM Chain",
                 "name": "llmChain",
                 "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain"],
+                "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
                 "description": "Chain to run queries against LLMs",
                 "inputParams": [
@@ -269,7 +332,7 @@
                         "type": "string",
                         "placeholder": "Name Your Chain",
                         "optional": true,
-                        "id": "llmChain_0-input-chainName-string"
+                        "id": "llmChain_1-input-chainName-string"
                     }
                 ],
                 "inputAnchors": [
@@ -277,18 +340,18 @@
                         "label": "Language Model",
                         "name": "model",
                         "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
                     },
                     {
                         "label": "Prompt",
                         "name": "prompt",
                         "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
                     }
                 ],
                 "inputs": {
-                    "model": "{{openAI_0.data.instance}}",
-                    "prompt": "{{fewShotPromptTemplate_0.data.instance}}",
+                    "model": "{{openAI_1.data.instance}}",
+                    "prompt": "{{fewShotPromptTemplate_1.data.instance}}",
                     "chainName": ""
                 },
                 "outputAnchors": [
@@ -298,13 +361,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|BaseLangChain",
                                 "name": "llmChain",
                                 "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain"
+                                "type": "LLMChain | BaseChain | BaseLangChain"
                             },
                             {
-                                "id": "llmChain_0-output-outputPrediction-string",
+                                "id": "llmChain_1-output-outputPrediction-string",
                                 "name": "outputPrediction",
                                 "label": "Output Prediction",
                                 "type": "string"
@@ -318,44 +381,44 @@
                 },
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 1669.2177402155296,
-                "y": 338.65158088371567
+                "x": 1635.363191180743,
+                "y": 450.00105475193766
             },
+            "selected": false,
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "openAI_0",
-            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+            "source": "promptTemplate_1",
+            "sourceHandle": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "fewShotPromptTemplate_1",
+            "targetHandle": "fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
+            "id": "promptTemplate_1-promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_1-fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "fewShotPromptTemplate_0",
-            "sourceHandle": "fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "source": "openAI_1",
+            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "fewShotPromptTemplate_0-fewShotPromptTemplate_0-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "promptTemplate_0",
-            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
-            "target": "fewShotPromptTemplate_0",
-            "targetHandle": "fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate",
+            "source": "fewShotPromptTemplate_1",
+            "sourceHandle": "fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_0-fewShotPromptTemplate_0-input-examplePrompt-PromptTemplate",
+            "id": "fewShotPromptTemplate_1-fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }
