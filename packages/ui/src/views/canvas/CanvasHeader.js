@@ -89,7 +89,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     }
 
     const onSaveChatflowClick = () => {
-        if (chatflow.id) handleSaveFlow(chatflow.name)
+        if (chatflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
     }
 
