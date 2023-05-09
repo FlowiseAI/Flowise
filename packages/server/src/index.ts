@@ -368,7 +368,11 @@ export class App {
             if (
                 Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                 this.chatflowPool.activeChatflows[chatflowid].inSync &&
-                isSameOverrideConfig(this.chatflowPool.activeChatflows[chatflowid].overrideConfig, incomingInput.overrideConfig) &&
+                isSameOverrideConfig(
+                    isInternal,
+                    this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
+                    incomingInput.overrideConfig
+                ) &&
                 !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes)
             ) {
                 nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData

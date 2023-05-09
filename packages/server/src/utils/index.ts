@@ -388,11 +388,17 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boole
 
 /**
  * Rebuild flow if new override config is provided
+ * @param {boolean} isInternal
  * @param {ICommonObject} existingOverrideConfig
  * @param {ICommonObject} newOverrideConfig
  * @returns {boolean}
  */
-export const isSameOverrideConfig = (existingOverrideConfig?: ICommonObject, newOverrideConfig?: ICommonObject): boolean => {
+export const isSameOverrideConfig = (
+    isInternal: boolean,
+    existingOverrideConfig?: ICommonObject,
+    newOverrideConfig?: ICommonObject
+): boolean => {
+    if (isInternal) return true
     if (
         existingOverrideConfig &&
         Object.keys(existingOverrideConfig).length &&
