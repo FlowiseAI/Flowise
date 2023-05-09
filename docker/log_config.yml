@@ -1,0 +1,24 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    format: '%(asctime)s %(levelname)-8s %(name)-15s %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+    formatter: default
+  file:
+    class : logging.handlers.RotatingFileHandler
+    filename: chroma.log
+    formatter: default
+loggers:
+  root:
+    level: WARN
+    handlers: [console, file]
+  chromadb:
+    level: DEBUG
+  uvicorn:
+    level: INFO
+
