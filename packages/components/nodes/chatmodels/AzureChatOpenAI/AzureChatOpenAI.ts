@@ -1,3 +1,4 @@
+import { OpenAIBaseInput } from 'langchain/dist/types/openai-types'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { AzureOpenAIInput, ChatOpenAI } from 'langchain/chat_models/openai'
@@ -79,7 +80,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiEmbeddingsDeploymentName = nodeData.inputs?.azureOpenAIApiEmbeddingsDeploymentName as string
         const azureOpenAIApiCompletionsDeploymentName = nodeData.inputs?.azureOpenAIApiCompletionsDeploymentName as string
 
-        const obj: Partial<AzureOpenAIInput> & { temperature?: number } = {
+        const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
             temperature: parseInt(temperature, 10),
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
