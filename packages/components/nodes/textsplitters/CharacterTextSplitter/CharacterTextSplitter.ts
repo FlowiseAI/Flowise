@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { RecursiveCharacterTextSplitter, RecursiveCharacterTextSplitterParams } from 'langchain/text_splitter'
+import { CharacterTextSplitter, CharacterTextSplitterParams } from 'langchain/text_splitter'
 
-class RecursiveCharacterTextSplitter_TextSplitters implements INode {
+class CharacterTextSplitter_TextSplitters implements INode {
     label: string
     name: string
     description: string
@@ -13,14 +13,20 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Recursive Character Text Splitter'
-        this.name = 'recursiveCharacterTextSplitter'
-        this.type = 'RecursiveCharacterTextSplitter'
+        this.label = 'Character Text Splitter'
+        this.name = 'characterTextSplitter'
+        this.type = 'CharacterTextSplitter'
         this.icon = 'textsplitter.svg'
         this.category = 'Text Splitters'
-        this.description = `Split documents recursively by different characters - starting with "\\n\\n", then "\\n", then " "`
-        this.baseClasses = [this.type, ...getBaseClasses(RecursiveCharacterTextSplitter)]
+        this.description = `splits only on one type of character (defaults to "\\n\\n").`
+        this.baseClasses = [this.type, ...getBaseClasses(CharacterTextSplitter)]
         this.inputs = [
+            {
+                label: 'Separator',
+                name: 'separator',
+                type: 'string',
+                optional: true
+            },
             {
                 label: 'Chunk Size',
                 name: 'chunkSize',
@@ -38,18 +44,20 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
+        const separator = nodeData.inputs?.separator as string
         const chunkSize = nodeData.inputs?.chunkSize as string
         const chunkOverlap = nodeData.inputs?.chunkOverlap as string
 
-        const obj = {} as RecursiveCharacterTextSplitterParams
+        const obj = {} as CharacterTextSplitterParams
 
+        if (separator) obj.separator = separator
         if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
         if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
 
-        const splitter = new RecursiveCharacterTextSplitter(obj)
+        const splitter = new CharacterTextSplitter(obj)
 
         return splitter
     }
 }
 
-module.exports = { nodeClass: RecursiveCharacterTextSplitter_TextSplitters }
+module.exports = { nodeClass: CharacterTextSplitter_TextSplitters }

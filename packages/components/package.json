@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -16,7 +16,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
-        "@dqbd/tiktoken": "^1.0.4",
+        "@dqbd/tiktoken": "^1.0.7",
         "@huggingface/inference": "^1.6.3",
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
@@ -29,7 +29,7 @@
         "express": "^4.17.3",
         "form-data": "^4.0.0",
         "graphql": "^16.6.0",
-        "langchain": "^0.0.66",
+        "langchain": "^0.0.73",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
         "node-fetch": "2",

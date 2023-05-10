@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { RecursiveCharacterTextSplitter, RecursiveCharacterTextSplitterParams } from 'langchain/text_splitter'
+import { MarkdownTextSplitter, MarkdownTextSplitterParams } from 'langchain/text_splitter'
 
-class RecursiveCharacterTextSplitter_TextSplitters implements INode {
+class MarkdownTextSplitter_TextSplitters implements INode {
     label: string
     name: string
     description: string
@@ -13,13 +13,13 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Recursive Character Text Splitter'
-        this.name = 'recursiveCharacterTextSplitter'
-        this.type = 'RecursiveCharacterTextSplitter'
-        this.icon = 'textsplitter.svg'
+        this.label = 'Markdown Text Splitter'
+        this.name = 'markdownTextSplitter'
+        this.type = 'MarkdownTextSplitter'
+        this.icon = 'markdownTextSplitter.svg'
         this.category = 'Text Splitters'
-        this.description = `Split documents recursively by different characters - starting with "\\n\\n", then "\\n", then " "`
-        this.baseClasses = [this.type, ...getBaseClasses(RecursiveCharacterTextSplitter)]
+        this.description = `Split your content into documents based on the Markdown headers`
+        this.baseClasses = [this.type, ...getBaseClasses(MarkdownTextSplitter)]
         this.inputs = [
             {
                 label: 'Chunk Size',
@@ -41,15 +41,15 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
         const chunkSize = nodeData.inputs?.chunkSize as string
         const chunkOverlap = nodeData.inputs?.chunkOverlap as string
 
-        const obj = {} as RecursiveCharacterTextSplitterParams
+        const obj = {} as MarkdownTextSplitterParams
 
         if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
         if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
 
-        const splitter = new RecursiveCharacterTextSplitter(obj)
+        const splitter = new MarkdownTextSplitter(obj)
 
         return splitter
     }
 }
 
-module.exports = { nodeClass: RecursiveCharacterTextSplitter_TextSplitters }
+module.exports = { nodeClass: MarkdownTextSplitter_TextSplitters }
