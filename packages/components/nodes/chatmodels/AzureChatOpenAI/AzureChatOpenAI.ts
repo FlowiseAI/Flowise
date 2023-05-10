@@ -60,7 +60,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'azure OpenAI Api Completions Deployment Name',
+                label: 'Azure OpenAI Api Completions Deployment Name',
                 name: 'azureOpenAIApiCompletionsDeploymentName',
                 type: 'string',
                 placeholder: 'YOUR-COMPLETIONS-NAME',
