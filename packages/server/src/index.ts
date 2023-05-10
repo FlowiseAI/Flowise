@@ -378,7 +378,6 @@ export class App {
                 nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
             } else {
                 /*** Get chatflows and prepare data  ***/
-
                 const flowData = chatflow.flowData
                 const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
                 const nodes = parsedFlowData.nodes
