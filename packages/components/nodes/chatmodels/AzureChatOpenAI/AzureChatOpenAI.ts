@@ -53,7 +53,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 placeholder: 'YOUR-API-VERSION'
             },
             {
-                label: 'Azure OpenAIApi Embeddings Deployment Name',
+                label: 'Azure OpenAI Api Embeddings Deployment Name',
                 name: 'azureOpenAIApiEmbeddingsDeploymentName',
                 type: 'string',
                 placeholder: 'YOUR-EMBEDDINGS-NAME',
