@@ -18,6 +18,7 @@ import { SET_CHATFLOW } from 'store/actions'
 import pythonSVG from 'assets/images/python.svg'
 import javascriptSVG from 'assets/images/javascript.svg'
 import cURLSVG from 'assets/images/cURL.svg'
+import EmbedSVG from 'assets/images/embed.svg'
 
 // API
 import apiKeyApi from 'api/apikey'
@@ -117,11 +118,21 @@ const getFormDataExamplesForCurl = (configData) => {
     return finalStr
 }
 
+const embedCode = (chatflowid) => {
+    return `<script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed@latest/dist/web.js"
+    Chatbot.init({
+        chatflowid: "${chatflowid}",
+        apiHost: "${baseURL}",
+    })
+</script>`
+}
+
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const codes = ['Python', 'JavaScript', 'cURL']
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
@@ -196,6 +207,8 @@ output = query({
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}'`
+        } else if (codeLang === 'Embed') {
+            return embedCode(dialogProps.chatflowid)
         }
         return ''
     }
@@ -236,6 +249,8 @@ output = query({
      -X POST \\
      -d '{"question": "Hey, how are you?"}'
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
+        } else if (codeLang === 'Embed') {
+            return embedCode(dialogProps.chatflowid)
         }
         return ''
     }
@@ -243,7 +258,7 @@ output = query({
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
             return 'python'
-        } else if (codeLang === 'JavaScript') {
+        } else if (codeLang === 'JavaScript' || codeLang === 'Embed') {
             return 'javascript'
         } else if (codeLang === 'cURL') {
             return 'bash'
@@ -256,6 +271,8 @@ output = query({
             return pythonSVG
         } else if (codeLang === 'JavaScript') {
             return javascriptSVG
+        } else if (codeLang === 'Embed') {
+            return EmbedSVG
         } else if (codeLang === 'cURL') {
             return cURLSVG
         }
@@ -458,11 +475,7 @@ curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
                             {codes.map((codeLang, index) => (
                                 <Tab
                                     icon={
-                                        <img
-                                            style={{ objectFit: 'cover', height: 'auto', width: 'auto' }}
-                                            src={getSVG(codeLang)}
-                                            alt='code'
-                                        />
+                                        <img style={{ objectFit: 'cover', height: 15, width: 'auto' }} src={getSVG(codeLang)} alt='code' />
                                     }
                                     iconPosition='start'
                                     key={index}
@@ -472,19 +485,29 @@ curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
                             ))}
                         </Tabs>
                     </div>
-                    <div style={{ flex: 20 }}>
-                        <Dropdown
-                            name='SelectKey'
-                            disableClearable={true}
-                            options={keyOptions}
-                            onSelect={(newValue) => onApiKeySelected(newValue)}
-                            value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
-                        />
-                    </div>
+                    {value !== 0 && (
+                        <div style={{ flex: 20 }}>
+                            <Dropdown
+                                name='SelectKey'
+                                disableClearable={true}
+                                options={keyOptions}
+                                onSelect={(newValue) => onApiKeySelected(newValue)}
+                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
+                            />
+                        </div>
+                    )}
                 </div>
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
+                        {value === 0 && (
+                            <>
+                                <span>
+                                    Paste this anywhere in the <code>{`<body>`}</code> tag of your html file
+                                </span>
+                                <div style={{ height: 10 }}></div>
+                            </>
+                        )}
                         <CopyBlock
                             theme={atomOneDark}
                             text={chatflowApiKeyId ? getCodeWithAuthorization(codeLang) : getCode(codeLang)}
@@ -492,8 +515,8 @@ curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
                             showLineNumbers={false}
                             wrapLines
                         />
-                        <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
-                        {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
+                        {value !== 0 && <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />}
+                        {value !== 0 && checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                             <>
                                 <TableViewOnly rows={getConfigApi.data} columns={Object.keys(getConfigApi.data[0])} />
                                 <CopyBlock
