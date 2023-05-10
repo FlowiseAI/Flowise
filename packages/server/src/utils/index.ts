@@ -353,6 +353,12 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
     return flowNodeData
 }
 
+/**
+ * Loop through each inputs and replace their value with override config values
+ * @param {INodeData} flowNodeData
+ * @param {ICommonObject} overrideConfig
+ * @returns {INodeData}
+ */
 export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
     const types = 'inputs'
 
@@ -560,12 +566,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
         for (const inputParam of flowNode.data.inputParams) {
             let obj: IOverrideConfig
             if (inputParam.type === 'password' || inputParam.type === 'options') {
-                obj = {
-                    node: flowNode.data.label,
-                    label: inputParam.label,
-                    name: inputParam.name,
-                    type: 'string'
-                }
+                continue
             } else if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,

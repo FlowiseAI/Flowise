@@ -66,7 +66,7 @@ const unshiftFiles = (configData) => {
     return configData
 }
 
-const getFormDataExamplesForJS = (configData) => {
+const getConfigExamplesForJS = (configData, bodyType) => {
     let finalStr = ''
     configData = unshiftFiles(configData)
     const loop = Math.min(configData.length, 4)
@@ -77,12 +77,13 @@ const getFormDataExamplesForJS = (configData) => {
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`
         else if (config.name === 'files') exampleVal = `input.files[0]`
-        finalStr += `formData.append("${config.name}", ${exampleVal})\n`
+        finalStr += bodyType === 'json' ? `\n      "${config.name}": ${exampleVal},` : `formData.append("${config.name}", ${exampleVal})\n`
+        if (i === loop - 1 && bodyType !== 'json') `formData.append("question", "Hey, how are you?")\n`
     }
     return finalStr
 }
 
-const getFormDataExamplesForPython = (configData) => {
+const getConfigExamplesForPython = (configData, bodyType) => {
     let finalStr = ''
     configData = unshiftFiles(configData)
     const loop = Math.min(configData.length, 4)
@@ -93,26 +94,26 @@ const getFormDataExamplesForPython = (configData) => {
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`
         else if (config.name === 'files') exampleVal = `('example${config.type}', open('example${config.type}', 'rb'))`
-        finalStr += `\n    "${config.name}": ${exampleVal}`
-        if (i === loop - 1) finalStr += `\n`
+        finalStr += bodyType === 'json' ? `\n        "${config.name}": ${exampleVal},` : `\n    "${config.name}": ${exampleVal},`
+        if (i === loop - 1 && bodyType !== 'json') finalStr += `\n    "question": "Hey, how are you?"\n`
     }
     return finalStr
 }
 
-const getFormDataExamplesForCurl = (configData) => {
+const getConfigExamplesForCurl = (configData, bodyType) => {
     let finalStr = ''
     configData = unshiftFiles(configData)
     const loop = Math.min(configData.length, 4)
     for (let i = 0; i < loop; i += 1) {
         const config = configData[i]
         let exampleVal = `example`
-        if (config.type === 'string') exampleVal = `example`
+        if (config.type === 'string') exampleVal = bodyType === 'json' ? `"example"` : `example`
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`
         else if (config.name === 'files') exampleVal = `@/home/user1/Desktop/example${config.type}`
-        finalStr += `\n     -F "${config.name}=${exampleVal}"`
-        if (i === loop - 1) finalStr += `)\n`
-        else finalStr += ` \\`
+        finalStr += bodyType === 'json' ? `"${config.name}": ${exampleVal}` : `\n     -F "${config.name}=${exampleVal}"`
+        if (i === loop - 1) finalStr += bodyType === 'json' ? ` }` : ` \\\n     -F "question=Hey, how are you?"`
+        else finalStr += bodyType === 'json' ? `, ` : ` \\`
     }
     return finalStr
 }
@@ -178,19 +179,21 @@ output = query({
 })
 `
         } else if (codeLang === 'JavaScript') {
-            return `async function query() {
+            return `async function query(data) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: {
-                "question": "Hey, how are you?"
-            },
+            body: data
         }
     );
     const result = await response.json();
     return result;
 }
+
+query({"question": "Hey, how are you?"}).then((response) => {
+    console.log(response);
+});
 `
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
@@ -222,14 +225,16 @@ output = query({
         {
             headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
             method: "POST",
-            body: {
-                "question": "Hey, how are you?"
-            },
+            body: data
         }
     );
     const result = await response.json();
     return result;
 }
+
+query({"question": "Hey, how are you?"}).then((response) => {
+    console.log(response);
+});
 `
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
@@ -262,143 +267,190 @@ output = query({
         return pythonSVG
     }
 
-    const getConfigCode = (codeLang, configData) => {
+    // ----------------------------CONFIG FORM DATA --------------------------//
+
+    const getConfigCodeWithFormData = (codeLang, configData) => {
         if (codeLang === 'Python') {
             return `import requests
-form_data = {${getFormDataExamplesForPython(configData)}}
 
-def setConfig():
-    response = requests.post("${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}", files=form_data)
+API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+
+# use form data to upload files
+form_data = {${getConfigExamplesForPython(configData, 'formData')}}
+
+def query(form_data):
+    response = requests.post(API_URL, files=form_data)
     return response.json()
 
-def query(payload):
-    response = requests.post("${baseURL}/api/v1/prediction/${dialogProps.chatflowid}", json=payload)
-    return response.json()
-
-# Set initial config
-config = setConfig()
-
-# Run prediction with config
-output = query({
-    "question": "Hey, how are you?",
-    "overrideConfig": config
-})
+output = query(form_data)
 `
         } else if (codeLang === 'JavaScript') {
-            return `let formData = new FormData();
-${getFormDataExamplesForJS(configData)}
-async function setConfig() {
-    const response = await fetch(
-        "${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}",
-        {
-            method: "POST",
-            body: formData
-        }
-    );
-    const config = await response.json();
-    return config; //Returns a config object
-}
-
-async function query(config) {
+            return `// use FormData to upload files
+let formData = new FormData();
+${getConfigExamplesForJS(configData, 'formData')}
+async function query(formData) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: {
-                "question": "Hey, how are you?",
-                "overrideConfig": config
-            },
+            body: formData
         }
     );
     const result = await response.json();
     return result;
 }
 
-// Set initial config
-const config = await setConfig()
-
-// Run prediction with config
-const res = await query(config)
+query(formData).then((response) => {
+    console.log(response);
+});
 `
         } else if (codeLang === 'cURL') {
-            return `CONFIG=$(curl ${baseURL}/api/v1/flow-config/${dialogProps.chatflowid} \\
-     -X POST \\${getFormDataExamplesForCurl(configData)}
-curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
-     -X POST \\
-     -d '{"question": "Hey, how are you?", "overrideConfig": $CONFIG}'`
+            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+     -X POST \\${getConfigExamplesForCurl(configData, 'formData')}`
         }
         return ''
     }
 
-    const getConfigCodeWithAuthorization = (codeLang, configData) => {
+    // ----------------------------CONFIG FORM DATA with AUTH--------------------------//
+
+    const getConfigCodeWithFormDataWithAuth = (codeLang, configData) => {
         if (codeLang === 'Python') {
             return `import requests
-form_data = {${getFormDataExamplesForPython(configData)}}
+
+API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
 headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
 
-def setConfig():
-    response = requests.post("${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}", headers=headers, files=form_data)
+# use form data to upload files
+form_data = {${getConfigExamplesForPython(configData, 'formData')}}
+
+def query(form_data):
+    response = requests.post(API_URL, headers=headers, files=form_data)
     return response.json()
 
-def query(payload):
-    response = requests.post("${baseURL}/api/v1/prediction/${dialogProps.chatflowid}", headers=headers, json=payload)
-    return response.json()
-
-# Set initial config
-config = setConfig()
-
-# Run prediction with config
-output = query({
-    "question": "Hey, how are you?",
-    "overrideConfig": config
-})
+output = query(form_data)
 `
         } else if (codeLang === 'JavaScript') {
-            return `let formData = new FormData();
-${getFormDataExamplesForJS(configData)}
-async function setConfig() {
+            return `// use FormData to upload files
+let formData = new FormData();
+${getConfigExamplesForJS(configData, 'formData')}
+async function query(formData) {
     const response = await fetch(
-        "${baseURL}/api/v1/flow-config/${dialogProps.chatflowid}",
+        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
             method: "POST",
             body: formData
         }
     );
-    const config = await response.json();
-    return config; //Returns a config object
+    const result = await response.json();
+    return result;
 }
 
-async function query(config) {
+query(formData).then((response) => {
+    console.log(response);
+});
+`
+        } else if (codeLang === 'cURL') {
+            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+     -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
+        }
+        return ''
+    }
+
+    // ----------------------------CONFIG JSON--------------------------//
+
+    const getConfigCode = (codeLang, configData) => {
+        if (codeLang === 'Python') {
+            return `import requests
+
+API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+
+def query(payload):
+    response = requests.post(API_URL, json=payload)
+    return response.json()
+
+output = query({
+    "question": "Hey, how are you?",
+    "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
+    }
+})
+`
+        } else if (codeLang === 'JavaScript') {
+            return `async function query(data) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
             method: "POST",
-            body: {
-                "question": "Hey, how are you?",
-                "overrideConfig": config
-            },
+            body: data
         }
     );
     const result = await response.json();
     return result;
 }
 
-// Set initial config
-const config = await setConfig()
-
-// Run prediction with config
-const res = await query(config)
+query({
+  "question": "Hey, how are you?",
+  "overrideConfig": {${getConfigExamplesForJS(configData, 'json')}
+  }
+}).then((response) => {
+    console.log(response);
+});
 `
         } else if (codeLang === 'cURL') {
-            return `CONFIG=$(curl ${baseURL}/api/v1/flow-config/${dialogProps.chatflowid} \\
+            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"\\${getFormDataExamplesForCurl(configData)}
-curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
+     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}'`
+        }
+        return ''
+    }
+
+    // ----------------------------CONFIG JSON with AUTH--------------------------//
+
+    const getConfigCodeWithAuthorization = (codeLang, configData) => {
+        if (codeLang === 'Python') {
+            return `import requests
+
+API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
+headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
+
+def query(payload):
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.json()
+
+output = query({
+    "question": "Hey, how are you?",
+    "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
+    }
+})
+`
+        } else if (codeLang === 'JavaScript') {
+            return `async function query(data) {
+    const response = await fetch(
+        "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
+        {
+            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            method: "POST",
+            body: data
+        }
+    );
+    const result = await response.json();
+    return result;
+}
+
+query({
+  "question": "Hey, how are you?",
+  "overrideConfig": {${getConfigExamplesForJS(configData, 'json')}
+  }
+}).then((response) => {
+    console.log(response);
+});
+`
+        } else if (codeLang === 'cURL') {
+            return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"
-     -d '{"question": "Hey, how are you?", "overrideConfig": $CONFIG}'`
+     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
         return ''
     }
@@ -500,7 +552,11 @@ curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
                                     theme={atomOneDark}
                                     text={
                                         chatflowApiKeyId
-                                            ? getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
+                                            ? dialogProps.isFormDataRequired
+                                                ? getConfigCodeWithFormDataWithAuth(codeLang, getConfigApi.data)
+                                                : getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
+                                            : dialogProps.isFormDataRequired
+                                            ? getConfigCodeWithFormData(codeLang, getConfigApi.data)
                                             : getConfigCode(codeLang, getConfigApi.data)
                                     }
                                     language={getLang(codeLang)}

@@ -222,37 +222,12 @@ export class App {
             return res.json(availableConfigs)
         })
 
-        this.app.post('/api/v1/flow-config/:id', upload.array('files'), async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-            await this.validateKey(req, res, chatflow)
-
-            const overrideConfig: ICommonObject = { ...req.body }
-            const files = req.files as any[]
-            if (!files || !files.length) return
-
-            for (const file of files) {
-                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
-
-                const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                if (overrideConfig[fileInputField]) {
-                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                } else {
-                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                }
-            }
-            return res.json(overrideConfig)
-        })
-
         // ----------------------------------------
         // Prediction
         // ----------------------------------------
 
         // Send input message and get prediction result (External)
-        this.app.post('/api/v1/prediction/:id', async (req: Request, res: Response) => {
+        this.app.post('/api/v1/prediction/:id', upload.array('files'), async (req: Request, res: Response) => {
             await this.processPrediction(req, res)
         })
 
@@ -346,7 +321,7 @@ export class App {
     async processPrediction(req: Request, res: Response, isInternal = false) {
         try {
             const chatflowid = req.params.id
-            const incomingInput: IncomingInput = req.body
+            let incomingInput: IncomingInput = req.body
 
             let nodeToExecuteData: INodeData
 
@@ -357,6 +332,28 @@ export class App {
 
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
+            }
+
+            const files = (req.files as any[]) || []
+
+            if (files.length) {
+                const overrideConfig: ICommonObject = { ...req.body }
+                for (const file of files) {
+                    const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
+                    const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+
+                    const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                    if (overrideConfig[fileInputField]) {
+                        overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
+                    } else {
+                        overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
+                    }
+                }
+                incomingInput = {
+                    question: req.body.question ?? 'hello',
+                    overrideConfig,
+                    history: []
+                }
             }
 
             /* Don't rebuild the flow (to avoid duplicated upsert, recomputation) when all these conditions met:
@@ -378,7 +375,6 @@ export class App {
                 nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
             } else {
                 /*** Get chatflows and prepare data  ***/
-
                 const flowData = chatflow.flowData
                 const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
                 const nodes = parsedFlowData.nodes
