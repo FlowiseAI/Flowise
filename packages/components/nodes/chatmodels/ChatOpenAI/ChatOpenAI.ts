@@ -96,6 +96,13 @@ class ChatOpenAI_ChatModels implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -109,6 +116,7 @@ class ChatOpenAI_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
             temperature: parseInt(temperature, 10),
@@ -121,6 +129,7 @@ class ChatOpenAI_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (streaming) obj.streaming = streaming
 
         const model = new ChatOpenAI(obj)
         return model
