@@ -1,7 +1,6 @@
-import { OpenAIChatInput } from 'langchain/llms/openai'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { ChatOpenAI } from 'langchain/chat_models/openai'
+import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string

@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { CohereEmbeddings } from 'langchain/embeddings/cohere'
+import { CohereEmbeddings, CohereEmbeddingsParams } from 'langchain/embeddings/cohere'
 
 class CohereEmbedding_Embeddings implements INode {
     label: string
@@ -25,14 +25,42 @@ class CohereEmbedding_Embeddings implements INode {
                 label: 'Cohere API Key',
                 name: 'cohereApiKey',
                 type: 'password'
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'embed-english-v2.0',
+                        name: 'embed-english-v2.0'
+                    },
+                    {
+                        label: 'embed-english-light-v2.0',
+                        name: 'embed-english-light-v2.0'
+                    },
+                    {
+                        label: 'embed-multilingual-v2.0',
+                        name: 'embed-multilingual-v2.0'
+                    }
+                ],
+                default: 'embed-english-v2.0',
+                optional: true
             }
         ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
         const apiKey = nodeData.inputs?.cohereApiKey as string
+        const modelName = nodeData.inputs?.modelName as string
 
-        const model = new CohereEmbeddings({ apiKey })
+        const obj: Partial<CohereEmbeddingsParams> & { apiKey?: string } = {
+            apiKey
+        }
+
+        if (modelName) obj.modelName = modelName
+
+        const model = new CohereEmbeddings(obj)
         return model
     }
 }
