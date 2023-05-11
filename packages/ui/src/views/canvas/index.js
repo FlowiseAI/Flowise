@@ -407,8 +407,13 @@ const Canvas = () => {
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
         } else {
-            setNodes([])
-            setEdges([])
+            if (localStorage.getItem('duplicatedFlowData')) {
+                handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
+                setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0)
+            } else {
+                setNodes([])
+                setEdges([])
+            }
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {

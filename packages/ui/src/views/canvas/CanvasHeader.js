@@ -23,6 +23,7 @@ import useApi from 'hooks/useApi'
 
 // utils
 import { generateExportFlowData } from 'utils/genericHelper'
+import { uiBaseURL } from 'store/constant'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -47,6 +48,13 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
 
         if (setting === 'deleteChatflow') {
             handleDeleteFlow()
+        } else if (setting === 'duplicateChatflow') {
+            try {
+                localStorage.setItem('duplicatedFlowData', chatflow.flowData)
+                window.open(`${uiBaseURL}/canvas`, '_blank')
+            } catch (e) {
+                console.error(e)
+            }
         } else if (setting === 'exportChatflow') {
             try {
                 const flowData = JSON.parse(chatflow.flowData)
@@ -80,10 +88,26 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     }
 
     const onAPIDialogClick = () => {
+        let isFormDataRequired = false
+
+        try {
+            const flowData = JSON.parse(chatflow.flowData)
+            const nodes = flowData.nodes
+            for (const node of nodes) {
+                if (node.data.inputParams.find((param) => param.type === 'file')) {
+                    isFormDataRequired = true
+                    break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
         setAPIDialogProps({
             title: 'Embed in website or use as API',
             chatflowid: chatflow.id,
-            chatflowApiKeyId: chatflow.apikeyid
+            chatflowApiKeyId: chatflow.apikeyid,
+            isFormDataRequired
         })
         setAPIDialogOpen(true)
     }
@@ -131,7 +155,9 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                             }
                         }}
                         color='inherit'
-                        onClick={() => navigate(-1)}
+                        onClick={() =>
+                            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
+                        }
                     >
                         <IconChevronLeft stroke={1.5} size='1.3rem' />
                     </Avatar>
@@ -231,26 +257,28 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 )}
             </Box>
             <Box>
-                <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.deployLight,
-                            color: theme.palette.canvasHeader.deployDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.deployDark,
-                                color: theme.palette.canvasHeader.deployLight
-                            }
-                        }}
-                        color='inherit'
-                        onClick={onAPIDialogClick}
-                    >
-                        <IconCode stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
+                {chatflow?.id && (
+                    <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.canvasHeader.deployLight,
+                                color: theme.palette.canvasHeader.deployDark,
+                                '&:hover': {
+                                    background: theme.palette.canvasHeader.deployDark,
+                                    color: theme.palette.canvasHeader.deployLight
+                                }
+                            }}
+                            color='inherit'
+                            onClick={onAPIDialogClick}
+                        >
+                            <IconCode stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                )}
                 <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
                     <Avatar
                         variant='rounded'
