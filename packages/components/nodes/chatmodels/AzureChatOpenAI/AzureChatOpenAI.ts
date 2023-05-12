@@ -75,10 +75,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                     {
                         label: '2023-03-15-preview',
                         name: '2023-03-15-preview'
-                    },
-                    {
-                        label: '2022-12-01',
-                        name: '2022-12-01'
                     }
                 ],
                 default: '2023-03-15-preview'
