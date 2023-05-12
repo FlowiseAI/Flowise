@@ -154,13 +154,6 @@ class AzureOpenAI_LLMs implements INode {
                 additionalParams: true
             },
             {
-                label: 'Batch Size',
-                name: 'batchSize',
-                type: 'number',
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
@@ -182,7 +175,6 @@ class AzureOpenAI_LLMs implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
-        const batchSize = nodeData.inputs?.batchSize as string
         const bestOf = nodeData.inputs?.bestOf as string
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
@@ -199,7 +191,6 @@ class AzureOpenAI_LLMs implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
         const model = new OpenAI(obj)

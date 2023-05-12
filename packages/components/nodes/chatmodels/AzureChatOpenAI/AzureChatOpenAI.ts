@@ -87,13 +87,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Top Probability',
-                name: 'topP',
-                type: 'number',
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Frequency Penalty',
                 name: 'frequencyPenalty',
                 type: 'number',
@@ -125,7 +118,6 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
         const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
         const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
@@ -140,7 +132,6 @@ class AzureChatOpenAI_ChatModels implements INode {
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
         if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
