@@ -6,6 +6,15 @@ import ReactJson from 'react-json-view'
 export const JsonEditorInput = ({ value, onChange, disabled = false, isDarkMode = false }) => {
     const [myValue, setMyValue] = useState(value ? JSON.parse(value) : {})
 
+    const onClipboardCopy = (e) => {
+        const src = e.src
+        if (Array.isArray(src) || typeof src === 'object') {
+            navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
+        } else {
+            navigator.clipboard.writeText(src)
+        }
+    }
+
     return (
         <>
             <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
@@ -15,6 +24,7 @@ export const JsonEditorInput = ({ value, onChange, disabled = false, isDarkMode 
                         style={{ padding: 10, borderRadius: 10 }}
                         src={myValue}
                         name={null}
+                        enableClipboard={(e) => onClipboardCopy(e)}
                         quotesOnKeys={false}
                         displayDataTypes={false}
                     />
@@ -27,6 +37,7 @@ export const JsonEditorInput = ({ value, onChange, disabled = false, isDarkMode 
                         name={null}
                         quotesOnKeys={false}
                         displayDataTypes={false}
+                        enableClipboard={(e) => onClipboardCopy(e)}
                         onEdit={(edit) => {
                             setMyValue(edit.updated_src)
                             onChange(JSON.stringify(edit.updated_src))
