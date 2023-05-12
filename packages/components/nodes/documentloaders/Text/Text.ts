@@ -33,6 +33,13 @@ class Text_DocumentLoaders implements INode {
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
+            },
+            {
+                label: 'Metadata',
+                name: 'metadata',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -40,17 +47,34 @@ class Text_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const txtFileBase64 = nodeData.inputs?.txtFile as string
+        const metadata = nodeData.inputs?.metadata
 
         const blob = new Blob(getBlob(txtFileBase64))
         const loader = new TextLoader(blob)
+        let docs = []
 
         if (textSplitter) {
-            const docs = await loader.loadAndSplit(textSplitter)
-            return docs
+            docs = await loader.loadAndSplit(textSplitter)
         } else {
-            const docs = await loader.load()
-            return docs
+            docs = await loader.load()
         }
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
+        }
+        return docs
     }
 }
 

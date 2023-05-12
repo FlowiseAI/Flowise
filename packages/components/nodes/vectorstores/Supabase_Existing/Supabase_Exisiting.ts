@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses } from '../../../src/utils'
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
+import { SupabaseLibArgs, SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
 
 class Supabase_Existing_VectorStores implements INode {
@@ -48,6 +48,13 @@ class Supabase_Existing_VectorStores implements INode {
                 label: 'Query Name',
                 name: 'queryName',
                 type: 'string'
+            },
+            {
+                label: 'Supabase Metadata Filter',
+                name: 'supabaseMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.outputs = [
@@ -70,15 +77,23 @@ class Supabase_Existing_VectorStores implements INode {
         const tableName = nodeData.inputs?.tableName as string
         const queryName = nodeData.inputs?.queryName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const supabaseMetadataFilter = nodeData.inputs?.supabaseMetadataFilter
         const output = nodeData.outputs?.output as string
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
-        const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
+        const obj: SupabaseLibArgs = {
             client,
-            tableName: tableName,
-            queryName: queryName
-        })
+            tableName,
+            queryName
+        }
+
+        if (supabaseMetadataFilter) {
+            const metadatafilter = typeof supabaseMetadataFilter === 'object' ? supabaseMetadataFilter : JSON.parse(supabaseMetadataFilter)
+            obj.filter = metadatafilter
+        }
+
+        const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever()

@@ -45,6 +45,13 @@ class Github_DocumentLoaders implements INode {
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
+            },
+            {
+                label: 'Metadata',
+                name: 'metadata',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -54,6 +61,7 @@ class Github_DocumentLoaders implements INode {
         const branch = nodeData.inputs?.branch as string
         const accessToken = nodeData.inputs?.accessToken as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const metadata = nodeData.inputs?.metadata
 
         const options: GithubRepoLoaderParams = {
             branch,
@@ -64,14 +72,31 @@ class Github_DocumentLoaders implements INode {
         if (accessToken) options.accessToken = accessToken
 
         const loader = new GithubRepoLoader(repoLink, options)
+        let docs = []
 
         if (textSplitter) {
-            const docs = await loader.loadAndSplit(textSplitter)
-            return docs
+            docs = await loader.loadAndSplit(textSplitter)
         } else {
-            const docs = await loader.load()
-            return docs
+            docs = await loader.load()
         }
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
+        }
+
+        return docs
     }
 }
 

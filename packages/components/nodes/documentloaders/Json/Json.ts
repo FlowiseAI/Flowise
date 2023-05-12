@@ -41,6 +41,13 @@ class Json_DocumentLoaders implements INode {
                 description: 'Extracting multiple pointers',
                 placeholder: 'Enter pointers name',
                 optional: true
+            },
+            {
+                label: 'Metadata',
+                name: 'metadata',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -49,6 +56,7 @@ class Json_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const jsonFileBase64 = nodeData.inputs?.jsonFile as string
         const pointersName = nodeData.inputs?.pointersName as string
+        const metadata = nodeData.inputs?.metadata
 
         let pointers: string[] = []
         if (pointersName) {
@@ -58,14 +66,31 @@ class Json_DocumentLoaders implements INode {
 
         const blob = new Blob(getBlob(jsonFileBase64))
         const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
+        let docs = []
 
         if (textSplitter) {
-            const docs = await loader.loadAndSplit(textSplitter)
-            return docs
+            docs = await loader.loadAndSplit(textSplitter)
         } else {
-            const docs = await loader.load()
-            return docs
+            docs = await loader.load()
         }
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
+        }
+
+        return docs
     }
 }
 
