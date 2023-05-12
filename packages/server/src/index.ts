@@ -66,10 +66,8 @@ export class App {
         this.app.use(express.json({ limit: '50mb' }))
         this.app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
-        // Allow access from ui when yarn run dev
-        if (process.env.NODE_ENV !== 'production') {
-            this.app.use(cors({ credentials: true, origin: 'http://localhost:8080' }))
-        }
+        // Allow access from *
+        this.app.use(cors())
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
