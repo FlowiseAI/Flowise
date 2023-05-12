@@ -28,23 +28,6 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 type: 'password'
             },
             {
-                label: 'Model Name',
-                name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'text-embedding-ada-002',
-                        name: 'text-embedding-ada-002'
-                    },
-                    {
-                        label: 'text-search-ada-doc-001',
-                        name: 'text-search-ada-doc-001'
-                    }
-                ],
-                default: 'text-embedding-ada-002',
-                optional: true
-            },
-            {
                 label: 'Azure OpenAI Api Instance Name',
                 name: 'azureOpenAIApiInstanceName',
                 type: 'string',
@@ -91,13 +74,11 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
         const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
-        const modelName = nodeData.inputs?.modelName as string
         const stripNewLines = nodeData.inputs?.stripNewLines as boolean
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
 
         const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> = {
-            modelName,
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
