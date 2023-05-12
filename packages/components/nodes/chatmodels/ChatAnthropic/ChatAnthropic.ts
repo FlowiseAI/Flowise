@@ -36,6 +36,10 @@ class ChatAnthropic_ChatModels implements INode {
                         name: 'claude-v1'
                     },
                     {
+                        label: 'claude-v1-100k',
+                        name: 'claude-v1-100k'
+                    },
+                    {
                         label: 'claude-v1.0',
                         name: 'claude-v1.0'
                     },
@@ -48,12 +52,28 @@ class ChatAnthropic_ChatModels implements INode {
                         name: 'claude-v1.3'
                     },
                     {
+                        label: 'claude-v1.3-100k',
+                        name: 'claude-v1.3-100k'
+                    },
+                    {
                         label: 'claude-instant-v1',
                         name: 'claude-instant-v1'
                     },
                     {
+                        label: 'claude-instant-v1-100k',
+                        name: 'claude-instant-v1-100k'
+                    },
+                    {
                         label: 'claude-instant-v1.0',
                         name: 'claude-instant-v1.0'
+                    },
+                    {
+                        label: 'claude-instant-v1.1',
+                        name: 'claude-instant-v1.1'
+                    },
+                    {
+                        label: 'claude-instant-v1.1-100k',
+                        name: 'claude-instant-v1.1-100k'
                     }
                 ],
                 default: 'claude-v1',
