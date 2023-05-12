@@ -42,8 +42,18 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             {
                 label: 'Azure OpenAI Api Version',
                 name: 'azureOpenAIApiVersion',
-                type: 'string',
-                placeholder: 'YOUR-API-VERSION'
+                type: 'options',
+                options: [
+                    {
+                        label: '2023-03-15-preview',
+                        name: '2023-03-15-preview'
+                    },
+                    {
+                        label: '2022-12-01',
+                        name: '2022-12-01'
+                    }
+                ],
+                default: '2023-03-15-preview'
             },
             {
                 label: 'Strip New Lines',

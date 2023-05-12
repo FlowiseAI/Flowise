@@ -70,22 +70,51 @@ class AzureChatOpenAI_ChatModels implements INode {
             {
                 label: 'Azure OpenAI Api Version',
                 name: 'azureOpenAIApiVersion',
-                type: 'string',
-                placeholder: 'YOUR-API-VERSION'
+                type: 'options',
+                options: [
+                    {
+                        label: '2023-03-15-preview',
+                        name: '2023-03-15-preview'
+                    },
+                    {
+                        label: '2022-12-01',
+                        name: '2022-12-01'
+                    }
+                ],
+                default: '2023-03-15-preview'
             },
             {
-                label: 'Azure OpenAI Api Embeddings Deployment Name',
-                name: 'azureOpenAIApiEmbeddingsDeploymentName',
-                type: 'string',
-                placeholder: 'YOUR-EMBEDDINGS-NAME',
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
                 optional: true,
                 additionalParams: true
             },
             {
-                label: 'Azure OpenAI Api Completions Deployment Name',
-                name: 'azureOpenAIApiCompletionsDeploymentName',
-                type: 'string',
-                placeholder: 'YOUR-COMPLETIONS-NAME',
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty',
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty',
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Timeout',
+                name: 'timeout',
+                type: 'number',
                 optional: true,
                 additionalParams: true
             }
@@ -99,8 +128,11 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
         const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
-        const azureOpenAIApiEmbeddingsDeploymentName = nodeData.inputs?.azureOpenAIApiEmbeddingsDeploymentName as string
-        const azureOpenAIApiCompletionsDeploymentName = nodeData.inputs?.azureOpenAIApiCompletionsDeploymentName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
+        const topP = nodeData.inputs?.topP as string
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+        const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const timeout = nodeData.inputs?.timeout as string
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
             temperature: parseInt(temperature, 10),
@@ -111,8 +143,11 @@ class AzureChatOpenAI_ChatModels implements INode {
             azureOpenAIApiVersion
         }
 
-        if (azureOpenAIApiEmbeddingsDeploymentName) obj.azureOpenAIApiEmbeddingsDeploymentName = azureOpenAIApiEmbeddingsDeploymentName
-        if (azureOpenAIApiCompletionsDeploymentName) obj.azureOpenAIApiCompletionsDeploymentName = azureOpenAIApiCompletionsDeploymentName
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (topP) obj.topP = parseInt(topP, 10)
+        if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
+        if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
+        if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new ChatOpenAI(obj)
         return model
