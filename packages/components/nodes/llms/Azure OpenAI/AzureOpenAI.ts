@@ -36,20 +36,48 @@ class AzureOpenAI_LLMs implements INode {
                         name: 'text-davinci-003'
                     },
                     {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
+                        label: 'ada',
+                        name: 'ada'
                     },
                     {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
+                        label: 'text-ada-001',
+                        name: 'text-ada-001'
+                    },
+                    {
+                        label: 'babbage',
+                        name: 'babbage'
                     },
                     {
                         label: 'text-babbage-001',
                         name: 'text-babbage-001'
                     },
                     {
-                        label: 'text-ada-001',
-                        name: 'text-ada-001'
+                        label: 'curie',
+                        name: 'curie'
+                    },
+                    {
+                        label: 'text-curie-001',
+                        name: 'text-curie-001'
+                    },
+                    {
+                        label: 'davinci',
+                        name: 'davinci'
+                    },
+                    {
+                        label: 'text-davinci-001',
+                        name: 'text-davinci-001'
+                    },
+                    {
+                        label: 'text-davinci-002',
+                        name: 'text-davinci-002'
+                    },
+                    {
+                        label: 'text-davinci-fine-tune-002',
+                        name: 'text-davinci-fine-tune-002'
+                    },
+                    {
+                        label: 'gpt-35-turbo',
+                        name: 'gpt-35-turbo'
                     }
                 ],
                 default: 'text-davinci-003',
