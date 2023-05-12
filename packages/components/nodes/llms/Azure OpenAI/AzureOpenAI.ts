@@ -27,6 +27,35 @@ class AzureOpenAI_LLMs implements INode {
                 type: 'password'
             },
             {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'text-davinci-003',
+                        name: 'text-davinci-003'
+                    },
+                    {
+                        label: 'text-davinci-002',
+                        name: 'text-davinci-002'
+                    },
+                    {
+                        label: 'text-curie-001',
+                        name: 'text-curie-001'
+                    },
+                    {
+                        label: 'text-babbage-001',
+                        name: 'text-babbage-001'
+                    },
+                    {
+                        label: 'text-ada-001',
+                        name: 'text-ada-001'
+                    }
+                ],
+                default: 'text-davinci-003',
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
@@ -73,6 +102,7 @@ class AzureOpenAI_LLMs implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const azureOpenAIApiKey = nodeData.inputs?.azureOpenAIApiKey as string
         const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
         const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
         const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
@@ -81,6 +111,7 @@ class AzureOpenAI_LLMs implements INode {
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
             temperature: parseInt(temperature, 10),
+            modelName,
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,

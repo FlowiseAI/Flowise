@@ -28,6 +28,39 @@ class AzureChatOpenAI_ChatModels implements INode {
                 type: 'password'
             },
             {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'gpt-4',
+                        name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-0314',
+                        name: 'gpt-4-0314'
+                    },
+                    {
+                        label: 'gpt-4-32k',
+                        name: 'gpt-4-32k'
+                    },
+                    {
+                        label: 'gpt-4-32k-0314',
+                        name: 'gpt-4-32k-0314'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo',
+                        name: 'gpt-3.5-turbo'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-0301',
+                        name: 'gpt-3.5-turbo-0301'
+                    }
+                ],
+                default: 'gpt-3.5-turbo',
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
@@ -73,6 +106,7 @@ class AzureChatOpenAI_ChatModels implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const azureOpenAIApiKey = nodeData.inputs?.azureOpenAIApiKey as string
+        const modelName = nodeData.inputs?.modelName as string
         const temperature = nodeData.inputs?.temperature as string
         const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
@@ -82,6 +116,7 @@ class AzureChatOpenAI_ChatModels implements INode {
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
             temperature: parseInt(temperature, 10),
+            modelName,
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
