@@ -41,6 +41,13 @@ class Csv_DocumentLoaders implements INode {
                 description: 'Extracting a single column',
                 placeholder: 'Enter column name',
                 optional: true
+            },
+            {
+                label: 'Metadata',
+                name: 'metadata',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -49,17 +56,35 @@ class Csv_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const columnName = nodeData.inputs?.columnName as string
+        const metadata = nodeData.inputs?.metadata
 
         const blob = new Blob(getBlob(csvFileBase64))
         const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+        let docs = []
 
         if (textSplitter) {
-            const docs = await loader.loadAndSplit(textSplitter)
-            return docs
+            docs = await loader.loadAndSplit(textSplitter)
         } else {
-            const docs = await loader.load()
-            return docs
+            docs = await loader.load()
         }
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
+        }
+
+        return docs
     }
 }
 

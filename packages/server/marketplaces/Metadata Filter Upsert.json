@@ -1,66 +1,13 @@
 {
-    "description": "Github repo QnA using conversational retrieval QA chain",
+    "description": "Upsert multiple files with metadata filters and feed into conversational retrieval QA chain",
     "nodes": [
         {
             "width": 300,
-            "height": 281,
-            "id": "conversationalRetrievalQAChain_0",
-            "position": {
-                "x": 1658.7012040564862,
-                "y": 197.0636463189023
-            },
-            "type": "customNode",
-            "data": {
-                "id": "conversationalRetrievalQAChain_0",
-                "label": "Conversational Retrieval QA Chain",
-                "name": "conversationalRetrievalQAChain",
-                "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
-                "category": "Chains",
-                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLLM",
-                        "id": "conversationalRetrievalQAChain_0-input-llm-BaseLLM"
-                    },
-                    {
-                        "label": "Vector Store Retriever",
-                        "name": "vectorStoreRetriever",
-                        "type": "BaseRetriever",
-                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
-                    }
-                ],
-                "inputs": {
-                    "llm": "{{openAI_1.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeUpsert_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
-                        "name": "conversationalRetrievalQAChain",
-                        "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain"
-                    }
-                ],
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1658.7012040564862,
-                "y": 197.0636463189023
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 378,
+            "height": 376,
             "id": "recursiveCharacterTextSplitter_1",
             "position": {
-                "x": 447.1038086695898,
-                "y": 126.52301921543597
+                "x": 347.5233039646277,
+                "y": 129.29305204134062
             },
             "type": "customNode",
             "data": {
@@ -104,101 +51,20 @@
                 "outputs": {},
                 "selected": false
             },
-            "positionAbsolute": {
-                "x": 447.1038086695898,
-                "y": 126.52301921543597
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 527,
-            "id": "github_1",
-            "position": {
-                "x": 836.9660489009947,
-                "y": -44.04171088580361
-            },
-            "type": "customNode",
-            "data": {
-                "id": "github_1",
-                "label": "Github",
-                "name": "github",
-                "type": "Document",
-                "baseClasses": ["Document"],
-                "category": "Document Loaders",
-                "description": "Load data from a GitHub repository",
-                "inputParams": [
-                    {
-                        "label": "Repo Link",
-                        "name": "repoLink",
-                        "type": "string",
-                        "placeholder": "https://github.com/FlowiseAI/Flowise",
-                        "id": "github_1-input-repoLink-string"
-                    },
-                    {
-                        "label": "Branch",
-                        "name": "branch",
-                        "type": "string",
-                        "default": "main",
-                        "id": "github_1-input-branch-string"
-                    },
-                    {
-                        "label": "Access Token",
-                        "name": "accessToken",
-                        "type": "password",
-                        "placeholder": "<GITHUB_ACCESS_TOKEN>",
-                        "optional": true,
-                        "id": "github_1-input-accessToken-password"
-                    },
-                    {
-                        "label": "Metadata",
-                        "name": "metadata",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "github_1-input-metadata-json"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Text Splitter",
-                        "name": "textSplitter",
-                        "type": "TextSplitter",
-                        "optional": true,
-                        "id": "github_1-input-textSplitter-TextSplitter"
-                    }
-                ],
-                "inputs": {
-                    "repoLink": "",
-                    "branch": "main",
-                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "github_1-output-github-Document",
-                        "name": "github",
-                        "label": "Document",
-                        "type": "Document"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
             "selected": false,
             "positionAbsolute": {
-                "x": 836.9660489009947,
-                "y": -44.04171088580361
+                "x": 347.5233039646277,
+                "y": 129.29305204134062
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 523,
             "id": "openAI_1",
             "position": {
-                "x": 1259.794581504908,
-                "y": -184.79344614581797
+                "x": 1159.184721109528,
+                "y": -38.76565405456694
             },
             "type": "customNode",
             "data": {
@@ -310,7 +176,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "text-davinci-003",
-                    "temperature": 0.7,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "bestOf": "",
@@ -331,19 +197,19 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 1259.794581504908,
-                "y": -184.79344614581797
+                "x": 1159.184721109528,
+                "y": -38.76565405456694
             },
             "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 331,
+            "height": 329,
             "id": "openAIEmbeddings_1",
             "position": {
-                "x": 833.4085562012468,
-                "y": 541.7875676090047
+                "x": 749.4044250705479,
+                "y": 858.4858399327618
             },
             "type": "customNode",
             "data": {
@@ -403,24 +269,226 @@
                 "outputs": {},
                 "selected": false
             },
+            "selected": false,
             "positionAbsolute": {
-                "x": 833.4085562012468,
-                "y": 541.7875676090047
+                "x": 749.4044250705479,
+                "y": 858.4858399327618
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "conversationalRetrievalQAChain_1",
+            "position": {
+                "x": 1551.758177447552,
+                "y": 367.847388647512
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_1",
+                "label": "Conversational Retrieval QA Chain",
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "LLM",
+                        "name": "llm",
+                        "type": "BaseLLM",
+                        "id": "conversationalRetrievalQAChain_1-input-llm-BaseLLM"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "llm": "{{openAI_1.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1551.758177447552,
+                "y": 367.847388647512
             },
             "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 703,
-            "id": "pineconeUpsert_1",
+            "height": 410,
+            "id": "textFile_0",
             "position": {
-                "x": 1268.7946529279823,
-                "y": 382.77997896801634
+                "x": 756.5586098635717,
+                "y": -121.81747478707992
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeUpsert_1",
+                "id": "textFile_0",
+                "label": "Text File",
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}",
+                    "metadata": "{\"id\":\"doc1\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "textFile_0-output-textFile-Document",
+                        "name": "textFile",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 756.5586098635717,
+                "y": -121.81747478707992
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 505,
+            "id": "pdfFile_0",
+            "position": {
+                "x": 752.0044222860163,
+                "y": 318.11704520478617
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pdfFile_0",
+                "label": "Pdf File",
+                "name": "pdfFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from PDF files",
+                "inputParams": [
+                    {
+                        "label": "Pdf File",
+                        "name": "pdfFile",
+                        "type": "file",
+                        "fileType": ".pdf",
+                        "id": "pdfFile_0-input-pdfFile-file"
+                    },
+                    {
+                        "label": "Usage",
+                        "name": "usage",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "One document per page",
+                                "name": "perPage"
+                            },
+                            {
+                                "label": "One document per file",
+                                "name": "perFile"
+                            }
+                        ],
+                        "default": "perPage",
+                        "id": "pdfFile_0-input-usage-options"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pdfFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "pdfFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}",
+                    "usage": "perPage",
+                    "metadata": "{\"id\":\"doc2\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "pdfFile_0-output-pdfFile-Document",
+                        "name": "pdfFile",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 752.0044222860163,
+                "y": 318.11704520478617
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 701,
+            "id": "pineconeUpsert_0",
+            "position": {
+                "x": 1161.8813042660154,
+                "y": 537.0216614326227
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeUpsert_0",
                 "label": "Pinecone Upsert Document",
                 "name": "pineconeUpsert",
                 "type": "Pinecone",
@@ -432,19 +500,19 @@
                         "label": "Pinecone Api Key",
                         "name": "pineconeApiKey",
                         "type": "password",
-                        "id": "pineconeUpsert_1-input-pineconeApiKey-password"
+                        "id": "pineconeUpsert_0-input-pineconeApiKey-password"
                     },
                     {
                         "label": "Pinecone Environment",
                         "name": "pineconeEnv",
                         "type": "string",
-                        "id": "pineconeUpsert_1-input-pineconeEnv-string"
+                        "id": "pineconeUpsert_0-input-pineconeEnv-string"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeUpsert_1-input-pineconeIndex-string"
+                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
                     },
                     {
                         "label": "Pinecone Namespace",
@@ -452,7 +520,7 @@
                         "type": "string",
                         "placeholder": "my-first-namespace",
                         "optional": true,
-                        "id": "pineconeUpsert_1-input-pineconeNamespace-string"
+                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
                     }
                 ],
                 "inputAnchors": [
@@ -461,21 +529,21 @@
                         "name": "document",
                         "type": "Document",
                         "list": true,
-                        "id": "pineconeUpsert_1-input-document-Document"
+                        "id": "pineconeUpsert_0-input-document-Document"
                     },
                     {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeUpsert_1-input-embeddings-Embeddings"
+                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
-                    "document": ["{{github_1.data.instance}}"],
+                    "document": ["{{pdfFile_0.data.instance}}", "{{textFile_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_1.data.instance}}",
-                    "pineconeEnv": "us-west4-gcp",
-                    "pineconeIndex": "",
-                    "pineconeNamespace": ""
+                    "pineconeEnv": "northamerica-northeast1-gcp",
+                    "pineconeIndex": "myindex",
+                    "pineconeNamespace": "my-namespace"
                 },
                 "outputAnchors": [
                     {
@@ -484,13 +552,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeUpsert_1-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -505,32 +573,21 @@
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 1268.7946529279823,
-                "y": 382.77997896801634
-            }
+                "x": 1161.8813042660154,
+                "y": 537.0216614326227
+            },
+            "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "github_1",
-            "sourceHandle": "github_1-output-github-Document",
-            "target": "pineconeUpsert_1",
-            "targetHandle": "pineconeUpsert_1-input-document-Document",
+            "source": "openAI_1",
+            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "conversationalRetrievalQAChain_1",
+            "targetHandle": "conversationalRetrievalQAChain_1-input-llm-BaseLLM",
             "type": "buttonedge",
-            "id": "github_1-github_1-output-github-Document-pineconeUpsert_1-pineconeUpsert_1-input-document-Document",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAIEmbeddings_1",
-            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeUpsert_1",
-            "targetHandle": "pineconeUpsert_1-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_1-pineconeUpsert_1-input-embeddings-Embeddings",
+            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-llm-BaseLLM",
             "data": {
                 "label": ""
             }
@@ -538,32 +595,65 @@
         {
             "source": "recursiveCharacterTextSplitter_1",
             "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
-            "target": "github_1",
-            "targetHandle": "github_1-input-textSplitter-TextSplitter",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
             "type": "buttonedge",
-            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-github_1-github_1-input-textSplitter-TextSplitter",
+            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-llm-BaseLLM",
+            "source": "recursiveCharacterTextSplitter_1",
+            "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "pdfFile_0",
+            "targetHandle": "pdfFile_0-input-textSplitter-TextSplitter",
             "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-llm-BaseLLM",
+            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-pdfFile_0-pdfFile_0-input-textSplitter-TextSplitter",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "pineconeUpsert_1",
-            "sourceHandle": "pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "source": "openAIEmbeddings_1",
+            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "pineconeUpsert_1-pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pdfFile_0",
+            "sourceHandle": "pdfFile_0-output-pdfFile-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-textFile-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-textFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeUpsert_0",
+            "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_1",
+            "targetHandle": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

@@ -481,6 +481,14 @@
                         "placeholder": "my-first-namespace",
                         "optional": true,
                         "id": "pineconeExistingIndex_1-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeExistingIndex_1-input-pineconeMetadataFilter-json"
                     }
                 ],
                 "inputAnchors": [

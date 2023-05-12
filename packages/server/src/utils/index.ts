@@ -404,8 +404,10 @@ export const isSameOverrideConfig = (
     existingOverrideConfig?: ICommonObject,
     newOverrideConfig?: ICommonObject
 ): boolean => {
-    // Skip check if its internal call
-    if (isInternal) return true
+    if (isInternal) {
+        if (existingOverrideConfig && Object.keys(existingOverrideConfig).length) return false
+        return true
+    }
     // If existing and new overrideconfig are the same
     if (
         existingOverrideConfig &&
