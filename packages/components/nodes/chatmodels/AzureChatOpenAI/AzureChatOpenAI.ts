@@ -37,27 +37,15 @@ class AzureChatOpenAI_ChatModels implements INode {
                         name: 'gpt-4'
                     },
                     {
-                        label: 'gpt-4-0314',
-                        name: 'gpt-4-0314'
-                    },
-                    {
                         label: 'gpt-4-32k',
                         name: 'gpt-4-32k'
                     },
                     {
-                        label: 'gpt-4-32k-0314',
-                        name: 'gpt-4-32k-0314'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo',
-                        name: 'gpt-3.5-turbo'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-0301',
-                        name: 'gpt-3.5-turbo-0301'
+                        label: 'gpt-35-turbo',
+                        name: 'gpt-35-turbo'
                     }
                 ],
-                default: 'gpt-3.5-turbo',
+                default: 'gpt-35-turbo',
                 optional: true
             },
             {
