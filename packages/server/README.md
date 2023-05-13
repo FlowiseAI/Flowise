@@ -20,6 +20,15 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 3. Open [http://localhost:3000](http://localhost:3000)
 
+## 🔒 Authentication
+
+To enable app level authentication, add `USERNAME` and `PASSWORD` to the `.env` file:
+
+```
+USERNAME=user
+PASSWORD=1234
+```
+
 ## 📖 Documentation
 
 Coming Soon

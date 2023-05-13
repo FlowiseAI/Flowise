@@ -4,6 +4,7 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
+import basicAuth from 'express-basic-auth'
 
 import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject, INodeData } from './Interface'
 import {
@@ -68,6 +69,18 @@ export class App {
 
         // Allow access from *
         this.app.use(cors())
+
+        if (process.env.USERNAME && process.env.PASSWORD) {
+            const username = process.env.USERNAME.toLocaleLowerCase()
+            const password = process.env.PASSWORD.toLocaleLowerCase()
+            const basicAuthMiddleware = basicAuth({
+                users: { [username]: password }
+            })
+            const whitelistURLs = ['static', 'favicon', '/api/v1/prediction/', '/api/v1/node-icon/']
+            this.app.use((req, res, next) =>
+                whitelistURLs.some((url) => req.url.includes(url)) || req.url === '/' ? next() : basicAuthMiddleware(req, res, next)
+            )
+        }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 

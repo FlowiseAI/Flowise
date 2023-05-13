@@ -43,15 +43,17 @@ export const Input = ({ inputParam, value, onChange, disabled = false, showDialo
                     }}
                 />
             </FormControl>
-            <EditPromptValuesDialog
-                show={showDialog}
-                dialogProps={dialogProps}
-                onCancel={onDialogCancel}
-                onConfirm={(newValue, inputParamName) => {
-                    setMyValue(newValue)
-                    onDialogConfirm(newValue, inputParamName)
-                }}
-            ></EditPromptValuesDialog>
+            {showDialog && (
+                <EditPromptValuesDialog
+                    show={showDialog}
+                    dialogProps={dialogProps}
+                    onCancel={onDialogCancel}
+                    onConfirm={(newValue, inputParamName) => {
+                        setMyValue(newValue)
+                        onDialogConfirm(newValue, inputParamName)
+                    }}
+                ></EditPromptValuesDialog>
+            )}
         </>
     )
 }

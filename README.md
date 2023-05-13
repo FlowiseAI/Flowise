@@ -86,6 +86,15 @@ Flowise has 3 different modules in a single mono repository.
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
 
+## 🔒 Authentication
+
+To enable app level authentication, add `USERNAME` and `PASSWORD` to the `.env` file in `packages/server`:
+
+```
+USERNAME=user
+PASSWORD=1234
+```
+
 ## 📖 Documentation
 
 Coming soon

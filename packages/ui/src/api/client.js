@@ -8,4 +8,18 @@ const apiClient = axios.create({
     }
 })
 
+apiClient.interceptors.request.use(function (config) {
+    const username = localStorage.getItem('username')
+    const password = localStorage.getItem('password')
+
+    if (username && password) {
+        config.auth = {
+            username: username.toLocaleLowerCase(),
+            password: password.toLocaleLowerCase()
+        }
+    }
+
+    return config
+})
+
 export default apiClient
