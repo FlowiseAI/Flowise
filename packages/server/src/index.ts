@@ -76,7 +76,7 @@ export class App {
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = ['node-icon', 'static', 'favicon']
+            const whitelistURLs = ['static', 'favicon', '/api/v1/prediction/', '/api/v1/node-icon/']
             this.app.use((req, res, next) =>
                 whitelistURLs.some((url) => req.url.includes(url)) || req.url === '/' ? next() : basicAuthMiddleware(req, res, next)
             )
