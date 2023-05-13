@@ -12,6 +12,7 @@ import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
 import { StyledButton } from 'ui-component/button/StyledButton'
+import LoginDialog from 'ui-component/dialog/LoginDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -34,8 +35,16 @@ const Chatflows = () => {
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
+    const [loginDialogProps, setLoginDialogProps] = useState({})
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
+
+    const onLoginClick = (username, password) => {
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
+        navigate(0)
+    }
 
     const addNew = () => {
         navigate('/canvas')
@@ -50,6 +59,18 @@ const Chatflows = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        if (getAllChatflowsApi.error) {
+            if (getAllChatflowsApi.error?.response?.status === 401) {
+                setLoginDialogProps({
+                    title: 'Login',
+                    confirmButtonName: 'Login'
+                })
+                setLoginDialogOpen(true)
+            }
+        }
+    }, [getAllChatflowsApi.error])
 
     useEffect(() => {
         setLoading(getAllChatflowsApi.loading)
@@ -109,6 +130,7 @@ const Chatflows = () => {
                     <div>No Chatflows Yet</div>
                 </Stack>
             )}
+            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
         </MainCard>
     )
 }
