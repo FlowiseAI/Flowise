@@ -540,6 +540,19 @@ export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject
 }
 
 /**
+ * Replace all api keys
+ * @param {ICommonObject[]} content
+ * @returns {Promise<void>}
+ */
+export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void> => {
+    try {
+        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+/**
  * Map MimeType to InputField
  * @param {string} mimeType
  * @returns {Promise<string>}

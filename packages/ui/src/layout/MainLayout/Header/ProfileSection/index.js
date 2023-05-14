@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-
 import PropTypes from 'prop-types'
-
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -27,9 +26,15 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import Transitions from 'ui-component/extended/Transitions'
+import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
 
 // assets
-import { IconLogout, IconSettings } from '@tabler/icons'
+import { IconLogout, IconSettings, IconFileExport, IconFileDownload } from '@tabler/icons'
+
+// API
+import databaseApi from 'api/database'
+
+import { SET_MENU } from 'store/actions'
 
 import './index.css'
 
@@ -37,12 +42,16 @@ import './index.css'
 
 const ProfileSection = ({ username, handleLogout }) => {
     const theme = useTheme()
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const customization = useSelector((state) => state.customization)
 
     const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const anchorRef = useRef(null)
+    const uploadRef = useRef(null)
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -53,6 +62,56 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen)
+    }
+
+    const handleExportDB = async () => {
+        setOpen(false)
+        try {
+            const response = await databaseApi.getExportDatabase()
+            const exportItems = response.data
+            let dataStr = JSON.stringify(exportItems)
+            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
+            let exportFileDefaultName = `DB.json`
+
+            let linkElement = document.createElement('a')
+            linkElement.setAttribute('href', dataUri)
+            linkElement.setAttribute('download', exportFileDefaultName)
+            linkElement.click()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const handleFileUpload = (e) => {
+        if (!e.target.files) return
+
+        const file = e.target.files[0]
+        const reader = new FileReader()
+        reader.onload = async (evt) => {
+            if (!evt?.target?.result) {
+                return
+            }
+            const { result } = evt.target
+
+            if (result.includes(`"chatmessages":[`) && result.includes(`"chatflows":[`) && result.includes(`"apikeys":[`)) {
+                dispatch({ type: SET_MENU, opened: false })
+                setLoading(true)
+
+                try {
+                    await databaseApi.createLoadDatabase(JSON.parse(result))
+                    setLoading(false)
+                    navigate('/', { replace: true })
+                    navigate(0)
+                } catch (e) {
+                    console.error(e)
+                    setLoading(false)
+                }
+            } else {
+                alert('Incorrect Flowise Database Format')
+            }
+        }
+        reader.readAsText(file)
     }
 
     const prevOpen = useRef(open)
@@ -109,11 +168,13 @@ const ProfileSection = ({ username, handleLogout }) => {
                         <Paper>
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    <Box sx={{ p: 2 }}>
-                                        <Typography component='span' variant='h4'>
-                                            {username}
-                                        </Typography>
-                                    </Box>
+                                    {username && (
+                                        <Box sx={{ p: 2 }}>
+                                            <Typography component='span' variant='h4'>
+                                                {username}
+                                            </Typography>
+                                        </Box>
+                                    )}
                                     <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
                                         <Box sx={{ p: 2 }}>
                                             <Divider />
@@ -135,13 +196,36 @@ const ProfileSection = ({ username, handleLogout }) => {
                                             >
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={handleLogout}
+                                                    onClick={() => {
+                                                        setOpen(false)
+                                                        uploadRef.current.click()
+                                                    }}
                                                 >
                                                     <ListItemIcon>
-                                                        <IconLogout stroke={1.5} size='1.3rem' />
+                                                        <IconFileDownload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Load Database</Typography>} />
                                                 </ListItemButton>
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={handleExportDB}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconFileExport stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>Export Database</Typography>} />
+                                                </ListItemButton>
+                                                {localStorage.getItem('username') && localStorage.getItem('password') && (
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        onClick={handleLogout}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconLogout stroke={1.5} size='1.3rem' />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
+                                                    </ListItemButton>
+                                                )}
                                             </List>
                                         </Box>
                                     </PerfectScrollbar>
@@ -151,6 +235,8 @@ const ProfileSection = ({ username, handleLogout }) => {
                     </Transitions>
                 )}
             </Popper>
+            <input ref={uploadRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
+            <BackdropLoader open={loading} />
         </>
     )
 }
