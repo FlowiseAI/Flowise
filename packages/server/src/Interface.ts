@@ -132,3 +132,9 @@ export interface IOverrideConfig {
     name: string
     type: string
 }
+
+export interface IDatabaseExport {
+    chatmessages: IChatMessage[]
+    chatflows: IChatFlow[]
+    apikeys: ICommonObject[]
+}

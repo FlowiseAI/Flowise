@@ -6,7 +6,7 @@ import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 
-import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject, INodeData } from './Interface'
+import { IChatFlow, IncomingInput, IReactFlowNode, IReactFlowObject, INodeData, IDatabaseExport } from './Interface'
 import {
     getNodeModulesPackagePath,
     getStartingNodes,
@@ -22,7 +22,8 @@ import {
     compareKeys,
     mapMimeTypeToInputField,
     findAvailableConfigs,
-    isSameOverrideConfig
+    isSameOverrideConfig,
+    replaceAllAPIKeys
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -76,10 +77,12 @@ export class App {
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = ['static', 'favicon', '/api/v1/prediction/', '/api/v1/node-icon/']
-            this.app.use((req, res, next) =>
-                whitelistURLs.some((url) => req.url.includes(url)) || req.url === '/' ? next() : basicAuthMiddleware(req, res, next)
-            )
+            const whitelistURLs = ['/api/v1/prediction/', '/api/v1/node-icon/']
+            this.app.use((req, res, next) => {
+                if (req.url.includes('/api/v1/')) {
+                    whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
+                } else next()
+            })
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
@@ -231,6 +234,57 @@ export class App {
             const nodes = parsedFlowData.nodes
             const availableConfigs = findAvailableConfigs(nodes)
             return res.json(availableConfigs)
+        })
+
+        // ----------------------------------------
+        // Export Load Chatflow & ChatMessage & Apikeys
+        // ----------------------------------------
+
+        this.app.get('/api/v1/database/export', async (req: Request, res: Response) => {
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find()
+            const chatflows = await this.AppDataSource.getRepository(ChatFlow).find()
+            const apikeys = await getAPIKeys()
+            const result: IDatabaseExport = {
+                chatmessages,
+                chatflows,
+                apikeys
+            }
+            return res.json(result)
+        })
+
+        this.app.post('/api/v1/database/load', async (req: Request, res: Response) => {
+            const databaseItems: IDatabaseExport = req.body
+
+            await this.AppDataSource.getRepository(ChatFlow).delete({})
+            await this.AppDataSource.getRepository(ChatMessage).delete({})
+
+            let error = ''
+
+            // Get a new query runner instance
+            const queryRunner = this.AppDataSource.createQueryRunner()
+
+            // Start a new transaction
+            await queryRunner.startTransaction()
+
+            try {
+                const chatflows: ChatFlow[] = databaseItems.chatflows
+                const chatmessages: ChatMessage[] = databaseItems.chatmessages
+
+                await queryRunner.manager.insert(ChatFlow, chatflows)
+                await queryRunner.manager.insert(ChatMessage, chatmessages)
+
+                await queryRunner.commitTransaction()
+            } catch (err: any) {
+                error = err?.message ?? 'Error loading database'
+                await queryRunner.rollbackTransaction()
+            } finally {
+                await queryRunner.release()
+            }
+
+            await replaceAllAPIKeys(databaseItems.apikeys)
+
+            if (error) return res.status(500).send(error)
+            return res.status(201).send('OK')
         })
 
         // ----------------------------------------
