@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
@@ -59,6 +60,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 
 const MainLayout = () => {
     const theme = useTheme()
+    const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
@@ -66,6 +68,11 @@ const MainLayout = () => {
     const handleLeftDrawerToggle = () => {
         dispatch({ type: SET_MENU, opened: !leftDrawerOpened })
     }
+    
+    useEffect(() => {
+        setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [matchDownMd])
 
     return (
         <Box sx={{ display: 'flex' }}>
