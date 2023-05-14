@@ -11,14 +11,18 @@ import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
-    overflow: 'hidden',
+    overflow: 'auto',
     position: 'relative',
     boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
     cursor: 'pointer',
     '&:hover': {
         background: theme.palette.card.hover,
         boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
-    }
+    },
+    maxHeight: '300px',
+    maxWidth: '300px',
+    overflowWrap: 'break-word',
+    whiteSpace: 'pre-line'
 }))
 
 // ===========================|| CONTRACT CARD ||=========================== //
@@ -46,9 +50,17 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                     <Box sx={{ p: 2.25 }}>
                         <Grid container direction='column'>
                             <div>
-                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 500 }}>{data.name}</Typography>
+                                <Typography
+                                    sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                >
+                                    {data.name}
+                                </Typography>
                             </div>
-                            {data.description && <span style={{ marginTop: 10 }}>{data.description}</span>}
+                            {data.description && (
+                                <span style={{ marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                    {data.description}
+                                </span>
+                            )}
                             <Grid sx={{ mt: 1, mb: 1 }} container direction='row'>
                                 {data.deployed && (
                                     <Grid item>
@@ -57,16 +69,24 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                 )}
                             </Grid>
                             {images && (
-                                <div style={{ display: 'flex', flexDirection: 'row', marginTop: 10 }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        marginTop: 5
+                                    }}
+                                >
                                     {images.map((img) => (
                                         <div
                                             key={img}
                                             style={{
-                                                width: 40,
-                                                height: 40,
+                                                width: 35,
+                                                height: 35,
                                                 marginRight: 5,
                                                 borderRadius: '50%',
-                                                backgroundColor: 'white'
+                                                backgroundColor: 'white',
+                                                marginTop: 5
                                             }}
                                         >
                                             <img
