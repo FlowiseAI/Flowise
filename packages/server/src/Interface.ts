@@ -138,3 +138,15 @@ export interface IDatabaseExport {
     chatflows: IChatFlow[]
     apikeys: ICommonObject[]
 }
+
+export interface IRunChatflowMessageValue {
+    chatflow: IChatFlow
+    incomingInput: IncomingInput
+    componentNodes: IComponentNodes
+    endingNodeData?: INodeData
+}
+
+export interface IChildProcessMessage {
+    key: string
+    value?: any
+}
