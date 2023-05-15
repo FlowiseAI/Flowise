@@ -84,7 +84,7 @@ class Cheerio_DocumentLoaders implements INode {
         let availableUrls: string[]
         let docs = []
         if (webScrap) {
-            if (!limit) limit = "10"
+            if (!limit) limit = '10'
             availableUrls = await getAvailableURLs(url, parseInt(limit))
             for (let i = 0; i < availableUrls.length; i++) {
                 docs.push(...(await cheerioLoader(availableUrls[i])))
