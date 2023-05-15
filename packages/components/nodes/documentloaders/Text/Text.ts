@@ -1,7 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
-import { getBlob } from '../../../src/utils'
 
 class Text_DocumentLoaders implements INode {
     label: string
@@ -49,20 +48,35 @@ class Text_DocumentLoaders implements INode {
         const txtFileBase64 = nodeData.inputs?.txtFile as string
         const metadata = nodeData.inputs?.metadata
 
-        const blob = new Blob(getBlob(txtFileBase64))
-        const loader = new TextLoader(blob)
-        let docs = []
+        let alldocs = []
+        let files: string[] = []
 
-        if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+        if (txtFileBase64.startsWith('[') && txtFileBase64.endsWith(']')) {
+            files = JSON.parse(txtFileBase64)
         } else {
-            docs = await loader.load()
+            files = [txtFileBase64]
+        }
+
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            const blob = new Blob([bf])
+            const loader = new TextLoader(blob)
+
+            if (textSplitter) {
+                const docs = await loader.loadAndSplit(textSplitter)
+                alldocs.push(...docs)
+            } else {
+                const docs = await loader.load()
+                alldocs.push(...docs)
+            }
         }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
             let finaldocs = []
-            for (const doc of docs) {
+            for (const doc of alldocs) {
                 const newdoc = {
                     ...doc,
                     metadata: {
@@ -74,7 +88,7 @@ class Text_DocumentLoaders implements INode {
             }
             return finaldocs
         }
-        return docs
+        return alldocs
     }
 }
 

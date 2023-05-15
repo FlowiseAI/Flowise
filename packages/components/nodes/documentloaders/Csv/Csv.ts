@@ -1,7 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
-import { getBlob } from '../../../src/utils'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -58,20 +57,35 @@ class Csv_DocumentLoaders implements INode {
         const columnName = nodeData.inputs?.columnName as string
         const metadata = nodeData.inputs?.metadata
 
-        const blob = new Blob(getBlob(csvFileBase64))
-        const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
-        let docs = []
+        let alldocs = []
+        let files: string[] = []
 
-        if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+        if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
+            files = JSON.parse(csvFileBase64)
         } else {
-            docs = await loader.load()
+            files = [csvFileBase64]
+        }
+
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            const blob = new Blob([bf])
+            const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+
+            if (textSplitter) {
+                const docs = await loader.loadAndSplit(textSplitter)
+                alldocs.push(...docs)
+            } else {
+                const docs = await loader.load()
+                alldocs.push(...docs)
+            }
         }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
             let finaldocs = []
-            for (const doc of docs) {
+            for (const doc of alldocs) {
                 const newdoc = {
                     ...doc,
                     metadata: {
@@ -84,7 +98,7 @@ class Csv_DocumentLoaders implements INode {
             return finaldocs
         }
 
-        return docs
+        return alldocs
     }
 }
 
