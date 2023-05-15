@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CheerioWebBaseLoader } from 'langchain/document_loaders/web/cheerio'
-
+import { test } from 'linkifyjs'
 class Cheerio_DocumentLoaders implements INode {
     label: string
     name: string
@@ -47,18 +47,12 @@ class Cheerio_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
 
         let url = nodeData.inputs?.url as string
+        url = url.trim()
+        if (!test(url)) {
+            throw new Error('Invalid URL')
+        }
 
-        var urlPattern = new RegExp(
-            '^(https?:\\/\\/)?' + // validate protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // validate domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // validate OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // validate port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
-                '(\\#[-a-z\\d_]*)?$',
-            'i'
-        ) // validate fragment locator
-
-        const loader = new CheerioWebBaseLoader(urlPattern.test(url.trim()) ? url.trim() : '')
+        const loader = new CheerioWebBaseLoader(url)
         let docs = []
 
         if (textSplitter) {
