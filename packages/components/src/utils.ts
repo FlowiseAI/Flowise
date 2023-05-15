@@ -1,3 +1,5 @@
+import axios from 'axios'
+import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -172,4 +174,43 @@ export const getBlob = (fileBase64Str: string) => {
         bufferArray.push(bf)
     }
     return bufferArray
+}
+
+export const getAvailableURLs = async (url: string, limit: number) => {
+    try {
+        const availableUrls: string[] = []
+
+        console.info(`Crawling: ${url}`)
+        availableUrls.push(url)
+
+        const response = await axios.get(url)
+        const $ = load(response.data)
+
+        const relativeLinks = $("a[href^='/']")
+        console.info(`Available Relative Links: ${relativeLinks.length}`)
+        if (relativeLinks.length === 0) return availableUrls
+
+        limit = Math.min(limit + 1, relativeLinks.length) // limit + 1 is because index start from 0 and index 0 is occupy by url
+        console.info(`True Limit: ${limit}`)
+
+        // availableUrls.length cannot exceed limit
+        for (let i = 0; availableUrls.length < limit; i++) {
+            if (i === limit) break // some links are repetitive so it won't added into the array which cause the length to be lesser
+            console.info(`index: ${i}`)
+            const element = relativeLinks[i]
+
+            const relativeUrl = $(element).attr('href')
+            if (!relativeUrl) continue
+
+            const absoluteUrl = new URL(relativeUrl, url).toString()
+            if (!availableUrls.includes(absoluteUrl)) {
+                availableUrls.push(absoluteUrl)
+                console.info(`Found unique relative link: ${absoluteUrl}`)
+            }
+        }
+
+        return availableUrls
+    } catch (err) {
+        throw new Error(`getAvailableURLs: ${err?.message}`)
+    }
 }
