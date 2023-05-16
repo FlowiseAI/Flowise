@@ -1,7 +1,6 @@
 import { ZapierNLAWrapper, ZapiterNLAWrapperParams } from 'langchain/tools'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { ZapierToolKit, createSqlAgent } from 'langchain/agents'
+import { ZapierToolKit } from 'langchain/agents'
 
 class ZapierNLA_Tools implements INode {
     label: string
@@ -19,7 +18,7 @@ class ZapierNLA_Tools implements INode {
         this.type = 'ZapierNLA'
         this.icon = 'zapier.png'
         this.category = 'Tools'
-        this.description = 'Access to apps and actions on Zapier&#39;s platform through a natural language API interface'
+        this.description = "Access to apps and actions on Zapier's platform through a natural language API interface"
         this.inputs = [
             {
                 label: 'Zapier NLA Api Key',
@@ -27,7 +26,7 @@ class ZapierNLA_Tools implements INode {
                 type: 'password'
             }
         ]
-        this.baseClasses = [this.type, ...getBaseClasses(ZapierNLAWrapper)]
+        this.baseClasses = [this.type, 'Tool']
     }
 
     async init(nodeData: INodeData): Promise<any> {
