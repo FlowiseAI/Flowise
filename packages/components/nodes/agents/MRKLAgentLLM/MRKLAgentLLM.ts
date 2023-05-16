@@ -39,7 +39,8 @@ class MRKLAgentLLM_Agents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLLM
-        const tools = nodeData.inputs?.tools as Tool[]
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = tools.flat()
 
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'zero-shot-react-description',

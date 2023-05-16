@@ -1,6 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CheerioWebBaseLoader } from 'langchain/document_loaders/web/cheerio'
+import { test } from 'linkifyjs'
+import { getAvailableURLs } from '../../../src'
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -33,6 +35,21 @@ class Cheerio_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Web Scrap for Relative Links',
+                name: 'webScrap',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Web Scrap Links Limit',
+                name: 'limit',
+                type: 'number',
+                default: 10,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -45,26 +62,36 @@ class Cheerio_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
+        const webScrap = nodeData.inputs?.webScrap as boolean
+        let limit = nodeData.inputs?.limit as string
 
         let url = nodeData.inputs?.url as string
+        url = url.trim()
+        if (!test(url)) {
+            throw new Error('Invalid URL')
+        }
 
-        var urlPattern = new RegExp(
-            '^(https?:\\/\\/)?' + // validate protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // validate domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // validate OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // validate port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
-                '(\\#[-a-z\\d_]*)?$',
-            'i'
-        ) // validate fragment locator
+        const cheerioLoader = async (url: string): Promise<any> => {
+            let docs = []
+            const loader = new CheerioWebBaseLoader(url)
+            if (textSplitter) {
+                docs = await loader.loadAndSplit(textSplitter)
+            } else {
+                docs = await loader.load()
+            }
+            return docs
+        }
 
-        const loader = new CheerioWebBaseLoader(urlPattern.test(url.trim()) ? url.trim() : '')
+        let availableUrls: string[]
         let docs = []
-
-        if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+        if (webScrap) {
+            if (!limit) limit = '10'
+            availableUrls = await getAvailableURLs(url, parseInt(limit))
+            for (let i = 0; i < availableUrls.length; i++) {
+                docs.push(...(await cheerioLoader(availableUrls[i])))
+            }
         } else {
-            docs = await loader.load()
+            docs = await cheerioLoader(url)
         }
 
         if (metadata) {
