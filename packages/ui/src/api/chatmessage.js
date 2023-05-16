@@ -6,8 +6,20 @@ const createNewChatmessage = (id, body) => client.post(`/chatmessage/${id}`, bod
 
 const deleteChatmessage = (id) => client.delete(`/chatmessage/${id}`)
 
+// 使用axios上传文件
+const uploadFile = (file) => {
+    let formData = new FormData()
+    formData.append('file', file)
+    return client.post('/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}
+
 export default {
     getChatmessageFromChatflow,
     createNewChatmessage,
-    deleteChatmessage
+    deleteChatmessage,
+    uploadFile
 }

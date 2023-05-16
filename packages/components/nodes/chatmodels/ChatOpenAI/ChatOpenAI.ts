@@ -13,7 +13,7 @@ class ChatOpenAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOpenAI'
+        this.label = 'ChatLLM'
         this.name = 'chatOpenAI'
         this.type = 'ChatOpenAI'
         this.icon = 'openai.png'
@@ -122,7 +122,9 @@ class ChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
-        const model = new ChatOpenAI(obj)
+        const model = new ChatOpenAI(obj, {
+            basePath: 'https://api.openai-proxy.com/v1'
+        })
         return model
     }
 }

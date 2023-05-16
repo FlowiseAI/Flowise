@@ -17,7 +17,7 @@ import {
     Button
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconMessage, IconX, IconSend, IconEraser } from '@tabler/icons'
+import { IconMessage, IconX, IconSend, IconEraser, IconFile } from '@tabler/icons'
 
 // project import
 import { StyledFab } from 'ui-component/button/StyledFab'
@@ -35,6 +35,7 @@ import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
 import { maxScroll } from 'store/constant'
+import { add } from 'lodash'
 
 export const ChatMessage = ({ chatflowid }) => {
     const theme = useTheme()
@@ -52,7 +53,7 @@ export const ChatMessage = ({ chatflowid }) => {
     const [loading, setLoading] = useState(false)
     const [messages, setMessages] = useState([
         {
-            message: 'Hi there! How can I help?',
+            message: '我是钉钉AI助手，可有什么以帮助你吗?',
             type: 'apiMessage'
         }
     ])
@@ -147,6 +148,49 @@ export const ChatMessage = ({ chatflowid }) => {
         }, 100)
     }
 
+    const uploadFile = async (e) => {
+        setLoading(true)
+
+        const file = e.target.files[0]
+        const { data, status } = await chatmessageApi.uploadFile(file)
+        if (status !== 200) return
+        console.log('res', data)
+        const displayMessage = `上传文件成功！`
+        const message = `upload file success，mime:${data.mime},filePath: ${data.path},Please summarize the document and reply in Chinese`
+        setMessages((prevMessages) => [...prevMessages, { message: displayMessage, type: 'userMessage' }])
+        addChatMessage(displayMessage, 'userMessage')
+        try {
+            console.log('messages', messages)
+            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, {
+                question: message,
+                history: messages.filter((msg) => msg.message !== '我是钉钉AI助手，可有什么以帮助你吗?')
+            })
+            if (response.data) {
+                const data = response.data
+                setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
+                addChatMessage(data, 'apiMessage')
+                setLoading(false)
+                setUserInput('')
+                setTimeout(() => {
+                    inputRef.current.focus()
+                    scrollToBottom()
+                }, 100)
+            }
+        } catch (error) {
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            handleError(errorData)
+            return
+        }
+    }
+    // 使用chatmessageApi上传文件，拿到地址，然后生成一个userMessage
+    const handleUploadFile = async () => {
+        const input = document.getElementById('file')
+        console.log('input', input)
+        input.addEventListener('change', uploadFile, false)
+        input.click()
+        // input.removeEventListener('change', uploadFile, false)
+    }
+
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -163,7 +207,7 @@ export const ChatMessage = ({ chatflowid }) => {
         try {
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, {
                 question: userInput,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
+                history: messages.filter((msg) => msg.message !== '我是钉钉AI助手，可有什么以帮助你吗?')
             })
             if (response.data) {
                 const data = response.data
@@ -232,7 +276,7 @@ export const ChatMessage = ({ chatflowid }) => {
             setLoading(false)
             setMessages([
                 {
-                    message: 'Hi there! How can I help?',
+                    message: '我是钉钉AI助手，可有什么以帮助你吗?',
                     type: 'apiMessage'
                 }
             ])
@@ -342,6 +386,7 @@ export const ChatMessage = ({ chatflowid }) => {
                                     <div className='center'>
                                         <div style={{ width: '100%' }}>
                                             <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+                                                <input id='file' type='file' style={{ display: 'none' }} />
                                                 <OutlinedInput
                                                     inputRef={inputRef}
                                                     // eslint-disable-next-line
@@ -356,6 +401,7 @@ export const ChatMessage = ({ chatflowid }) => {
                                                     onChange={(e) => setUserInput(e.target.value)}
                                                     endAdornment={
                                                         <InputAdornment position='end'>
+                                                            <IconFile onClick={handleUploadFile} />
                                                             <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
                                                                 {loading ? (
                                                                     <div>

@@ -47,7 +47,7 @@ const AddNodes = ({ nodesData, node }) => {
 
     const [searchValue, setSearchValue] = useState('')
     const [nodes, setNodes] = useState({})
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(true)
     const [categoryExpanded, setCategoryExpanded] = useState({})
 
     const anchorRef = useRef(null)
@@ -224,7 +224,9 @@ const AddNodes = ({ nodesData, node }) => {
                                                                 aria-controls={`nodes-accordian-${category}`}
                                                                 id={`nodes-accordian-header-${category}`}
                                                             >
-                                                                <Typography variant='h5'>{category}</Typography>
+                                                                <Typography variant='h5'>
+                                                                    {category === 'Tools' ? '插件' : category}
+                                                                </Typography>
                                                             </AccordionSummary>
                                                             <AccordionDetails>
                                                                 {nodes[category].map((node, index) => (

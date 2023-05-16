@@ -64,7 +64,9 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
-        const model = new OpenAIEmbeddings(obj)
+        const model = new OpenAIEmbeddings(obj, {
+            basePath: 'https://api.openai-proxy.com/v1'
+        })
         return model
     }
 }

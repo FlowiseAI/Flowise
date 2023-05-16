@@ -13,7 +13,7 @@ class OpenAI_LLMs implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenAI'
+        this.label = 'LLM'
         this.name = 'openAI'
         this.type = 'OpenAI'
         this.icon = 'openai.png'
@@ -36,6 +36,10 @@ class OpenAI_LLMs implements INode {
                         name: 'text-davinci-003'
                     },
                     {
+                        label: 'gpt-3.5-turbo',
+                        name: 'gpt-3.5-turbo'
+                    },
+                    {
                         label: 'text-davinci-002',
                         name: 'text-davinci-002'
                     },
@@ -48,7 +52,7 @@ class OpenAI_LLMs implements INode {
                         name: 'text-babbage-001'
                     }
                 ],
-                default: 'text-davinci-003',
+                default: 'gpt-3.5-turbo',
                 optional: true
             },
             {
@@ -136,7 +140,9 @@ class OpenAI_LLMs implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
-        const model = new OpenAI(obj)
+        const model = new OpenAI(obj, {
+            basePath: 'https://api.openai-proxy.com/v1'
+        })
         return model
     }
 }

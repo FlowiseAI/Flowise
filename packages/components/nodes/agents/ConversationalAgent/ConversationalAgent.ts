@@ -25,7 +25,7 @@ class ConversationalAgent_Agents implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {
-                label: 'Allowed Tools',
+                label: '插件',
                 name: 'tools',
                 type: 'Tool',
                 list: true

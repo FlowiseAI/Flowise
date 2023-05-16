@@ -31,6 +31,7 @@ import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
+import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg } from './DingEvent'
 
 export class App {
     app: express.Application
@@ -233,6 +234,41 @@ export class App {
             return res.json(availableConfigs)
         })
 
+        // 上传文件到服务器，返回地址
+        this.app.post('/api/v1/upload', upload.single('file'), async (req: Request, res: Response) => {
+            const file = req.file
+            if (!file) return
+            return res.json({
+                mime: file.mimetype,
+                path: file.path,
+                filename: file.originalname
+            })
+        })
+
+        this.app.post('/api/v1/flow-config/:id', upload.array('files'), async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            await this.validateKey(req, res, chatflow)
+
+            const overrideConfig: ICommonObject = { ...req.body }
+            const files = req.files as any[]
+            if (!files || !files.length) return
+
+            for (const file of files) {
+                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
+                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+
+                const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                if (overrideConfig[fileInputField]) {
+                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
+                } else {
+                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
+                }
+            }
+            return res.json(overrideConfig)
+        })
         // ----------------------------------------
         // Prediction
         // ----------------------------------------
@@ -245,6 +281,36 @@ export class App {
         // Send input message and get prediction result (Internal)
         this.app.post('/api/v1/internal-prediction/:id', async (req: Request, res: Response) => {
             await this.processPrediction(req, res, true)
+        })
+
+        this.app.post('/api/v1/robot/dingtalk/:id', async (req: Request, res: Response) => {
+            const data = req.body
+            const id = req.params.id
+            console.log('data', data)
+            try {
+                const msg: IMessage = data
+                if (msg.msgtype === 'text') {
+                    const userMsg = msg.text.content
+                    const res = await chatQuery({ question: userMsg, userId: msg.senderStaffId }, id)
+                    await sendMsg(res?.text || res, msg.senderStaffId)
+                } else if (msg.msgtype === 'file') {
+                    const { downloadCode } = msg.content
+                    const pdfUrl = await getDownloadFileUrl(downloadCode)
+                    const fileName = msg.content.fileId + msg.content.fileName
+                    const filePath = await downloadPdf(pdfUrl, fileName)
+                    const res = await chatQuery(
+                        {
+                            question: `用户上传了一份文件, 文件路径是： ${filePath}。帮我总结一下，使用中文`,
+                            userId: msg.senderStaffId
+                        },
+                        id
+                    )
+                    await sendMsg(res?.text || res, msg.senderStaffId)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+            return res.json({ code: 0 })
         })
 
         // ----------------------------------------
@@ -331,14 +397,16 @@ export class App {
 
     async processPrediction(req: Request, res: Response, isInternal = false) {
         try {
-            const chatflowid = req.params.id
+            // 每个人分配一个ID
+            const chatflowid = req.params.id + (req.body?.userId || '')
             let incomingInput: IncomingInput = req.body
 
             let nodeToExecuteData: INodeData
 
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: chatflowid
+                id: req.params.id
             })
+            console.log('chatflow', req.body?.userId, chatflowid)
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
             if (!isInternal) {
