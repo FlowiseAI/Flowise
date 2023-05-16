@@ -152,30 +152,6 @@ export const getInputVariables = (paramValue: string): string[] => {
     return inputVariables
 }
 
-/**
- * Get blob
- * @param {string} fileBase64Str
- * @returns {Buffer[]}
- */
-export const getBlob = (fileBase64Str: string) => {
-    let bufferArray: Buffer[] = []
-    let files: string[] = []
-
-    if (fileBase64Str.startsWith('[') && fileBase64Str.endsWith(']')) {
-        files = JSON.parse(fileBase64Str)
-    } else {
-        files = [fileBase64Str]
-    }
-
-    for (const file of files) {
-        const splitDataURI = file.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        bufferArray.push(bf)
-    }
-    return bufferArray
-}
-
 export const getAvailableURLs = async (url: string, limit: number) => {
     try {
         const availableUrls: string[] = []
