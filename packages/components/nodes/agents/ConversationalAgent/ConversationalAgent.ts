@@ -62,7 +62,8 @@ class ConversationalAgent_Agents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseChatModel
-        const tools = nodeData.inputs?.tools as Tool[]
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = tools.flat()
         const memory = nodeData.inputs?.memory as BaseChatMemory
         const humanMessage = nodeData.inputs?.humanMessage as string
         const systemMessage = nodeData.inputs?.systemMessage as string
