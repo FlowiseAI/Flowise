@@ -39,7 +39,8 @@ class MRKLAgentChat_Agents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseChatModel
-        const tools = nodeData.inputs?.tools as Tool[]
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = tools.flat()
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'chat-zero-shot-react-description',
             verbose: true
