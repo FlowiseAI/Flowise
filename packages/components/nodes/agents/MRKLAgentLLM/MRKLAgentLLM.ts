@@ -26,7 +26,7 @@ class MRKLAgentLLM_Agents implements INode {
             {
                 label: 'Allowed Tools',
                 name: 'tools',
-                type: 'Tool',
+                type: 'Tool' || 'Tool[]',
                 list: true
             },
             {
@@ -40,7 +40,7 @@ class MRKLAgentLLM_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLLM
         const tools = nodeData.inputs?.tools as Tool[]
-
+        console.log(`something about tools: ${JSON.stringify(tools)}`)
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'zero-shot-react-description',
             verbose: true
