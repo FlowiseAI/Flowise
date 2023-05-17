@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { BabyAGI } from './core'
-import { BaseChatModel } from 'langchain/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 import { VectorStore } from 'langchain/vectorstores'
 
 class BabyAGI_Agents implements INode {

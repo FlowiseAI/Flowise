@@ -1,5 +1,5 @@
 import { LLMChain } from 'langchain/chains'
-import { BaseChatModel } from 'langchain/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 import { VectorStore } from 'langchain/dist/vectorstores/base'
 import { Document } from 'langchain/document'
 import { PromptTemplate } from 'langchain/prompts'
