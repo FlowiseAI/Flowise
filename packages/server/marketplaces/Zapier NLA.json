@@ -3,62 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 281,
-            "id": "mrklAgentLLM_0",
-            "position": {
-                "x": 919.3453672085218,
-                "y": 371.80988480957353
-            },
-            "type": "customNode",
-            "data": {
-                "id": "mrklAgentLLM_0",
-                "label": "MRKL Agent for LLMs",
-                "name": "mrklAgentLLM",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
-                "category": "Agents",
-                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "mrklAgentLLM_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "LLM Model",
-                        "name": "model",
-                        "type": "BaseLLM",
-                        "id": "mrklAgentLLM_0-input-model-BaseLLM"
-                    }
-                ],
-                "inputs": {
-                    "tools": ["{{zapierNLA_0.data.instance}}"],
-                    "model": "{{openAI_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
-                        "name": "mrklAgentLLM",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 919.3453672085218,
-                "y": 371.80988480957353
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 279,
+            "height": 278,
             "id": "zapierNLA_0",
             "position": {
                 "x": 546.0561178227484,
@@ -103,7 +48,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_0",
             "position": {
                 "x": 547.3867724775708,
@@ -245,6 +190,60 @@
                 "y": 394.1919189424442
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentLLM_0",
+            "position": {
+                "x": 1002.5779315680477,
+                "y": 329.9701389591812
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_0",
+                "label": "MRKL Agent for LLMs",
+                "name": "mrklAgentLLM",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentLLM_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{zapierNLA_0.data.instance}}"],
+                    "model": "{{openAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
+                        "name": "mrklAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1002.5779315680477,
+                "y": 329.9701389591812
+            },
+            "selected": false
         }
     ],
     "edges": [
@@ -263,9 +262,9 @@
             "source": "openAI_0",
             "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
             "target": "mrklAgentLLM_0",
-            "targetHandle": "mrklAgentLLM_0-input-model-BaseLLM",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLLM",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
