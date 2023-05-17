@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { RetrievalQAChain } from 'langchain/chains'
-import { BaseLLM } from 'langchain/llms/base'
 import { BaseRetriever } from 'langchain/schema'
 import { getBaseClasses } from '../../../src/utils'
+import { BaseLanguageModel } from 'langchain/base_language'
 
 class RetrievalQAChain_Chains implements INode {
     label: string
@@ -24,9 +24,9 @@ class RetrievalQAChain_Chains implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(RetrievalQAChain)]
         this.inputs = [
             {
-                label: 'LLM',
-                name: 'llm',
-                type: 'BaseLLM'
+                label: 'Language Model',
+                name: 'model',
+                type: 'BaseLanguageModel'
             },
             {
                 label: 'Vector Store Retriever',
@@ -37,10 +37,10 @@ class RetrievalQAChain_Chains implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const llm = nodeData.inputs?.llm as BaseLLM
+        const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
-        const chain = RetrievalQAChain.fromLLM(llm, vectorStoreRetriever)
+        const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever)
         return chain
     }
 
