@@ -341,15 +341,17 @@ export class App {
             const data = req.body
             const id = req.params.id
             console.log('data', data)
+            await sendMsg('res?.text || res', 'msg.senderStaffId', id)
+
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
                     const res = await chatQuery({ question: userMsg, userId: msg.senderStaffId }, id)
-                    await sendMsg(res?.text || res, msg.senderStaffId)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id)
                 } else if (msg.msgtype === 'file') {
                     const { downloadCode } = msg.content
-                    const pdfUrl = await getDownloadFileUrl(downloadCode)
+                    const pdfUrl = await getDownloadFileUrl(downloadCode, id)
                     const fileName = msg.content.fileId + msg.content.fileName
                     const filePath = await downloadPdf(pdfUrl, fileName)
                     const res = await chatQuery(
@@ -359,7 +361,7 @@ export class App {
                         },
                         id
                     )
-                    await sendMsg(res?.text || res, msg.senderStaffId)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id)
                 }
             } catch (error) {
                 console.log(error)

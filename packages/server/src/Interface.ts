@@ -13,6 +13,7 @@ export interface IChatFlow {
     deployed: boolean
     updatedDate: Date
     createdDate: Date
+    robot?: string
 }
 
 export interface IChatMessage {
