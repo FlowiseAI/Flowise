@@ -15,7 +15,7 @@ class RetrievalQAChain_Chains implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'RetrievalQA Chain'
+        this.label = 'Retrieval QA Chain'
         this.name = 'retrievalQAChain'
         this.type = 'RetrievalQAChain'
         this.icon = 'chain.svg'
