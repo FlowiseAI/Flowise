@@ -131,6 +131,7 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
     const res = await axios({
         url: pdfUrl,
         method: 'GET',
+        responseType: 'stream'
     }).then((response) => {
         const filepath = `${path.join(__dirname, '..', 'uploads')}/${fileName}` // 绝对路径
         // 创建可写流
