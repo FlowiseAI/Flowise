@@ -2,6 +2,8 @@ import WebSocket from 'ws'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
+import { getDataSource } from './DataSource'
+import { ChatFlow } from './entity/ChatFlow'
 
 export type IMessage = IFileMsg | ITextMsg
 
@@ -41,7 +43,7 @@ interface Content {
 }
 let token = ''
 // 使用axios获取钉钉接口accessToken
-export const getAccessToken = async () => {
+export const getAccessToken = async (appKey: string, appSecret: string) => {
     if (token) {
         return token
     }
@@ -50,8 +52,8 @@ export const getAccessToken = async () => {
     } = await axios.post(
         'https://api.dingtalk.com/v1.0/oauth2/accessToken',
         {
-            appKey: 'dingabma72l4h0jx3bla',
-            appSecret: 'Hx-W0TKMgdRgYAHxkY-CKeKblHDSERetj8IlptBNyfkoCdWvdvYvXoQjwk_Qc2yN'
+            appKey,
+            appSecret
         },
         {
             headers: {
@@ -67,12 +69,20 @@ export const getAccessToken = async () => {
 }
 
 // 使用axios让钉钉机器人给某个人发送消息
-export const sendMsg = async (msg: string, uid: string) => {
-    const accessToken = await getAccessToken()
+export const sendMsg = async (msg: string, uid: string, id: string) => {
+    const dataSource = getDataSource();
+    const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
+        id
+    })
+    if (!chatflow?.robot) {
+        return -1;
+    }
+    const robot = JSON.parse(chatflow.robot);
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
     const res = await axios.post(
         `https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend`,
         {
-            robotCode: 'dingabma72l4h0jx3bla',
+            robotCode: robot.robotAppKey,
             userIds: [uid],
             msgKey: 'sampleMarkdown',
             msgParam: JSON.stringify({
@@ -91,12 +101,20 @@ export const sendMsg = async (msg: string, uid: string) => {
 }
 
 // 使用axios下载钉钉机器人发送的文件
-export const getDownloadFileUrl = async (downloadCode: string) => {
-    const accessToken = await getAccessToken()
+export const getDownloadFileUrl = async (downloadCode: string, id: string) => {
+    const dataSource = getDataSource();
+    const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
+        id
+    })
+    if (!chatflow?.robot) {
+        return -1;
+    }
+    const robot = JSON.parse(chatflow.robot);
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
     const res = await axios.post(
         `https://api.dingtalk.com/v1.0/robot/messageFiles/download`,
         {
-            robotCode: 'dingabma72l4h0jx3bla',
+            robotCode: process.env.ROBOT_CODE,
             downloadCode: downloadCode
         },
         {
@@ -113,7 +131,6 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
     const res = await axios({
         url: pdfUrl,
         method: 'GET',
-        responseType: 'stream' // 指定返回数据类型为stream
     }).then((response) => {
         const filepath = `${path.join(__dirname, '..', 'uploads')}/${fileName}` // 绝对路径
         // 创建可写流
@@ -133,7 +150,7 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
     return res
 }
 export async function chatQuery(data: any, id: string) {
-    const response = await axios.post(`http://127.0.0.1:3000/api/v1/prediction/${id}`, data)
+    const response = await axios.post(`http://${process.env.DOMAIN}/api/v1/prediction/${id}`, data)
     return response.data
 }
 
@@ -202,7 +219,7 @@ export async function chatQuery(data: any, id: string) {
 //   conversationType: '1',
 //   senderId: '$:LWCP_v1:$NKyy1Pf206f3ENVW1wGkCg==',
 //   sessionWebhook: 'https://oapi.dingtalk.com/robot/sendBySession?session=4f1d0b116922947dde98dcfc7645f95d',
-//   robotCode: 'dingabma72l4h0jx3bla',
+//   robotCode: process.env.ROBOT_CODE,
 //   msgtype: 'file'
 // }
 
@@ -221,6 +238,6 @@ export async function chatQuery(data: any, id: string) {
 //   senderId: '$:LWCP_v1:$NKyy1Pf206f3ENVW1wGkCg==',
 //   sessionWebhook: 'https://oapi.dingtalk.com/robot/sendBySession?session=4f1d0b116922947dde98dcfc7645f95d',
 //   text: { content: '213' },
-//   robotCode: 'dingabma72l4h0jx3bla',
+//   robotCode: process.env.ROBOT_CODE,
 //   msgtype: 'text'
 // }

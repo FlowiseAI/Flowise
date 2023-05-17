@@ -1,0 +1,5 @@
+export const DOMAIN = 'http://121.40.244.111'
+export const ROBOT_PATH = '/api/v1/robot/dingtalk/'
+export const ROBOT_CODE = 'dingabma72l4h0jx3bla'
+export const APP_KEY = 'dingabma72l4h0jx3bla'
+export const APP_SECRET = 'Hx-W0TKMgdRgYAHxkY-CKeKblHDSERetj8IlptBNyfkoCdWvdvYvXoQjwk_Qc2yN'

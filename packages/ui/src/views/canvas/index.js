@@ -183,7 +183,7 @@ const Canvas = () => {
         }
     }
 
-    const handleSaveFlow = (chatflowName) => {
+    const handleSaveFlow = (chatflowName, extraInfo) => {
         if (reactFlowInstance) {
             setNodes((nds) =>
                 nds.map((node) => {
@@ -202,13 +202,16 @@ const Canvas = () => {
                 const newChatflowBody = {
                     name: chatflowName,
                     deployed: false,
-                    flowData
+                    flowData,
+                    ...extraInfo
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
+                debugger
                 const updateBody = {
                     name: chatflowName,
-                    flowData
+                    flowData,
+                    ...extraInfo
                 }
                 updateChatflowApi.request(chatflow.id, updateBody)
             }

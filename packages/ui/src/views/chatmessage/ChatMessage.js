@@ -155,8 +155,8 @@ export const ChatMessage = ({ chatflowid }) => {
         const { data, status } = await chatmessageApi.uploadFile(file)
         if (status !== 200) return
         console.log('res', data)
-        const displayMessage = `上传文件成功！`
-        const message = `upload file success，mime:${data.mime},filePath: ${data.path},Please summarize the document and reply in Chinese`
+        const displayMessage = `上传文件成功！,文件路径是： ${data.path}。`
+        const message = `获得一个上下文：用户上传了一个文件，文件路径是： ${data.path}。`
         setMessages((prevMessages) => [...prevMessages, { message: displayMessage, type: 'userMessage' }])
         addChatMessage(displayMessage, 'userMessage')
         try {

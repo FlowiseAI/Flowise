@@ -8,12 +8,13 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode, IconShare } from '@tabler/icons'
 
 // project imports
 import Settings from 'views/settings'
 import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
 import APICodeDialog from 'ui-component/dialog/APICodeDialog'
+import ShareFlowDialog from 'ui-component/dialog/ShareDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -35,10 +36,13 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
 
     const [isEditingFlowName, setEditingFlowName] = useState(null)
     const [flowName, setFlowName] = useState('')
+    const [robot, setFlowRobot] = useState('')
     const [isSettingsOpen, setSettingsOpen] = useState(false)
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
     const [apiDialogOpen, setAPIDialogOpen] = useState(false)
+    const [shareDialogOpen, setShareDialogOpen] = useState(false)
     const [apiDialogProps, setAPIDialogProps] = useState({})
+    const [shareDialogProps, setShareDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -112,6 +116,18 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
         setAPIDialogOpen(true)
     }
 
+    const onShareDialogClick = () => {
+        setShareDialogProps({
+            title: '分享',
+            chatflowid: chatflow.id,
+            chatflowApiKeyId: chatflow.apikeyid,
+            handleSaveFlow,
+            flowName,
+            robot
+        })
+        setShareDialogOpen(true)
+    }
+
     const onSaveChatflowClick = () => {
         if (chatflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
@@ -125,6 +141,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
+            setFlowRobot(updateChatflowApi.data.robot)
         }
         setEditingFlowName(false)
 
@@ -134,6 +151,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
+            setFlowRobot(chatflow.robot)
         }
     }, [chatflow])
 
@@ -273,6 +291,28 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                                 }
                             }}
                             color='inherit'
+                            onClick={onShareDialogClick}
+                        >
+                            <IconShare stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                )}
+                {chatflow?.id && (
+                    <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.canvasHeader.deployLight,
+                                color: theme.palette.canvasHeader.deployDark,
+                                '&:hover': {
+                                    background: theme.palette.canvasHeader.deployDark,
+                                    color: theme.palette.canvasHeader.deployLight
+                                }
+                            }}
+                            color='inherit'
                             onClick={onAPIDialogClick}
                         >
                             <IconCode stroke={1.5} size='1.3rem' />
@@ -337,6 +377,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />
+            <ShareFlowDialog dialogProps={shareDialogProps} show={shareDialogOpen} onCancel={() => setShareDialogOpen(false)} />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
         </>
     )

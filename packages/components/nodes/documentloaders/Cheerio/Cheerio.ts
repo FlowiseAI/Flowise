@@ -3,7 +3,6 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { CheerioWebBaseLoader } from 'langchain/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
 import { getAvailableURLs } from '../../../src'
-
 class Cheerio_DocumentLoaders implements INode {
     label: string
     name: string
@@ -53,6 +52,21 @@ class Cheerio_DocumentLoaders implements INode {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Web Scrap for Relative Links',
+                name: 'webScrap',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Web Scrap Links Limit',
+                name: 'limit',
+                type: 'number',
+                default: 10,
                 optional: true,
                 additionalParams: true
             }

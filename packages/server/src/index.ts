@@ -303,7 +303,7 @@ export class App {
             await queryRunner.startTransaction()
 
             try {
-                const chatflows: ChatFlow[] = databaseItems.chatflows
+                const chatflows: IChatFlow[] = databaseItems.chatflows
                 const chatmessages: ChatMessage[] = databaseItems.chatmessages
 
                 await queryRunner.manager.insert(ChatFlow, chatflows)
@@ -341,25 +341,28 @@ export class App {
             const data = req.body
             const id = req.params.id
             console.log('data', data)
+            await sendMsg('res?.text || res', 'msg.senderStaffId', id)
+
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
                     const res = await chatQuery({ question: userMsg, userId: msg.senderStaffId }, id)
-                    await sendMsg(res?.text || res, msg.senderStaffId)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id)
                 } else if (msg.msgtype === 'file') {
+                    await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id)
                     const { downloadCode } = msg.content
-                    const pdfUrl = await getDownloadFileUrl(downloadCode)
+                    const pdfUrl = await getDownloadFileUrl(downloadCode, id)
                     const fileName = msg.content.fileId + msg.content.fileName
                     const filePath = await downloadPdf(pdfUrl, fileName)
                     const res = await chatQuery(
                         {
-                            question: `用户上传了一份文件, 文件路径是： ${filePath}。帮我总结一下，使用中文`,
+                            question: `获得一个上下文：用户上传了一个文件，文件路径是： ${filePath}。`,
                             userId: msg.senderStaffId
                         },
                         id
                     )
-                    await sendMsg(res?.text || res, msg.senderStaffId)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id)
                 }
             } catch (error) {
                 console.log(error)
