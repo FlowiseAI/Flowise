@@ -101,7 +101,7 @@ export const sendMsg = async (msg: string, uid: string, id: string) => {
 }
 
 // 使用axios下载钉钉机器人发送的文件
-export const getDownloadFileUrl = async (downloadCode: string, id: string) => {
+export const getDownloadFileUrl = async (downloadCode: string, id: string, robotCode: string) => {
     const dataSource = getDataSource();
     const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
         id
@@ -114,7 +114,7 @@ export const getDownloadFileUrl = async (downloadCode: string, id: string) => {
     const res = await axios.post(
         `https://api.dingtalk.com/v1.0/robot/messageFiles/download`,
         {
-            robotCode: process.env.ROBOT_CODE,
+            robotCode: robotCode,
             downloadCode: downloadCode
         },
         {

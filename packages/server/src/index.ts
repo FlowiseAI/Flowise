@@ -352,7 +352,7 @@ export class App {
                 } else if (msg.msgtype === 'file') {
                     await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id)
                     const { downloadCode } = msg.content
-                    const pdfUrl = await getDownloadFileUrl(downloadCode, id)
+                    const pdfUrl = await getDownloadFileUrl(downloadCode, id, msg.robotCode)
                     const fileName = msg.content.fileId + msg.content.fileName
                     const filePath = await downloadPdf(pdfUrl, fileName)
                     const res = await chatQuery(
