@@ -150,7 +150,7 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
     return res
 }
 export async function chatQuery(data: any, id: string) {
-    const response = await axios.post(`http://${process.env.DOMAIN}/api/v1/prediction/${id}`, data)
+    const response = await axios.post(`http://127.0.0.1:3000/api/v1/prediction/${id}`, data)
     return response.data
 }
 
