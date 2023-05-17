@@ -341,7 +341,7 @@ export class App {
             const data = req.body
             const id = req.params.id
             console.log('data', data)
-            await sendMsg('res?.text || res', 'msg.senderStaffId', id)
+            // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
 
             try {
                 const msg: IMessage = data
