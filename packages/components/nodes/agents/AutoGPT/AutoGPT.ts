@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseChatModel } from 'langchain/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 import { AutoGPT } from 'langchain/experimental/autogpt'
 import { Tool } from 'langchain/tools'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'

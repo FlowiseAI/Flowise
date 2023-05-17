@@ -3,7 +3,7 @@ import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains'
 import { getBaseClasses } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
-import { BaseLLM } from 'langchain/llms/base'
+import { BaseLanguageModel } from 'langchain/base_language'
 
 class SqlDatabaseChain_Chains implements INode {
     label: string
@@ -25,9 +25,9 @@ class SqlDatabaseChain_Chains implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(SqlDatabaseChain)]
         this.inputs = [
             {
-                label: 'LLM',
-                name: 'llm',
-                type: 'BaseLLM'
+                label: 'Language Model',
+                name: 'model',
+                type: 'BaseLanguageModel'
             },
             {
                 label: 'Database',
@@ -52,25 +52,25 @@ class SqlDatabaseChain_Chains implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const databaseType = nodeData.inputs?.database as 'sqlite'
-        const llm = nodeData.inputs?.llm as BaseLLM
+        const model = nodeData.inputs?.model as BaseLanguageModel
         const dbFilePath = nodeData.inputs?.dbFilePath
 
-        const chain = await getSQLDBChain(databaseType, dbFilePath, llm)
+        const chain = await getSQLDBChain(databaseType, dbFilePath, model)
         return chain
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
         const databaseType = nodeData.inputs?.database as 'sqlite'
-        const llm = nodeData.inputs?.llm as BaseLLM
+        const model = nodeData.inputs?.model as BaseLanguageModel
         const dbFilePath = nodeData.inputs?.dbFilePath
 
-        const chain = await getSQLDBChain(databaseType, dbFilePath, llm)
+        const chain = await getSQLDBChain(databaseType, dbFilePath, model)
         const res = await chain.run(input)
         return res
     }
 }
 
-const getSQLDBChain = async (databaseType: 'sqlite', dbFilePath: string, llm: BaseLLM) => {
+const getSQLDBChain = async (databaseType: 'sqlite', dbFilePath: string, llm: BaseLanguageModel) => {
     const datasource = new DataSource({
         type: databaseType,
         database: dbFilePath

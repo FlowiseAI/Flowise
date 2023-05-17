@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 279,
+            "height": 278,
             "id": "serpAPI_1",
             "position": {
                 "x": 312.0655985817535,
@@ -86,7 +86,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_1",
             "position": {
                 "x": 663.1307301893027,
@@ -231,15 +231,15 @@
         },
         {
             "width": 300,
-            "height": 281,
-            "id": "mrklAgentLLM_1",
+            "height": 280,
+            "id": "mrklAgentLLM_0",
             "position": {
-                "x": 1022.2432000571966,
-                "y": 259.96894043226575
+                "x": 1055.3271135179489,
+                "y": 245.36098016819074
             },
             "type": "customNode",
             "data": {
-                "id": "mrklAgentLLM_1",
+                "id": "mrklAgentLLM_0",
                 "label": "MRKL Agent for LLMs",
                 "name": "mrklAgentLLM",
                 "type": "AgentExecutor",
@@ -253,13 +253,13 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "mrklAgentLLM_1-input-tools-Tool"
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
                     },
                     {
-                        "label": "LLM Model",
+                        "label": "Language Model",
                         "name": "model",
-                        "type": "BaseLLM",
-                        "id": "mrklAgentLLM_1-input-model-BaseLLM"
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentLLM_0-input-model-BaseLanguageModel"
                     }
                 ],
                 "inputs": {
@@ -268,7 +268,7 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "mrklAgentLLM_1-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
                         "name": "mrklAgentLLM",
                         "label": "AgentExecutor",
                         "type": "AgentExecutor | BaseChain | BaseLangChain"
@@ -277,33 +277,22 @@
                 "outputs": {},
                 "selected": false
             },
-            "positionAbsolute": {
-                "x": 1022.2432000571966,
-                "y": 259.96894043226575
-            },
             "selected": false,
+            "positionAbsolute": {
+                "x": 1055.3271135179489,
+                "y": 245.36098016819074
+            },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-model-BaseLLM",
-            "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-model-BaseLLM",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "calculator_1",
             "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -311,10 +300,21 @@
         {
             "source": "serpAPI_1",
             "sourceHandle": "serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serpAPI_1-serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
+            "id": "serpAPI_1-serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_1",
+            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
