@@ -71,10 +71,10 @@ export const getAccessToken = async (appKey: string, appSecret: string) => {
 }
 
 // 使用axios让钉钉机器人给某个人发送消息
-export const sendMsg = async (msg: string, uid: string, id: string) => {
+export const sendMsg = async (msg: string, uid: string, chatFlowId: string, robotCode: string) => {
     const dataSource = getDataSource();
     const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
-        id
+        id: chatFlowId
     })
     if (!chatflow?.robot) {
         return -1;
@@ -84,7 +84,7 @@ export const sendMsg = async (msg: string, uid: string, id: string) => {
     const res = await axios.post(
         `https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend`,
         {
-            robotCode: robot.robotAppKey,
+            robotCode: robotCode,
             userIds: [uid],
             msgKey: 'sampleMarkdown',
             msgParam: JSON.stringify({

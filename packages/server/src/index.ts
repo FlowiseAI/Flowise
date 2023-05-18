@@ -395,9 +395,9 @@ export class App {
                     const res = await chatQuery({ question: userMsg, history: history, userId: msg.senderStaffId }, id)
                     apiContent = res?.text || res
 
-                    await sendMsg(res?.text || res, msg.senderStaffId, id)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id, msg.robotCode)
                 } else if (msg.msgtype === 'file') {
-                    await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id)
+                    await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id, msg.robotCode)
                     const { downloadCode } = msg.content
                     const pdfUrl = await getDownloadFileUrl(downloadCode, id, msg.robotCode)
                     const fileName = msg.content.fileId + msg.content.fileName
@@ -412,7 +412,7 @@ export class App {
                         id
                     )
                     apiContent = res?.text || res
-                    await sendMsg(res?.text || res, msg.senderStaffId, id)
+                    await sendMsg(res?.text || res, msg.senderStaffId, id, msg.robotCode)
                 }
                 // 保存历史记录
                 const newChatMessage = [
