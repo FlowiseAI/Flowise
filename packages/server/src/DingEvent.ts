@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { getDataSource } from './DataSource'
 import { ChatFlow } from './entity/ChatFlow'
+import { Robot } from './entity/Robot'
 
 export type IMessage = IFileMsg | ITextMsg
 
@@ -100,6 +101,38 @@ export const sendMsg = async (msg: string, uid: string, id: string) => {
     return res
 }
 
+// 使用axios让钉钉机器人给某个人发送消息
+export const sendOutgoingMsg = async (msg: string, uid: string, id: string, webhook: string) => {
+    const dataSource = getDataSource();
+    const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
+        id
+    })
+    if (!chatflow?.robot) {
+        return -1;
+    }
+    const robot = JSON.parse(chatflow.robot);
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
+    const res = await axios.post(
+        webhook,
+        {
+            robotCode: robot.robotAppKey,
+            userIds: [uid],
+            msgKey: 'sampleMarkdown',
+            msgParam: JSON.stringify({
+                title: '合同法务数字专员',
+                text: msg
+            })
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-acs-dingtalk-access-token': accessToken
+            }
+        }
+    )
+    return res
+}
+
 // 使用axios下载钉钉机器人发送的文件
 export const getDownloadFileUrl = async (downloadCode: string, id: string, robotCode: string) => {
     const dataSource = getDataSource();
@@ -153,6 +186,18 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
 export async function chatQuery(data: any, id: string) {
     const response = await axios.post(`http://127.0.0.1:3000/api/v1/prediction/${id}`, data)
     return response.data
+}
+
+export async function getOutgoingRobot(chatflowid: string) {
+    const dataSource = getDataSource();
+    const robot = await dataSource.getRepository(Robot).findOneBy({
+        chatflowid
+    });
+
+    const robots = await dataSource.getRepository(Robot).find();
+
+    console.log(robots, 'xxx')
+    return robot?.webhook || ''
 }
 
 // export const registerDingEvent = async () => {

@@ -16,6 +16,13 @@ export interface IChatFlow {
     robot?: string
 }
 
+export interface IRobot {
+    id: string
+    chatflowid: string
+    webhook?: string
+    token?: string
+}
+
 export interface IChatMessage {
     id: string
     role: MessageType

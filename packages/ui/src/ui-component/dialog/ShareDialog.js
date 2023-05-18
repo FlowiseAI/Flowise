@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogContent, DialogTitle, Tab, Tabs, Box, OutlinedInput, Select, MenuItem } from '@mui/material'
 import EmbedSVG from 'assets/images/embed.svg'
 import { styled } from '@mui/material/styles'
-import { DOMAIN, ROBOT_PATH } from 'utils/consts'
+import { DOMAIN, ROBOT_PATH, OUTGOING_ROBOT_PATH } from 'utils/consts'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
 
@@ -67,7 +67,8 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
     const [robotType, setRobotType] = useState(1)
     const [editRobot, setEditRobot] = useState(false)
     const input = useRef(null)
-    const [robotToken, setRobotToken] = useState('');
+    const [robotToken, setRobotToken] = useState('')
+    const [robotWebhook, setRobotWebhook] = useState('')
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
@@ -75,8 +76,6 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
 
     const onEditRobot = () => {
         if (editRobot) {
-            // 保存到数据库
-            // robotAppSecret robotAppKey
             dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret }) })
             setEditRobot(false)
             return
@@ -96,12 +95,17 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
         setRobotAppKey(robot.robotAppKey || '')
         setRobotAppSecret(robot.robotAppSecret || '')
         setRobotToken(robot.robotToken || '')
+        setRobotWebhook(robot.robotWebhook || '')
     }, [dialogProps.robot])
 
     const onGenerateToken = () => {
         const token = generateToken();
         dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken }) })
         setRobotToken(token);
+    }
+
+    const onSaveOutgoing = () => {
+        dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken, robotWebhook }) })
     }
 
     const component = show ? (
@@ -197,7 +201,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
                                     // 群内机器人
                                     <>
                                         <p>
-                                            <Bold>STEP1: </Bold>点击<Button onClick={onGenerateToken}>生成 token</Button>
+                                            <Bold>STEP1: </Bold>点击<Button onClick={onGenerateToken} disabled={robotToken ? true : false}>生成 token</Button>
                                             {robotToken}
                                         </p>
                                         <p>
@@ -207,11 +211,27 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
                                             <Bold>STEP3: </Bold>复制链接，将链接填写到 Outgoing 机制配置中的 「POST 地址」输入框中
                                             <CopyBlock
                                                 theme={atomOneDark}
-                                                text={`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`}
+                                                text={`${DOMAIN}${OUTGOING_ROBOT_PATH}${dialogProps.chatflowid}`}
                                                 language={'bash'}
                                                 showLineNumbers={false}
                                                 wrapLines
                                             />
+                                        </p>
+                                        <p style={{wordBreak: 'break-all'}}>
+                                            <Bold>STEP4: </Bold>在钉钉机器人创建窗口中点击完成并复制 Outgoing 机器人 webhook 地址，填入输入框
+                                            <OutlinedInput
+                                                sx={{ mt: 1 }}
+                                                id='chatflow-name'
+                                                type='text'
+                                                required
+                                                fullWidth
+                                                placeholder='请填入机器人 Webhook 链接'
+                                                value={robotWebhook}
+                                                onChange={(e) => setRobotWebhook(e.target.value)}
+                                            />
+                                        </p>
+                                        <p>
+                                            <Bold>STEP5: </Bold>点击<Button onClick={onSaveOutgoing}>保存</Button>
                                         </p>
                                     </>
                                 )}
