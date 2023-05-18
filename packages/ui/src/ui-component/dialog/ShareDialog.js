@@ -2,12 +2,46 @@ import { createPortal } from 'react-dom'
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Tab, Tabs, Box, OutlinedInput, Select, MenuItem } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { Button, Dialog, DialogContent, DialogTitle, Tab, Tabs, Box, OutlinedInput, Select, MenuItem } from '@mui/material'
 import EmbedSVG from 'assets/images/embed.svg'
 import { styled } from '@mui/material/styles';
 import { DOMAIN, ROBOT_PATH } from 'utils/consts'
 
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+  
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+  
+    try {
+      var successful = document.execCommand('copy');
+      var msg = successful ? 'successful' : 'unsuccessful';
+      console.log('Fallback: Copying text command was ' + msg);
+    } catch (err) {
+      console.error('Fallback: Oops, unable to copy', err);
+    }
+  
+    document.body.removeChild(textArea);
+  }
+  function copyTextToClipboard(text) {
+    if (!navigator.clipboard) {
+      fallbackCopyTextToClipboard(text);
+      return;
+    }
+    navigator.clipboard.writeText(text).then(function() {
+      console.log('Async: Copying to clipboard was successful!');
+    }, function(err) {
+      console.error('Async: Could not copy text: ', err);
+    });
+  }
+  
 const Bold = styled('span')(({ theme }) => ({
     ...theme.typography.button,
     backgroundColor: theme.palette.background.paper,
@@ -74,7 +108,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const onCopyRobot = () => {
-        navigator.clipboard.writeText(`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`)
+        copyTextToClipboard(`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`)
     }
 
     useEffect(() => {
