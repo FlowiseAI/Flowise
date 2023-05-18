@@ -4,49 +4,16 @@ import PropTypes from 'prop-types'
 
 import { Button, Dialog, DialogContent, DialogTitle, Tab, Tabs, Box, OutlinedInput, Select, MenuItem } from '@mui/material'
 import EmbedSVG from 'assets/images/embed.svg'
-import { styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles'
 import { DOMAIN, ROBOT_PATH } from 'utils/consts'
+import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
-function fallbackCopyTextToClipboard(text) {
-    var textArea = document.createElement("textarea");
-    textArea.value = text;
-    
-    // Avoid scrolling to bottom
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-  
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-  
-    try {
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'successful' : 'unsuccessful';
-      console.log('Fallback: Copying text command was ' + msg);
-    } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err);
-    }
-  
-    document.body.removeChild(textArea);
-  }
-  function copyTextToClipboard(text) {
-    if (!navigator.clipboard) {
-      fallbackCopyTextToClipboard(text);
-      return;
-    }
-    navigator.clipboard.writeText(text).then(function() {
-      console.log('Async: Copying to clipboard was successful!');
-    }, function(err) {
-      console.error('Async: Could not copy text: ', err);
-    });
-  }
-  
+
 const Bold = styled('span')(({ theme }) => ({
     ...theme.typography.button,
     backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(1),
-  }));
+    padding: theme.spacing(1)
+}))
 
 function a11yProps(index) {
     return {
@@ -99,8 +66,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
         if (editRobot) {
             // 保存到数据库
             // robotAppSecret robotAppKey
-            debugger
-            dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret })})
+            dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret }) })
             setEditRobot(false)
             return
         }
@@ -152,54 +118,66 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
                 {Object.keys(shareTabsMap).map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
                         <p>{shareTabsMap[codeLang]}</p>
-                        {
-                            value === 0 ? (
-                                <>
-                                    <Select
-                                        labelId='demo-simple-select-label'
-                                        id='demo-simple-select'
-                                        value={robotType}
-                                        label='机器人类型'
-                                        onChange={(e) => setRobotType(e.target.value)}
-                                    >
-                                        <MenuItem value={1}>应用机器人</MenuItem>
-                                        <MenuItem value={2}>群内自定义机器人</MenuItem>
-                                    </Select>
-                                    {
-                                        robotType === 1 ? (
-                                            <>
-                                                <p><Bold>STEP1: </Bold>将应用的 AppKey 和 AppSecret 填写到下方表单中</p>
-                                                <OutlinedInput
-                                                    ref={input}
-                                                    sx={{ mt: 1 }}
-                                                    id='chatflow-name'
-                                                    type='text'
-                                                    fullWidth
-                                                    disabled={!editRobot}
-                                                    required
-                                                    placeholder='请填入机器人所属应用 AppKey'
-                                                    value={robotAppKey}
-                                                    onChange={(e) => setRobotAppKey(e.target.value)}
-                                                />
-                                                <OutlinedInput
-                                                    sx={{ mt: 1 }}
-                                                    id='chatflow-name'
-                                                    type='text'
-                                                    disabled={!editRobot}
-                                                    required
-                                                    fullWidth
-                                                    placeholder='请填入机器人所属应用 AppSecret'
-                                                    value={robotAppSecret}
-                                                    onChange={(e) => setRobotAppSecret(e.target.value)}
-                                                />
-                                                <Button style={{ marginTop: '10px' }} variant="outlined" onClick={onEditRobot}>{editRobot ? '保存' : '编辑'}</Button>
-                                                <p><Bold>STEP2: </Bold>点击<Button size="medium" onClick={onCopyRobot}>复制链接</Button>，将连接填写到机器人管理后台「消息接收地址」输入框中</p>
-                                            </>
-                                        ) : null
-                                    }
-                                </>
-                            ) : null
-                        }
+                        {value === 0 ? (
+                            <>
+                                <Select
+                                    labelId='demo-simple-select-label'
+                                    id='demo-simple-select'
+                                    value={robotType}
+                                    label='机器人类型'
+                                    onChange={(e) => setRobotType(e.target.value)}
+                                >
+                                    <MenuItem value={1}>应用机器人</MenuItem>
+                                    <MenuItem value={2}>群内自定义机器人</MenuItem>
+                                </Select>
+                                {robotType === 1 ? (
+                                    <>
+                                        <p>
+                                            <Bold>STEP1: </Bold>将应用的 AppKey 和 AppSecret 填写到下方表单中
+                                        </p>
+                                        <OutlinedInput
+                                            ref={input}
+                                            sx={{ mt: 1 }}
+                                            id='chatflow-name'
+                                            type='text'
+                                            fullWidth
+                                            disabled={!editRobot}
+                                            required
+                                            placeholder='请填入机器人所属应用 AppKey'
+                                            value={robotAppKey}
+                                            onChange={(e) => setRobotAppKey(e.target.value)}
+                                        />
+                                        <OutlinedInput
+                                            sx={{ mt: 1 }}
+                                            id='chatflow-name'
+                                            type='text'
+                                            disabled={!editRobot}
+                                            required
+                                            fullWidth
+                                            placeholder='请填入机器人所属应用 AppSecret'
+                                            value={robotAppSecret}
+                                            onChange={(e) => setRobotAppSecret(e.target.value)}
+                                        />
+                                        <Button style={{ marginTop: '10px' }} variant='outlined' onClick={onEditRobot}>
+                                            {editRobot ? '保存' : '编辑'}
+                                        </Button>
+                                        <p style={{wordBreak: 'break-all'}}>
+                                            <Bold>STEP2: </Bold>复制链接：
+                                            <CopyBlock
+                                                theme={atomOneDark}
+                                                text={`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`}
+                                                language={'bash'}
+                                                showLineNumbers={false}
+                                                wrapLines
+                                            />
+                                        </p>
+                                        <p>
+                                            <Bold>STEP3: </Bold>将连接填写到机器人管理后台「消息接收地址」输入框中
+                                        </p>
+                                    </>
+                                ) : null}
+                            </>
+                        ) : null}
                     </TabPanel>
                 ))}
             </DialogContent>
