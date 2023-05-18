@@ -29,7 +29,7 @@ import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
-import { Robot } from './entity/OutgoingRobot'
+import { OutgoingRobot } from './entity/OutgoingRobot'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
@@ -146,7 +146,17 @@ export class App {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
-            if (chatflow) return res.json(chatflow)
+
+            const outgoingRobot = await this.AppDataSource.getRepository(OutgoingRobot).findBy({
+                chatflowid: req.params.id
+            })
+
+            const result = { ...chatflow }
+            Object.assign(result, {
+                outgoingRobot
+            })
+
+            if (chatflow) return res.json(result)
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         })
 
@@ -190,6 +200,29 @@ export class App {
         this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
             return res.json(results)
+        })
+
+        // Save outgoingrobot info
+        this.app.post('/api/v1/chatflows/outgoingrobot/:id', async (req: Request, res: Response) => {
+            const body = req.body
+            if (body.id) {
+                const robotInfo = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({ id: body.id });
+                if (robotInfo) {
+                    Object.assign(robotInfo, body)
+                    const result = await this.AppDataSource.getRepository(OutgoingRobot).save(robotInfo)
+                    return res.json(result)
+
+                }
+            } else {
+                delete body.id
+                const newRobot = new OutgoingRobot()
+                Object.assign(newRobot, body, { chatflowid: req.params.id })
+                const result = await this.AppDataSource.getRepository(OutgoingRobot).create(newRobot)
+                const results = await this.AppDataSource.getRepository(OutgoingRobot).save(result)
+
+                return res.json(results)
+            }
+            return res.json({ code: 0 })
         })
 
         // ----------------------------------------
@@ -406,7 +439,7 @@ export class App {
             const data = req.body
             const id = req.params.id
             const token = req.headers.token as string
-            const robotData = await this.AppDataSource.getRepository(Robot).findOneBy({
+            const robotData = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({
                 token: token
             })
             const webhook = robotData?.webhook

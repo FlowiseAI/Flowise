@@ -59,7 +59,7 @@ const shareTabsMap = {
     API: '将 AI 应用以 API 的形式分享给他人使用'
 }
 
-const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
+const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) => {
     const portalElement = document.getElementById('portal')
     const [value, setValue] = useState(0)
     const [robotAppKey, setRobotAppKey] = useState('')
@@ -69,6 +69,8 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
     const input = useRef(null)
     const [robotToken, setRobotToken] = useState('')
     const [robotWebhook, setRobotWebhook] = useState('')
+
+    console.log(dialogProps, 'dialogProps');
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
@@ -98,14 +100,22 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
         setRobotWebhook(robot.robotWebhook || '')
     }, [dialogProps.robot])
 
+
+    useEffect(() => {
+        if (dialogProps.outgoingRobot?.length) {
+            setRobotWebhook(dialogProps.outgoingRobot[0].webhook || '')
+            setRobotToken(dialogProps.outgoingRobot[0].token || '')
+        }
+    }, [dialogProps.outgoingRobot])
+
     const onGenerateToken = () => {
         const token = generateToken();
-        dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken }) })
+        // dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken }) })
         setRobotToken(token);
     }
 
     const onSaveOutgoing = () => {
-        dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken, robotWebhook }) })
+        handleSaveOutgoing(robotToken, robotWebhook, dialogProps.outgoingRobot?.[0]?.id || '')
     }
 
     const component = show ? (

@@ -3,7 +3,7 @@ import path from 'path'
 import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
-import { Robot } from './entity/OutgoingRobot'
+import { OutgoingRobot } from './entity/OutgoingRobot'
 import { getUserHome } from './utils'
 
 let appDataSource: DataSource
@@ -15,7 +15,7 @@ export const init = async (): Promise<void> => {
         type: 'sqlite',
         database: path.resolve(homePath, 'database.sqlite'),
         synchronize: true,
-        entities: [ChatFlow, ChatMessage, Robot],
+        entities: [ChatFlow, ChatMessage, OutgoingRobot],
         migrations: []
     })
 }

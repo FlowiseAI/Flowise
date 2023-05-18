@@ -10,10 +10,13 @@ const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
 
 const deleteChatflow = (id) => client.delete(`/chatflows/${id}`)
 
+const postChatflowOutgoingRobot = (id, body) => client.post(`/chatflows/outgoingrobot/${id}`, body)
+
 export default {
     getAllChatflows,
     getSpecificChatflow,
     createNewChatflow,
     updateChatflow,
-    deleteChatflow
+    deleteChatflow,
+    postChatflowOutgoingRobot
 }

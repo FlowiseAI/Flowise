@@ -28,7 +28,7 @@ import { uiBaseURL } from 'store/constant'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow, handleSaveOutgoing }) => {
     const theme = useTheme()
     const navigate = useNavigate()
     const flowNameRef = useRef()
@@ -123,7 +123,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             chatflowApiKeyId: chatflow.apikeyid,
             handleSaveFlow,
             flowName,
-            robot
+            robot,
+            outgoingRobot: chatflow.outgoingRobot
         })
         setShareDialogOpen(true)
     }
@@ -377,7 +378,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />
-            <ShareFlowDialog dialogProps={shareDialogProps} show={shareDialogOpen} onCancel={() => setShareDialogOpen(false)} />
+            <ShareFlowDialog dialogProps={shareDialogProps} show={shareDialogOpen} onCancel={() => setShareDialogOpen(false)} handleSaveOutgoing={handleSaveOutgoing} />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
         </>
     )
@@ -387,7 +388,8 @@ CanvasHeader.propTypes = {
     chatflow: PropTypes.object,
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
-    handleLoadFlow: PropTypes.func
+    handleLoadFlow: PropTypes.func,
+    handleSaveOutgoing: PropTypes.func
 }
 
 export default CanvasHeader

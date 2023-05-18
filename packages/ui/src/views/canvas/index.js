@@ -87,6 +87,7 @@ const Canvas = () => {
     const testChatflowApi = useApi(chatflowsApi.testChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const postChatflowOutgoingRobotApi = useApi(chatflowsApi.postChatflowOutgoingRobot)
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -215,6 +216,29 @@ const Canvas = () => {
                 updateChatflowApi.request(chatflow.id, updateBody)
             }
         }
+    }
+
+    const handleSaveOutgoing = (robotToken, robotWebhook, id) => {
+        const robotBody = {
+            token: robotToken,
+            webhook: robotWebhook,
+            id
+        }
+        postChatflowOutgoingRobotApi.request(chatflowId, robotBody).then(() => {
+            enqueueSnackbar({
+                message: 'Chatflow saved',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        })
+        
     }
 
     // eslint-disable-next-line
@@ -482,6 +506,7 @@ const Canvas = () => {
                         <CanvasHeader
                             chatflow={chatflow}
                             handleSaveFlow={handleSaveFlow}
+                            handleSaveOutgoing={handleSaveOutgoing}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                         />
