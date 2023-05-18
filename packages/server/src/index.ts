@@ -206,12 +206,11 @@ export class App {
         this.app.post('/api/v1/chatflows/outgoingrobot/:id', async (req: Request, res: Response) => {
             const body = req.body
             if (body.id) {
-                const robotInfo = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({ id: body.id });
+                const robotInfo = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({ id: body.id })
                 if (robotInfo) {
                     Object.assign(robotInfo, body)
                     const result = await this.AppDataSource.getRepository(OutgoingRobot).save(robotInfo)
                     return res.json(result)
-
                 }
             } else {
                 delete body.id
@@ -383,6 +382,8 @@ export class App {
                 type: item.role,
                 message: item.content
             }))
+            // 取前10条历史记录
+            history.splice(0, history.length - 10)
 
             try {
                 const msg: IMessage = data
@@ -455,7 +456,8 @@ export class App {
                 type: item.role,
                 message: item.content
             }))
-
+            // 取前10条历史记录
+            history.splice(0, history.length - 10)
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
