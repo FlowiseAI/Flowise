@@ -342,12 +342,24 @@ export class App {
             const id = req.params.id
             console.log('data', data)
             // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
+                chatflowid: data.conversationId + data.senderId
+            })
+            const history = (chatmessages || []).map(item => ({
+                type: item.role,
+                message: item.content
+            }))
 
             try {
                 const msg: IMessage = data
+                let content = '';
+                let apiContent = ''
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
-                    const res = await chatQuery({ question: userMsg, userId: msg.senderStaffId }, id)
+                    content = userMsg
+                    const res = await chatQuery({ question: userMsg, history: history, userId: msg.senderStaffId }, id)
+                    apiContent = res?.text || res
+
                     await sendMsg(res?.text || res, msg.senderStaffId, id)
                 } else if (msg.msgtype === 'file') {
                     await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id)
@@ -355,15 +367,34 @@ export class App {
                     const pdfUrl = await getDownloadFileUrl(downloadCode, id, msg.robotCode)
                     const fileName = msg.content.fileId + msg.content.fileName
                     const filePath = await downloadPdf(pdfUrl, fileName)
+                    content = `获得一个上下文：用户上传了一个文件，文件路径是： ${filePath}。`
                     const res = await chatQuery(
                         {
-                            question: `获得一个上下文：用户上传了一个文件，文件路径是： ${filePath}。`,
-                            userId: msg.senderStaffId
+                            question: content,
+                            userId: msg.senderStaffId,
+                            history: history
                         },
                         id
                     )
+                    apiContent = res?.text || res
                     await sendMsg(res?.text || res, msg.senderStaffId, id)
                 }
+                  // 保存历史记录
+                  const newChatMessage = [
+                    Object.assign(new ChatMessage(), {
+                        role: 'userMessage',
+                        content: content,
+                        chatflowid: data.conversationId + msg.senderId,
+                    }), 
+                    Object.assign(new ChatMessage(), {
+                        role: 'apiMessage',
+                        content: apiContent,
+                        chatflowid: data.conversationId + msg.senderId,
+                    }), 
+                ];
+      
+                  const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                  await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
             } catch (error) {
                 console.log(error)
             }
