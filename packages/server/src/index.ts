@@ -376,7 +376,7 @@ export class App {
             console.log('data', data)
             // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
             const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: data.conversationId + data.senderId
+                chatflowid: data.conversationId
             })
             const history = (chatmessages || []).map((item) => ({
                 type: item.role,
@@ -419,12 +419,12 @@ export class App {
                     Object.assign(new ChatMessage(), {
                         role: 'userMessage',
                         content: content,
-                        chatflowid: data.conversationId + msg.senderId
+                        chatflowid: data.conversationId
                     }),
                     Object.assign(new ChatMessage(), {
                         role: 'apiMessage',
                         content: apiContent,
-                        chatflowid: data.conversationId + msg.senderId
+                        chatflowid: data.conversationId
                     })
                 ]
 
@@ -450,14 +450,14 @@ export class App {
             }
 
             const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: data.conversationId + data.senderId
+                chatflowid: data.conversationId
             })
             const history = (chatmessages || []).map((item) => ({
                 type: item.role,
                 message: item.content
             }))
             // 取前10条历史记录
-            history.splice(0, history.length - 10)
+            history.splice(0, history.length - 20)
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
@@ -471,12 +471,12 @@ export class App {
                         Object.assign(new ChatMessage(), {
                             role: 'userMessage',
                             content: userMsg,
-                            chatflowid: data.conversationId + msg.senderId
+                            chatflowid: data.conversationId
                         }),
                         Object.assign(new ChatMessage(), {
                             role: 'apiMessage',
                             content: res?.text || res,
-                            chatflowid: data.conversationId + msg.senderId
+                            chatflowid: data.conversationId
                         })
                     ]
 

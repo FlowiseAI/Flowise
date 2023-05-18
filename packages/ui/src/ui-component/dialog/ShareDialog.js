@@ -208,15 +208,8 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                 ) : (
                                     // 群内机器人
                                     <>
-                                        <p>
-                                            <Bold>STEP1: </Bold>点击<Button onClick={onGenerateToken} disabled={robotToken ? true : false}>生成 token</Button>
-                                            {robotToken}
-                                        </p>
-                                        <p>
-                                            <Bold>STEP2: </Bold>将生成 Token 填写值 Outgoing 机制配置中的「Token」输入框中
-                                        </p>
                                         <p style={{wordBreak: 'break-all'}}>
-                                            <Bold>STEP3: </Bold>复制链接，将链接填写到 Outgoing 机制配置中的 「POST 地址」输入框中
+                                            <Bold>STEP1: </Bold>复制链接，将链接填写到 Outgoing 机制配置中的 「POST 地址」输入框中
                                             <CopyBlock
                                                 theme={atomOneDark}
                                                 text={`${DOMAIN}${OUTGOING_ROBOT_PATH}${dialogProps.chatflowid}`}
@@ -224,6 +217,13 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                                 showLineNumbers={false}
                                                 wrapLines
                                             />
+                                        </p>
+                                        <p>
+                                            <Bold>STEP2: </Bold>点击<Button onClick={onGenerateToken} disabled={robotToken ? true : false}>生成 token</Button>
+                                            {robotToken}
+                                        </p>
+                                        <p>
+                                            <Bold>STEP3: </Bold>将生成 Token 填写值 Outgoing 机制配置中的「Token」输入框中
                                         </p>
                                         <p style={{wordBreak: 'break-all'}}>
                                             <Bold>STEP4: </Bold>在钉钉机器人创建窗口中点击完成并复制 Outgoing 机器人 webhook 地址，填入输入框
@@ -237,6 +237,9 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                                 value={robotWebhook}
                                                 onChange={(e) => setRobotWebhook(e.target.value)}
                                             />
+                                        </p>
+                                        <p>
+                                            <Bold>注意: </Bold>安全设置里IP地址 (段)填写：121.40.244.111
                                         </p>
                                         <p>
                                             <Bold>STEP5: </Bold>点击<Button onClick={onSaveOutgoing}>保存</Button>

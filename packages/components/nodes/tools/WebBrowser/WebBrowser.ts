@@ -40,7 +40,7 @@ class WebBrowser_Tools implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const embeddings = nodeData.inputs?.embeddings as Embeddings
 
-        return new WebBrowser({ model, embeddings })
+        return new WebBrowser({ model, embeddings, verbose: true })
     }
 }
 
