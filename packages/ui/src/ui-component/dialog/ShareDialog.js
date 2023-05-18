@@ -70,8 +70,6 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
     const [robotToken, setRobotToken] = useState('')
     const [robotWebhook, setRobotWebhook] = useState('')
 
-    console.log(dialogProps, 'dialogProps');
-
     const handleChange = (event, newValue) => {
         setValue(newValue)
     }
