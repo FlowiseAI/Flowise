@@ -475,7 +475,7 @@ export class App {
                         }),
                         Object.assign(new ChatMessage(), {
                             role: 'apiMessage',
-                            content: res.text,
+                            content: res?.text || res,
                             chatflowid: data.conversationId + msg.senderId
                         })
                     ]
