@@ -4,7 +4,6 @@ import fs from 'fs'
 import path from 'path'
 import { getDataSource } from './DataSource'
 import { ChatFlow } from './entity/ChatFlow'
-import { Robot } from './entity/Robot'
 
 export type IMessage = IFileMsg | ITextMsg
 
@@ -42,11 +41,13 @@ interface Content {
     downloadCode: string
     fileId: string
 }
-let token = ''
+const tokenMap: {
+  [key: string]: string
+} = {};
 // 使用axios获取钉钉接口accessToken
 export const getAccessToken = async (appKey: string, appSecret: string) => {
-    if (token) {
-        return token
+    if (tokenMap[appKey]) {
+        return tokenMap[appKey]
     }
     const {
         data: { accessToken, expireIn }
@@ -62,9 +63,9 @@ export const getAccessToken = async (appKey: string, appSecret: string) => {
             }
         }
     )
-    token = accessToken
+    tokenMap[appKey] = accessToken
     setTimeout(() => {
-        token = ''
+      tokenMap[appKey] = ''
     }, expireIn * 1000)
     return accessToken
 }
@@ -102,31 +103,18 @@ export const sendMsg = async (msg: string, uid: string, id: string) => {
 }
 
 // 使用axios让钉钉机器人给某个人发送消息
-export const sendOutgoingMsg = async (msg: string, uid: string, id: string, webhook: string) => {
-    const dataSource = getDataSource();
-    const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
-        id
-    })
-    if (!chatflow?.robot) {
-        return -1;
-    }
-    const robot = JSON.parse(chatflow.robot);
-    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
+export const sendOutgoingMsg = async (msg: string, webhook: string) => {
     const res = await axios.post(
         webhook,
         {
-            robotCode: robot.robotAppKey,
-            userIds: [uid],
-            msgKey: 'sampleMarkdown',
-            msgParam: JSON.stringify({
-                title: '合同法务数字专员',
-                text: msg
-            })
+            msgtype: 'text',
+            text: {
+                content: msg
+            }
         },
         {
             headers: {
                 'Content-Type': 'application/json',
-                'x-acs-dingtalk-access-token': accessToken
             }
         }
     )
@@ -186,18 +174,6 @@ export const downloadPdf = async (pdfUrl: string, fileName: string) => {
 export async function chatQuery(data: any, id: string) {
     const response = await axios.post(`http://127.0.0.1:3000/api/v1/prediction/${id}`, data)
     return response.data
-}
-
-export async function getOutgoingRobot(chatflowid: string) {
-    const dataSource = getDataSource();
-    const robot = await dataSource.getRepository(Robot).findOneBy({
-        chatflowid
-    });
-
-    const robots = await dataSource.getRepository(Robot).find();
-
-    console.log(robots, 'xxx')
-    return robot?.webhook || ''
 }
 
 // export const registerDingEvent = async () => {

@@ -26,8 +26,5 @@ export class ChatFlow implements IChatFlow {
     updatedDate: Date
 
     @Column({ nullable: true })
-    appKey: string
-
-    @Column({ nullable: true })
-    appSecret: string
+    robot: string
 }

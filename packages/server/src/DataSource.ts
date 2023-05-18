@@ -3,7 +3,7 @@ import path from 'path'
 import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
-import { Robot } from './entity/Robot'
+import { Robot } from './entity/OutgoingRobot'
 import { getUserHome } from './utils'
 
 let appDataSource: DataSource

@@ -33,7 +33,7 @@ import { Robot } from './entity/Robot'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
-import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg, getOutgoingRobot, sendOutgoingMsg } from './DingEvent'
+import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg, sendOutgoingMsg } from './DingEvent'
 
 export class App {
     app: express.Application
@@ -346,14 +346,14 @@ export class App {
             const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
                 chatflowid: data.conversationId + data.senderId
             })
-            const history = (chatmessages || []).map(item => ({
+            const history = (chatmessages || []).map((item) => ({
                 type: item.role,
                 message: item.content
             }))
 
             try {
                 const msg: IMessage = data
-                let content = '';
+                let content = ''
                 let apiContent = ''
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
@@ -380,22 +380,22 @@ export class App {
                     apiContent = res?.text || res
                     await sendMsg(res?.text || res, msg.senderStaffId, id)
                 }
-                  // 保存历史记录
-                  const newChatMessage = [
+                // 保存历史记录
+                const newChatMessage = [
                     Object.assign(new ChatMessage(), {
                         role: 'userMessage',
                         content: content,
-                        chatflowid: data.conversationId + msg.senderId,
-                    }), 
+                        chatflowid: data.conversationId + msg.senderId
+                    }),
                     Object.assign(new ChatMessage(), {
                         role: 'apiMessage',
                         content: apiContent,
-                        chatflowid: data.conversationId + msg.senderId,
-                    }), 
-                ];
-      
-                  const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-                  await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+                        chatflowid: data.conversationId + msg.senderId
+                    })
+                ]
+
+                const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
             } catch (error) {
                 console.log(error)
             }
@@ -405,19 +405,48 @@ export class App {
         this.app.post('/api/v1/robot/dingtalk/outgoing/:id', async (req: Request, res: Response) => {
             const data = req.body
             const id = req.params.id
-            const token = req.headers.token as string;
-            const webhook = await getOutgoingRobot(id);
+            const token = req.headers.token as string
+            const robotData = await this.AppDataSource.getRepository(Robot).findOneBy({
+                token: token
+            })
+            const webhook = robotData?.webhook
 
             if (!token || !webhook) {
                 return res.json({ code: 0 })
             }
 
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
+                chatflowid: data.conversationId + data.senderId
+            })
+            const history = (chatmessages || []).map((item) => ({
+                type: item.role,
+                message: item.content
+            }))
+
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
-                    const res = await chatQuery({ question: userMsg, userId: msg.senderId }, id)
-                    await sendOutgoingMsg(res?.text || res, msg.senderStaffId, id, webhook)
+                    // 向flow提问
+                    const res = await chatQuery({ question: userMsg, history, userId: msg.senderId }, id)
+                    // 向钉钉发送消息
+                    await sendOutgoingMsg(res.text, webhook)
+                    // 保存历史记录
+                    const newChatMessage = [
+                        Object.assign(new ChatMessage(), {
+                            role: 'userMessage',
+                            content: userMsg,
+                            chatflowid: data.conversationId + msg.senderId
+                        }),
+                        Object.assign(new ChatMessage(), {
+                            role: 'apiMessage',
+                            content: res.text,
+                            chatflowid: data.conversationId + msg.senderId
+                        })
+                    ]
+
+                    const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                    await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
                 }
             } catch (error) {
                 console.log(error)
