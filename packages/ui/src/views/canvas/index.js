@@ -207,7 +207,6 @@ const Canvas = () => {
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
-                debugger
                 const updateBody = {
                     name: chatflowName,
                     flowData,

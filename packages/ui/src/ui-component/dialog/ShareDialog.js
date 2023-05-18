@@ -22,6 +22,16 @@ function a11yProps(index) {
     }
 }
 
+function generateToken() {
+    let token = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 10; i++) {
+      token += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return token;
+  }
+
 function TabPanel(props) {
     const { children, value, index, ...other } = props
     return (
@@ -57,6 +67,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
     const [robotType, setRobotType] = useState(1)
     const [editRobot, setEditRobot] = useState(false)
     const input = useRef(null)
+    const [robotToken, setRobotToken] = useState('');
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
@@ -84,7 +95,14 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
         const robot = JSON.parse(dialogProps?.robot || '{}')
         setRobotAppKey(robot.robotAppKey || '')
         setRobotAppSecret(robot.robotAppSecret || '')
+        setRobotToken(robot.robotToken || '')
     }, [dialogProps.robot])
+
+    const onGenerateToken = () => {
+        const token = generateToken();
+        dialogProps.handleSaveFlow(dialogProps.flowName, { robot: JSON.stringify({ robotAppKey, robotAppSecret, robotToken }) })
+        setRobotToken(token);
+    }
 
     const component = show ? (
         <Dialog
@@ -175,7 +193,28 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel }) => {
                                             <Bold>STEP3: </Bold>将连接填写到机器人管理后台「消息接收地址」输入框中
                                         </p>
                                     </>
-                                ) : null}
+                                ) : (
+                                    // 群内机器人
+                                    <>
+                                        <p>
+                                            <Bold>STEP1: </Bold>点击<Button onClick={onGenerateToken}>生成 token</Button>
+                                            {robotToken}
+                                        </p>
+                                        <p>
+                                            <Bold>STEP2: </Bold>将生成 Token 填写值 Outgoing 机制配置中的「Token」输入框中
+                                        </p>
+                                        <p style={{wordBreak: 'break-all'}}>
+                                            <Bold>STEP3: </Bold>复制链接，将链接填写到 Outgoing 机制配置中的 「POST 地址」输入框中
+                                            <CopyBlock
+                                                theme={atomOneDark}
+                                                text={`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`}
+                                                language={'bash'}
+                                                showLineNumbers={false}
+                                                wrapLines
+                                            />
+                                        </p>
+                                    </>
+                                )}
                             </>
                         ) : null}
                     </TabPanel>
