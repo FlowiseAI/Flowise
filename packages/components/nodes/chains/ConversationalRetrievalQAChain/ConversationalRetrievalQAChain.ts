@@ -46,6 +46,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as ConversationalRetrievalQAChain
+        chain.returnSourceDocuments = true
         let chatHistory = ''
 
         if (options && options.chatHistory) {
@@ -63,6 +64,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         }
 
         const res = await chain.call(obj)
+        console.log(res)
 
         return res?.text
     }
