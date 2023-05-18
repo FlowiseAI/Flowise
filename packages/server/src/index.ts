@@ -465,7 +465,7 @@ export class App {
                     // 向flow提问
                     const res = await chatQuery({ question: userMsg, history, userId: msg.senderId }, id)
                     // 向钉钉发送消息
-                    await sendOutgoingMsg(res.text, webhook)
+                    await sendOutgoingMsg(res, webhook)
                     // 保存历史记录
                     const newChatMessage = [
                         Object.assign(new ChatMessage(), {
