@@ -29,10 +29,11 @@ import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
+import { Robot } from './entity/Robot'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
-import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg } from './DingEvent'
+import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg, getOutgoingRobot, sendOutgoingMsg } from './DingEvent'
 
 export class App {
     app: express.Application
@@ -363,6 +364,29 @@ export class App {
                         id
                     )
                     await sendMsg(res?.text || res, msg.senderStaffId, id)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+            return res.json({ code: 0 })
+        })
+
+        this.app.post('/api/v1/robot/dingtalk/outgoing/:id', async (req: Request, res: Response) => {
+            const data = req.body
+            const id = req.params.id
+            const token = req.headers.token as string;
+            const webhook = await getOutgoingRobot(id);
+
+            if (!token || !webhook) {
+                return res.json({ code: 0 })
+            }
+
+            try {
+                const msg: IMessage = data
+                if (msg.msgtype === 'text') {
+                    const userMsg = msg.text.content
+                    const res = await chatQuery({ question: userMsg, userId: msg.senderId }, id)
+                    await sendOutgoingMsg(res?.text || res, msg.senderStaffId, id, webhook)
                 }
             } catch (error) {
                 console.log(error)
