@@ -468,10 +468,10 @@ export class App {
 
                 const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
                 await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-                this.cacheMap.set(data.conversationId, false);
             } catch (error) {
                 console.log(error)
             }
+            this.cacheMap.set(data.conversationId, false);
             return res.json({ code: 0 })
         })
 
