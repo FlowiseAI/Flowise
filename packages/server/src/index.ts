@@ -662,13 +662,13 @@ export class App {
     async processPrediction(req: Request, res: Response, isInternal = false) {
         try {
             // 每个人分配一个ID
-            const chatflowid = req.params.id + (req.body?.userId || '')
+            const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
 
             let nodeToExecuteData: INodeData
 
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
+                id: chatflowid
             })
             console.log('chatflow', req.body?.userId, chatflowid)
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
