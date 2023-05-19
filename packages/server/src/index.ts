@@ -46,6 +46,7 @@ import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg, sendOutg
 import { fork } from 'child_process'
 
 export class App {
+    cacheMap: Map<string, any> = new Map()
     app: express.Application
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
@@ -387,6 +388,11 @@ export class App {
                 await sendMsg('历史消息已清除', data.senderStaffId, req.params.id, data.robotCode)
                 return res.json({ code: 0 })
             }
+            if (this.cacheMap.get(data.conversationId)) {
+                await sendMsg('别催我，正在处理上一条消息呢！', data.senderStaffId, req.params.id, data.robotCode)
+            }
+            this.cacheMap.set(data.conversationId, true)
+
             const id = req.params.id
             console.log('data', data)
             // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
@@ -461,6 +467,7 @@ export class App {
 
                 const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
                 await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+                this.cacheMap.set(data.conversationId, false);
             } catch (error) {
                 console.log(error)
             }
