@@ -1,10 +1,10 @@
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor, InitializeAgentExecutorOptions } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
-import { BaseChatModel } from 'langchain/chat_models/base'
 import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
 import { getBaseClasses } from '../../../src/utils'
 import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
+import { BaseLanguageModel } from 'langchain/base_language'
 
 class ConversationalAgent_Agents implements INode {
     label: string
@@ -32,9 +32,9 @@ class ConversationalAgent_Agents implements INode {
                 list: true
             },
             {
-                label: 'Chat Model',
+                label: 'Language Model',
                 name: 'model',
-                type: 'BaseChatModel'
+                type: 'BaseLanguageModel'
             },
             {
                 label: 'Memory',
@@ -61,7 +61,7 @@ class ConversationalAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as BaseChatModel
+        const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
         tools = tools.flat()
         const memory = nodeData.inputs?.memory as BaseChatMemory
