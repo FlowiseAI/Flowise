@@ -407,6 +407,16 @@ export class App {
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
                     content = userMsg
+                    // 先储存一下
+                    const newChatMessage = [
+                        Object.assign(new ChatMessage(), {
+                            role: 'userMessage',
+                            content: userMsg,
+                            chatflowid: data.conversationId
+                        })
+                    ]
+                    const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                    await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
                     const res = await chatQuery({ question: userMsg, history: history, userId: msg.senderStaffId }, id)
                     apiContent = res?.text || res
 
@@ -418,6 +428,17 @@ export class App {
                     const fileName = msg.content.fileId
                     const filePath = await downloadPdf(pdfUrl, fileName)
                     content = `请记住：用户上传了一个文件，文件路径是： ${filePath}。`
+                    // 先储存一下
+                    const newChatMessage = [
+                        Object.assign(new ChatMessage(), {
+                            role: 'userMessage',
+                            content: content,
+                            chatflowid: data.conversationId
+                        })
+                    ]
+                    const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                    await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+                    // 再处理
                     const res = await chatQuery(
                         {
                             question: content,
@@ -431,11 +452,6 @@ export class App {
                 }
                 // 保存历史记录
                 const newChatMessage = [
-                    Object.assign(new ChatMessage(), {
-                        role: 'userMessage',
-                        content: content,
-                        chatflowid: data.conversationId
-                    }),
                     Object.assign(new ChatMessage(), {
                         role: 'apiMessage',
                         content: apiContent,
