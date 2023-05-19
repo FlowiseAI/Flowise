@@ -44,7 +44,7 @@ class MRKLAgentLLM_Agents implements INode {
 
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'zero-shot-react-description',
-            verbose: true
+            verbose: process.env.DEBUG === 'true' ? true : false
         })
         return executor
     }

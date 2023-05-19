@@ -62,10 +62,10 @@ class LLMChain_Chains implements INode {
         const promptValues = prompt.promptValues as ICommonObject
 
         if (output === this.name) {
-            const chain = new LLMChain({ llm: model, prompt })
+            const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             return chain
         } else if (output === 'outputPrediction') {
-            const chain = new LLMChain({ llm: model, prompt })
+            const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
             const res = await runPrediction(inputVariables, chain, input, promptValues)
             // eslint-disable-next-line no-console
