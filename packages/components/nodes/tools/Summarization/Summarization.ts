@@ -15,12 +15,12 @@ class Summary_Tools implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = '智能合同摘要'
+        this.label = 'pdf文件处理'
         this.name = 'summarization'
         this.type = 'summarization'
         this.icon = 'chaintool.svg'
         this.category = 'Tools'
-        this.description = 'summarization a document'
+        this.description = 'pdf文件处理'
         this.baseClasses = [this.type, ...getBaseClasses(Summary)]
         this.inputs = [
             {

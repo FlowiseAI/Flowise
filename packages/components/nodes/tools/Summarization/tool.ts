@@ -31,7 +31,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
     name = 'summarization'
 
     description =
-        `This tool specifically used for when you need to handle user uploaded file. input should be a comma separated list of "a file absolute path from the USER'S INPUT or Human", "What the user wants to do with the upload file, or empty string when user didn't ask for it"`
+        `This tool specifically used for when you need to handle user uploaded file. input should be a comma separated list of "a file absolute path from the USER'S INPUT or Human", "the user question from USER'S INPUT, or empty string when user didn't ask a question"`
 
     splitter: TextSplitter
 
