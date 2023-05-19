@@ -9,7 +9,8 @@ import fs from 'fs'
 interface SummaryTool {
     llm: BaseLanguageModel
     splitter: TextSplitter
-    // loader: PDFLoader
+    description?: string
+    systemMessage?: string
 }
 
 export const parseInputs = (inputs: string): [string, string] => {
@@ -30,20 +31,22 @@ export class SummarizationTool extends Tool implements SummaryTool {
 
     name = 'summarization'
 
-    description =
-        `This tool specifically used for when you need to handle user uploaded file. input should be a comma separated list of "a file absolute path from the USER'S INPUT or Human", "the user question from USER'S INPUT, or empty string when user didn't ask a question"`
-
     splitter: TextSplitter
 
     loader: PDFLoader
 
+    description: string
+
     chain: MapReduceDocumentsChain
 
     cachaMap: Map<string, string> = new Map()
+    systemMessage: string | undefined
 
     constructor(fields: SummaryTool) {
         super()
+        this.description =  `${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}. input should be a comma separated list of "a file absolute path from the USER'S INPUT or Human", "the user question from USER'S INPUT, or empty string when user didn't ask a question"`
         this.llm = fields.llm
+        this.systemMessage = fields.systemMessage
         this.splitter = fields.splitter
         this.chain = loadQAMapReduceChain(this.llm) as MapReduceDocumentsChain
     }
@@ -78,7 +81,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
             const docs = await loader.loadAndSplit(this.splitter)
             const res = await this.chain.call({
                 input_documents: docs,
-                question: `请使用中文回答：${task}, `
+                question: `${this.systemMessage || ''}${task}, 请使用中文回答我。`
             })
             this.cachaMap.set(input, res.text)
             console.log('res', res)
@@ -87,24 +90,5 @@ export class SummarizationTool extends Tool implements SummaryTool {
             console.log(error)
             return 'you can directly return action: "Final Answer" , and the input is "Please send the file", the response to my original question is "抱歉，没有实际文件我无法总结合同文件。 请将文件发给我，我很乐意协助您进行总结。"'
         }
-    }
-}
-
-
-export class FilePro extends Tool {
-    name = 'filePro'
-
-    description =
-        "This tool specifically used for when user only upload a file and doesn't suggest an exact way to handle file. Input should be a empty string."
-
-    chain: MapReduceDocumentsChain
-
-    constructor() {
-        super()
-    }
-
-    /** @ignore */
-    async _call(input: string) {
-        return 'you can directly return action: "Final Answer" , and the input is "Please send the file", the response to my original question is "我收到了文件，请问你需要我帮你怎么处理文件？"'
     }
 }

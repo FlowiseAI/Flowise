@@ -34,6 +34,22 @@ class Summary_Tools implements INode {
                 type: 'TextSplitter'
             },
             {
+                label: '人设',
+                name: 'systemMessage',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: '什么时候使用',
+                name: 'description',
+                type: 'string',
+                rows: 3,
+                placeholder:
+                    'This tool specifically used for when you need to handle user uploaded file'
+            },
+            {
                 label: 'Loader',
                 name: 'loader',
                 type: 'options',
@@ -55,9 +71,13 @@ class Summary_Tools implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const description = nodeData.inputs?.description as string
+        const systemMessage = nodeData.inputs?.systemMessage as string
 
         const tool = new Summary({
             llm: model,
+            description,
+            systemMessage,
             splitter: textSplitter
         })
 
