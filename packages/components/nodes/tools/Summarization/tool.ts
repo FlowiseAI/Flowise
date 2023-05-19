@@ -78,7 +78,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
             const docs = await loader.loadAndSplit(this.splitter)
             const res = await this.chain.call({
                 input_documents: docs,
-                question: task
+                question: `请使用中文回答：${task}, `
             })
             this.cachaMap.set(input, res.text)
             console.log('res', res)
