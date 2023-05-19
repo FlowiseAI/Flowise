@@ -40,7 +40,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
-        const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever)
+        const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever, {
+            verbose: process.env.DEBUG === 'true' ? true : false
+        })
         return chain
     }
 
