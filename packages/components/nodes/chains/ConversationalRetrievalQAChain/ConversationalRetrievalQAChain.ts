@@ -1,7 +1,7 @@
+import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConversationalRetrievalQAChain } from 'langchain/chains'
-import { BaseLLM } from 'langchain/llms/base'
 import { BaseRetriever } from 'langchain/schema'
 
 class ConversationalRetrievalQAChain_Chains implements INode {
@@ -24,9 +24,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(ConversationalRetrievalQAChain)]
         this.inputs = [
             {
-                label: 'LLM',
-                name: 'llm',
-                type: 'BaseLLM'
+                label: 'Language Model',
+                name: 'model',
+                type: 'BaseLanguageModel'
             },
             {
                 label: 'Vector Store Retriever',
@@ -37,10 +37,10 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const llm = nodeData.inputs?.llm as BaseLLM
+        const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
-        const chain = ConversationalRetrievalQAChain.fromLLM(llm, vectorStoreRetriever)
+        const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever)
         return chain
     }
 

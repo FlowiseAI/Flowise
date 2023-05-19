@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_1",
             "position": {
                 "x": 835.4668837832456,
@@ -148,15 +148,15 @@
         },
         {
             "width": 300,
-            "height": 425,
-            "id": "sqlDatabaseChain_1",
+            "height": 424,
+            "id": "sqlDatabaseChain_0",
             "position": {
-                "x": 1223.80667374824,
-                "y": 212.1582929700342
+                "x": 1255.0372022176111,
+                "y": 217.507437391498
             },
             "type": "customNode",
             "data": {
-                "id": "sqlDatabaseChain_1",
+                "id": "sqlDatabaseChain_0",
                 "label": "Sql Database Chain",
                 "name": "sqlDatabaseChain",
                 "type": "SqlDatabaseChain",
@@ -175,32 +175,32 @@
                             }
                         ],
                         "default": "sqlite",
-                        "id": "sqlDatabaseChain_1-input-database-options"
+                        "id": "sqlDatabaseChain_0-input-database-options"
                     },
                     {
                         "label": "Database File Path",
                         "name": "dbFilePath",
                         "type": "string",
                         "placeholder": "C:/Users/chinook.db",
-                        "id": "sqlDatabaseChain_1-input-dbFilePath-string"
+                        "id": "sqlDatabaseChain_0-input-dbFilePath-string"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLLM",
-                        "id": "sqlDatabaseChain_1-input-llm-BaseLLM"
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "sqlDatabaseChain_0-input-model-BaseLanguageModel"
                     }
                 ],
                 "inputs": {
-                    "llm": "{{openAI_1.data.instance}}",
+                    "model": "{{openAI_1.data.instance}}",
                     "database": "sqlite",
                     "dbFilePath": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "sqlDatabaseChain_1-output-sqlDatabaseChain-SqlDatabaseChain|BaseChain|BaseLangChain",
+                        "id": "sqlDatabaseChain_0-output-sqlDatabaseChain-SqlDatabaseChain|BaseChain|BaseLangChain",
                         "name": "sqlDatabaseChain",
                         "label": "SqlDatabaseChain",
                         "type": "SqlDatabaseChain | BaseChain | BaseLangChain"
@@ -211,8 +211,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1223.80667374824,
-                "y": 212.1582929700342
+                "x": 1255.0372022176111,
+                "y": 217.507437391498
             },
             "dragging": false
         }
@@ -221,10 +221,10 @@
         {
             "source": "openAI_1",
             "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "sqlDatabaseChain_1",
-            "targetHandle": "sqlDatabaseChain_1-input-llm-BaseLLM",
+            "target": "sqlDatabaseChain_0",
+            "targetHandle": "sqlDatabaseChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-sqlDatabaseChain_1-sqlDatabaseChain_1-input-llm-BaseLLM",
+            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-sqlDatabaseChain_0-sqlDatabaseChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
