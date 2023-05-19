@@ -390,6 +390,7 @@ export class App {
             }
             if (this.cacheMap.get(data.conversationId)) {
                 await sendMsg('别催我，正在处理上一条消息呢！', data.senderStaffId, req.params.id, data.robotCode)
+                return res.json({ code: 0 })
             }
             this.cacheMap.set(data.conversationId, true)
 
