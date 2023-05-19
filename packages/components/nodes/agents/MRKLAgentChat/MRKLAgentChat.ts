@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { BaseChatModel } from 'langchain/chat_models/base'
 import { getBaseClasses } from '../../../src/utils'
 import { Tool } from 'langchain/tools'
+import { BaseLanguageModel } from 'langchain/base_language'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -30,15 +30,15 @@ class MRKLAgentChat_Agents implements INode {
                 list: true
             },
             {
-                label: 'Chat Model',
+                label: 'Language Model',
                 name: 'model',
-                type: 'BaseChatModel'
+                type: 'BaseLanguageModel'
             }
         ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as BaseChatModel
+        const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
         tools = tools.flat()
         const executor = await initializeAgentExecutorWithOptions(tools, model, {

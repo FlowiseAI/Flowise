@@ -41,7 +41,7 @@
         },
         {
             "width": 300,
-            "height": 279,
+            "height": 278,
             "id": "aiPlugin_1",
             "position": {
                 "x": 1112.7719277555257,
@@ -127,7 +127,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 800.6881372203391,
@@ -258,15 +258,15 @@
         },
         {
             "width": 300,
-            "height": 281,
-            "id": "mrklAgentChat_1",
+            "height": 280,
+            "id": "mrklAgentChat_2",
             "position": {
-                "x": 1484.694717249578,
-                "y": 460.4139893408708
+                "x": 1503.5956978371041,
+                "y": 418.46259909490925
             },
             "type": "customNode",
             "data": {
-                "id": "mrklAgentChat_1",
+                "id": "mrklAgentChat_2",
                 "label": "MRKL Agent for Chat Models",
                 "name": "mrklAgentChat",
                 "type": "AgentExecutor",
@@ -280,13 +280,13 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "mrklAgentChat_1-input-tools-Tool"
+                        "id": "mrklAgentChat_2-input-tools-Tool"
                     },
                     {
-                        "label": "Chat Model",
+                        "label": "Language Model",
                         "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "mrklAgentChat_1-input-model-BaseChatModel"
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentChat_2-input-model-BaseLanguageModel"
                     }
                 ],
                 "inputs": {
@@ -295,7 +295,7 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "mrklAgentChat_1-output-mrklAgentChat-AgentExecutor|BaseChain|BaseLangChain",
+                        "id": "mrklAgentChat_2-output-mrklAgentChat-AgentExecutor|BaseChain|BaseLangChain",
                         "name": "mrklAgentChat",
                         "label": "AgentExecutor",
                         "type": "AgentExecutor | BaseChain | BaseLangChain"
@@ -305,8 +305,8 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 1484.694717249578,
-                "y": 460.4139893408708
+                "x": 1503.5956978371041,
+                "y": 418.46259909490925
             },
             "selected": false,
             "dragging": false
@@ -316,10 +316,10 @@
         {
             "source": "aiPlugin_1",
             "sourceHandle": "aiPlugin_1-output-aiPlugin-AIPlugin|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_1",
-            "targetHandle": "mrklAgentChat_1-input-tools-Tool",
+            "target": "mrklAgentChat_2",
+            "targetHandle": "mrklAgentChat_2-input-tools-Tool",
             "type": "buttonedge",
-            "id": "aiPlugin_1-aiPlugin_1-output-aiPlugin-AIPlugin|Tool|StructuredTool|BaseLangChain-mrklAgentChat_1-mrklAgentChat_1-input-tools-Tool",
+            "id": "aiPlugin_1-aiPlugin_1-output-aiPlugin-AIPlugin|Tool|StructuredTool|BaseLangChain-mrklAgentChat_2-mrklAgentChat_2-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -327,10 +327,10 @@
         {
             "source": "requestsPost_1",
             "sourceHandle": "requestsPost_1-output-requestsPost-RequestsPost|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_1",
-            "targetHandle": "mrklAgentChat_1-input-tools-Tool",
+            "target": "mrklAgentChat_2",
+            "targetHandle": "mrklAgentChat_2-input-tools-Tool",
             "type": "buttonedge",
-            "id": "requestsPost_1-requestsPost_1-output-requestsPost-RequestsPost|Tool|StructuredTool|BaseLangChain-mrklAgentChat_1-mrklAgentChat_1-input-tools-Tool",
+            "id": "requestsPost_1-requestsPost_1-output-requestsPost-RequestsPost|Tool|StructuredTool|BaseLangChain-mrklAgentChat_2-mrklAgentChat_2-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -338,10 +338,10 @@
         {
             "source": "requestsGet_1",
             "sourceHandle": "requestsGet_1-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_1",
-            "targetHandle": "mrklAgentChat_1-input-tools-Tool",
+            "target": "mrklAgentChat_2",
+            "targetHandle": "mrklAgentChat_2-input-tools-Tool",
             "type": "buttonedge",
-            "id": "requestsGet_1-requestsGet_1-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain-mrklAgentChat_1-mrklAgentChat_1-input-tools-Tool",
+            "id": "requestsGet_1-requestsGet_1-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain-mrklAgentChat_2-mrklAgentChat_2-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -349,10 +349,10 @@
         {
             "source": "chatOpenAI_1",
             "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
-            "target": "mrklAgentChat_1",
-            "targetHandle": "mrklAgentChat_1-input-model-BaseChatModel",
+            "target": "mrklAgentChat_2",
+            "targetHandle": "mrklAgentChat_2-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-mrklAgentChat_1-mrklAgentChat_1-input-model-BaseChatModel",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-mrklAgentChat_2-mrklAgentChat_2-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
