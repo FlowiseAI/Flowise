@@ -449,6 +449,11 @@ export class App {
         this.app.post('/api/v1/robot/dingtalk/outgoing/:id', async (req: Request, res: Response) => {
             const data = req.body
             const id = req.params.id
+            if (data.text.content === '清除历史消息') {
+                await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: data.conversationId })
+                await sendMsg('历史消息已清除', data.senderStaffId, id, data.robotCode)
+                return res.json({ code: 0 })
+            }
             const token = req.headers.token as string
             const robotData = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({
                 token: token
