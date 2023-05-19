@@ -417,7 +417,7 @@ export class App {
                     const pdfUrl = await getDownloadFileUrl(downloadCode, id, msg.robotCode)
                     const fileName = msg.content.fileId
                     const filePath = await downloadPdf(pdfUrl, fileName)
-                    content = `用户上传了一个文件，文件路径是： ${filePath}。`
+                    content = `请记住：用户上传了一个文件，文件路径是： ${filePath}。`
                     const res = await chatQuery(
                         {
                             question: content,

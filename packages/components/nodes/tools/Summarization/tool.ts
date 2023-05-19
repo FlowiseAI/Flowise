@@ -8,6 +8,7 @@ import fs from 'fs'
 
 interface SummaryTool {
     llm: BaseLanguageModel
+    name: string
     splitter: TextSplitter
     description?: string
     systemMessage?: string
@@ -29,7 +30,7 @@ export const parseInputs = (inputs: string): [string, string] => {
 export class SummarizationTool extends Tool implements SummaryTool {
     llm: BaseLanguageModel
 
-    name = 'summarization'
+    name: string
 
     splitter: TextSplitter
 
@@ -44,8 +45,9 @@ export class SummarizationTool extends Tool implements SummaryTool {
 
     constructor(fields: SummaryTool) {
         super()
-        this.description =  `${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}. input should be a comma separated list of "a file absolute path from the USER'S INPUT or Human", "the user question from USER'S INPUT, or empty string when user didn't ask a question"`
+        this.description =  `${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}. This tool handle user uploaded file. input should be a comma separated list of "a file absolute path taken from the USER'S INPUT or Human","the user question taken from USER'S INPUT, or taken from Human"`
         this.llm = fields.llm
+        this.name = fields.name
         this.systemMessage = fields.systemMessage
         this.splitter = fields.splitter
         this.chain = loadQAMapReduceChain(this.llm) as MapReduceDocumentsChain
@@ -60,7 +62,8 @@ export class SummarizationTool extends Tool implements SummaryTool {
             if (this.cachaMap.has(input)) {
                 return this.cachaMap.get(input)
             }
-            const [filePath, task] = parseInputs(input)
+            console.log(typeof input, input)
+            const [filePath, task] = Array.isArray(input) ? input : parseInputs(input)
             // 判断filePath是否是一个文件
             let isExist;
             try {

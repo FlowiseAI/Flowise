@@ -17,7 +17,7 @@ class Summary_Tools implements INode {
     constructor() {
         this.label = 'pdf文件处理'
         this.name = 'summarization'
-        this.type = 'summarization'
+        this.type = 'pdf文件处理'
         this.icon = 'chaintool.svg'
         this.category = 'Tools'
         this.description = 'pdf文件处理'
@@ -34,37 +34,25 @@ class Summary_Tools implements INode {
                 type: 'TextSplitter'
             },
             {
-                label: '人设',
-                name: 'systemMessage',
+                label: 'name',
+                name: 'name',
                 type: 'string',
-                rows: 4,
-                optional: true,
-                additionalParams: true
             },
             {
                 label: '什么时候使用',
                 name: 'description',
                 type: 'string',
-                rows: 3,
+                rows: 2,
                 placeholder:
                     'This tool specifically used for when you need to handle user uploaded file'
             },
             {
-                label: 'Loader',
-                name: 'loader',
-                type: 'options',
-                options: [
-                    {
-                        label: 'PDF loader',
-                        name: 'pdf'
-                    },
-                    {
-                        label: 'DOC loader',
-                        name: 'docx'
-                    }
-                ],
-                default: 'pdf'
-            }
+                label: '人设',
+                name: 'systemMessage',
+                type: 'string',
+                rows: 2,
+                optional: true,
+            },
         ]
     }
 
@@ -78,6 +66,7 @@ class Summary_Tools implements INode {
             llm: model,
             description,
             systemMessage,
+            name: nodeData.inputs?.name as string,
             splitter: textSplitter
         })
 
