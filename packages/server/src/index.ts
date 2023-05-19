@@ -382,6 +382,11 @@ export class App {
 
         this.app.post('/api/v1/robot/dingtalk/:id', async (req: Request, res: Response) => {
             const data = req.body
+            if (data?.text?.content === '清除历史消息') {
+                await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: data.conversationId })
+                await sendMsg('历史消息已清除', data.senderStaffId, req.params.id, data.robotCode)
+                return res.json({ code: 0 })
+            }
             const id = req.params.id
             console.log('data', data)
             // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
@@ -407,12 +412,12 @@ export class App {
 
                     await sendMsg(res?.text || res, msg.senderStaffId, id, msg.robotCode)
                 } else if (msg.msgtype === 'file') {
-                    await sendMsg('文件已收到，正在处理，请稍后', msg.senderStaffId, id, msg.robotCode)
+                    await sendMsg('文件已收到，正在处理', msg.senderStaffId, id, msg.robotCode)
                     const { downloadCode } = msg.content
                     const pdfUrl = await getDownloadFileUrl(downloadCode, id, msg.robotCode)
                     const fileName = msg.content.fileId + msg.content.fileName
                     const filePath = await downloadPdf(pdfUrl, fileName)
-                    content = `获得一个上下文：用户上传了一个文件，文件路径是： ${filePath}。`
+                    content = `用户上传了一个文件，文件路径是： ${filePath}。`
                     const res = await chatQuery(
                         {
                             question: content,
@@ -449,7 +454,7 @@ export class App {
         this.app.post('/api/v1/robot/dingtalk/outgoing/:id', async (req: Request, res: Response) => {
             const data = req.body
             const id = req.params.id
-            if (data.text.content === '清除历史消息') {
+            if (data.text?.content === '清除历史消息') {
                 await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: data.conversationId })
                 await sendMsg('历史消息已清除', data.senderStaffId, id, data.robotCode)
                 return res.json({ code: 0 })
