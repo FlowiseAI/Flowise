@@ -35,6 +35,8 @@ export class SummarizationTool extends Tool implements SummaryTool {
 
     chain: MapReduceDocumentsChain
 
+    cachaMap: Map<string, string> = new Map()
+
     constructor(fields: SummaryTool) {
         super()
         this.llm = fields.llm
@@ -52,12 +54,16 @@ export class SummarizationTool extends Tool implements SummaryTool {
             if (!input) {
                 return 'Please send me a file.'
             }
+            if (this.cachaMap.has(input)) {
+                return this.cachaMap.get(input)
+            }
             const loader = new PDFLoader(input)
 
             const docs = await loader.loadAndSplit(this.splitter)
             const res = await this.chain.call({
                 input_documents: docs
             })
+            this.cachaMap.set(input, res.text)
             console.log('res', res)
             return res.text
         } catch (error) {
