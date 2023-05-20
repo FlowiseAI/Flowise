@@ -42,6 +42,8 @@ export class SummarizationTool extends Tool implements SummaryTool {
     
     cacheMap: Map<string, string> = new Map()
 
+    docsCacheMap: Map<string, any> = new Map()
+
     systemMessage: string | undefined
 
     constructor(fields: SummaryTool) {
@@ -81,9 +83,14 @@ export class SummarizationTool extends Tool implements SummaryTool {
             if (isExist && !task) {
                 return '我收到了文件，请问你需要我帮你怎么处理文件？'
             }
-            const loader = new PDFLoader(filePath)
-
-            const docs = await loader.loadAndSplit(this.splitter)
+            let docs;
+            if (this.docsCacheMap.has(filePath)) {
+                docs = this.docsCacheMap.get(filePath)
+            } else {
+                const loader = new PDFLoader(filePath)
+                docs = await loader.loadAndSplit(this.splitter)
+                this.docsCacheMap.set(filePath, docs)
+            }
             const res = await this.chain.call({
                 input_documents: docs,
                 question: `${this.systemMessage || ''}${task}, 请使用中文回答我。`
