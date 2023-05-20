@@ -113,7 +113,7 @@ const getConfigExamplesForCurl = (configData, bodyType) => {
         else if (config.type === 'number') exampleVal = `1`
         else if (config.name === 'files') exampleVal = `@/home/user1/Desktop/example${config.type}`
         finalStr += bodyType === 'json' ? `"${config.name}": ${exampleVal}` : `\n     -F "${config.name}=${exampleVal}"`
-        if (i === loop - 1) finalStr += bodyType === 'json' ? ` }` : ` \\\n     -F "question=Hey, how are you?"`
+        if (i === loop - 1) finalStr += bodyType === 'json' ? ` }` : ` \\\n     -F "question": "Hey, how are you?"\n`
         else finalStr += bodyType === 'json' ? `, ` : ` \\`
     }
     return finalStr
