@@ -39,8 +39,9 @@ export class SummarizationTool extends Tool implements SummaryTool {
     description: string
 
     chain: MapReduceDocumentsChain
+    
+    cacheMap: Map<string, string> = new Map()
 
-    cachaMap: Map<string, string> = new Map()
     systemMessage: string | undefined
 
     constructor(fields: SummaryTool) {
@@ -48,6 +49,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
         this.description =  `${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}. This tool handle user uploaded file. input should be a comma separated list of "a file absolute path taken from the USER'S INPUT ,or taken from Human","the user question taken from USER'S INPUT, or taken from Human,if the user didn't ask a question, pass empty string"`
         this.llm = fields.llm
         this.name = fields.name
+        this.returnDirect = true
         this.systemMessage = fields.systemMessage
         this.splitter = fields.splitter
         this.chain = loadQAMapReduceChain(this.llm) as MapReduceDocumentsChain
@@ -59,8 +61,8 @@ export class SummarizationTool extends Tool implements SummaryTool {
             if (!input) {
                 return 'Please send me a file.'
             }
-            if (this.cachaMap.has(input)) {
-                return this.cachaMap.get(input)
+            if (this.cacheMap.has(input)) {
+                return this.cacheMap.get(input)
             }
             console.log(typeof input, input)
             const [filePath, task] = Array.isArray(input) ? input : parseInputs(input)
@@ -86,7 +88,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
                 input_documents: docs,
                 question: `${this.systemMessage || ''}${task}, 请使用中文回答我。`
             })
-            this.cachaMap.set(input, res.text)
+            this.cacheMap.set(input, res.text)
             console.log('res', res)
             return res.text
         } catch (error) {
