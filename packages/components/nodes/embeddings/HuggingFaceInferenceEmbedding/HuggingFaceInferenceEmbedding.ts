@@ -18,7 +18,7 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
         this.type = 'HuggingFaceInferenceEmbeddings'
         this.icon = 'huggingface.png'
         this.category = 'Embeddings'
-        this.description = 'OpenAI API to generate embeddings for a given text'
+        this.description = 'HuggingFace Inference API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInferenceEmbeddings)]
         this.inputs = [
             {
