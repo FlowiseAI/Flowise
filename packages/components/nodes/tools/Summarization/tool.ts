@@ -76,10 +76,10 @@ export class SummarizationTool extends Tool implements SummaryTool {
                 isExist = false
               }
             if (!isExist) {
-                return 'you can directly return action: "Final Answer", the response to my original question is "抱歉，没有实际文件我无法处理需求。 请将文件发给我，我很乐意协助您。"'
+                return '抱歉，没有实际文件我无法处理需求。 请将文件发给我，我很乐意协助您。'
             }
             if (isExist && !task) {
-                return 'you can directly return action: "Final Answer", the response to my original question is "我收到了文件，请问你需要我帮你怎么处理文件？"'
+                return '我收到了文件，请问你需要我帮你怎么处理文件？'
             }
             const loader = new PDFLoader(filePath)
 
