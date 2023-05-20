@@ -17,7 +17,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@dqbd/tiktoken": "^1.0.7",
-        "@huggingface/inference": "^1.6.3",
+        "@huggingface/inference": "1",
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
         "axios": "^0.27.2",
