@@ -30,8 +30,7 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
                 label: 'Model',
                 name: 'modelName',
                 type: 'string',
-                optional: true,
-                additionalParams: true
+                optional: true
             }
         ]
     }
