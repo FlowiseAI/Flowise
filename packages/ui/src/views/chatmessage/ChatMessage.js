@@ -155,10 +155,10 @@ export const ChatMessage = ({ chatflowid }) => {
         const { data, status } = await chatmessageApi.uploadFile(file)
         if (status !== 200) return
         console.log('res', data)
-        const displayMessage = `上传文件成功！,文件路径是： ${data.path}。`
+        // const displayMessage = `上传文件成功！,文件路径是： ${data.path}。`
         const message = `请记住：用户上传了一个文件，文件路径是： ${data.path}。`
-        setMessages((prevMessages) => [...prevMessages, { message: displayMessage, type: 'userMessage' }])
-        addChatMessage(displayMessage, 'userMessage')
+        setMessages((prevMessages) => [...prevMessages, { message: message, type: 'userMessage' }])
+        addChatMessage(message, 'userMessage')
         try {
             console.log('messages', messages)
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, {

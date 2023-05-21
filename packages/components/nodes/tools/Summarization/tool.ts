@@ -48,7 +48,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
 
     constructor(fields: SummaryTool) {
         super()
-        this.description =  `${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}. This tool handle user uploaded file. input should be a comma separated list of "a file absolute path taken from the USER'S INPUT ,or taken from Human","the user question taken from USER'S INPUT, or taken from Human,if the user didn't ask a question, pass empty string"`
+        this.description =  `'This tool used for when user uploaded file.${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}.  input should be a comma separated list of "a file absolute path taken from Human uploaded","The users original question"`
         this.llm = fields.llm
         this.name = fields.name
         this.returnDirect = true
@@ -61,7 +61,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
     async _call(input: string) {
         try {
             if (!input) {
-                return 'Please send me a file.'
+                return '你可以发送一个pdf文件给我，我会对这个文件处理。'
             }
             if (this.cacheMap.has(input)) {
                 return this.cacheMap.get(input)
