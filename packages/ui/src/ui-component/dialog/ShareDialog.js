@@ -192,7 +192,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                     {editRobot ? '保存' : '编辑'}
                                 </Button> */}
                                 <p style={{ wordBreak: 'break-all', lineHeight: '20px' }}>
-                                    <Bold>STEP 2: </Bold>点击<Link href="javascript:void(0)" onClick={() => onCopyRobot(true)}>复制链接</Link>，将链接填写到机器人管理后台「消息接收地址」输入框中，请确保应用权限管理中已开通「机器人-企业内机器人发送消息权限」权限
+                                    <Bold>STEP 2: </Bold>点击<Link href="javascript:void(0)" onClick={() => onCopyRobot(false)}>复制链接</Link>，将链接填写到机器人管理后台「消息接收地址」输入框中，请确保应用权限管理中已开通「机器人-企业内机器人发送消息权限」权限
                                     <OutlinedInput
                                         sx={{ mt: 1 }}
                                         id='chatflow-name'
@@ -213,7 +213,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                 // 应用机器人
                                 <>
                                     <p style={{wordBreak: 'break-all', lineHeight: '20px', marginTop: 0}}>
-                                        <Bold>STEP 1:</Bold><Link href="javascript:void(0)" onClick={() => onCopyRobot(false)}>复制链接</Link>，将链接填写到 Outgoing 配置中的 「POST 地址」输入框中
+                                        <Bold>STEP 1:</Bold><Link href="javascript:void(0)" onClick={() => onCopyRobot(true)}>复制链接</Link>，将链接填写到 Outgoing 配置中的 「POST 地址」输入框中
                                         <OutlinedInput
                                             sx={{ mt: 1 }}
                                             id='chatflow-name'
