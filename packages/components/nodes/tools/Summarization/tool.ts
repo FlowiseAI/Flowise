@@ -48,7 +48,7 @@ export class SummarizationTool extends Tool implements SummaryTool {
 
     constructor(fields: SummaryTool) {
         super()
-        this.description =  `'This tool used for when user uploaded file.${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}.  input should be a comma separated list of "a file absolute path taken from Human uploaded","The users original question"`
+        this.description =  `'This tool used for when user uploaded file.${fields.description || 'This tool specifically used for when you need to handle user uploaded file'}.input is a string,and should be a comma separated list of "a absolute file path taken from Human uploaded","The users original question"`
         this.llm = fields.llm
         this.name = fields.name
         this.returnDirect = true
