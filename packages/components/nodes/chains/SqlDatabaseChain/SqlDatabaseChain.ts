@@ -82,7 +82,8 @@ const getSQLDBChain = async (databaseType: 'sqlite', dbFilePath: string, llm: Ba
 
     const obj: SqlDatabaseChainInput = {
         llm,
-        database: db
+        database: db,
+        verbose: process.env.DEBUG === 'true' ? true : false
     }
 
     const chain = new SqlDatabaseChain(obj)
