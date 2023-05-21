@@ -200,7 +200,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                         fullWidth
                                         size='small'
                                         disabled
-                                        value={`${DOMAIN}${OUTGOING_ROBOT_PATH}${dialogProps.chatflowid}`}
+                                        value={`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`}
                                     />
                                 </p>
                                 <p>
@@ -221,7 +221,7 @@ const ShareFlowDialog = ({ show, dialogProps, onCancel, handleSaveOutgoing }) =>
                                             fullWidth
                                             size='small'
                                             disabled
-                                            value={`${DOMAIN}${ROBOT_PATH}${dialogProps.chatflowid}`}
+                                            value={`${DOMAIN}${OUTGOING_ROBOT_PATH}${dialogProps.chatflowid}`}
                                         />
                                     </p>
                                     <p>
