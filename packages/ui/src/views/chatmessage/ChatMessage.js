@@ -25,7 +25,7 @@ import predictionApi from 'api/prediction'
 import useApi from 'hooks/useApi'
 
 // Const
-import { baseURL } from 'store/constant'
+import { baseURL, maxScroll } from 'store/constant'
 import { throttle } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
@@ -33,7 +33,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const customization = useSelector((state) => state.customization)
 
     const ps = useRef()
-    const messagesEndRef = useRef()
 
     const [userInput, setUserInput] = useState('')
     const [loading, setLoading] = useState(false)
@@ -51,7 +50,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView(true)
+        if (ps.current) {
+            ps.current.scrollTo({ top: maxScroll })
+        }
     }
 
     const onChange = useCallback((e) => setUserInput(e.target.value), [setUserInput])
@@ -170,8 +171,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     // Auto scroll chat to bottom
     useEffect(() => {
-        scrollThrottle()
-    }, [messages, scrollThrottle])
+        scrollToBottom()
+        console.log('throeel')
+    }, [messages])
 
     useEffect(() => {
         if (isDialog && inputRef) {
@@ -292,7 +294,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                 </Box>
                             )
                         })}
-                    <div className='h-[162px] bg-white dark:bg-[#343541]' ref={messagesEndRef} />
                 </div>
             </div>
             <Divider />
