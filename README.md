@@ -9,6 +9,7 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 ## ⚡Quick Start
 
+Before following these steps, make sure node or yarn is installed in your system.
 1. Install Flowise
     ```bash
     npm install -g flowise
@@ -42,6 +43,12 @@ Flowise has 3 different modules in a single mono repository.
 -   Install Yarn
     ```bash
     npm i -g yarn
+    ```
+    or
+    
+-   Install Node
+    ```bash
+    npm install
     ```
 
 ### Setup
