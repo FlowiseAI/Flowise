@@ -32,6 +32,12 @@ class Chroma_Existing_VectorStores implements INode {
                 label: 'Collection Name',
                 name: 'collectionName',
                 type: 'string'
+            },
+            {
+                label: 'Chroma URL',
+                name: 'chromaURL',
+                type: 'string',
+                optional: true
             }
         ]
         this.outputs = [
@@ -51,11 +57,16 @@ class Chroma_Existing_VectorStores implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const collectionName = nodeData.inputs?.collectionName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const chromaURL = nodeData.inputs?.chromaURL as string
         const output = nodeData.outputs?.output as string
 
-        const vectorStore = await Chroma.fromExistingCollection(embeddings, {
-            collectionName
-        })
+        const obj: {
+            collectionName: string
+            url?: string
+        } = { collectionName }
+        if (chromaURL) obj.url = chromaURL
+
+        const vectorStore = await Chroma.fromExistingCollection(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever()
