@@ -26,7 +26,6 @@ import useApi from 'hooks/useApi'
 
 // Const
 import { baseURL, maxScroll } from 'store/constant'
-import { throttle } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -56,8 +55,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }
 
     const onChange = useCallback((e) => setUserInput(e.target.value), [setUserInput])
-
-    const scrollThrottle = throttle(scrollToBottom, 250)
 
     const addChatMessage = async (message, type) => {
         try {
@@ -172,7 +169,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // Auto scroll chat to bottom
     useEffect(() => {
         scrollToBottom()
-        console.log('throeel')
     }, [messages])
 
     useEffect(() => {
