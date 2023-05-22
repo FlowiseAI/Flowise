@@ -1,53 +1,40 @@
-import { useState, useRef, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import ReactMarkdown from 'react-markdown'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import socketIOClient from 'socket.io-client'
+import { cloneDeep } from 'lodash'
+import rehypeMathjax from 'rehype-mathjax'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
 
-import {
-    ClickAwayListener,
-    Paper,
-    Popper,
-    CircularProgress,
-    OutlinedInput,
-    Divider,
-    InputAdornment,
-    IconButton,
-    Box,
-    Button
-} from '@mui/material'
+import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconMessage, IconX, IconSend, IconEraser } from '@tabler/icons'
+import { IconSend } from '@tabler/icons'
 
 // project import
-import { StyledFab } from 'ui-component/button/StyledFab'
-import MainCard from 'ui-component/cards/MainCard'
-import Transitions from 'ui-component/extended/Transitions'
+import { CodeBlock } from 'ui-component/markdown/CodeBlock'
+import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
 import './ChatMessage.css'
 
 // api
 import chatmessageApi from 'api/chatmessage'
+import chatflowsApi from 'api/chatflows'
 import predictionApi from 'api/prediction'
 
 // Hooks
 import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
-import useNotifier from 'utils/useNotifier'
 
-import { maxScroll } from 'store/constant'
+// Const
+import { baseURL } from 'store/constant'
+import { throttle } from 'utils/genericHelper'
 
-export const ChatMessage = ({ chatflowid }) => {
+export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-    const { confirm } = useConfirm()
-    const dispatch = useDispatch()
+
     const ps = useRef()
+    const messagesEndRef = useRef()
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
-    const [open, setOpen] = useState(false)
     const [userInput, setUserInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [messages, setMessages] = useState([
@@ -56,71 +43,20 @@ export const ChatMessage = ({ chatflowid }) => {
             type: 'apiMessage'
         }
     ])
+    const [socketIOClientId, setSocketIOClientId] = useState('')
+    const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
 
     const inputRef = useRef(null)
-    const anchorRef = useRef(null)
-    const prevOpen = useRef(open)
     const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
-
-    const handleClose = (event) => {
-        if (anchorRef.current && anchorRef.current.contains(event.target)) {
-            return
-        }
-        setOpen(false)
-    }
-
-    const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
-    }
-
-    const clearChat = async () => {
-        const confirmPayload = {
-            title: `Clear Chat History`,
-            description: `Are you sure you want to clear all chat history?`,
-            confirmButtonName: 'Clear',
-            cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
-
-        if (isConfirmed) {
-            try {
-                await chatmessageApi.deleteChatmessage(chatflowid)
-                enqueueSnackbar({
-                    message: 'Succesfully cleared all chat history',
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-                enqueueSnackbar({
-                    message: errorData,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            }
-        }
-    }
+    const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
 
     const scrollToBottom = () => {
-        if (ps.current) {
-            ps.current.scrollTo({ top: maxScroll, behavior: 'smooth' })
-        }
+        messagesEndRef.current?.scrollIntoView(true)
     }
+
+    const onChange = useCallback((e) => setUserInput(e.target.value), [setUserInput])
+
+    const scrollThrottle = throttle(scrollToBottom, 250)
 
     const addChatMessage = async (message, type) => {
         try {
@@ -135,6 +71,15 @@ export const ChatMessage = ({ chatflowid }) => {
         }
     }
 
+    const updateLastMessage = (text) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].message += text
+            return allMessages
+        })
+    }
+
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
@@ -143,7 +88,7 @@ export const ChatMessage = ({ chatflowid }) => {
         setLoading(false)
         setUserInput('')
         setTimeout(() => {
-            inputRef.current.focus()
+            inputRef.current?.focus()
         }, 100)
     }
 
@@ -161,18 +106,22 @@ export const ChatMessage = ({ chatflowid }) => {
 
         // Send user question and history to API
         try {
-            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, {
+            const params = {
                 question: userInput,
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
-            })
+            }
+            if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
+
+            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
+
             if (response.data) {
                 const data = response.data
-                setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
+                if (!isChatFlowAvailableToStream) setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
                 addChatMessage(data, 'apiMessage')
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
-                    inputRef.current.focus()
+                    inputRef.current?.focus()
                     scrollToBottom()
                 }, 100)
             }
@@ -210,22 +159,47 @@ export const ChatMessage = ({ chatflowid }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatmessageApi.data])
 
+    // Get chatflow streaming capability
+    useEffect(() => {
+        if (getIsChatflowStreamingApi.data) {
+            setIsChatFlowAvailableToStream(getIsChatflowStreamingApi.data?.isStreaming ?? false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getIsChatflowStreamingApi.data])
+
     // Auto scroll chat to bottom
     useEffect(() => {
-        scrollToBottom()
-    }, [messages])
+        scrollThrottle()
+    }, [messages, scrollThrottle])
 
     useEffect(() => {
-        if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus()
+        if (isDialog && inputRef) {
+            setTimeout(() => {
+                inputRef.current?.focus()
+            }, 100)
         }
+    }, [isDialog, inputRef])
 
+    useEffect(() => {
+        let socket
         if (open && chatflowid) {
             getChatmessageApi.request(chatflowid)
+            getIsChatflowStreamingApi.request(chatflowid)
             scrollToBottom()
-        }
 
-        prevOpen.current = open
+            socket = socketIOClient(baseURL)
+
+            socket.on('connect', () => {
+                setSocketIOClientId(socket.id)
+            })
+
+            socket.on('start', () => {
+                setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+            })
+
+            socket.on('token', updateLastMessage)
+        }
 
         return () => {
             setUserInput('')
@@ -236,6 +210,10 @@ export const ChatMessage = ({ chatflowid }) => {
                     type: 'apiMessage'
                 }
             ])
+            if (socket) {
+                socket.disconnect()
+                setSocketIOClientId('')
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,151 +221,122 @@ export const ChatMessage = ({ chatflowid }) => {
 
     return (
         <>
-            <StyledFab
-                sx={{ position: 'absolute', right: 20, top: 20 }}
-                ref={anchorRef}
-                size='small'
-                color='secondary'
-                aria-label='chat'
-                title='Chat'
-                onClick={handleToggle}
-            >
-                {open ? <IconX /> : <IconMessage />}
-            </StyledFab>
-            {open && (
-                <StyledFab
-                    sx={{ position: 'absolute', right: 80, top: 20 }}
-                    onClick={clearChat}
-                    size='small'
-                    color='error'
-                    aria-label='clear'
-                    title='Clear Chat History'
-                >
-                    <IconEraser />
-                </StyledFab>
-            )}
-            <Popper
-                placement='bottom-end'
-                open={open}
-                anchorEl={anchorRef.current}
-                role={undefined}
-                transition
-                disablePortal
-                popperOptions={{
-                    modifiers: [
-                        {
-                            name: 'offset',
-                            options: {
-                                offset: [40, 14]
+            <div className={isDialog ? 'cloud-dialog' : 'cloud'}>
+                <div ref={ps} className='messagelist'>
+                    {messages &&
+                        messages.map((message, index) => {
+                            return (
+                                // The latest message sent by the user will be animated while waiting for a response
+                                <Box
+                                    sx={{
+                                        background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
+                                    }}
+                                    key={index}
+                                    style={{ display: 'flex' }}
+                                    className={
+                                        message.type === 'userMessage' && loading && index === messages.length - 1
+                                            ? customization.isDarkMode
+                                                ? 'usermessagewaiting-dark'
+                                                : 'usermessagewaiting-light'
+                                            : message.type === 'usermessagewaiting'
+                                            ? 'apimessage'
+                                            : 'usermessage'
+                                    }
+                                >
+                                    {/* Display the correct icon depending on the message type */}
+                                    {message.type === 'apiMessage' ? (
+                                        <img
+                                            src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                                            alt='AI'
+                                            width='30'
+                                            height='30'
+                                            className='boticon'
+                                        />
+                                    ) : (
+                                        <img
+                                            src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                                            alt='Me'
+                                            width='30'
+                                            height='30'
+                                            className='usericon'
+                                        />
+                                    )}
+                                    <div className='markdownanswer'>
+                                        {/* Messages are being rendered in Markdown format */}
+                                        <MemoizedReactMarkdown
+                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                            rehypePlugins={[rehypeMathjax]}
+                                            components={{
+                                                code({ inline, className, children, ...props }) {
+                                                    const match = /language-(\w+)/.exec(className || '')
+                                                    return !inline ? (
+                                                        <CodeBlock
+                                                            key={Math.random()}
+                                                            chatflowid={chatflowid}
+                                                            isDialog={isDialog}
+                                                            language={(match && match[1]) || ''}
+                                                            value={String(children).replace(/\n$/, '')}
+                                                            {...props}
+                                                        />
+                                                    ) : (
+                                                        <code className={className} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    )
+                                                }
+                                            }}
+                                        >
+                                            {message.message}
+                                        </MemoizedReactMarkdown>
+                                    </div>
+                                </Box>
+                            )
+                        })}
+                    <div className='h-[162px] bg-white dark:bg-[#343541]' ref={messagesEndRef} />
+                </div>
+            </div>
+            <Divider />
+            <div className='center'>
+                <div style={{ width: '100%' }}>
+                    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+                        <OutlinedInput
+                            inputRef={inputRef}
+                            // eslint-disable-next-line
+                            autoFocus
+                            sx={{ width: '100%' }}
+                            disabled={loading || !chatflowid}
+                            onKeyDown={handleEnter}
+                            id='userInput'
+                            name='userInput'
+                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
+                            value={userInput}
+                            onChange={onChange}
+                            endAdornment={
+                                <InputAdornment position='end'>
+                                    <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
+                                        {loading ? (
+                                            <div>
+                                                <CircularProgress color='inherit' size={20} />
+                                            </div>
+                                        ) : (
+                                            // Send icon SVG in input field
+                                            <IconSend
+                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        )}
+                                    </IconButton>
+                                </InputAdornment>
                             }
-                        }
-                    ]
-                }}
-                sx={{ zIndex: 1000 }}
-            >
-                {({ TransitionProps }) => (
-                    <Transitions in={open} {...TransitionProps}>
-                        <Paper>
-                            <ClickAwayListener onClickAway={handleClose}>
-                                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    <div className='cloud'>
-                                        <div ref={ps} className='messagelist'>
-                                            {messages.map((message, index) => {
-                                                return (
-                                                    // The latest message sent by the user will be animated while waiting for a response
-                                                    <Box
-                                                        sx={{
-                                                            background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
-                                                        }}
-                                                        key={index}
-                                                        style={{ display: 'flex', alignItems: 'center' }}
-                                                        className={
-                                                            message.type === 'userMessage' && loading && index === messages.length - 1
-                                                                ? customization.isDarkMode
-                                                                    ? 'usermessagewaiting-dark'
-                                                                    : 'usermessagewaiting-light'
-                                                                : message.type === 'usermessagewaiting'
-                                                                ? 'apimessage'
-                                                                : 'usermessage'
-                                                        }
-                                                    >
-                                                        {/* Display the correct icon depending on the message type */}
-                                                        {message.type === 'apiMessage' ? (
-                                                            <img
-                                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                                                                alt='AI'
-                                                                width='30'
-                                                                height='30'
-                                                                className='boticon'
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                                                alt='Me'
-                                                                width='30'
-                                                                height='30'
-                                                                className='usericon'
-                                                            />
-                                                        )}
-                                                        <div className='markdownanswer'>
-                                                            {/* Messages are being rendered in Markdown format */}
-                                                            <ReactMarkdown linkTarget={'_blank'}>{message.message}</ReactMarkdown>
-                                                        </div>
-                                                    </Box>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                    <Divider />
-                                    <div className='center'>
-                                        <div style={{ width: '100%' }}>
-                                            <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                                                <OutlinedInput
-                                                    inputRef={inputRef}
-                                                    // eslint-disable-next-line
-                                                    autoFocus
-                                                    sx={{ width: '100%' }}
-                                                    disabled={loading || !chatflowid}
-                                                    onKeyDown={handleEnter}
-                                                    id='userInput'
-                                                    name='userInput'
-                                                    placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
-                                                    value={userInput}
-                                                    onChange={(e) => setUserInput(e.target.value)}
-                                                    endAdornment={
-                                                        <InputAdornment position='end'>
-                                                            <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
-                                                                {loading ? (
-                                                                    <div>
-                                                                        <CircularProgress color='inherit' size={20} />
-                                                                    </div>
-                                                                ) : (
-                                                                    // Send icon SVG in input field
-                                                                    <IconSend
-                                                                        color={
-                                                                            loading || !chatflowid
-                                                                                ? '#9e9e9e'
-                                                                                : customization.isDarkMode
-                                                                                ? 'white'
-                                                                                : '#1e88e5'
-                                                                        }
-                                                                    />
-                                                                )}
-                                                            </IconButton>
-                                                        </InputAdornment>
-                                                    }
-                                                />
-                                            </form>
-                                        </div>
-                                    </div>
-                                </MainCard>
-                            </ClickAwayListener>
-                        </Paper>
-                    </Transitions>
-                )}
-            </Popper>
+                        />
+                    </form>
+                </div>
+            </div>
         </>
     )
 }
 
-ChatMessage.propTypes = { chatflowid: PropTypes.string }
+ChatMessage.propTypes = {
+    open: PropTypes.bool,
+    chatflowid: PropTypes.string,
+    isDialog: PropTypes.bool
+}
