@@ -149,7 +149,7 @@ export class App {
         // Get all chatflows
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
             const chatflows: IChatFlow[] = await this.AppDataSource.getRepository(ChatFlow).find()
-            return res.json(chatflows)
+            return res.json(chatflows.map(i => ({ ...i, flowData: '[]'})))
         })
 
         // Get specific chatflow via id
