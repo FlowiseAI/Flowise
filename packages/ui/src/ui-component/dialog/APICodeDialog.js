@@ -252,7 +252,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?"}'
+     -d '{"question": "Hey, how are you?"}' \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         } else if (codeLang === 'Embed') {
             return embedCode(dialogProps.chatflowid)
