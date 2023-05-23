@@ -1,3 +1,4 @@
+import fetch from 'node-fetch'
 import { Tool } from 'langchain/tools'
 
 export const desc = `A portal to the internet. Use this when you need to get specific content from a website. 
@@ -31,11 +32,14 @@ export class RequestsGetTool extends Tool {
 
     /** @ignore */
     async _call(input: string) {
-        const inputUrl = this.url ?? input
+        const inputUrl = !this.url ? input : this.url
+
         if (process.env.DEBUG === 'true') console.info(`Making GET API call to ${inputUrl}`)
+
         const res = await fetch(inputUrl, {
             headers: this.headers
         })
+
         const text = await res.text()
         return text.slice(0, this.maxOutputLength)
     }
