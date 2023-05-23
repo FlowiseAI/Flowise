@@ -4,6 +4,20 @@ import { getBaseClasses } from '../../../src/utils'
 import { ConversationalRetrievalQAChain } from 'langchain/chains'
 import { BaseRetriever } from 'langchain/schema'
 
+const default_qa_template = `Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+{context}
+
+Question: {question}
+Helpful Answer:`
+
+const qa_template = `Use the following pieces of context to answer the question at the end.
+
+{context}
+
+Question: {question}
+Helpful Answer:`
+
 class ConversationalRetrievalQAChain_Chains implements INode {
     label: string
     name: string
@@ -32,6 +46,16 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 label: 'Vector Store Retriever',
                 name: 'vectorStoreRetriever',
                 type: 'BaseRetriever'
+            },
+            {
+                label: 'System Message',
+                name: 'systemMessagePrompt',
+                type: 'string',
+                rows: 4,
+                additionalParams: true,
+                optional: true,
+                placeholder:
+                    'I want you to act as a document that I am having a conversation with. Your name is "AI Assistant". You will provide me with answers from the given info. If the answer is not included, say exactly "Hmm, I am not sure." and stop after that. Refuse to answer any question not about the info. Never break character.'
             }
         ]
     }
@@ -39,9 +63,11 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
+        const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
 
         const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever, {
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true' ? true : false,
+            qaTemplate: systemMessagePrompt ? `${systemMessagePrompt}\n${qa_template}` : default_qa_template
         })
         return chain
     }
