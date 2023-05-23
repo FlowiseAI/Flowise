@@ -11,12 +11,12 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 1. Install Flowise
     ```bash
-    npm install -g flowise
+    $ npm install -g flowise
     ```
 2. Start Flowise
 
     ```bash
-    npx flowise start
+    $ npx flowise start
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
@@ -41,7 +41,7 @@ Flowise has 3 different modules in a single mono repository.
 
 -   Install Yarn
     ```bash
-    npm i -g yarn
+    $ npm i -g yarn
     ```
 
 ### Setup
@@ -49,31 +49,31 @@ Flowise has 3 different modules in a single mono repository.
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/FlowiseAI/Flowise.git
+    $ git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
 2. Go into repository folder
 
     ```bash
-    cd Flowise
+    $ cd Flowise
     ```
 
 3. Install all dependencies of all modules:
 
     ```bash
-    yarn install
+    $ yarn install
     ```
 
 4. Build all the code:
 
     ```bash
-    yarn build
+    $ yarn build
     ```
 
 5. Start the app:
 
     ```bash
-    yarn start
+    $ yarn start
     ```
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
@@ -81,7 +81,7 @@ Flowise has 3 different modules in a single mono repository.
 6. For development build:
 
     ```bash
-    yarn dev
+    $ yarn dev
     ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
