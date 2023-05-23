@@ -1,5 +1,5 @@
 {
-    "description": "Basic example of LLM Chain with a Prompt Template and LLM Model",
+    "description": "Basic example of stateless (no memory) LLM Chain with a Prompt Template and LLM Model",
     "nodes": [
         {
             "width": 300,
