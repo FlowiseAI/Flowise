@@ -12,19 +12,24 @@ export const File = ({ value, fileType, onChange, disabled = false }) => {
 
     const handleFileUpload = async (e) => {
         if (!e.target.files) return
-
+        console.log('handleFileUpload', e)
+        
         if (e.target.files.length === 1) {
             const file = e.target.files[0]
+            console.log('file', file)
             const { name } = file
 
             const reader = new FileReader()
             reader.onload = (evt) => {
+                console.log('evt', evt)
+
                 if (!evt?.target?.result) {
                     return
                 }
                 const { result } = evt.target
 
                 const value = result + `,filename:${name}`
+                console.log('value', value)
 
                 setMyValue(value)
                 onChange(value)

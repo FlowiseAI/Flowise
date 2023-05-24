@@ -1,4 +1,3 @@
-import WebSocket from 'ws'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
@@ -42,8 +41,8 @@ interface Content {
     fileId: string
 }
 const tokenMap: {
-  [key: string]: string
-} = {};
+    [key: string]: string
+} = {}
 // 使用axios获取钉钉接口accessToken
 export const getAccessToken = async (appKey: string, appSecret: string) => {
     if (tokenMap[appKey]) {
@@ -65,40 +64,86 @@ export const getAccessToken = async (appKey: string, appSecret: string) => {
     )
     tokenMap[appKey] = accessToken
     setTimeout(() => {
-      tokenMap[appKey] = ''
+        tokenMap[appKey] = ''
     }, expireIn * 1000)
     return accessToken
 }
 
 // 使用axios让钉钉机器人给某个人发送消息
 export const sendMsg = async (msg: string, uid: string, chatFlowId: string, robotCode: string) => {
-    const dataSource = getDataSource();
+    const dataSource = getDataSource()
     const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
         id: chatFlowId
     })
     if (!chatflow?.robot) {
-        return -1;
+        return -1
     }
-    const robot = JSON.parse(chatflow.robot);
-    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
-    const res = await axios.post(
-        `https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend`,
-        {
-            robotCode: robotCode,
-            userIds: [uid],
-            msgKey: 'sampleMarkdown',
-            msgParam: JSON.stringify({
-                title: '合同法务数字专员',
-                text: msg
-            })
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'x-acs-dingtalk-access-token': accessToken
+    const robot = JSON.parse(chatflow.robot)
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret)
+    const res = await axios
+        .post(
+            `https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend`,
+            {
+                robotCode: robotCode,
+                userIds: [uid],
+                msgKey: 'sampleMarkdown',
+                msgParam: JSON.stringify({
+                    title: '合同法务数字专员',
+                    text: msg
+                })
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-acs-dingtalk-access-token': accessToken
+                }
             }
-        }
-    )
+        )
+        .catch(() => {
+            tokenMap[robot.robotAppKey] = ''
+        })
+    return res
+}
+
+// 使用axios发送卡片
+export const sendCard = async (msg: string, uid: string, chatFlowId: string, robotCode: string) => {
+    const dataSource = getDataSource()
+    const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
+        id: chatFlowId
+    })
+    if (!chatflow?.robot) {
+        return -1
+    }
+    const [path, name, num] = msg.split(' ')
+    const robot = JSON.parse(chatflow.robot)
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret)
+    const res = await axios
+        .post(
+            `https://api.dingtalk.com/v1.0/im/v1.0/robot/interactiveCards/send`,
+            {
+                cardTemplateId: '51c965a4-c3bb-469b-b8b5-059fb25bb4f5.schema',
+                singleChatReceiver: JSON.stringify({ userId: uid }),
+                cardBizId: '112-21-51c965a4-c3bb-469b-b8b5-059fb25bb4f5.schema',
+                robotCode: robotCode,
+                // callbackUrl: 'String',
+                cardData: JSON.stringify({
+                    path: msg,
+                    name,
+                    num
+                }),
+                // userIdPrivateDataMap: 'String',
+                // unionIdPrivateDataMap: 'String',
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-acs-dingtalk-access-token': accessToken
+                }
+            }
+        )
+        .catch(() => {
+            tokenMap[robot.robotAppKey] = ''
+        })
     return res
 }
 
@@ -114,7 +159,7 @@ export const sendOutgoingMsg = async (msg: string, webhook: string) => {
         },
         {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             }
         }
     )
@@ -123,29 +168,33 @@ export const sendOutgoingMsg = async (msg: string, webhook: string) => {
 
 // 使用axios下载钉钉机器人发送的文件
 export const getDownloadFileUrl = async (downloadCode: string, id: string, robotCode: string) => {
-    const dataSource = getDataSource();
+    const dataSource = getDataSource()
     const chatflow = await dataSource.getRepository(ChatFlow).findOneBy({
         id
     })
     if (!chatflow?.robot) {
-        return -1;
+        return -1
     }
-    const robot = JSON.parse(chatflow.robot);
-    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret);
-    const res = await axios.post(
-        `https://api.dingtalk.com/v1.0/robot/messageFiles/download`,
-        {
-            robotCode: robotCode,
-            downloadCode: downloadCode
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'x-acs-dingtalk-access-token': accessToken
+    const robot = JSON.parse(chatflow.robot)
+    const accessToken = await getAccessToken(robot.robotAppKey, robot.robotAppSecret)
+    const res = await axios
+        .post(
+            `https://api.dingtalk.com/v1.0/robot/messageFiles/download`,
+            {
+                robotCode: robotCode,
+                downloadCode: downloadCode
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-acs-dingtalk-access-token': accessToken
+                }
             }
-        }
-    )
-    return res.data?.downloadUrl
+        )
+        .catch(() => {
+            tokenMap[robot.robotAppKey] = ''
+        })
+    return res?.data?.downloadUrl
 }
 
 export const downloadPdf = async (pdfUrl: string, fileName: string) => {

@@ -22,6 +22,7 @@
     },
     "scripts": {
         "build": "tsc",
+        "start:inspect": "nodemon --exec \"node --require ts-node/register --inspect src/index.ts\"",
         "start": "run-script-os",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",

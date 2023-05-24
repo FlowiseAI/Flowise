@@ -42,7 +42,7 @@ import { OutgoingRobot } from './entity/OutgoingRobot'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
-import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendMsg, sendOutgoingMsg } from './DingEvent'
+import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendCard, sendMsg, sendOutgoingMsg } from './DingEvent'
 import { fork } from 'child_process'
 
 export class App {
@@ -426,8 +426,16 @@ export class App {
                     await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
                     const res = await chatQuery({ question: userMsg, history: history, userId: msg.senderStaffId }, id)
                     apiContent = res?.text || res
-
-                    await sendMsg(res?.text || res, msg.senderStaffId, id, msg.robotCode)
+                    try {
+                        const ressult = apiContent.split(' ')
+                        if (ressult.length === 3) {
+                            await sendCard(apiContent, msg.senderStaffId, id, msg.robotCode)
+                        } else {
+                            await sendMsg(apiContent, msg.senderStaffId, id, msg.robotCode)
+                        }
+                    } catch (error) {
+                        console.log(error)
+                    }
                 } else if (msg.msgtype === 'file') {
                     await sendMsg('文件已收到，正在处理', msg.senderStaffId, id, msg.robotCode)
                     const { downloadCode } = msg.content

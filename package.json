@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "build": "turbo run build",
+        "start:inspect": "turbo run start:inspect",
         "build:server": "turbo run build --filter flowise-components --filter flowise",
         "build-force": "turbo run build --force",
         "dev": "dotenv -- turbo run dev --parallel",
