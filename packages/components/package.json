@@ -20,6 +20,7 @@
         "@huggingface/inference": "1",
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
+        "@zilliz/milvus2-sdk-node": "^2.2.10",
         "axios": "^0.27.2",
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "^1.3.1",
