@@ -123,7 +123,7 @@ export const sendCard = async (msg: string, uid: string, chatFlowId: string, rob
             {
                 cardTemplateId: '51c965a4-c3bb-469b-b8b5-059fb25bb4f5.schema',
                 singleChatReceiver: JSON.stringify({ userId: uid }),
-                cardBizId: '112-21-51c965a4-c3bb-469b-b8b5-059fb25bb4f5.schema',
+                cardBizId: '112-21-51c965a4-c3bb-469b-b8b5-059fb25bb4f5.schema' + (+new Date()),
                 robotCode: robotCode,
                 // callbackUrl: 'String',
                 cardData: JSON.stringify({
