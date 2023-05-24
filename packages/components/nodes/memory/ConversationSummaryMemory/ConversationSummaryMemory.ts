@@ -19,13 +19,13 @@ class ConversationSummaryMemory_Memory implements INode {
         this.type = 'ConversationSummaryMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
-        this.description = 'Remembers previous conversational back and forths directly'
+        this.description = 'Summarizes the conversation and stores the current summary in memory'
         this.baseClasses = [this.type, ...getBaseClasses(ConversationSummaryMemory)]
         this.inputs = [
             {
-                label: 'Language Model',
+                label: 'Chat Model',
                 name: 'model',
-                type: 'BaseLanguageModel'
+                type: 'BaseChatModel'
             },
             {
                 label: 'Memory Key',
