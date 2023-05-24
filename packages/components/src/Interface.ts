@@ -103,3 +103,24 @@ export class PromptTemplate extends LangchainPromptTemplate {
         super(input)
     }
 }
+
+export interface PromptRetrieverInput {
+    name: string
+    description: string
+    systemMessage: string
+}
+
+const fixedTemplate = `Here is a question:
+{input}
+`
+export class PromptRetriever {
+    name: string
+    description: string
+    systemMessage: string
+
+    constructor(fields: PromptRetrieverInput) {
+        this.name = fields.name
+        this.description = fields.description
+        this.systemMessage = `${fields.systemMessage}\n${fixedTemplate}`
+    }
+}
