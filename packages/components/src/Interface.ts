@@ -95,6 +95,7 @@ export interface IMessage {
  */
 
 import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
+import { VectorStore } from 'langchain/vectorstores/base'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -122,5 +123,23 @@ export class PromptRetriever {
         this.name = fields.name
         this.description = fields.description
         this.systemMessage = `${fields.systemMessage}\n${fixedTemplate}`
+    }
+}
+
+export interface VectorStoreRetrieverInput {
+    name: string
+    description: string
+    vectorStore: VectorStore
+}
+
+export class VectorStoreRetriever {
+    name: string
+    description: string
+    vectorStore: VectorStore
+
+    constructor(fields: VectorStoreRetrieverInput) {
+        this.name = fields.name
+        this.description = fields.description
+        this.vectorStore = fields.vectorStore
     }
 }
