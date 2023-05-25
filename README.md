@@ -21,13 +21,20 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 3. Open [http://localhost:3000](http://localhost:3000)
 
-## 🐳 Docker
+## 🐳 docker
 
-1. Go to `docker` folder at the root of the project
-2. Create `.env` file and specify the `PORT` (refer to `.env.example`)
-3. `docker-compose up -d`
+1. Create `.env` file and specify the `PORT` (refer to `.env.example`)
+2. `docker build -t flowise-local .`
+3. `docker run flowise-local --name=flowise`
 4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
+5. You can bring the container down by `docker stop flowise`
+
+## docker-compose
+1. Create `.env` file and specify the `PORT` (refer to `.env.example`)
+2. `docker-compose up -d`
+3. Open [http://localhost:3000](http://localhost:3000)
+4. You can bring the container down by `docker-compose down`
+
 
 ## 👨‍💻 Developers
 
