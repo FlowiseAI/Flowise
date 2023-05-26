@@ -465,7 +465,7 @@ export class App {
                         {
                             question: content,
                             userId: msg.senderStaffId,
-                            history: history
+                            history: []
                         },
                         id
                     )
