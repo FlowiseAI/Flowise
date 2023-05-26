@@ -411,7 +411,7 @@ export class App {
             //     message: item.content
             // }))
             // // 取前20条历史记录
-            history.splice(0, history.length - 20)
+            // history.splice(0, history.length - 20)
 
             try {
                 const msg: IMessage = data
