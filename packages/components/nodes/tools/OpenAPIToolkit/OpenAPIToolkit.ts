@@ -4,7 +4,7 @@ import { JsonSpec, JsonObject } from 'langchain/tools'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { load } from 'js-yaml'
 
-class OpenApiToolkit_Tools implements INode {
+class OpenAPIToolkit_Tools implements INode {
     label: string
     name: string
     description: string
@@ -15,15 +15,15 @@ class OpenApiToolkit_Tools implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenApi Toolkit'
-        this.name = 'openApiToolkit'
-        this.type = 'OpenApiToolkit'
+        this.label = 'OpenAPI Toolkit'
+        this.name = 'openAPIToolkit'
+        this.type = 'OpenAPIToolkit'
         this.icon = 'openai.png'
         this.category = 'Tools'
         this.description = 'Load OpenAPI specification'
         this.inputs = [
             {
-                label: 'OpenAI Api Key',
+                label: 'OpenAI API Key',
                 name: 'openAIApiKey',
                 type: 'password'
             },
@@ -66,4 +66,4 @@ class OpenApiToolkit_Tools implements INode {
     }
 }
 
-module.exports = { nodeClass: OpenApiToolkit_Tools }
+module.exports = { nodeClass: OpenAPIToolkit_Tools }
