@@ -2,7 +2,7 @@ import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../..
 import { ConversationChain } from 'langchain/chains'
 import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
-import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
+import { BufferMemory, ChatMessageHistory, ENTITY_MEMORY_CONVERSATION_TEMPLATE, EntityMemory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
 
@@ -51,7 +51,7 @@ class ConversationChain_Chains implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseChatModel
-        const memory = nodeData.inputs?.memory as BufferMemory
+        const memory = nodeData.inputs?.memory as BufferMemory | EntityMemory
         const prompt = nodeData.inputs?.systemMessagePrompt as string
 
         const obj: any = {
@@ -60,11 +60,17 @@ class ConversationChain_Chains implements INode {
             verbose: process.env.DEBUG === 'true' ? true : false
         }
 
-        const chatPrompt = ChatPromptTemplate.fromPromptMessages([
-            SystemMessagePromptTemplate.fromTemplate(prompt ? `${prompt}\n${systemMessage}` : systemMessage),
-            new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
-            HumanMessagePromptTemplate.fromTemplate('{input}')
-        ])
+        let chatPrompt: any
+        if (memory instanceof EntityMemory) {
+            chatPrompt = ENTITY_MEMORY_CONVERSATION_TEMPLATE
+            console.log('use ENTITY_MEMORY_CONVERSATION_TEMPLATE')
+        } else {
+            chatPrompt = ChatPromptTemplate.fromPromptMessages([
+                SystemMessagePromptTemplate.fromTemplate(prompt ? `${prompt}\n${systemMessage}` : systemMessage),
+                new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
+                HumanMessagePromptTemplate.fromTemplate('{input}')
+            ])
+        }
         obj.prompt = chatPrompt
 
         const chain = new ConversationChain(obj)
@@ -73,9 +79,10 @@ class ConversationChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as ConversationChain
-        const memory = nodeData.inputs?.memory as BufferMemory
+        const memory = nodeData.inputs?.memory as BufferMemory | EntityMemory
 
         if (options && options.chatHistory) {
+            console.log(`Went into options.chatHistory`)
             const chatHistory = []
             const histories: IMessage[] = options.chatHistory
 
@@ -90,12 +97,22 @@ class ConversationChain_Chains implements INode {
             chain.memory = memory
         }
 
+        console.log(`chain.memory is instanceof EntityMemory:  ${chain.memory instanceof EntityMemory}`)
+
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             const res = await chain.call({ input }, [handler])
+            if (memory instanceof EntityMemory) console.log({
+                res,
+                memory: await memory.loadMemoryVariables({ input: "Who is Jim?" }),
+            })
             return res?.response
         } else {
             const res = await chain.call({ input })
+            if (memory instanceof EntityMemory) console.log({
+                res,
+                memory: await memory.loadMemoryVariables({ input: "Who is Jim?" }),
+            })
             return res?.text
         }
     }
