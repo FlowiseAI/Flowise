@@ -433,13 +433,14 @@ export class App {
                     const res = await chatQuery({ question: userMsg, history: [], userId: msg.senderStaffId }, id)
                     apiContent = res?.text || res
                     try {
-                        const ressult = apiContent.split(' ')
-                        if (ressult.length === 3) {
-                            await sendCard(apiContent, msg.senderStaffId, id, msg.robotCode)
+                        const result = JSON.parse(apiContent)
+                        if (result.shellFile) {
+                            await sendCard(result, msg.senderStaffId, id, msg.robotCode)
                         } else {
                             await sendMsg(apiContent, msg.senderStaffId, id, msg.robotCode)
                         }
                     } catch (error) {
+                        await sendMsg(apiContent, msg.senderStaffId, id, msg.robotCode)
                         console.log(error)
                     }
                 } else if (msg.msgtype === 'file') {

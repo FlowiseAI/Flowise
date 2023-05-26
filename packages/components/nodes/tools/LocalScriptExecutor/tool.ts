@@ -42,10 +42,10 @@ export class SummarizationTool extends Tool implements SummaryTool {
     /** @ignore */
     async _call(input: string) {
         try {
-            const [num, name] = parseInputs(input)
+            // const [num, name] = parseInputs(input)
             console.log(typeof input, input)
-            return `${this.shellFile} ${name} ${num}`
-            JSON.stringify(
+            // return `${this.shellFile} ${name} ${num}`
+            return JSON.stringify(
                 {
                     shellFile: this.shellFile,
                     param: input
