@@ -32,7 +32,7 @@ class ApiChain_Chains implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                type: 'Document',
+                type: 'Document'
             }
         ]
     }
@@ -45,7 +45,7 @@ class ApiChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string,  options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const docs = nodeData.inputs?.document as Document[]
 
@@ -61,16 +61,16 @@ class ApiChain_Chains implements INode {
     }
 }
 
-const getOpenAPIChain = async (documents: Document[], llm: BaseLanguageModel, options: any = {}) => {
-    const texts = documents.map(({ pageContent }) => pageContent);
+const getOpenAPIChain = async (documents: Document[], llm: BaseLanguageModel) => {
+    const texts = documents.map(({ pageContent }) => pageContent)
     const apiResponsePrompt = new PromptTemplate({
-        inputVariables: ["api_docs", "question", "api_url", "api_response"],
-        template: "Given this {api_response} response for {api_url}. use the given response to answer this {question}",
-    });
+        inputVariables: ['api_docs', 'question', 'api_url', 'api_response'],
+        template: 'Given this {api_response} response for {api_url}. use the given response to answer this {question}'
+    })
 
-    const chain = APIChain.fromLLMAndAPIDocs(llm, texts.toString(), { 
-        apiResponsePrompt, 
-        verbose: process.env.DEBUG === 'true' ? true : false,
+    const chain = APIChain.fromLLMAndAPIDocs(llm, texts.toString(), {
+        apiResponsePrompt,
+        verbose: process.env.DEBUG === 'true' ? true : false
     })
     return chain
 }
