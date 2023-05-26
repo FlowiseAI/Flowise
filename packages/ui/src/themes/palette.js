@@ -7,7 +7,8 @@ export default function themePalette(theme) {
     return {
         mode: theme?.customization?.navType,
         common: {
-            black: theme.colors?.darkPaper
+            black: theme.colors?.darkPaper,
+            dark: theme.colors?.darkPrimaryMain
         },
         primary: {
             light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,

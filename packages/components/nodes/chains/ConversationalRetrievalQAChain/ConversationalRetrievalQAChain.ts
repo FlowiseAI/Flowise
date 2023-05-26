@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { ConversationalRetrievalQAChain } from 'langchain/chains'
 import { BaseRetriever } from 'langchain/schema'
 
@@ -74,6 +74,12 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as ConversationalRetrievalQAChain
+        let model = nodeData.inputs?.model
+
+        // Temporary fix: https://github.com/hwchase17/langchainjs/issues/754
+        model.streaming = false
+        chain.questionGeneratorChain.llm = model
+
         let chatHistory = ''
 
         if (options && options.chatHistory) {
@@ -90,9 +96,14 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             chat_history: chatHistory ? chatHistory : []
         }
 
-        const res = await chain.call(obj)
-
-        return res?.text
+        if (options.socketIO && options.socketIOClientId) {
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const res = await chain.call(obj, [handler])
+            return res?.text
+        } else {
+            const res = await chain.call(obj)
+            return res?.text
+        }
     }
 }
 

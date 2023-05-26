@@ -3,6 +3,7 @@
 # Run image
 # docker run -d -p 3000:3000 flowise
 FROM node:18-alpine
+RUN apk add --update libc6-compat
 
 WORKDIR /usr/src/packages
 

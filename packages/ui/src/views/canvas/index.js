@@ -23,7 +23,7 @@ import ButtonEdge from './ButtonEdge'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import { ChatMessage } from 'views/chatmessage/ChatMessage'
+import { ChatPopUp } from 'views/chatmessage/ChatPopUp'
 import { flowContext } from 'store/context/ReactFlowContext'
 
 // API
@@ -514,7 +514,7 @@ const Canvas = () => {
                                 />
                                 <Background color='#aaa' gap={16} />
                                 <AddNodes nodesData={getNodesApi.data} node={selectedNode} />
-                                <ChatMessage chatflowid={chatflowId} />
+                                <ChatPopUp chatflowid={chatflowId} />
                             </ReactFlow>
                         </div>
                     </div>

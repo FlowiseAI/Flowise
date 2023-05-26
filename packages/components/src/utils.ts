@@ -2,6 +2,8 @@ import axios from 'axios'
 import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
+import { BaseCallbackHandler } from 'langchain/callbacks'
+import { Server } from 'socket.io'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -152,6 +154,12 @@ export const getInputVariables = (paramValue: string): string[] => {
     return inputVariables
 }
 
+/**
+ * Crawl all available urls given a domain url and limit
+ * @param {string} url
+ * @param {number} limit
+ * @returns {string[]}
+ */
 export const getAvailableURLs = async (url: string, limit: number) => {
     try {
         const availableUrls: string[] = []
@@ -188,5 +196,33 @@ export const getAvailableURLs = async (url: string, limit: number) => {
         return availableUrls
     } catch (err) {
         throw new Error(`getAvailableURLs: ${err?.message}`)
+    }
+}
+
+/**
+ * Custom chain handler class
+ */
+export class CustomChainHandler extends BaseCallbackHandler {
+    name = 'custom_chain_handler'
+    isLLMStarted = false
+    socketIO: Server
+    socketIOClientId = ''
+
+    constructor(socketIO: Server, socketIOClientId: string) {
+        super()
+        this.socketIO = socketIO
+        this.socketIOClientId = socketIOClientId
+    }
+
+    handleLLMNewToken(token: string) {
+        if (!this.isLLMStarted) {
+            this.isLLMStarted = true
+            this.socketIO.to(this.socketIOClientId).emit('start', token)
+        }
+        this.socketIO.to(this.socketIOClientId).emit('token', token)
+    }
+
+    handleLLMEnd() {
+        this.socketIO.to(this.socketIOClientId).emit('end')
     }
 }
