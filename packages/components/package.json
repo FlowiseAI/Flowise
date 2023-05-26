@@ -16,6 +16,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.338.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@huggingface/inference": "1",
         "@pinecone-database/pinecone": "^0.0.12",
