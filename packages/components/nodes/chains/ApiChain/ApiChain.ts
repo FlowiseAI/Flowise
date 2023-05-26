@@ -33,6 +33,13 @@ class ApiChain_Chains implements INode {
                 label: 'Document',
                 name: 'document',
                 type: 'Document'
+            },
+            {
+                label: 'Headers',
+                name: 'headers',
+                type: 'json',
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -40,16 +47,18 @@ class ApiChain_Chains implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const docs = nodeData.inputs?.document as Document[]
+        const headers = nodeData.inputs?.headers as string
 
-        const chain = await getOpenAPIChain(docs, model)
+        const chain = await getAPIChain(docs, model, headers)
         return chain
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const docs = nodeData.inputs?.document as Document[]
+        const headers = nodeData.inputs?.headers as string
 
-        const chain = await getOpenAPIChain(docs, model)
+        const chain = await getAPIChain(docs, model, headers)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             const res = await chain.run(input, [handler])
@@ -61,7 +70,7 @@ class ApiChain_Chains implements INode {
     }
 }
 
-const getOpenAPIChain = async (documents: Document[], llm: BaseLanguageModel) => {
+const getAPIChain = async (documents: Document[], llm: BaseLanguageModel, headers: any) => {
     const texts = documents.map(({ pageContent }) => pageContent)
     const apiResponsePrompt = new PromptTemplate({
         inputVariables: ['api_docs', 'question', 'api_url', 'api_response'],
@@ -70,7 +79,8 @@ const getOpenAPIChain = async (documents: Document[], llm: BaseLanguageModel) =>
 
     const chain = APIChain.fromLLMAndAPIDocs(llm, texts.toString(), {
         apiResponsePrompt,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {}
     })
     return chain
 }
