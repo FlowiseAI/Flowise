@@ -381,6 +381,12 @@ export class App {
             await this.processPrediction(req, res, true)
         })
 
+        this.app.post('/api/v1/delete/message', async (req: Request, res: Response) => {
+            // 删除所有消息
+            const results = await this.AppDataSource.getRepository(ChatMessage).delete({})
+            return res.json(results)
+        })
+
         this.app.post('/api/v1/robot/dingtalk/:id', async (req: Request, res: Response) => {
             const data = req.body
             if (data?.text?.content === '清除历史消息') {
