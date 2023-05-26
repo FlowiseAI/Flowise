@@ -12,7 +12,7 @@ interface SummaryTool {
 }
 
 export const parseInputs = (inputs: string): [string, string] => {
-    const [filePath, task] = inputs.split(",").map((input) => {
+    const [filePath, task] = inputs.split("|").map((input) => {
       let t = input.trim();
       t = t.startsWith('"') ? t.slice(1) : t;
       t = t.endsWith('"') ? t.slice(0, -1) : t;
