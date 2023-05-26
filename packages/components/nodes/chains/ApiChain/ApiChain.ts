@@ -4,7 +4,6 @@ import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { Document } from 'langchain/document'
 import { PromptTemplate } from 'langchain/prompts'
-import { OpenAI } from 'langchain'
 
 class ApiChain_Chains implements INode {
     label: string
@@ -23,7 +22,7 @@ class ApiChain_Chains implements INode {
         this.icon = 'apichain.svg'
         this.category = 'Chains'
         this.description = 'Chain to run queries against API'
-        this.baseClasses = [this.type, ...getBaseClasses(APIChain), ...getBaseClasses(OpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(APIChain)]
         this.inputs = [
             {
                 label: 'Language Model',
