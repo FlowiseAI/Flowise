@@ -1,6 +1,6 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains'
-import { getBaseClasses } from '../../../src/utils'
+import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
 import { BaseLanguageModel } from 'langchain/base_language'
@@ -59,14 +59,20 @@ class SqlDatabaseChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const databaseType = nodeData.inputs?.database as 'sqlite'
         const model = nodeData.inputs?.model as BaseLanguageModel
         const dbFilePath = nodeData.inputs?.dbFilePath
 
         const chain = await getSQLDBChain(databaseType, dbFilePath, model)
-        const res = await chain.run(input)
-        return res
+        if (options.socketIO && options.socketIOClientId) {
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const res = await chain.run(input, [handler])
+            return res
+        } else {
+            const res = await chain.run(input)
+            return res
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import useConfirm from 'hooks/useConfirm'
 import { StyledButton } from 'ui-component/button/StyledButton'
 
@@ -20,9 +20,7 @@ const ConfirmDialog = () => {
                 {confirmState.title}
             </DialogTitle>
             <DialogContent>
-                <DialogContentText sx={{ color: 'black' }} id='alert-dialog-description'>
-                    {confirmState.description}
-                </DialogContentText>
+                <span>{confirmState.description}</span>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{confirmState.cancelButtonName}</Button>

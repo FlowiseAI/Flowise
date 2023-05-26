@@ -121,6 +121,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
             temperature: parseInt(temperature, 10),
@@ -128,7 +129,8 @@ class AzureChatOpenAI_ChatModels implements INode {
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
-            azureOpenAIApiVersion
+            azureOpenAIApiVersion,
+            streaming: streaming ?? true
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
