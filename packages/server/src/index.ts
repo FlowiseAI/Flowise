@@ -403,14 +403,14 @@ export class App {
             const id = req.params.id
             console.log('data', data)
             // await sendMsg('res?.text || res', 'msg.senderStaffId', id)
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: data.conversationId
-            })
-            const history = (chatmessages || []).map((item) => ({
-                type: item.role,
-                message: item.content
-            }))
-            // 取前20条历史记录
+            // const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
+            //     chatflowid: data.conversationId
+            // })
+            // const history = (chatmessages || []).map((item) => ({
+            //     type: item.role,
+            //     message: item.content
+            // }))
+            // // 取前20条历史记录
             history.splice(0, history.length - 20)
 
             try {
@@ -430,7 +430,7 @@ export class App {
                     ]
                     const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
                     await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-                    const res = await chatQuery({ question: userMsg, history: history, userId: msg.senderStaffId }, id)
+                    const res = await chatQuery({ question: userMsg, history: [], userId: msg.senderStaffId }, id)
                     apiContent = res?.text || res
                     try {
                         const ressult = apiContent.split(' ')
@@ -507,21 +507,21 @@ export class App {
                 return res.json({ code: 0 })
             }
 
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: data.conversationId
-            })
-            const history = (chatmessages || []).map((item) => ({
-                type: item.role,
-                message: item.content
-            }))
-            // 取前10条历史记录
-            history.splice(0, history.length - 20)
+            // const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
+            //     chatflowid: data.conversationId
+            // })
+            // const history = (chatmessages || []).map((item) => ({
+            //     type: item.role,
+            //     message: item.content
+            // }))
+            // // 取前10条历史记录
+            // history.splice(0, history.length - 20)
             try {
                 const msg: IMessage = data
                 if (msg.msgtype === 'text') {
                     const userMsg = msg.text.content
                     // 向flow提问
-                    const res = await chatQuery({ question: userMsg, history, userId: msg.senderId }, id)
+                    const res = await chatQuery({ question: userMsg, history: [], userId: msg.senderId }, id)
                     // 向钉钉发送消息
                     await sendOutgoingMsg(res, webhook)
                     // 保存历史记录
