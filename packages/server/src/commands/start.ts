@@ -4,7 +4,7 @@ import * as Server from '../index'
 import * as DataSource from '../DataSource'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: path.join(__dirname, '..', '..', '.env') })
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
 
 enum EXIT_CODE {
     SUCCESS = 0,
@@ -15,8 +15,8 @@ let processExitCode = EXIT_CODE.SUCCESS
 export default class Start extends Command {
     static args = []
     static flags = {
-        USERNAME: Flags.string(),
-        PASSWORD: Flags.string()
+        FLOWISE_USERNAME: Flags.string(),
+        FLOWISE_PASSWORD: Flags.string()
     }
 
     async stopProcess() {
@@ -48,8 +48,8 @@ export default class Start extends Command {
         })
 
         const { flags } = await this.parse(Start)
-        if (flags.USERNAME) process.env.USERNAME = flags.USERNAME
-        if (flags.PASSWORD) process.env.PASSWORD = flags.PASSWORD
+        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
+        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
 
         await (async () => {
             try {

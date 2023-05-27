@@ -13,8 +13,7 @@
         "dist",
         "npm-shrinkwrap.json",
         "oclif.manifest.json",
-        "oauth2.html",
-        ".env"
+        "oauth2.html"
     ],
     "oclif": {
         "bin": "flowise",

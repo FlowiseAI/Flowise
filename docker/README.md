@@ -11,13 +11,13 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/f
 
 ## With Authrorization
 
-1. Create `.env` file and specify the `PORT`, `USERNAME`, and `PASSWORD` (refer to `.env.example`)
-2. Pass `USERNAME` and `PASSWORD` to the `docker-compose.yml` file:
+1. Create `.env` file and specify the `PORT`, `FLOWISE_USERNAME`, and `FLOWISE_PASSWORD` (refer to `.env.example`)
+2. Pass `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `docker-compose.yml` file:
     ```
     environment:
         - PORT=${PORT}
-        - USERNAME=${USERNAME}
-        - PASSWORD=${PASSWORD}
+        - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+        - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
     ```
 3. `docker-compose up -d`
 4. Open [http://localhost:3000](http://localhost:3000)
