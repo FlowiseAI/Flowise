@@ -4,9 +4,6 @@
 # Run image
 # docker run -d -p 3000:3000 flowise
 
-# Run image with authorization
-# docker run -d -e USERNAME=user -e PASSWORD=1234 -p 3000:3000 flowise
-
 FROM node:18-alpine
 RUN apk add --update libc6-compat
 

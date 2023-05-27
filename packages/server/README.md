@@ -22,11 +22,11 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
 ## 🔒 Authentication
 
-To enable app level authentication, add `USERNAME` and `PASSWORD` to the `.env` file:
+To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file:
 
 ```
-USERNAME=user
-PASSWORD=1234
+FLOWISE_USERNAME=user
+FLOWISE_PASSWORD=1234
 ```
 
 ## 📖 Documentation

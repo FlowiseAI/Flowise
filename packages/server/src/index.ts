@@ -83,9 +83,9 @@ export class App {
         // Allow access from *
         this.app.use(cors())
 
-        if (process.env.USERNAME && process.env.PASSWORD) {
-            const username = process.env.USERNAME.toLocaleLowerCase()
-            const password = process.env.PASSWORD.toLocaleLowerCase()
+        if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
+            const username = process.env.FLOWISE_USERNAME
+            const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })

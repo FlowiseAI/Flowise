@@ -22,7 +22,7 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
     With username & password
 
     ```bash
-    npx flowise start --USERNAME=user --PASSWORD=1234
+    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
@@ -47,12 +47,6 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
 
     ```bash
     docker run -d --name flowise -p 3000:3000 flowise
-    ```
-
-    With username & password
-
-    ```bash
-    docker run -d -e USERNAME=user -e PASSWORD=1234 --name flowise -p 3000:3000 flowise
     ```
 
 3. Stop image:
@@ -119,11 +113,11 @@ Flowise has 3 different modules in a single mono repository.
 
 ## 🔒 Authentication
 
-To enable app level authentication, add `USERNAME` and `PASSWORD` to the `.env` file in `packages/server`:
+To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file in `packages/server`:
 
 ```
-USERNAME=user
-PASSWORD=1234
+FLOWISE_USERNAME=user
+FLOWISE_PASSWORD=1234
 ```
 
 ## 📖 Documentation
