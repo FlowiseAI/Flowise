@@ -6,6 +6,8 @@ services:
         restart: always
         environment:
             - PORT=${PORT}
+            - USERNAME=${USERNAME}
+            - PASSWORD=${PASSWORD}
         ports:
             - '${PORT}:${PORT}'
         volumes:
