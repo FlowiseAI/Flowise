@@ -207,19 +207,27 @@ export class CustomChainHandler extends BaseCallbackHandler {
     isLLMStarted = false
     socketIO: Server
     socketIOClientId = ''
+    skipK = 0 // Skip streaming for first K numbers of handleLLMStart
 
-    constructor(socketIO: Server, socketIOClientId: string) {
+    constructor(socketIO: Server, socketIOClientId: string, skipK?: number) {
         super()
         this.socketIO = socketIO
         this.socketIOClientId = socketIOClientId
+        this.skipK = skipK ?? this.skipK
+    }
+
+    handleLLMStart() {
+        if (this.skipK > 0) this.skipK -= 1
     }
 
     handleLLMNewToken(token: string) {
-        if (!this.isLLMStarted) {
-            this.isLLMStarted = true
-            this.socketIO.to(this.socketIOClientId).emit('start', token)
+        if (this.skipK === 0) {
+            if (!this.isLLMStarted) {
+                this.isLLMStarted = true
+                this.socketIO.to(this.socketIOClientId).emit('start', token)
+            }
+            this.socketIO.to(this.socketIOClientId).emit('token', token)
         }
-        this.socketIO.to(this.socketIOClientId).emit('token', token)
     }
 
     handleLLMEnd() {
