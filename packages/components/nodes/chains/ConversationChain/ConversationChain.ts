@@ -96,7 +96,7 @@ class ConversationChain_Chains implements INode {
             return res?.response
         } else {
             const res = await chain.call({ input })
-            return res?.text
+            return res?.response
         }
     }
 }
