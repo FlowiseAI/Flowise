@@ -328,7 +328,7 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
     //skipping cloneDeep of instances
     //as cloning them gives "Illegal invocation" Exception
     const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
-    const flowNodeData = merge(flowNodeDataWithoutInstance, {instance : reactFlowNodeData.instance})
+    const flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
