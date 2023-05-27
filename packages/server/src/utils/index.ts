@@ -14,7 +14,7 @@ import {
     INodeData,
     IOverrideConfig
 } from '../Interface'
-import { cloneDeep, get } from 'lodash'
+import { cloneDeep, get, merge, omit } from 'lodash'
 import { ICommonObject, getInputVariables } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 
@@ -325,7 +325,10 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
  * @returns {INodeData}
  */
 export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
-    const flowNodeData = cloneDeep(reactFlowNodeData)
+    //skipping cloneDeep of instances
+    //as cloning them gives "Illegal invocation" Exception
+    const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
+    const flowNodeData = merge(flowNodeDataWithoutInstance, {instance : reactFlowNodeData.instance})
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
