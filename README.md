@@ -19,6 +19,12 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
     npx flowise start
     ```
 
+    With username & password
+
+    ```bash
+    npx flowise start --USERNAME=user --PASSWORD=1234
+    ```
+
 3. Open [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
@@ -38,9 +44,17 @@ Drag & drop UI to build your customized LLM flow using [LangchainJS](https://git
     docker build --no-cache -t flowise .
     ```
 2. Run image:
+
     ```bash
     docker run -d --name flowise -p 3000:3000 flowise
     ```
+
+    With username & password
+
+    ```bash
+    docker run -d -e USERNAME=user -e PASSWORD=1234 --name flowise -p 3000:3000 flowise
+    ```
+
 3. Stop image:
     ```bash
     docker stop flowise

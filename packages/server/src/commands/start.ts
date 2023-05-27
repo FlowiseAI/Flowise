@@ -1,4 +1,4 @@
-import { Command } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
 import path from 'path'
 import * as Server from '../index'
 import * as DataSource from '../DataSource'
@@ -14,6 +14,10 @@ let processExitCode = EXIT_CODE.SUCCESS
 
 export default class Start extends Command {
     static args = []
+    static flags = {
+        USERNAME: Flags.string(),
+        PASSWORD: Flags.string()
+    }
 
     async stopProcess() {
         console.info('Shutting down Flowise...')
@@ -42,6 +46,10 @@ export default class Start extends Command {
         process.on('uncaughtException', (err) => {
             console.error('uncaughtException: ', err)
         })
+
+        const { flags } = await this.parse(Start)
+        if (flags.USERNAME) process.env.USERNAME = flags.USERNAME
+        if (flags.PASSWORD) process.env.PASSWORD = flags.PASSWORD
 
         await (async () => {
             try {
