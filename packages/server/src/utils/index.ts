@@ -14,7 +14,7 @@ import {
     INodeData,
     IOverrideConfig
 } from '../Interface'
-import { cloneDeep, get } from 'lodash'
+import { cloneDeep, get, omit, merge } from 'lodash'
 import { ICommonObject, getInputVariables } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 
@@ -318,6 +318,25 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
 }
 
 /**
+ * Temporarily disable streaming if vectorStore is Faiss
+ * @param {INodeData} flowNodeData
+ * @returns {boolean}
+ */
+export const isVectorStoreFaiss = (flowNodeData: INodeData) => {
+    if (flowNodeData.inputs && flowNodeData.inputs.vectorStoreRetriever) {
+        const vectorStoreRetriever = flowNodeData.inputs.vectorStoreRetriever
+        if (typeof vectorStoreRetriever === 'string' && vectorStoreRetriever.includes('faiss')) return true
+        if (
+            typeof vectorStoreRetriever === 'object' &&
+            vectorStoreRetriever.vectorStore &&
+            vectorStoreRetriever.vectorStore.constructor.name === 'FaissStore'
+        )
+            return true
+    }
+    return false
+}
+
+/**
  * Loop through each inputs and resolve variable if neccessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -325,7 +344,12 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
  * @returns {INodeData}
  */
 export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
-    const flowNodeData = cloneDeep(reactFlowNodeData)
+    let flowNodeData = cloneDeep(reactFlowNodeData)
+    if (reactFlowNodeData.instance && isVectorStoreFaiss(reactFlowNodeData)) {
+        // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
+        const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
+        flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
+    }
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
@@ -633,5 +657,5 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         }
     }
 
-    return isChatOrLLMsExist && endingNodeData.category === 'Chains'
+    return isChatOrLLMsExist && endingNodeData.category === 'Chains' && !isVectorStoreFaiss(endingNodeData)
 }
