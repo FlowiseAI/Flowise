@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { NotionLoader } from 'langchain/document_loaders/fs/notion'
+import { NotionDBLoader } from 'langchain/document_loaders/web/notiondb'
 
-class Notion_DocumentLoaders implements INode {
+class NotionDB_DocumentLoaders implements INode {
     label: string
     name: string
     description: string
@@ -13,26 +13,39 @@ class Notion_DocumentLoaders implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Notion Folder'
-        this.name = 'notionFolder'
+        this.label = 'Notion Database'
+        this.name = 'notionDB'
         this.type = 'Document'
         this.icon = 'notion.png'
         this.category = 'Document Loaders'
-        this.description = `Load data from Notion folder`
+        this.description = `Load data from Notion Database`
         this.baseClasses = [this.type]
         this.inputs = [
-            {
-                label: 'Notion Folder',
-                name: 'notionFolder',
-                type: 'string',
-                description: 'Get folder path',
-                placeholder: 'Paste folder path'
-            },
             {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
+            },
+            {
+                label: 'Notion Database Id',
+                name: 'databaseId',
+                type: 'string',
+                description:
+                    'If your URL looks like - https://www.notion.so/<long_hash_1>?v=<long_hash_2>, then <long_hash_1> is the database ID'
+            },
+            {
+                label: 'Notion Integration Token',
+                name: 'notionIntegrationToken',
+                type: 'string',
+                description:
+                    'You can find integration token <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">here</a>'
+            },
+            {
+                label: 'Page Size Limit',
+                name: 'pageSizeLimit',
+                type: 'number',
+                default: 10
             },
             {
                 label: 'Metadata',
@@ -46,10 +59,16 @@ class Notion_DocumentLoaders implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const notionFolder = nodeData.inputs?.notionFolder as string
+        const databaseId = nodeData.inputs?.databaseId as string
+        const notionIntegrationToken = nodeData.inputs?.notionIntegrationToken as string
+        const pageSizeLimit = nodeData.inputs?.pageSizeLimit as string
         const metadata = nodeData.inputs?.metadata
 
-        const loader = new NotionLoader(notionFolder)
+        const loader = new NotionDBLoader({
+            pageSizeLimit: pageSizeLimit ? parseInt(pageSizeLimit, 10) : 10,
+            databaseId,
+            notionIntegrationToken
+        })
         let docs = []
 
         if (textSplitter) {
@@ -78,4 +97,4 @@ class Notion_DocumentLoaders implements INode {
     }
 }
 
-module.exports = { nodeClass: Notion_DocumentLoaders }
+module.exports = { nodeClass: NotionDB_DocumentLoaders }
