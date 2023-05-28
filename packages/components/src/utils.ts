@@ -1,5 +1,9 @@
+import axios from 'axios'
+import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
+import { BaseCallbackHandler } from 'langchain/callbacks'
+import { Server } from 'socket.io'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -151,25 +155,74 @@ export const getInputVariables = (paramValue: string): string[] => {
 }
 
 /**
- * Get blob
- * @param {string} fileBase64Str
- * @returns {Buffer[]}
+ * Crawl all available urls given a domain url and limit
+ * @param {string} url
+ * @param {number} limit
+ * @returns {string[]}
  */
-export const getBlob = (fileBase64Str: string) => {
-    let bufferArray: Buffer[] = []
-    let files: string[] = []
+export const getAvailableURLs = async (url: string, limit: number) => {
+    try {
+        const availableUrls: string[] = []
 
-    if (fileBase64Str.startsWith('[') && fileBase64Str.endsWith(']')) {
-        files = JSON.parse(fileBase64Str)
-    } else {
-        files = [fileBase64Str]
+        console.info(`Crawling: ${url}`)
+        availableUrls.push(url)
+
+        const response = await axios.get(url)
+        const $ = load(response.data)
+
+        const relativeLinks = $("a[href^='/']")
+        console.info(`Available Relative Links: ${relativeLinks.length}`)
+        if (relativeLinks.length === 0) return availableUrls
+
+        limit = Math.min(limit + 1, relativeLinks.length) // limit + 1 is because index start from 0 and index 0 is occupy by url
+        console.info(`True Limit: ${limit}`)
+
+        // availableUrls.length cannot exceed limit
+        for (let i = 0; availableUrls.length < limit; i++) {
+            if (i === limit) break // some links are repetitive so it won't added into the array which cause the length to be lesser
+            console.info(`index: ${i}`)
+            const element = relativeLinks[i]
+
+            const relativeUrl = $(element).attr('href')
+            if (!relativeUrl) continue
+
+            const absoluteUrl = new URL(relativeUrl, url).toString()
+            if (!availableUrls.includes(absoluteUrl)) {
+                availableUrls.push(absoluteUrl)
+                console.info(`Found unique relative link: ${absoluteUrl}`)
+            }
+        }
+
+        return availableUrls
+    } catch (err) {
+        throw new Error(`getAvailableURLs: ${err?.message}`)
+    }
+}
+
+/**
+ * Custom chain handler class
+ */
+export class CustomChainHandler extends BaseCallbackHandler {
+    name = 'custom_chain_handler'
+    isLLMStarted = false
+    socketIO: Server
+    socketIOClientId = ''
+
+    constructor(socketIO: Server, socketIOClientId: string) {
+        super()
+        this.socketIO = socketIO
+        this.socketIOClientId = socketIOClientId
     }
 
-    for (const file of files) {
-        const splitDataURI = file.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        bufferArray.push(bf)
+    handleLLMNewToken(token: string) {
+        if (!this.isLLMStarted) {
+            this.isLLMStarted = true
+            this.socketIO.to(this.socketIOClientId).emit('start', token)
+        }
+        this.socketIO.to(this.socketIOClientId).emit('token', token)
     }
-    return bufferArray
+
+    handleLLMEnd() {
+        this.socketIO.to(this.socketIOClientId).emit('end')
+    }
 }

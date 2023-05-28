@@ -1,0 +1,121 @@
+.messagelist {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    border-radius: 0.5rem;
+}
+
+.messagelistloading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.usermessage {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+}
+
+.usermessagewaiting-light {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    background: linear-gradient(to left, #ede7f6, #e3f2fd, #ede7f6);
+    background-size: 200% 200%;
+    background-position: -100% 0;
+    animation: loading-gradient 2s ease-in-out infinite;
+    animation-direction: alternate;
+    animation-name: loading-gradient;
+}
+
+.usermessagewaiting-dark {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    color: #ececf1;
+    background: linear-gradient(to left, #2e2352, #1d3d60, #2e2352);
+    background-size: 200% 200%;
+    background-position: -100% 0;
+    animation: loading-gradient 2s ease-in-out infinite;
+    animation-direction: alternate;
+    animation-name: loading-gradient;
+}
+
+@keyframes loading-gradient {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.apimessage {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    animation: fadein 0.5s;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.apimessage,
+.usermessage,
+.usermessagewaiting {
+    display: flex;
+}
+
+.markdownanswer {
+    line-height: 1.75;
+}
+
+.markdownanswer a:hover {
+    opacity: 0.8;
+}
+
+.markdownanswer a {
+    color: #16bed7;
+    font-weight: 500;
+}
+
+.markdownanswer code {
+    color: #15cb19;
+    font-weight: 500;
+    white-space: pre-wrap !important;
+}
+
+.markdownanswer ol,
+.markdownanswer ul {
+    margin: 1rem;
+}
+
+.boticon,
+.usericon {
+    margin-right: 1rem;
+    border-radius: 1rem;
+}
+
+.markdownanswer h1,
+.markdownanswer h2,
+.markdownanswer h3 {
+    font-size: inherit;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.cloud {
+    width: 400px;
+    height: calc(100vh - 260px);
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

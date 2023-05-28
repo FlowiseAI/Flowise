@@ -39,6 +39,12 @@ class ChromaUpsert_VectorStores implements INode {
                 label: 'Collection Name',
                 name: 'collectionName',
                 type: 'string'
+            },
+            {
+                label: 'Chroma URL',
+                name: 'chromaURL',
+                type: 'string',
+                optional: true
             }
         ]
         this.outputs = [
@@ -59,6 +65,7 @@ class ChromaUpsert_VectorStores implements INode {
         const collectionName = nodeData.inputs?.collectionName as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const chromaURL = nodeData.inputs?.chromaURL as string
         const output = nodeData.outputs?.output as string
 
         const flattenDocs = docs && docs.length ? docs.flat() : []
@@ -67,9 +74,13 @@ class ChromaUpsert_VectorStores implements INode {
             finalDocs.push(new Document(flattenDocs[i]))
         }
 
-        const vectorStore = await Chroma.fromDocuments(finalDocs, embeddings, {
-            collectionName
-        })
+        const obj: {
+            collectionName: string
+            url?: string
+        } = { collectionName }
+        if (chromaURL) obj.url = chromaURL
+
+        const vectorStore = await Chroma.fromDocuments(finalDocs, embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever()

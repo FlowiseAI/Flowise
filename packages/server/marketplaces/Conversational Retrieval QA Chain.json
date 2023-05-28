@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 378,
+            "height": 376,
             "id": "recursiveCharacterTextSplitter_1",
             "position": {
                 "x": 422.81091375202413,
@@ -60,7 +60,7 @@
         },
         {
             "width": 300,
-            "height": 361,
+            "height": 392,
             "id": "textFile_1",
             "position": {
                 "x": 810.6456923854021,
@@ -124,152 +124,7 @@
         },
         {
             "width": 300,
-            "height": 526,
-            "id": "openAI_1",
-            "position": {
-                "x": 1195.6182217299724,
-                "y": -12.958591115085468
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAI_1",
-                "label": "OpenAI",
-                "name": "openAI",
-                "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
-                "category": "LLMs",
-                "description": "Wrapper around OpenAI large language models",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "openAI_1-input-openAIApiKey-password"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
-                            },
-                            {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
-                            },
-                            {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
-                            }
-                        ],
-                        "default": "text-davinci-003",
-                        "optional": true,
-                        "id": "openAI_1-input-modelName-options"
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.7,
-                        "optional": true,
-                        "id": "openAI_1-input-temperature-number"
-                    },
-                    {
-                        "label": "Max Tokens",
-                        "name": "maxTokens",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-maxTokens-number"
-                    },
-                    {
-                        "label": "Top Probability",
-                        "name": "topP",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-topP-number"
-                    },
-                    {
-                        "label": "Best Of",
-                        "name": "bestOf",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-bestOf-number"
-                    },
-                    {
-                        "label": "Frequency Penalty",
-                        "name": "frequencyPenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-frequencyPenalty-number"
-                    },
-                    {
-                        "label": "Presence Penalty",
-                        "name": "presencePenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-presencePenalty-number"
-                    },
-                    {
-                        "label": "Batch Size",
-                        "name": "batchSize",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-batchSize-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-timeout-number"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "text-davinci-003",
-                    "temperature": 0.7,
-                    "maxTokens": "",
-                    "topP": "",
-                    "bestOf": "",
-                    "frequencyPenalty": "",
-                    "presencePenalty": "",
-                    "batchSize": "",
-                    "timeout": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-                        "name": "openAI",
-                        "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 1195.6182217299724,
-                "y": -12.958591115085468
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 331,
+            "height": 330,
             "id": "openAIEmbeddings_1",
             "position": {
                 "x": 817.2208258595176,
@@ -342,7 +197,7 @@
         },
         {
             "width": 300,
-            "height": 703,
+            "height": 702,
             "id": "pineconeUpsert_1",
             "position": {
                 "x": 1201.3427203075867,
@@ -404,8 +259,8 @@
                     "document": ["{{textFile_1.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_1.data.instance}}",
                     "pineconeEnv": "us-west4-gcp",
-                    "pineconeIndex": "",
-                    "pineconeNamespace": ""
+                    "pineconeIndex": "myindex",
+                    "pineconeNamespace": "mynamespace"
                 },
                 "outputAnchors": [
                     {
@@ -443,43 +298,185 @@
         },
         {
             "width": 300,
-            "height": 281,
-            "id": "conversationalRetrievalQAChain_1",
+            "height": 524,
+            "id": "chatOpenAI_0",
             "position": {
-                "x": 1672.1827283163739,
-                "y": 297.5954567204975
+                "x": 1200.565568471151,
+                "y": -33.648143275380406
             },
             "type": "customNode",
             "data": {
-                "id": "conversationalRetrievalQAChain_1",
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "chatOpenAI_0-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": "0.5",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1200.565568471151,
+                "y": -33.648143275380406
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1627.1855024401737,
+                "y": 394.42287890442145
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-                "inputParams": [],
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
                 "inputAnchors": [
                     {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLLM",
-                        "id": "conversationalRetrievalQAChain_1-input-llm-BaseLLM"
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
                     },
                     {
                         "label": "Vector Store Retriever",
                         "name": "vectorStoreRetriever",
                         "type": "BaseRetriever",
-                        "id": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever"
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
                     }
                 ],
                 "inputs": {
-                    "llm": "{{openAI_1.data.instance}}",
+                    "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{pineconeUpsert_1.data.instance}}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
                         "name": "conversationalRetrievalQAChain",
                         "label": "ConversationalRetrievalQAChain",
                         "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
@@ -488,11 +485,11 @@
                 "outputs": {},
                 "selected": false
             },
-            "positionAbsolute": {
-                "x": 1672.1827283163739,
-                "y": 297.5954567204975
-            },
             "selected": false,
+            "positionAbsolute": {
+                "x": 1627.1855024401737,
+                "y": 394.42287890442145
+            },
             "dragging": false
         }
     ],
@@ -531,12 +528,12 @@
             }
         },
         {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "conversationalRetrievalQAChain_1",
-            "targetHandle": "conversationalRetrievalQAChain_1-input-llm-BaseLLM",
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-llm-BaseLLM",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
@@ -544,10 +541,10 @@
         {
             "source": "pineconeUpsert_1",
             "sourceHandle": "pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-            "target": "conversationalRetrievalQAChain_1",
-            "targetHandle": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "pineconeUpsert_1-pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "id": "pineconeUpsert_1-pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

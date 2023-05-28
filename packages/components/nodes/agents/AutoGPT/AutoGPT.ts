@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseChatModel } from 'langchain/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 import { AutoGPT } from 'langchain/experimental/autogpt'
 import { Tool } from 'langchain/tools'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'
@@ -66,7 +66,8 @@ class AutoGPT_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseChatModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever
-        const tools = nodeData.inputs?.tools as Tool[]
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = tools.flat()
         const aiName = (nodeData.inputs?.aiName as string) || 'AutoGPT'
         const aiRole = (nodeData.inputs?.aiRole as string) || 'Assistant'
         const maxLoop = nodeData.inputs?.maxLoop as string

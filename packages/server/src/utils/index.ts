@@ -540,6 +540,19 @@ export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject
 }
 
 /**
+ * Replace all api keys
+ * @param {ICommonObject[]} content
+ * @returns {Promise<void>}
+ */
+export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void> => {
+    try {
+        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+/**
  * Map MimeType to InputField
  * @param {string} mimeType
  * @returns {Promise<string>}
@@ -596,4 +609,29 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
     }
 
     return configs
+}
+
+/**
+ * Check to see if flow valid for stream
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {INodeData} endingNodeData
+ * @returns {boolean}
+ */
+export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
+    const streamAvailableLLMs = {
+        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic'],
+        LLMs: ['azureOpenAI', 'openAI']
+    }
+
+    let isChatOrLLMsExist = false
+    for (const flowNode of reactFlowNodes) {
+        const data = flowNode.data
+        if (data.category === 'Chat Models' || data.category === 'LLMs') {
+            isChatOrLLMsExist = true
+            const validLLMs = streamAvailableLLMs[data.category]
+            if (!validLLMs.includes(data.name)) return false
+        }
+    }
+
+    return isChatOrLLMsExist && endingNodeData.category === 'Chains'
 }

@@ -60,7 +60,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 524,
             "id": "openAI_1",
             "position": {
                 "x": 1159.184721109528,
@@ -205,7 +205,7 @@
         },
         {
             "width": 300,
-            "height": 329,
+            "height": 330,
             "id": "openAIEmbeddings_1",
             "position": {
                 "x": 749.4044250705479,
@@ -278,61 +278,7 @@
         },
         {
             "width": 300,
-            "height": 279,
-            "id": "conversationalRetrievalQAChain_1",
-            "position": {
-                "x": 1551.758177447552,
-                "y": 367.847388647512
-            },
-            "type": "customNode",
-            "data": {
-                "id": "conversationalRetrievalQAChain_1",
-                "label": "Conversational Retrieval QA Chain",
-                "name": "conversationalRetrievalQAChain",
-                "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "LLM",
-                        "name": "llm",
-                        "type": "BaseLLM",
-                        "id": "conversationalRetrievalQAChain_1-input-llm-BaseLLM"
-                    },
-                    {
-                        "label": "Vector Store Retriever",
-                        "name": "vectorStoreRetriever",
-                        "type": "BaseRetriever",
-                        "id": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever"
-                    }
-                ],
-                "inputs": {
-                    "llm": "{{openAI_1.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "conversationalRetrievalQAChain_1-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
-                        "name": "conversationalRetrievalQAChain",
-                        "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 1551.758177447552,
-                "y": 367.847388647512
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 410,
+            "height": 392,
             "id": "textFile_0",
             "position": {
                 "x": 756.5586098635717,
@@ -397,7 +343,7 @@
         },
         {
             "width": 300,
-            "height": 505,
+            "height": 488,
             "id": "pdfFile_0",
             "position": {
                 "x": 752.0044222860163,
@@ -480,7 +426,7 @@
         },
         {
             "width": 300,
-            "height": 701,
+            "height": 702,
             "id": "pineconeUpsert_0",
             "position": {
                 "x": 1161.8813042660154,
@@ -578,20 +524,74 @@
                 "y": 537.0216614326227
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1570.3859788160953,
+                "y": 423.6687850109136
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_1.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1570.3859788160953,
+                "y": 423.6687850109136
+            },
+            "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "conversationalRetrievalQAChain_1",
-            "targetHandle": "conversationalRetrievalQAChain_1-input-llm-BaseLLM",
-            "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-llm-BaseLLM",
-            "data": {
-                "label": ""
-            }
-        },
         {
             "source": "recursiveCharacterTextSplitter_1",
             "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
@@ -648,12 +648,23 @@
             }
         },
         {
+            "source": "openAI_1",
+            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
             "source": "pineconeUpsert_0",
             "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-            "target": "conversationalRetrievalQAChain_1",
-            "targetHandle": "conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_1-conversationalRetrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

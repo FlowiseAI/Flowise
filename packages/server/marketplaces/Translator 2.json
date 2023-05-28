@@ -1,0 +1,310 @@
+{
+    "description": "Language translation using LLM Chain with a Chat Prompt Template and Chat Model",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 711,
+            "id": "chatPromptTemplate_1",
+            "position": {
+                "x": 441.8516979620723,
+                "y": 636.1108860994266
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_1",
+                "label": "Chat Prompt Template",
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_1-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_1-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_1-input-promptValues-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                    "humanMessagePrompt": "{input}",
+                    "promptValues": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_1-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 441.8516979620723,
+                "y": 636.1108860994266
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 526,
+            "id": "chatOpenAI_1",
+            "position": {
+                "x": 439.5219561593599,
+                "y": 93.61600226758335
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_1",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "chatOpenAI_1-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 439.5219561593599,
+                "y": 93.61600226758335
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 407,
+            "id": "llmChain_1",
+            "position": {
+                "x": 865.7775572410412,
+                "y": 543.9211372857111
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_1.data.instance}}",
+                    "chainName": "Language Translation"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|BaseLangChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | BaseLangChain"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 865.7775572410412,
+                "y": 543.9211372857111
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_1",
+            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatPromptTemplate_1",
+            "sourceHandle": "chatPromptTemplate_1-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_1-chatPromptTemplate_1-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

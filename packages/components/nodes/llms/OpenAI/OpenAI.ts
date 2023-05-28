@@ -121,11 +121,13 @@ class OpenAI_LLMs implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const batchSize = nodeData.inputs?.batchSize as string
         const bestOf = nodeData.inputs?.bestOf as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
             temperature: parseInt(temperature, 10),
             modelName,
-            openAIApiKey
+            openAIApiKey,
+            streaming: streaming ?? true
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

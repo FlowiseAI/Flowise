@@ -1,0 +1,611 @@
+{
+    "description": "Use AutoGPT - Autonomous agent with chain of thoughts for self-guided task completion",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 629,
+            "id": "autoGPT_0",
+            "position": {
+                "x": 1627.8124366169843,
+                "y": 129.76619452400155
+            },
+            "type": "customNode",
+            "data": {
+                "id": "autoGPT_0",
+                "label": "AutoGPT",
+                "name": "autoGPT",
+                "type": "AutoGPT",
+                "baseClasses": ["AutoGPT"],
+                "category": "Agents",
+                "description": "Autonomous agent with chain of thoughts by GPT4",
+                "inputParams": [
+                    {
+                        "label": "AutoGPT Name",
+                        "name": "aiName",
+                        "type": "string",
+                        "placeholder": "Tom",
+                        "optional": true,
+                        "id": "autoGPT_0-input-aiName-string"
+                    },
+                    {
+                        "label": "AutoGPT Role",
+                        "name": "aiRole",
+                        "type": "string",
+                        "placeholder": "Assistant",
+                        "optional": true,
+                        "id": "autoGPT_0-input-aiRole-string"
+                    },
+                    {
+                        "label": "Maximum Loop",
+                        "name": "maxLoop",
+                        "type": "number",
+                        "default": 5,
+                        "optional": true,
+                        "id": "autoGPT_0-input-maxLoop-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "autoGPT_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "autoGPT_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "autoGPT_0-input-vectorStoreRetriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{readFile_0.data.instance}}", "{{writeFile_1.data.instance}}", "{{serpAPI_0.data.instance}}"],
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeExistingIndex_1.data.instance}}",
+                    "aiName": "",
+                    "aiRole": "",
+                    "maxLoop": 5
+                },
+                "outputAnchors": [
+                    {
+                        "id": "autoGPT_0-output-autoGPT-AutoGPT",
+                        "name": "autoGPT",
+                        "label": "AutoGPT",
+                        "type": "AutoGPT"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1627.8124366169843,
+                "y": 129.76619452400155
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 526,
+            "id": "chatOpenAI_1",
+            "position": {
+                "x": 168.57515834535457,
+                "y": -90.74139976987627
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_1",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "chatOpenAI_1-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0314",
+                                "name": "gpt-4-0314"
+                            },
+                            {
+                                "label": "gpt-4-32k-0314",
+                                "name": "gpt-4-32k-0314"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0301",
+                                "name": "gpt-3.5-turbo-0301"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 168.57515834535457,
+                "y": -90.74139976987627
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "writeFile_1",
+            "position": {
+                "x": 546.3440710182241,
+                "y": 55.28691941459434
+            },
+            "type": "customNode",
+            "data": {
+                "id": "writeFile_1",
+                "label": "Write File",
+                "name": "writeFile",
+                "type": "WriteFile",
+                "baseClasses": ["WriteFile", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Write file to disk",
+                "inputParams": [
+                    {
+                        "label": "Base Path",
+                        "name": "basePath",
+                        "placeholder": "C:\\Users\\User\\Desktop",
+                        "type": "string",
+                        "optional": true,
+                        "id": "writeFile_1-input-basePath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "basePath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "writeFile_1-output-writeFile-WriteFile|Tool|StructuredTool|BaseLangChain",
+                        "name": "writeFile",
+                        "label": "WriteFile",
+                        "type": "WriteFile | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 546.3440710182241,
+                "y": 55.28691941459434
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "readFile_0",
+            "position": {
+                "x": 881.2568465391292,
+                "y": -112.9631005153393
+            },
+            "type": "customNode",
+            "data": {
+                "id": "readFile_0",
+                "label": "Read File",
+                "name": "readFile",
+                "type": "ReadFile",
+                "baseClasses": ["ReadFile", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Read file from disk",
+                "inputParams": [
+                    {
+                        "label": "Base Path",
+                        "name": "basePath",
+                        "placeholder": "C:\\Users\\User\\Desktop",
+                        "type": "string",
+                        "optional": true,
+                        "id": "readFile_0-input-basePath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "basePath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "readFile_0-output-readFile-ReadFile|Tool|StructuredTool|BaseLangChain",
+                        "name": "readFile",
+                        "label": "ReadFile",
+                        "type": "ReadFile | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 881.2568465391292,
+                "y": -112.9631005153393
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "serpAPI_0",
+            "position": {
+                "x": 1244.740380161344,
+                "y": -193.9135818023827
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serpAPI_0",
+                "label": "Serp API",
+                "name": "serpAPI",
+                "type": "SerpAPI",
+                "baseClasses": ["SerpAPI", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Wrapper around SerpAPI - a real-time API to access Google search results",
+                "inputParams": [
+                    {
+                        "label": "Serp Api Key",
+                        "name": "apiKey",
+                        "type": "password",
+                        "id": "serpAPI_0-input-apiKey-password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
+                        "name": "serpAPI",
+                        "label": "SerpAPI",
+                        "type": "SerpAPI | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1244.740380161344,
+                "y": -193.9135818023827
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 331,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 530.4714276286077,
+                "y": 487.0228196121594
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "OpenAI Api Key",
+                        "name": "openAIApiKey",
+                        "type": "password",
+                        "id": "openAIEmbeddings_0-input-openAIApiKey-password"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 530.4714276286077,
+                "y": 487.0228196121594
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 652,
+            "id": "pineconeExistingIndex_1",
+            "position": {
+                "x": 943.1601557586332,
+                "y": 404.9622062733608
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeExistingIndex_1",
+                "label": "Pinecone Load Existing Index",
+                "name": "pineconeExistingIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Pinecone Api Key",
+                        "name": "pineconeApiKey",
+                        "type": "password",
+                        "id": "pineconeExistingIndex_1-input-pineconeApiKey-password"
+                    },
+                    {
+                        "label": "Pinecone Environment",
+                        "name": "pineconeEnv",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_1-input-pineconeEnv-string"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_1-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "optional": true,
+                        "id": "pineconeExistingIndex_1-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeExistingIndex_1-input-pineconeMetadataFilter-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeExistingIndex_1-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeEnv": "us-west4-gcp",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 943.1601557586332,
+                "y": 404.9622062733608
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "pineconeExistingIndex_1",
+            "sourceHandle": "pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-autoGPT_0-autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeExistingIndex_1",
+            "targetHandle": "pineconeExistingIndex_1-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_1-pineconeExistingIndex_1-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_1",
+            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-autoGPT_0-autoGPT_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "writeFile_1",
+            "sourceHandle": "writeFile_1-output-writeFile-WriteFile|Tool|StructuredTool|BaseLangChain",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "writeFile_1-writeFile_1-output-writeFile-WriteFile|Tool|StructuredTool|BaseLangChain-autoGPT_0-autoGPT_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "readFile_0",
+            "sourceHandle": "readFile_0-output-readFile-ReadFile|Tool|StructuredTool|BaseLangChain",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "readFile_0-readFile_0-output-readFile-ReadFile|Tool|StructuredTool|BaseLangChain-autoGPT_0-autoGPT_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serpAPI_0",
+            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-autoGPT_0-autoGPT_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

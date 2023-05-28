@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 
@@ -62,10 +62,10 @@ class LLMChain_Chains implements INode {
         const promptValues = prompt.promptValues as ICommonObject
 
         if (output === this.name) {
-            const chain = new LLMChain({ llm: model, prompt })
+            const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             return chain
         } else if (output === 'outputPrediction') {
-            const chain = new LLMChain({ llm: model, prompt })
+            const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
             const res = await runPrediction(inputVariables, chain, input, promptValues)
             // eslint-disable-next-line no-console
@@ -76,12 +76,14 @@ class LLMChain_Chains implements INode {
         }
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
         const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
 
-        const res = await runPrediction(inputVariables, chain, input, promptValues)
+        const res = options.socketIO
+            ? await runPrediction(inputVariables, chain, input, promptValues, true, options.socketIO, options.socketIOClientId)
+            : await runPrediction(inputVariables, chain, input, promptValues)
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
@@ -90,10 +92,24 @@ class LLMChain_Chains implements INode {
     }
 }
 
-const runPrediction = async (inputVariables: string[], chain: LLMChain, input: string, promptValues: ICommonObject) => {
+const runPrediction = async (
+    inputVariables: string[],
+    chain: LLMChain,
+    input: string,
+    promptValues: ICommonObject,
+    isStreaming?: boolean,
+    socketIO?: any,
+    socketIOClientId = ''
+) => {
     if (inputVariables.length === 1) {
-        const res = await chain.run(input)
-        return res
+        if (isStreaming) {
+            const handler = new CustomChainHandler(socketIO, socketIOClientId)
+            const res = await chain.run(input, [handler])
+            return res
+        } else {
+            const res = await chain.run(input)
+            return res
+        }
     } else if (inputVariables.length > 1) {
         let seen: string[] = []
 
@@ -109,8 +125,14 @@ const runPrediction = async (inputVariables: string[], chain: LLMChain, input: s
             const options = {
                 ...promptValues
             }
-            const res = await chain.call(options)
-            return res?.text
+            if (isStreaming) {
+                const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                const res = await chain.call(options, [handler])
+                return res?.text
+            } else {
+                const res = await chain.call(options)
+                return res?.text
+            }
         } else if (seen.length === 1) {
             // If one inputVariable is not specify, use input (user's question) as value
             const lastValue = seen.pop()
@@ -119,14 +141,26 @@ const runPrediction = async (inputVariables: string[], chain: LLMChain, input: s
                 ...promptValues,
                 [lastValue]: input
             }
-            const res = await chain.call(options)
-            return res?.text
+            if (isStreaming) {
+                const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                const res = await chain.call(options, [handler])
+                return res?.text
+            } else {
+                const res = await chain.call(options)
+                return res?.text
+            }
         } else {
             throw new Error(`Please provide Prompt Values for: ${seen.join(', ')}`)
         }
     } else {
-        const res = await chain.run(input)
-        return res
+        if (isStreaming) {
+            const handler = new CustomChainHandler(socketIO, socketIOClientId)
+            const res = await chain.run(input, [handler])
+            return res
+        } else {
+            const res = await chain.run(input)
+            return res
+        }
     }
 }
 

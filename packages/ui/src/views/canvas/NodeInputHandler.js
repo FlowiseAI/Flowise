@@ -17,6 +17,7 @@ import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -123,6 +124,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                             <Typography>
                                 {inputParam.label}
                                 {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
                             {inputParam.type === 'string' && inputParam.rows && (

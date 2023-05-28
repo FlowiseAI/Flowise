@@ -134,7 +134,16 @@ const CanvasNode = ({ data }) => {
                         <NodeInputHandler key={index} inputParam={inputParam} data={data} />
                     ))}
                     {data.inputParams.find((param) => param.additionalParams) && (
-                        <div style={{ textAlign: 'center' }}>
+                        <div
+                            style={{
+                                textAlign: 'center',
+                                marginTop:
+                                    data.inputParams.filter((param) => param.additionalParams).length ===
+                                    data.inputParams.length + data.inputAnchors.length
+                                        ? 20
+                                        : 0
+                            }}
+                        >
                             <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
                                 Additional Parameters
                             </Button>

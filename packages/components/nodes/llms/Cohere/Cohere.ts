@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { Cohere, CohereInput } from 'langchain/llms/cohere'
+import { Cohere, CohereInput } from './core'
 
 class Cohere_LLMs implements INode {
     label: string

@@ -1,9 +1,9 @@
 {
-    "description": "Use the agent to choose between multiple different vector databases",
+    "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
     "nodes": [
         {
             "width": 300,
-            "height": 331,
+            "height": 330,
             "id": "openAIEmbeddings_2",
             "position": {
                 "x": 155.07832615625986,
@@ -76,7 +76,7 @@
         },
         {
             "width": 300,
-            "height": 356,
+            "height": 355,
             "id": "chromaExistingIndex_1",
             "position": {
                 "x": 522.8177328694987,
@@ -147,7 +147,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_3",
             "position": {
                 "x": 512.7434966474709,
@@ -292,7 +292,7 @@
         },
         {
             "width": 300,
-            "height": 281,
+            "height": 280,
             "id": "vectorDBQAChain_2",
             "position": {
                 "x": 880.7795222381183,
@@ -346,7 +346,7 @@
         },
         {
             "width": 300,
-            "height": 603,
+            "height": 602,
             "id": "chainTool_2",
             "position": {
                 "x": 1251.240972921597,
@@ -457,67 +457,7 @@
         },
         {
             "width": 300,
-            "height": 281,
-            "id": "mrklAgentLLM_1",
-            "position": {
-                "x": 2058.9822318317824,
-                "y": -255.95459825821794
-            },
-            "type": "customNode",
-            "data": {
-                "id": "mrklAgentLLM_1",
-                "label": "MRKL Agent for LLMs",
-                "name": "mrklAgentLLM",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
-                "category": "Agents",
-                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "mrklAgentLLM_1-input-tools-Tool"
-                    },
-                    {
-                        "label": "LLM Model",
-                        "name": "model",
-                        "type": "BaseLLM",
-                        "id": "mrklAgentLLM_1-input-model-BaseLLM"
-                    }
-                ],
-                "inputs": {
-                    "tools": [
-                        "{{calculator_1.data.instance}}",
-                        "{{serpAPI_0.data.instance}}",
-                        "{{chainTool_2.data.instance}}",
-                        "{{chainTool_3.data.instance}}"
-                    ],
-                    "model": "{{openAI_5.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "mrklAgentLLM_1-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
-                        "name": "mrklAgentLLM",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 2058.9822318317824,
-                "y": -255.95459825821794
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 279,
+            "height": 278,
             "id": "serpAPI_0",
             "position": {
                 "x": 1654.5273488033688,
@@ -562,7 +502,7 @@
         },
         {
             "width": 300,
-            "height": 331,
+            "height": 330,
             "id": "openAIEmbeddings_3",
             "position": {
                 "x": 163.902196956619,
@@ -635,7 +575,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_4",
             "position": {
                 "x": 529.8870809493459,
@@ -780,7 +720,7 @@
         },
         {
             "width": 300,
-            "height": 652,
+            "height": 703,
             "id": "pineconeExistingIndex_1",
             "position": {
                 "x": 539.4840212380209,
@@ -881,7 +821,7 @@
         },
         {
             "width": 300,
-            "height": 281,
+            "height": 280,
             "id": "vectorDBQAChain_3",
             "position": {
                 "x": 896.3238465010572,
@@ -935,7 +875,7 @@
         },
         {
             "width": 300,
-            "height": 603,
+            "height": 602,
             "id": "chainTool_3",
             "position": {
                 "x": 1260.8044270644157,
@@ -1008,7 +948,7 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "openAI_5",
             "position": {
                 "x": 1683.95439713088,
@@ -1150,6 +1090,66 @@
             },
             "selected": false,
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentLLM_0",
+            "position": {
+                "x": 2061.891333395338,
+                "y": -140.0694021759809
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_0",
+                "label": "MRKL Agent for LLMs",
+                "name": "mrklAgentLLM",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentLLM_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": [
+                        "{{serpAPI_0.data.instance}}",
+                        "{{calculator_1.data.instance}}",
+                        "{{chainTool_2.data.instance}}",
+                        "{{chainTool_3.data.instance}}"
+                    ],
+                    "model": "{{openAI_5.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
+                        "name": "mrklAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2061.891333395338,
+                "y": -140.0694021759809
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -1198,39 +1198,6 @@
             }
         },
         {
-            "source": "calculator_1",
-            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "serpAPI_0",
-            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chainTool_2",
-            "sourceHandle": "chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "chainTool_2-chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "openAI_4",
             "sourceHandle": "openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
             "target": "vectorDBQAChain_3",
@@ -1264,12 +1231,56 @@
             }
         },
         {
+            "source": "pineconeExistingIndex_1",
+            "sourceHandle": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
+            "target": "vectorDBQAChain_3",
+            "targetHandle": "vectorDBQAChain_3-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore-vectorDBQAChain_3-vectorDBQAChain_3-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serpAPI_0",
+            "sourceHandle": "serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "calculator_1",
+            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chainTool_2",
+            "sourceHandle": "chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "chainTool_2-chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
             "source": "chainTool_3",
             "sourceHandle": "chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-tools-Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "chainTool_3-chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-tools-Tool",
+            "id": "chainTool_3-chainTool_3-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -1277,21 +1288,10 @@
         {
             "source": "openAI_5",
             "sourceHandle": "openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "mrklAgentLLM_1",
-            "targetHandle": "mrklAgentLLM_1-input-model-BaseLLM",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_5-openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_1-mrklAgentLLM_1-input-model-BaseLLM",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "pineconeExistingIndex_1",
-            "sourceHandle": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
-            "target": "vectorDBQAChain_3",
-            "targetHandle": "vectorDBQAChain_3-input-vectorStore-VectorStore",
-            "type": "buttonedge",
-            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore-vectorDBQAChain_3-vectorDBQAChain_3-input-vectorStore-VectorStore",
+            "id": "openAI_5-openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }

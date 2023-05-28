@@ -115,6 +115,7 @@ export interface IncomingInput {
     question: string
     history: IMessage[]
     overrideConfig?: ICommonObject
+    socketIOClientId?: string
 }
 
 export interface IActiveChatflows {
@@ -131,4 +132,22 @@ export interface IOverrideConfig {
     label: string
     name: string
     type: string
+}
+
+export interface IDatabaseExport {
+    chatmessages: IChatMessage[]
+    chatflows: IChatFlow[]
+    apikeys: ICommonObject[]
+}
+
+export interface IRunChatflowMessageValue {
+    chatflow: IChatFlow
+    incomingInput: IncomingInput
+    componentNodes: IComponentNodes
+    endingNodeData?: INodeData
+}
+
+export interface IChildProcessMessage {
+    key: string
+    value?: any
 }
