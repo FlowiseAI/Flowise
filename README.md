@@ -134,6 +134,10 @@ FLOWISE_PASSWORD=1234
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
+### [AWS](https://docs.flowiseai.com/deployment/aws)
+
+### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
+
 ## 💻 Cloud Hosted
 
 Coming soon
