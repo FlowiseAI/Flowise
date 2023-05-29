@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { NotionDBLoader } from 'langchain/document_loaders/web/notiondb'
+import { NotionDBLoader, NotionDBLoaderParams } from 'langchain/document_loaders/web/notiondb'
 
 class NotionDB_DocumentLoaders implements INode {
     label: string
@@ -37,7 +37,7 @@ class NotionDB_DocumentLoaders implements INode {
             {
                 label: 'Notion Integration Token',
                 name: 'notionIntegrationToken',
-                type: 'string',
+                type: 'password',
                 description:
                     'You can find integration token <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">here</a>'
             },
@@ -64,13 +64,14 @@ class NotionDB_DocumentLoaders implements INode {
         const pageSizeLimit = nodeData.inputs?.pageSizeLimit as string
         const metadata = nodeData.inputs?.metadata
 
-        const loader = new NotionDBLoader({
+        const obj: NotionDBLoaderParams = {
             pageSizeLimit: pageSizeLimit ? parseInt(pageSizeLimit, 10) : 10,
             databaseId,
             notionIntegrationToken
-        })
-        let docs = []
+        }
+        const loader = new NotionDBLoader(obj)
 
+        let docs = []
         if (textSplitter) {
             docs = await loader.loadAndSplit(textSplitter)
         } else {
