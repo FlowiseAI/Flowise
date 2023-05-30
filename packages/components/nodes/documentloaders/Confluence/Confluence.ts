@@ -1,6 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-// import { GithubRepoLoader, GithubRepoLoaderParams } from 'langchain/document_loaders/web/github'
 import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from "langchain/document_loaders/web/confluence";
 
 class Confluence_DocumentLoaders implements INode {
@@ -88,7 +87,6 @@ class Confluence_DocumentLoaders implements INode {
 
         const loader = new ConfluencePagesLoader(options)
 
-        console.log('loader')
         let docs = []
 
         if (textSplitter) {
