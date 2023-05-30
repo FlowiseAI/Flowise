@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from "langchain/document_loaders/web/confluence";
+import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence'
 
 class Confluence_DocumentLoaders implements INode {
     label: string
@@ -31,19 +31,19 @@ class Confluence_DocumentLoaders implements INode {
                 label: 'Username',
                 name: 'username',
                 type: 'string',
-                placeholder: '<CONFLUENCE_USERNAME>',
+                placeholder: '<CONFLUENCE_USERNAME>'
             },
             {
                 label: 'Access Token',
                 name: 'accessToken',
                 type: 'password',
-                placeholder: '<CONFLUENCE_ACCESS_TOKEN>',
+                placeholder: '<CONFLUENCE_ACCESS_TOKEN>'
             },
             {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                placeholder: "https://example.atlassian.net/wiki"
+                placeholder: 'https://example.atlassian.net/wiki'
             },
             {
                 label: 'Space Key',
