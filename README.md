@@ -138,6 +138,8 @@ FLOWISE_PASSWORD=1234
 
 ### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
 
+### [GCP](https://docs.flowiseai.com/deployment/gcp)
+
 ## 💻 Cloud Hosted
 
 Coming soon
