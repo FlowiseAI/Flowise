@@ -499,14 +499,17 @@ export class App {
                 return res.json({ code: 0 })
             }
             const token = req.headers.token as string
+            console.log('token', token)
             const robotData = await this.AppDataSource.getRepository(OutgoingRobot).findOneBy({
                 token: token
             })
             const webhook = robotData?.webhook
+            console.log('webhook', webhook)
 
             if (!token || !webhook) {
                 return res.json({ code: 0 })
             }
+            console.log('content', msg.text.content)
 
             // const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
             //     chatflowid: data.conversationId
