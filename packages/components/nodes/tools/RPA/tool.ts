@@ -27,6 +27,8 @@ export class RPATool extends Tool implements SummaryTool {
         this.description =  `${fields.description}. input should be a string.${fields.input}`
         this.name = fields.name
         this.webhook = fields.webhook
+        this.returnDirect = true
+
     }
 
     /** @ignore */
