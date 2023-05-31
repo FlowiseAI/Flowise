@@ -509,7 +509,7 @@ export class App {
             if (!token || !webhook) {
                 return res.json({ code: 0 })
             }
-            console.log('content', msg.text.content)
+            console.log('content', data.text.content)
 
             // const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
             //     chatflowid: data.conversationId
