@@ -51,7 +51,7 @@ export class RPATool extends Tool implements SummaryTool {
                 method: "POST",
                 headers,
                 body,
-            }).then((res) => res.json());
+            }).then((res: any) => res.json());
             return response.msg;
             // const [num, name] = parseInputs(input)
             console.log(typeof input, input)
