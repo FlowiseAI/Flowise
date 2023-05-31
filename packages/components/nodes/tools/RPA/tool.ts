@@ -35,12 +35,11 @@ export class RPATool extends Tool implements SummaryTool {
     async _call(input: string) {
         try {
             const headers = { "Content-Type": "application/json" };
-            const body = JSON.stringify({ input: input });
             // @ts-ignore
             const response = await fetch(this.webhook, {
                 method: "POST",
                 headers,
-                body,
+                body: { input: input },
             }).then((res: any) => res.json());
             return response?.msg;
             // const [num, name] = parseInputs(input)
