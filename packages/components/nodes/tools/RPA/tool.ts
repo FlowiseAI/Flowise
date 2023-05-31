@@ -12,18 +12,6 @@ interface SummaryTool {
     input: string
 }
 
-export const parseInputs = (inputs: string): [string, string] => {
-    const [filePath, task] = inputs.split("|").map((input) => {
-      let t = input.trim();
-      t = t.startsWith('"') ? t.slice(1) : t;
-      t = t.endsWith('"') ? t.slice(0, -1) : t;
-      // it likes to put / at the end of urls, wont matter for task
-      t = t.endsWith("/") ? t.slice(0, -1) : t;
-      return t.trim();
-    });
-  
-    return [filePath, task];
-  };
 
 export class RPATool extends Tool implements SummaryTool {
     name: string
@@ -36,7 +24,7 @@ export class RPATool extends Tool implements SummaryTool {
 
     constructor(fields: SummaryTool) {
         super()
-        this.description =  `'${fields.description}. input should be a string.${fields.input}}`
+        this.description =  `${fields.description}. input should be a string.${fields.input}`
         this.name = fields.name
         this.webhook = fields.webhook
     }
@@ -52,7 +40,7 @@ export class RPATool extends Tool implements SummaryTool {
                 headers,
                 body,
             }).then((res: any) => res.json());
-            return response.msg;
+            return response?.msg;
             // const [num, name] = parseInputs(input)
             console.log(typeof input, input)
             // return `${this.shellFile} ${name} ${num}`
