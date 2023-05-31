@@ -18,7 +18,7 @@ class NotionDB_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'notion.png'
         this.category = 'Document Loaders'
-        this.description = `Load data from Notion Database`
+        this.description = 'Load data from Notion Database ID'
         this.baseClasses = [this.type]
         this.inputs = [
             {
