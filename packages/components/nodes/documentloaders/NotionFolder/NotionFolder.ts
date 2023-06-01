@@ -2,7 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { NotionLoader } from 'langchain/document_loaders/fs/notion'
 
-class Notion_DocumentLoaders implements INode {
+class NotionFolder_DocumentLoaders implements INode {
     label: string
     name: string
     description: string
@@ -18,7 +18,7 @@ class Notion_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'notion.png'
         this.category = 'Document Loaders'
-        this.description = `Load data from Notion folder`
+        this.description = 'Load data from the exported and unzipped Notion folder'
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -78,4 +78,4 @@ class Notion_DocumentLoaders implements INode {
     }
 }
 
-module.exports = { nodeClass: Notion_DocumentLoaders }
+module.exports = { nodeClass: NotionFolder_DocumentLoaders }
