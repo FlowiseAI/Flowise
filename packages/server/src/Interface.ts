@@ -123,6 +123,7 @@ export interface IncomingInput {
     question: string
     history: IMessage[]
     overrideConfig?: ICommonObject
+    socketIOClientId?: string
 }
 
 export interface IActiveChatflows {

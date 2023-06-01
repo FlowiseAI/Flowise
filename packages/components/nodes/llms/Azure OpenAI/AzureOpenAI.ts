@@ -176,6 +176,7 @@ class AzureOpenAI_LLMs implements INode {
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
         const bestOf = nodeData.inputs?.bestOf as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
             temperature: parseInt(temperature, 10),
@@ -183,7 +184,8 @@ class AzureOpenAI_LLMs implements INode {
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
-            azureOpenAIApiVersion
+            azureOpenAIApiVersion,
+            streaming: streaming ?? true
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

@@ -218,6 +218,7 @@ const AddNodes = ({ nodesData, node }) => {
                                                             expanded={categoryExpanded[category] || false}
                                                             onChange={handleAccordionChange(category)}
                                                             key={category}
+                                                            disableGutters
                                                         >
                                                             <AccordionSummary
                                                                 expandIcon={<ExpandMoreIcon />}
