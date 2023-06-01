@@ -206,7 +206,10 @@ export const buildLangchain = async (
         if (!reactFlowNode || reactFlowNode === undefined || nodeIndex < 0) continue
 
         try {
-            const nodeInstanceFilePath = componentNodes[reactFlowNode.data.name].filePath as string
+            // const nodeInstanceFilePath = componentNodes[reactFlowNode.data.name].filePath as string
+            const dir = path.join(__dirname, '../..', 'nodes')
+            const nodeInstanceFilePath = path.join(dir, `${reactFlowNode.data.name}.js`)
+            console.log(222, nodeInstanceFilePath)
             const nodeModule = await import(nodeInstanceFilePath)
             const newNodeInstance = new nodeModule.nodeClass()
 

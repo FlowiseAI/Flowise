@@ -261,7 +261,7 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                                 objectFit: 'contain'
                                                                                             }}
                                                                                             alt={node.name}
-                                                                                            src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                            src={`${node.icon}`}
                                                                                         />
                                                                                     </div>
                                                                                 </ListItemAvatar>

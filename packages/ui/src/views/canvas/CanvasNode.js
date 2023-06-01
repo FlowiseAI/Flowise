@@ -74,7 +74,7 @@ const CanvasNode = ({ data }) => {
                             >
                                 <img
                                     style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                    src={`${baseURL}/api/v1/node-icon/${data.name}`}
+                                    src={`${data.icon}`}
                                     alt='Notification'
                                 />
                             </div>

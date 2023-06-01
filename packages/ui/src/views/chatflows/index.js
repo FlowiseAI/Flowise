@@ -87,7 +87,7 @@ const Chatflows = () => {
                     const nodes = flowData.nodes || []
                     images[chatflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                        const imageSrc = `${nodes[j].data.icon}`
                         if (!images[chatflows[i].id].includes(imageSrc)) {
                             images[chatflows[i].id].push(imageSrc)
                         }

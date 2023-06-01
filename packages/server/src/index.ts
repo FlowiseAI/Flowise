@@ -38,7 +38,7 @@ import {
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
-import { NodesPool } from './NodesPool'
+import { NodesPool } from './NodesDbPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { OutgoingRobot } from './entity/OutgoingRobot'
 import { ChatMessage } from './entity/ChatMessage'
@@ -63,15 +63,17 @@ export class App {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                console.info('📦[server]: Data Source has been initialized!')
+                console.info('📦[server]: Data Source start initialize!')
 
                 // Initialize pools
                 this.nodesPool = new NodesPool()
-                await this.nodesPool.initialize()
+                await this.nodesPool.initialize(this.AppDataSource)
                 this.chatflowPool = new ChatflowPool()
 
                 // Initialize API keys
                 await getAPIKeys()
+                console.info('📦[server]: Data Source has been initialized!')
+
             })
             .catch((err) => {
                 console.error('❌[server]: Error during Data Source initialization:', err)
@@ -891,7 +893,10 @@ export class App {
                     this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
                 }
 
-                const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+                // const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+                const dir = path.join(__dirname, '..', 'nodes')
+                const nodeInstanceFilePath = path.join(dir, `${nodeToExecuteData.name}.js`)
+
                 const nodeModule = await import(nodeInstanceFilePath)
                 const nodeInstance = new nodeModule.nodeClass()
 
@@ -906,6 +911,7 @@ export class App {
                 return res.json(result)
             }
         } catch (e: any) {
+            console.log(e)
             return res.status(500).send(e.message)
         }
     }

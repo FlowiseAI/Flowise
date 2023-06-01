@@ -210,7 +210,7 @@ const EditPromptValuesDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                                                             objectFit: 'contain'
                                                                         }}
                                                                         alt={node.data.name}
-                                                                        src={`${baseURL}/api/v1/node-icon/${node.data.name}`}
+                                                                        src={`${node.data.icon}`}
                                                                     />
                                                                 </div>
                                                             </ListItemAvatar>
