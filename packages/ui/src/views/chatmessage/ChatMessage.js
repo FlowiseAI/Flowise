@@ -9,11 +9,7 @@ import remarkMath from 'remark-math'
 
 import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-<<<<<<< HEAD
 import { IconMessage, IconX, IconSend, IconEraser, IconFile } from '@tabler/icons'
-=======
-import { IconSend } from '@tabler/icons'
->>>>>>> 5af2c3ba7b7671657e01390b411b243bba4f36de
 
 // project import
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
@@ -28,13 +24,8 @@ import predictionApi from 'api/prediction'
 // Hooks
 import useApi from 'hooks/useApi'
 
-<<<<<<< HEAD
-import { maxScroll } from 'store/constant'
-import { add } from 'lodash'
-=======
 // Const
 import { baseURL, maxScroll } from 'store/constant'
->>>>>>> 5af2c3ba7b7671657e01390b411b243bba4f36de
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -375,122 +366,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                         )}
                                     </IconButton>
                                 </InputAdornment>
-                            }
-<<<<<<< HEAD
-                        }
-                    ]
-                }}
-                sx={{ zIndex: 1000 }}
-            >
-                {({ TransitionProps }) => (
-                    <Transitions in={open} {...TransitionProps}>
-                        <Paper>
-                            <ClickAwayListener onClickAway={handleClose}>
-                                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    <div className='cloud'>
-                                        <div ref={ps} className='messagelist'>
-                                            {messages.map((message, index) => {
-                                                return (
-                                                    // The latest message sent by the user will be animated while waiting for a response
-                                                    <Box
-                                                        sx={{
-                                                            background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
-                                                        }}
-                                                        key={index}
-                                                        style={{ display: 'flex', alignItems: 'center' }}
-                                                        className={
-                                                            message.type === 'userMessage' && loading && index === messages.length - 1
-                                                                ? customization.isDarkMode
-                                                                    ? 'usermessagewaiting-dark'
-                                                                    : 'usermessagewaiting-light'
-                                                                : message.type === 'usermessagewaiting'
-                                                                ? 'apimessage'
-                                                                : 'usermessage'
-                                                        }
-                                                    >
-                                                        {/* Display the correct icon depending on the message type */}
-                                                        {message.type === 'apiMessage' ? (
-                                                            <img
-                                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                                                                alt='AI'
-                                                                width='30'
-                                                                height='30'
-                                                                className='boticon'
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                                                alt='Me'
-                                                                width='30'
-                                                                height='30'
-                                                                className='usericon'
-                                                            />
-                                                        )}
-                                                        <div className='markdownanswer'>
-                                                            {/* Messages are being rendered in Markdown format */}
-                                                            <ReactMarkdown linkTarget={'_blank'}>{message.message}</ReactMarkdown>
-                                                        </div>
-                                                    </Box>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                    <Divider />
-                                    <div className='center'>
-                                        <div style={{ width: '100%' }}>
-                                            <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                                                <input id='file' type='file' style={{ display: 'none' }} />
-                                                <OutlinedInput
-                                                    inputRef={inputRef}
-                                                    // eslint-disable-next-line
-                                                    autoFocus
-                                                    sx={{ width: '100%' }}
-                                                    disabled={loading || !chatflowid}
-                                                    onKeyDown={handleEnter}
-                                                    id='userInput'
-                                                    name='userInput'
-                                                    placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
-                                                    value={userInput}
-                                                    onChange={(e) => setUserInput(e.target.value)}
-                                                    endAdornment={
-                                                        <InputAdornment position='end'>
-                                                            <IconFile onClick={handleUploadFile} />
-                                                            <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
-                                                                {loading ? (
-                                                                    <div>
-                                                                        <CircularProgress color='inherit' size={20} />
-                                                                    </div>
-                                                                ) : (
-                                                                    // Send icon SVG in input field
-                                                                    <IconSend
-                                                                        color={
-                                                                            loading || !chatflowid
-                                                                                ? '#9e9e9e'
-                                                                                : customization.isDarkMode
-                                                                                ? 'white'
-                                                                                : '#1e88e5'
-                                                                        }
-                                                                    />
-                                                                )}
-                                                            </IconButton>
-                                                        </InputAdornment>
-                                                    }
-                                                />
-                                            </form>
-                                        </div>
-                                    </div>
-                                </MainCard>
-                            </ClickAwayListener>
-                        </Paper>
-                    </Transitions>
-                )}
-            </Popper>
-=======
-                        />
+                            } />
                     </form>
                 </div>
             </div>
->>>>>>> 5af2c3ba7b7671657e01390b411b243bba4f36de
         </>
     )
 }

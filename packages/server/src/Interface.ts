@@ -16,6 +16,20 @@ export interface IChatFlow {
     robot?: string
 }
 
+
+export interface INodeColumn {
+    id: string
+    baseClasses: string;
+    inputs: string;
+    outputs: string;
+    label: string;
+    name: string;
+    type: string;
+    icon: string;
+    category: string;
+    description?: string;
+    filePath?: string;
+}
 export interface IRobot {
     id: string
     chatflowid: string

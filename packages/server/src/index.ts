@@ -67,7 +67,6 @@ export class App {
                 // Initialize pools
                 this.nodesPool = new NodesPool()
                 await this.nodesPool.initialize()
-
                 this.chatflowPool = new ChatflowPool()
 
                 // Initialize API keys
