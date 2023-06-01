@@ -133,6 +133,8 @@ export class App {
 
             const chatflow = this.AppDataSource.getRepository(Node).create(node)
             const results = await this.AppDataSource.getRepository(Node).save(chatflow)
+            // 动态增加node，需要重新构造nodepool
+            await this.nodesPool.initialize(this.AppDataSource)
 
             return res.json(results)
         })

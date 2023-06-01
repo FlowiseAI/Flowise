@@ -15,31 +15,34 @@ export class NodesPool {
 
         return Promise.all(
             nodes.map(async (node) => {
-                    // 先下载到nodes目录下
-                    const dir = path.join(__dirname, '..', 'nodes')
-                    // 目录不存在则创建
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir)
-                    }
-                    const filePath = path.join(dir, `${node.name}.js`)
+                // 判断是否存在
+                if (this.componentNodes[node.name]) {
+                    return
+                }
+                // 先下载到nodes目录下
+                const dir = path.join(__dirname, '..', 'nodes')
+                // 目录不存在则创建
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir)
+                }
+                const filePath = path.join(dir, `${node.name}.js`)
 
-                    // 先判断代码是否存在
-                    if (!fs.existsSync(filePath)) {
-                          // 从url下载代码
-                        const res = await fetch(node.filePath)
-                        const body = await res.text()
-                        fs.writeFileSync(filePath, body)
-                    }
-                  
-                    try {
-                        const nodeModule = await import(filePath)
-                        const newNodeInstance = new nodeModule.nodeClass()
+                // 先判断代码是否存在
+                if (!fs.existsSync(filePath)) {
+                    // 从url下载代码
+                    const res = await fetch(node.filePath)
+                    const body = await res.text()
+                    fs.writeFileSync(filePath, body)
+                }
 
-                        this.componentNodes[newNodeInstance.name] = newNodeInstance
-                      
-                    } catch (e) {
-                        console.error(e);
-                    }
+                try {
+                    const nodeModule = await import(filePath)
+                    const newNodeInstance = new nodeModule.nodeClass()
+
+                    this.componentNodes[newNodeInstance.name] = newNodeInstance
+                } catch (e) {
+                    console.error(e)
+                }
             })
         )
     }
