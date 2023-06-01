@@ -44,6 +44,7 @@
         "@types/gulp": "4.0.9",
         "@types/node-fetch": "2.6.2",
         "@types/ws": "^8.5.3",
+        "gulp-esbuild": "^0.11.1",
         "gulp": "^4.0.2",
         "typescript": "^4.8.4"
     }

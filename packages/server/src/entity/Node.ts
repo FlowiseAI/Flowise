@@ -31,9 +31,9 @@ export class Node implements INodeColumn {
     @Column({ nullable: true })
     icon: string
 
-    @Column()
+    @Column({ nullable: true })
     inputs: string
 
-    @Column()
+    @Column({ nullable: true })
     outputs: string
 }

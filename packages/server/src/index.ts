@@ -46,6 +46,7 @@ import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject } from 'flowise-components'
 import { IMessage, chatQuery, downloadPdf, getDownloadFileUrl, sendCard, sendMsg, sendOutgoingMsg } from './DingEvent'
 import { fork } from 'child_process'
+import { Node } from './entity/Node'
 
 export class App {
     cacheMap: Map<string, any> = new Map()
@@ -106,13 +107,32 @@ export class App {
         // ----------------------------------------
 
         // Get all component nodes
-        this.app.get('/api/v1/nodes', (req: Request, res: Response) => {
-            const returnData = []
-            for (const nodeName in this.nodesPool.componentNodes) {
-                const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
-                returnData.push(clonedNode)
-            }
+        this.app.get('/api/v1/nodes', async (req: Request, res: Response) => {
+            // const returnData = []
+            // for (const nodeName in this.nodesPool.componentNodes) {
+            //     const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
+            //     returnData.push(clonedNode)
+            // }
+            const nodes = await this.AppDataSource.getRepository(Node).find()
+            const returnData = nodes.map((item) => ({
+                ...item,
+                inputs: JSON.parse(item.inputs),
+                outputs: item.outputs ? JSON.parse(item.outputs): undefined,
+                baseClasses: JSON.parse(item.baseClasses)
+            }))
             return res.json(returnData)
+        })
+
+        // 写入node数据库
+        this.app.post('/api/v1/node', async (req: Request, res: Response) => {
+            const body = req.body
+            const node = new Node()
+            Object.assign(node, body)
+
+            const chatflow = this.AppDataSource.getRepository(Node).create(node)
+            const results = await this.AppDataSource.getRepository(Node).save(chatflow)
+
+            return res.json(results)
         })
 
         // Get specific component node via name
