@@ -8,6 +8,7 @@ import Routes from 'routes'
 
 // defaultTheme
 import themes from 'themes'
+import './App.css'
 
 // project imports
 import NavigationScroll from 'layout/NavigationScroll'
