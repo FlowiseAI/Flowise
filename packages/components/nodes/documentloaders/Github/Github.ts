@@ -41,6 +41,12 @@ class Github_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Recursive',
+                name: 'recursive',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
@@ -59,41 +65,37 @@ class Github_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const repoLink = nodeData.inputs?.repoLink as string
         const branch = nodeData.inputs?.branch as string
+        const recursive = nodeData.inputs?.recursive as boolean
         const accessToken = nodeData.inputs?.accessToken as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
 
         const options: GithubRepoLoaderParams = {
             branch,
-            recursive: false,
-            unknown: 'warn'
+            recursive,
+            unknown: 'warn',
         }
 
         if (accessToken) options.accessToken = accessToken
 
+        console.log('🤖[GithubRepoLoader]: Initializing!');
+
         const loader = new GithubRepoLoader(repoLink, options)
-        let docs = []
+        const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
 
-        if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
-        } else {
-            docs = await loader.load()
-        }
-
+        console.log('🤖[GithubRepoLoader]: Documents Loaded!');
+        
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of docs) {
-                const newdoc = {
+            return docs.map(doc => {
+                return {
                     ...doc,
                     metadata: {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+            })
         }
 
         return docs
