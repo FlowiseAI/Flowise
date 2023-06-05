@@ -129,6 +129,51 @@ const embedCode = (chatflowid) => {
 </script>`
 }
 
+const embedCodeCustomization = (chatflowid) => {
+    return `<script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed@latest/dist/web.js"
+    Chatbot.init({
+        chatflowid: "${chatflowid}",
+        apiHost: "${baseURL}",
+        theme: {
+            button: {
+                backgroundColor: "#3B81F6",
+                right: 20,
+                bottom: 20,
+                size: "medium",
+                iconColor: "white",
+                customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
+            },
+            chatWindow: {
+                welcomeMessage: "Hello! This is custom welcome message",
+                backgroundColor: "#ffffff",
+                height: 700,
+                width: 400,
+                poweredByTextColor: "#303235",
+                botMessage: {
+                backgroundColor: "#f7f8ff",
+                textColor: "#303235",
+                showAvatar: true,
+                avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
+            },
+            userMessage: {
+                backgroundColor: "#3B81F6",
+                textColor: "#ffffff",
+                showAvatar: true,
+                avatarSrc:
+                  "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
+            },
+            textInput: {
+                placeholder: "Type your question",
+                backgroundColor: "#ffffff",
+                textColor: "#303235",
+                sendButtonColor: "#3B81F6",
+            },
+        },
+    })
+</script>`
+}
+
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
@@ -140,6 +185,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
     const [checkboxVal, setCheckbox] = useState(false)
+    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -150,6 +196,10 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         if (newVal) {
             getConfigApi.request(dialogProps.chatflowid)
         }
+    }
+
+    const onCheckBoxEmbedChatChanged = (newVal) => {
+        setEmbedChatCheckbox(newVal)
     }
 
     const onApiKeySelected = (keyValue) => {
@@ -587,6 +637,22 @@ query({
                                     wrapLines
                                 />
                             </>
+                        )}
+                        {value === 0 && (
+                            <CheckboxInput
+                                label='Show Embed Chat Config'
+                                value={embedChatCheckboxVal}
+                                onChange={onCheckBoxEmbedChatChanged}
+                            />
+                        )}
+                        {value === 0 && embedChatCheckboxVal && (
+                            <CopyBlock
+                                theme={atomOneDark}
+                                text={embedCodeCustomization(chatflowApiKeyId)}
+                                language={getLang('Embed')}
+                                showLineNumbers={false}
+                                wrapLines
+                            />
                         )}
                     </TabPanel>
                 ))}
