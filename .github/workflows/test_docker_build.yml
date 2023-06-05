@@ -1,0 +1,22 @@
+name: Test Docker Build
+
+on:
+    push:
+        branches:
+            - master
+
+    pull_request:
+        branches:
+            - "*"
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                platform: [macos-latest, windows-latest, ubuntu-latest]
+        runs-on: ${{ matrix.platform }}
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - run: docker build --no-cache -t flowise .
