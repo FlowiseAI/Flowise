@@ -121,7 +121,7 @@ const getConfigExamplesForCurl = (configData, bodyType) => {
 
 const embedCode = (chatflowid) => {
     return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed@latest/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -131,7 +131,7 @@ const embedCode = (chatflowid) => {
 
 const embedCodeCustomization = (chatflowid) => {
     return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed@latest/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -151,25 +151,25 @@ const embedCodeCustomization = (chatflowid) => {
                 width: 400,
                 poweredByTextColor: "#303235",
                 botMessage: {
-                backgroundColor: "#f7f8ff",
-                textColor: "#303235",
-                showAvatar: true,
-                avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
-            },
-            userMessage: {
-                backgroundColor: "#3B81F6",
-                textColor: "#ffffff",
-                showAvatar: true,
-                avatarSrc:
-                  "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
-            },
-            textInput: {
-                placeholder: "Type your question",
-                backgroundColor: "#ffffff",
-                textColor: "#303235",
-                sendButtonColor: "#3B81F6",
-            },
-        },
+                    backgroundColor: "#f7f8ff",
+                    textColor: "#303235",
+                    showAvatar: true,
+                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
+                },
+                userMessage: {
+                    backgroundColor: "#3B81F6",
+                    textColor: "#ffffff",
+                    showAvatar: true,
+                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
+                },
+                textInput: {
+                    placeholder: "Type your question",
+                    backgroundColor: "#ffffff",
+                    textColor: "#303235",
+                    sendButtonColor: "#3B81F6",
+                }
+            }
+        }
     })
 </script>`
 }
@@ -605,7 +605,18 @@ query({
                         {value === 0 && (
                             <>
                                 <span>
-                                    Paste this anywhere in the <code>{`<body>`}</code> tag of your html file
+                                    Paste this anywhere in the <code>{`<body>`}</code> tag of your html file.
+                                    <p>
+                                        You can also specify a&nbsp;
+                                        <a
+                                            rel='noreferrer'
+                                            target='_blank'
+                                            href='https://www.npmjs.com/package/flowise-embed?activeTab=versions'
+                                        >
+                                            version
+                                        </a>
+                                        :&nbsp;<code>{`https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js`}</code>
+                                    </p>
                                 </span>
                                 <div style={{ height: 10 }}></div>
                             </>
@@ -648,7 +659,7 @@ query({
                         {value === 0 && embedChatCheckboxVal && (
                             <CopyBlock
                                 theme={atomOneDark}
-                                text={embedCodeCustomization(chatflowApiKeyId)}
+                                text={embedCodeCustomization(dialogProps.chatflowid)}
                                 language={getLang('Embed')}
                                 showLineNumbers={false}
                                 wrapLines
