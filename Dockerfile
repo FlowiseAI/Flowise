@@ -9,10 +9,8 @@ RUN apk add --update libc6-compat
 
 WORKDIR /usr/src/packages
 
-# Copy root package.json
-COPY package.json ./
-# Conditonal copy lockfile
-COPY yarn.* ./
+# Copy root package.json and lockfile
+COPY package.json yarn.loc[k] ./
 
 # Copy components package.json
 COPY packages/components/package.json ./packages/components/package.json
