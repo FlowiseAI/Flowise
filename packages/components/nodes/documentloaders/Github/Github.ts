@@ -81,6 +81,7 @@ class Github_DocumentLoaders implements INode {
         console.log('🤖[GithubRepoLoader]: Initializing!');
 
         const loader = new GithubRepoLoader(repoLink, options)
+        console.log('🤖[GithubRepoLoader]: Loading documents from ' + repoLink);
         const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
 
         console.log('🤖[GithubRepoLoader]: Documents Loaded!');
