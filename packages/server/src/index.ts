@@ -34,7 +34,8 @@ import {
     findAvailableConfigs,
     isSameOverrideConfig,
     replaceAllAPIKeys,
-    isFlowValidForStream
+    isFlowValidForStream,
+    isVectorStoreFaiss
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -634,6 +635,7 @@ export class App {
                 const nodeModule = await import(nodeInstanceFilePath)
                 const nodeInstance = new nodeModule.nodeClass()
 
+                isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
