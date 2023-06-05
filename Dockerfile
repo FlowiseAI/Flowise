@@ -12,7 +12,7 @@ WORKDIR /usr/src/packages
 # Copy root package.json
 COPY package.json ./
 # Conditonal copy lockfile
-COPY yarn.loc[k] ./
+COPY ./yarn.loc[k] ./
 
 # Copy components package.json
 COPY packages/components/package.json ./packages/components/package.json
