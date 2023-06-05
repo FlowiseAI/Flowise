@@ -12,6 +12,7 @@ on:
 jobs:
     build:
         strategy:
+            fail-fast: false
             matrix:
                 platform: [macos-latest, windows-latest, ubuntu-latest]
         runs-on: ${{ matrix.platform }}
