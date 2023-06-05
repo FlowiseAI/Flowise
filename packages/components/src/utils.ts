@@ -234,3 +234,55 @@ export class CustomChainHandler extends BaseCallbackHandler {
         this.socketIO.to(this.socketIOClientId).emit('end')
     }
 }
+
+export const returnJSONStr = (jsonStr: string): string => {
+    let jsonStrArray = jsonStr.split(':')
+    // jsonStrArray = jsonStrArray.split('"')
+    console.log(`jsonStrArray: ${JSON.stringify(jsonStrArray)} length: ${jsonStrArray.length}`)
+
+    let wholeString = ''
+    for (let i = 0; i < jsonStrArray.length; i++) {
+        // console.log(`element: ${jsonStrArray[i]}`)
+        if (jsonStrArray[i].includes(',') && jsonStrArray[i + 1] !== undefined) {
+            const splitValueAndTitle = jsonStrArray[i].split(',')
+            const value = splitValueAndTitle[0]
+            const newTitle = splitValueAndTitle[1]
+            wholeString += handleEscapeDoubleQuote(value) + ',' + newTitle + ':'
+        } else {
+            wholeString += wholeString === '' ? jsonStrArray[i] + ':' : handleEscapeDoubleQuote(jsonStrArray[i])
+        }
+    }
+    console.log(`wholeString: ${wholeString}`)
+    return wholeString
+}
+
+const handleEscapeDoubleQuote = (value: string): string => {
+    console.log(`value: ${value}`)
+    let newValue = ''
+    if (value.includes('"')) {
+        const valueArray = value.split('"')
+        for (let i = 0; i < valueArray.length; i++) {
+            if ((i + 1) % 2 !== 0) {
+                switch (valueArray[i]) {
+                    case '':
+                        console.log(`nothing`)
+                        newValue += '"'
+                        break
+                    case '}':
+                        console.log(`}`)
+                        newValue += '"}'
+                        break
+                    default:
+                        console.log(`default`)
+                        newValue += '\\"' + valueArray[i] + '\\"'
+                }
+            } else {
+                newValue += valueArray[i]
+            }
+
+            console.log(`valueArray[i]: ${valueArray[i]}`)
+            console.log(`newValue: ${newValue}`)
+        }
+    }
+    return newValue === '' ? value : newValue
+}
