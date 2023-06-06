@@ -1,0 +1,19 @@
+name: Test Docker Build
+
+on:
+    push:
+        branches:
+            - main
+
+    pull_request:
+        branches:
+            - "*"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - run: docker build --no-cache -t flowise .
