@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { VectorDBQAChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { VectorStore } from 'langchain/vectorstores'
@@ -40,17 +40,24 @@ class VectorDBQAChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
 
-        const chain = VectorDBQAChain.fromLLM(model, vectorStore)
+        const chain = VectorDBQAChain.fromLLM(model, vectorStore, { verbose: process.env.DEBUG === 'true' ? true : false })
         return chain
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as VectorDBQAChain
         const obj = {
             query: input
         }
-        const res = await chain.call(obj)
-        return res?.text
+
+        if (options.socketIO && options.socketIOClientId) {
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const res = await chain.call(obj, [handler])
+            return res?.text
+        } else {
+            const res = await chain.call(obj)
+            return res?.text
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.2.6",
+    "version": "1.2.10",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -13,8 +13,7 @@
         "dist",
         "npm-shrinkwrap.json",
         "oclif.manifest.json",
-        "oauth2.html",
-        ".env"
+        "oauth2.html"
     ],
     "oclif": {
         "bin": "flowise",
@@ -57,6 +56,7 @@
         "moment-timezone": "^0.5.34",
         "multer": "^1.4.5-lts.1",
         "reflect-metadata": "^0.1.13",
+        "socket.io": "^4.6.1",
         "sqlite3": "^5.1.6",
         "typeorm": "^0.3.6"
     },

@@ -56,6 +56,14 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 default: '2023-03-15-preview'
             },
             {
+                label: 'Batch Size',
+                name: 'batchSize',
+                type: 'number',
+                default: '1',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
@@ -70,6 +78,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
         const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
         const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
+        const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
 
         const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> = {
@@ -79,6 +88,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             azureOpenAIApiVersion
         }
 
+        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new OpenAIEmbeddings(obj)

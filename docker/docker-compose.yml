@@ -6,6 +6,8 @@ services:
         restart: always
         environment:
             - PORT=${PORT}
+            - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+            - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
         ports:
             - '${PORT}:${PORT}'
         volumes:

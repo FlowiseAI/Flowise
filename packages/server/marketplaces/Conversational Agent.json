@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 526,
+            "height": 524,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 56.646518061018355,
@@ -134,7 +134,7 @@
         },
         {
             "width": 300,
-            "height": 279,
+            "height": 278,
             "id": "serpAPI_1",
             "position": {
                 "x": 436.94138168947336,
@@ -217,7 +217,7 @@
         },
         {
             "width": 300,
-            "height": 378,
+            "height": 376,
             "id": "bufferMemory_1",
             "position": {
                 "x": 573.479796337051,
@@ -273,15 +273,15 @@
         },
         {
             "width": 300,
-            "height": 385,
-            "id": "conversationalAgent_1",
+            "height": 383,
+            "id": "conversationalAgent_0",
             "position": {
-                "x": 1326.6941863827417,
-                "y": 252.6965991008108
+                "x": 1206.1996037716035,
+                "y": 227.39579577603587
             },
             "type": "customNode",
             "data": {
-                "id": "conversationalAgent_1",
+                "id": "conversationalAgent_0",
                 "label": "Conversational Agent",
                 "name": "conversationalAgent",
                 "type": "AgentExecutor",
@@ -296,7 +296,7 @@
                         "rows": 4,
                         "optional": true,
                         "additionalParams": true,
-                        "id": "conversationalAgent_1-input-systemMessage-string"
+                        "id": "conversationalAgent_0-input-systemMessage-string"
                     },
                     {
                         "label": "Human Message",
@@ -305,7 +305,7 @@
                         "rows": 4,
                         "optional": true,
                         "additionalParams": true,
-                        "id": "conversationalAgent_1-input-humanMessage-string"
+                        "id": "conversationalAgent_0-input-humanMessage-string"
                     }
                 ],
                 "inputAnchors": [
@@ -314,19 +314,19 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "conversationalAgent_1-input-tools-Tool"
+                        "id": "conversationalAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Chat Model",
+                        "label": "Language Model",
                         "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "conversationalAgent_1-input-model-BaseChatModel"
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalAgent_0-input-model-BaseLanguageModel"
                     },
                     {
                         "label": "Memory",
                         "name": "memory",
                         "type": "BaseChatMemory",
-                        "id": "conversationalAgent_1-input-memory-BaseChatMemory"
+                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
                     }
                 ],
                 "inputs": {
@@ -338,7 +338,7 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalAgent_1-output-conversationalAgent-AgentExecutor|BaseChain|BaseLangChain",
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|BaseLangChain",
                         "name": "conversationalAgent",
                         "label": "AgentExecutor",
                         "type": "AgentExecutor | BaseChain | BaseLangChain"
@@ -347,11 +347,11 @@
                 "outputs": {},
                 "selected": false
             },
-            "positionAbsolute": {
-                "x": 1326.6941863827417,
-                "y": 252.6965991008108
-            },
             "selected": false,
+            "positionAbsolute": {
+                "x": 1206.1996037716035,
+                "y": 227.39579577603587
+            },
             "dragging": false
         }
     ],
@@ -359,10 +359,10 @@
         {
             "source": "calculator_1",
             "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
-            "target": "conversationalAgent_1",
-            "targetHandle": "conversationalAgent_1-input-tools-Tool",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-conversationalAgent_1-conversationalAgent_1-input-tools-Tool",
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -370,10 +370,10 @@
         {
             "source": "serpAPI_1",
             "sourceHandle": "serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain",
-            "target": "conversationalAgent_1",
-            "targetHandle": "conversationalAgent_1-input-tools-Tool",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serpAPI_1-serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-conversationalAgent_1-conversationalAgent_1-input-tools-Tool",
+            "id": "serpAPI_1-serpAPI_1-output-serpAPI-SerpAPI|Tool|StructuredTool|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -381,10 +381,10 @@
         {
             "source": "chatOpenAI_1",
             "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
-            "target": "conversationalAgent_1",
-            "targetHandle": "conversationalAgent_1-input-model-BaseChatModel",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-conversationalAgent_1-conversationalAgent_1-input-model-BaseChatModel",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
@@ -392,10 +392,10 @@
         {
             "source": "bufferMemory_1",
             "sourceHandle": "bufferMemory_1-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "target": "conversationalAgent_1",
-            "targetHandle": "conversationalAgent_1-input-memory-BaseChatMemory",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "bufferMemory_1-bufferMemory_1-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationalAgent_1-conversationalAgent_1-input-memory-BaseChatMemory",
+            "id": "bufferMemory_1-bufferMemory_1-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationalAgent_0-conversationalAgent_0-input-memory-BaseChatMemory",
             "data": {
                 "label": ""
             }
