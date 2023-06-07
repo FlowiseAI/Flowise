@@ -46,6 +46,13 @@ class OpenAIEmbedding_Embeddings implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -55,6 +62,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         const stripNewLines = nodeData.inputs?.stripNewLines as boolean
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
             openAIApiKey
@@ -64,7 +72,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
-        const model = new OpenAIEmbeddings(obj)
+        const model = new OpenAIEmbeddings(obj, { basePath })
         return model
     }
 }
