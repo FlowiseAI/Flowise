@@ -21,6 +21,7 @@ export interface IChatMessage {
     content: string
     chatflowid: string
     createdDate: Date
+    sourceDocuments: string
 }
 
 export interface IComponentNodes {
