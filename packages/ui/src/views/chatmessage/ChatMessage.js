@@ -364,8 +364,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
                             value={userInput}
                             onChange={onChange}
+                            multiline={true}
                             endAdornment={
-                                <InputAdornment position='end'>
+                                <InputAdornment position='end' sx={{ padding: '15px' }}>
                                     <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
                                         {loading ? (
                                             <div>
