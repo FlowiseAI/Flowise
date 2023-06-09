@@ -7,13 +7,14 @@ import rehypeMathjax from 'rehype-mathjax'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box } from '@mui/material'
+import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconSend } from '@tabler/icons'
 
 // project import
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
+import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
 import './ChatMessage.css'
 
 // api
@@ -43,10 +44,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     ])
     const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
+    const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
+    const [sourceDialogProps, setSourceDialogProps] = useState({})
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
+
+    const onSourceDialogClick = (data) => {
+        setSourceDialogProps({ data })
+        setSourceDialogOpen(true)
+    }
 
     const scrollToBottom = () => {
         if (ps.current) {
@@ -56,13 +64,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     const onChange = useCallback((e) => setUserInput(e.target.value), [setUserInput])
 
-    const addChatMessage = async (message, type) => {
+    const addChatMessage = async (message, type, sourceDocuments) => {
         try {
             const newChatMessageBody = {
                 role: type,
                 content: message,
                 chatflowid: chatflowid
             }
+            if (sourceDocuments) newChatMessageBody.sourceDocuments = JSON.stringify(sourceDocuments)
             await chatmessageApi.createNewChatmessage(chatflowid, newChatMessageBody)
         } catch (error) {
             console.error(error)
@@ -74,6 +83,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
             allMessages[allMessages.length - 1].message += text
+            return allMessages
+        })
+    }
+
+    const updateLastMessageSourceDocuments = (sourceDocuments) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].sourceDocuments = sourceDocuments
             return allMessages
         })
     }
@@ -114,8 +132,20 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             if (response.data) {
                 const data = response.data
-                if (!isChatFlowAvailableToStream) setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
-                addChatMessage(data, 'apiMessage')
+                if (typeof data === 'object' && data.text && data.sourceDocuments) {
+                    if (!isChatFlowAvailableToStream) {
+                        setMessages((prevMessages) => [
+                            ...prevMessages,
+                            { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
+                        ])
+                    }
+                    addChatMessage(data.text, 'apiMessage', data.sourceDocuments)
+                } else {
+                    if (!isChatFlowAvailableToStream) {
+                        setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
+                    }
+                    addChatMessage(data, 'apiMessage')
+                }
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -146,10 +176,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (getChatmessageApi.data) {
             const loadedMessages = []
             for (const message of getChatmessageApi.data) {
-                loadedMessages.push({
+                const obj = {
                     message: message.content,
                     type: message.role
-                })
+                }
+                if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
+                loadedMessages.push(obj)
             }
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
         }
@@ -196,6 +228,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
             })
 
+            socket.on('sourceDocuments', updateLastMessageSourceDocuments)
+
             socket.on('token', updateLastMessage)
         }
 
@@ -225,69 +259,91 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         messages.map((message, index) => {
                             return (
                                 // The latest message sent by the user will be animated while waiting for a response
-                                <Box
-                                    sx={{
-                                        background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
-                                    }}
-                                    key={index}
-                                    style={{ display: 'flex' }}
-                                    className={
-                                        message.type === 'userMessage' && loading && index === messages.length - 1
-                                            ? customization.isDarkMode
-                                                ? 'usermessagewaiting-dark'
-                                                : 'usermessagewaiting-light'
-                                            : message.type === 'usermessagewaiting'
-                                            ? 'apimessage'
-                                            : 'usermessage'
-                                    }
-                                >
-                                    {/* Display the correct icon depending on the message type */}
-                                    {message.type === 'apiMessage' ? (
-                                        <img
-                                            src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                                            alt='AI'
-                                            width='30'
-                                            height='30'
-                                            className='boticon'
-                                        />
-                                    ) : (
-                                        <img
-                                            src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                            alt='Me'
-                                            width='30'
-                                            height='30'
-                                            className='usericon'
-                                        />
-                                    )}
-                                    <div className='markdownanswer'>
-                                        {/* Messages are being rendered in Markdown format */}
-                                        <MemoizedReactMarkdown
-                                            remarkPlugins={[remarkGfm, remarkMath]}
-                                            rehypePlugins={[rehypeMathjax]}
-                                            components={{
-                                                code({ inline, className, children, ...props }) {
-                                                    const match = /language-(\w+)/.exec(className || '')
-                                                    return !inline ? (
-                                                        <CodeBlock
-                                                            key={Math.random()}
-                                                            chatflowid={chatflowid}
-                                                            isDialog={isDialog}
-                                                            language={(match && match[1]) || ''}
-                                                            value={String(children).replace(/\n$/, '')}
-                                                            {...props}
-                                                        />
-                                                    ) : (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    )
-                                                }
-                                            }}
-                                        >
-                                            {message.message}
-                                        </MemoizedReactMarkdown>
-                                    </div>
-                                </Box>
+                                <>
+                                    <Box
+                                        sx={{
+                                            background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
+                                        }}
+                                        key={index}
+                                        style={{ display: 'flex' }}
+                                        className={
+                                            message.type === 'userMessage' && loading && index === messages.length - 1
+                                                ? customization.isDarkMode
+                                                    ? 'usermessagewaiting-dark'
+                                                    : 'usermessagewaiting-light'
+                                                : message.type === 'usermessagewaiting'
+                                                ? 'apimessage'
+                                                : 'usermessage'
+                                        }
+                                    >
+                                        {/* Display the correct icon depending on the message type */}
+                                        {message.type === 'apiMessage' ? (
+                                            <img
+                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                                                alt='AI'
+                                                width='30'
+                                                height='30'
+                                                className='boticon'
+                                            />
+                                        ) : (
+                                            <img
+                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                                                alt='Me'
+                                                width='30'
+                                                height='30'
+                                                className='usericon'
+                                            />
+                                        )}
+                                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                            <div className='markdownanswer'>
+                                                {/* Messages are being rendered in Markdown format */}
+                                                <MemoizedReactMarkdown
+                                                    remarkPlugins={[remarkGfm, remarkMath]}
+                                                    rehypePlugins={[rehypeMathjax]}
+                                                    components={{
+                                                        code({ inline, className, children, ...props }) {
+                                                            const match = /language-(\w+)/.exec(className || '')
+                                                            return !inline ? (
+                                                                <CodeBlock
+                                                                    key={Math.random()}
+                                                                    chatflowid={chatflowid}
+                                                                    isDialog={isDialog}
+                                                                    language={(match && match[1]) || ''}
+                                                                    value={String(children).replace(/\n$/, '')}
+                                                                    {...props}
+                                                                />
+                                                            ) : (
+                                                                <code className={className} {...props}>
+                                                                    {children}
+                                                                </code>
+                                                            )
+                                                        }
+                                                    }}
+                                                >
+                                                    {message.message}
+                                                </MemoizedReactMarkdown>
+                                            </div>
+                                            {message.sourceDocuments && (
+                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                    {message.sourceDocuments.map((source, index) => {
+                                                        return (
+                                                            <Chip
+                                                                size='small'
+                                                                key={index}
+                                                                label={`${source.pageContent.substring(0, 15)}...`}
+                                                                component='a'
+                                                                sx={{ mr: 1, mb: 1 }}
+                                                                variant='outlined'
+                                                                clickable
+                                                                onClick={() => onSourceDialogClick(source)}
+                                                            />
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Box>
+                                </>
                             )
                         })}
                 </div>
@@ -328,6 +384,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     </form>
                 </div>
             </div>
+            <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </>
     )
 }
