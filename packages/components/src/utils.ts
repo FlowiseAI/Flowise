@@ -132,7 +132,7 @@ export const getInputVariables = (paramValue: string): string[] => {
     const variableStack = []
     const inputVariables = []
     let startIdx = 0
-    const endIdx = returnVal.length - 1
+    const endIdx = returnVal.length
 
     while (startIdx < endIdx) {
         const substr = returnVal.substring(startIdx, startIdx + 1)
