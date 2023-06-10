@@ -3,6 +3,7 @@ import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
+import { flatten } from 'lodash'
 
 class InMemoryVectorStore_VectorStores implements INode {
     label: string
@@ -55,7 +56,7 @@ class InMemoryVectorStore_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))

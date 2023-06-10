@@ -4,6 +4,7 @@ import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
+import { flatten } from 'lodash'
 
 class PineconeUpsert_VectorStores implements INode {
     label: string
@@ -90,7 +91,7 @@ class PineconeUpsert_VectorStores implements INode {
 
         const pineconeIndex = client.Index(index)
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))

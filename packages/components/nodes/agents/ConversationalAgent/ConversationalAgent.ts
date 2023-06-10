@@ -5,6 +5,7 @@ import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
 import { getBaseClasses } from '../../../src/utils'
 import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { flatten } from 'lodash'
 
 class ConversationalAgent_Agents implements INode {
     label: string
@@ -63,7 +64,7 @@ class ConversationalAgent_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
-        tools = tools.flat()
+        tools = flatten(tools)
         const memory = nodeData.inputs?.memory as BaseChatMemory
         const humanMessage = nodeData.inputs?.humanMessage as string
         const systemMessage = nodeData.inputs?.systemMessage as string

@@ -3,6 +3,7 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { FaissStore } from 'langchain/vectorstores/faiss'
+import { flatten } from 'lodash'
 
 class FaissUpsert_VectorStores implements INode {
     label: string
@@ -63,7 +64,7 @@ class FaissUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const basePath = nodeData.inputs?.basePath as string
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))
