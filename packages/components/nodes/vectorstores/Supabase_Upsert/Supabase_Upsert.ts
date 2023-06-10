@@ -4,6 +4,7 @@ import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
+import { flatten } from 'lodash'
 
 class SupabaseUpsert_VectorStores implements INode {
     label: string
@@ -82,7 +83,7 @@ class SupabaseUpsert_VectorStores implements INode {
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))

@@ -4,6 +4,7 @@ import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
+import { flatten } from 'lodash'
 
 class WeaviateUpsert_VectorStores implements INode {
     label: string
@@ -122,7 +123,7 @@ class WeaviateUpsert_VectorStores implements INode {
 
         const client: WeaviateClient = weaviate.client(clientConfig)
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))

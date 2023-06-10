@@ -3,6 +3,7 @@ import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/age
 import { Tool } from 'langchain/tools'
 import { getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { flatten } from 'lodash'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -40,7 +41,7 @@ class MRKLAgentLLM_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
-        tools = tools.flat()
+        tools = flatten(tools)
 
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'zero-shot-react-description',
