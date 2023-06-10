@@ -69,7 +69,7 @@ class Github_DocumentLoaders implements INode {
         const accessToken = nodeData.inputs?.accessToken as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        
+
         const options: GithubRepoLoaderParams = {
             branch,
             recursive,
