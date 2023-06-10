@@ -55,6 +55,15 @@ class Supabase_Existing_VectorStores implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to 4',
+                placeholder: '4',
+                type: 'number',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -79,6 +88,8 @@ class Supabase_Existing_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const supabaseMetadataFilter = nodeData.inputs?.supabaseMetadataFilter
         const output = nodeData.outputs?.output as string
+        const topK = nodeData.inputs?.topK as string
+        const k = topK ? parseInt(topK, 10) : 4
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
@@ -96,9 +107,10 @@ class Supabase_Existing_VectorStores implements INode {
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever()
+            const retriever = vectorStore.asRetriever(k)
             return retriever
         } else if (output === 'vectorStore') {
+            ;(vectorStore as any).k = k
             return vectorStore
         }
         return vectorStore

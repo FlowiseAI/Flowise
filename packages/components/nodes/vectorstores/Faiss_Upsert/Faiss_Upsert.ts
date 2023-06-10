@@ -42,6 +42,15 @@ class FaissUpsert_VectorStores implements INode {
                 description: 'Path to store faiss.index file',
                 placeholder: `C:\\Users\\User\\Desktop`,
                 type: 'string'
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to 4',
+                placeholder: '4',
+                type: 'number',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -63,6 +72,8 @@ class FaissUpsert_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
         const basePath = nodeData.inputs?.basePath as string
+        const topK = nodeData.inputs?.topK as string
+        const k = topK ? parseInt(topK, 10) : 4
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
@@ -74,9 +85,10 @@ class FaissUpsert_VectorStores implements INode {
         await vectorStore.save(basePath)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever()
+            const retriever = vectorStore.asRetriever(k)
             return retriever
         } else if (output === 'vectorStore') {
+            ;(vectorStore as any).k = k
             return vectorStore
         }
         return vectorStore
