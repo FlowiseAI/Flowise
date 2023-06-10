@@ -75,6 +75,10 @@
 }
 
 .markdownanswer a {
+    display: block;
+    margin-right: 2.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     color: #16bed7;
     font-weight: 500;
 }
