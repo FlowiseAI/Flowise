@@ -48,6 +48,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_1-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_1-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -116,6 +124,7 @@
                         "type": "string",
                         "placeholder": "my-first-namespace",
                         "optional": true,
+                        "additionalParams": true,
                         "id": "pineconeExistingIndex_1-input-pineconeNamespace-string"
                     },
                     {
@@ -125,6 +134,16 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "pineconeExistingIndex_1-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_1-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -276,6 +295,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
