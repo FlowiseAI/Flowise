@@ -39,15 +39,9 @@ class MultiRetrievalQAChain_Chains implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever[]
-        const retrieverNames = []
-        const retrieverDescriptions = []
-        const retrievers = []
-
-        for (const vs of vectorStoreRetriever) {
-            retrieverNames.push(vs.name)
-            retrieverDescriptions.push(vs.description)
-            retrievers.push(vs.vectorStore.asRetriever((vs.vectorStore as any).k ?? 4))
-        }
+        const retrieverNames = vectorStoreRetriever.map((p) => p.name)
+        const retrieverDescriptions = vectorStoreRetriever.map((p) => p.description)
+        const retrievers = vectorStoreRetriever.map((p) => p.vectorStore.asRetriever((p.vectorStore as any).k ?? 4))
 
         const chain = MultiRetrievalQAChain.fromRetrievers(model, retrieverNames, retrieverDescriptions, retrievers, undefined, {
             verbose: process.env.DEBUG === 'true' ? true : false

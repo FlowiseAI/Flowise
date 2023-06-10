@@ -53,12 +53,8 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
         path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
     ]
-    for (const checkPath of checkPaths) {
-        if (fs.existsSync(checkPath)) {
-            return checkPath
-        }
-    }
-    return ''
+    const checkPath = checkPaths.find(checkPath => fs.existsSync(checkPath))
+    return checkPath || ''
 }
 
 /**
@@ -225,11 +221,7 @@ export const buildLangchain = async (
 
         // Find other nodes that are on the same depth level
         const sameDepthNodeIds = Object.keys(depthQueue).filter((key) => depthQueue[key] === nextDepth)
-
-        for (const id of sameDepthNodeIds) {
-            if (neighbourNodeIds.includes(id)) continue
-            neighbourNodeIds.push(id)
-        }
+        neighbourNodeIds.push(...sameDepthNodeIds.filter((id) => !neighbourNodeIds.includes(id)))
 
         for (let i = 0; i < neighbourNodeIds.length; i += 1) {
             const neighNodeId = neighbourNodeIds[i]
@@ -353,21 +345,17 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
-        for (const key in paramsObj) {
+        Object.keys(paramsObj).map((key) => {
             const paramValue: string = paramsObj[key]
             if (Array.isArray(paramValue)) {
-                const resolvedInstances = []
-                for (const param of paramValue) {
-                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question)
-                    resolvedInstances.push(resolvedInstance)
-                }
-                paramsObj[key] = resolvedInstances
+                paramsObj[key] = paramValue.map(param => {
+                    return getVariableValue(param, reactFlowNodes, question)
+                })
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
-                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, isAcceptVariable)
-                paramsObj[key] = resolvedInstance
+                paramsObj[key] = getVariableValue(paramValue, reactFlowNodes, question, isAcceptVariable)
             }
-        }
+        })
     }
 
     const paramsObj = flowNodeData[types] ?? {}
@@ -407,13 +395,13 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  * @returns {boolean}
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boolean => {
-    for (const node of startingNodes) {
-        for (const inputName in node.data.inputs) {
-            const inputVariables = getInputVariables(node.data.inputs[inputName])
-            if (inputVariables.length > 0) return true
-        }
-    }
-    return false
+    return startingNodes.reduce((result, node) => {
+        if (result) return result
+        return node.data.inputs?.reduce((result: boolean, input: any) => {
+            if (result) return result
+            return getInputVariables(input).length > 0 ? true : false
+        }, result)
+    }, false)
 }
 
 /**
@@ -604,35 +592,37 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
  * @returns {Promise<IOverrideConfig[]>}
  */
 export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
-    const configs: IOverrideConfig[] = []
-
-    for (const flowNode of reactFlowNodes) {
-        for (const inputParam of flowNode.data.inputParams) {
-            let obj: IOverrideConfig
+    return reactFlowNodes.reduce((configs: IOverrideConfig[], flowNode) => {
+        return flowNode.data.inputParams.reduce((configs: IOverrideConfig[], inputParam) => {
             if (inputParam.type === 'password' || inputParam.type === 'options') {
-                continue
+                return configs
             } else if (inputParam.type === 'file') {
-                obj = {
+                return configs.some((config) => JSON.stringify(config) === JSON.stringify({
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
-                }
+                })) ? configs : configs.concat({
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: 'files',
+                    type: inputParam.fileType ?? inputParam.type
+                })
             } else {
-                obj = {
+                return configs.some((config) => JSON.stringify(config) === JSON.stringify({
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: inputParam.name,
                     type: inputParam.type
-                }
+                })) ? configs : configs.concat({
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.type
+                })
             }
-            if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
-                configs.push(obj)
-            }
-        }
-    }
-
-    return configs
+        }, configs)
+    }, [])
 }
 
 /**
@@ -647,15 +637,13 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         LLMs: ['azureOpenAI', 'openAI']
     }
 
-    let isChatOrLLMsExist = false
-    for (const flowNode of reactFlowNodes) {
+    const isChatOrLLMsExist = reactFlowNodes.some(flowNode => {
         const data = flowNode.data
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
-            isChatOrLLMsExist = true
             const validLLMs = streamAvailableLLMs[data.category]
-            if (!validLLMs.includes(data.name)) return false
+            return validLLMs.includes(data.name)
         }
-    }
+    })
 
     return isChatOrLLMsExist && endingNodeData.category === 'Chains' && !isVectorStoreFaiss(endingNodeData)
 }

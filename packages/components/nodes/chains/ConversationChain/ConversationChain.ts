@@ -4,7 +4,7 @@ import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
-import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
+import { AIChatMessage, BaseChatMessage, HumanChatMessage } from 'langchain/schema'
 
 const systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 
@@ -76,17 +76,15 @@ class ConversationChain_Chains implements INode {
         const memory = nodeData.inputs?.memory as BufferMemory
 
         if (options && options.chatHistory) {
-            const chatHistory = []
-            const histories: IMessage[] = options.chatHistory
-
-            for (const message of histories) {
+            const messages: BaseChatMessage[] = options.chatHistory.map((message: IMessage) => {
                 if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIChatMessage(message.message))
+                    return new AIChatMessage(message.message)
                 } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanChatMessage(message.message))
+                    return new HumanChatMessage(message.message)
                 }
-            }
-            memory.chatHistory = new ChatMessageHistory(chatHistory)
+            })
+
+            memory.chatHistory = new ChatMessageHistory(messages)
             chain.memory = memory
         }
 

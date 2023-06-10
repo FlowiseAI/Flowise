@@ -111,14 +111,7 @@ const runPrediction = async (
             return res
         }
     } else if (inputVariables.length > 1) {
-        let seen: string[] = []
-
-        for (const variable of inputVariables) {
-            seen.push(variable)
-            if (promptValues[variable]) {
-                seen.pop()
-            }
-        }
+        const seen: string[] = inputVariables.filter((variable) => promptValues[variable]);
 
         if (seen.length === 0) {
             // All inputVariables have fixed values specified

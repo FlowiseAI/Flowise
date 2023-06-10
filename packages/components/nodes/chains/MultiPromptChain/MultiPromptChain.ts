@@ -39,15 +39,9 @@ class MultiPromptChain_Chains implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const promptRetriever = nodeData.inputs?.promptRetriever as PromptRetriever[]
-        const promptNames = []
-        const promptDescriptions = []
-        const promptTemplates = []
-
-        for (const prompt of promptRetriever) {
-            promptNames.push(prompt.name)
-            promptDescriptions.push(prompt.description)
-            promptTemplates.push(prompt.systemMessage)
-        }
+        const promptNames = promptRetriever.map((p) => p.name);
+        const promptDescriptions = promptRetriever.map((p) => p.description);
+        const promptTemplates = promptRetriever.map((p) => p.systemMessage);
 
         const chain = MultiPromptChain.fromPrompts(model, promptNames, promptDescriptions, promptTemplates, undefined, {
             verbose: process.env.DEBUG === 'true' ? true : false

@@ -48,45 +48,30 @@ class Docx_DocumentLoaders implements INode {
         const docxFileBase64 = nodeData.inputs?.docxFile as string
         const metadata = nodeData.inputs?.metadata
 
-        let alldocs = []
-        let files: string[] = []
+        const files: string[] = (docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']')) ? JSON.parse(docxFileBase64) : [docxFileBase64]
 
-        if (docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']')) {
-            files = JSON.parse(docxFileBase64)
-        } else {
-            files = [docxFileBase64]
-        }
-
-        for (const file of files) {
+        const alldocs = await Promise.all(files.map((file) => {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
             const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
             const blob = new Blob([bf])
             const loader = new DocxLoader(blob)
 
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
-            } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
-            }
-        }
+            return (textSplitter) ? loader.loadAndSplit(textSplitter) : loader.load()
+        }))
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of alldocs) {
-                const newdoc = {
+            return alldocs.map((doc) => {
+                return {
                     ...doc,
                     metadata: {
+                        // @ts-ignore-next-line
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+            })
         }
 
         return alldocs

@@ -127,11 +127,7 @@ async function prioritizeTasks(
 
 export async function get_top_tasks(vectorStore: VectorStore, query: string, k: number): Promise<string[]> {
     const docs = await vectorStore.similaritySearch(query, k)
-    let returnDocs: string[] = []
-    for (const doc of docs) {
-        returnDocs.push(doc.metadata.task)
-    }
-    return returnDocs
+    return docs.map((doc) => doc.metadata.task);
 }
 
 async function executeTask(vectorStore: VectorStore, executionChain: LLMChain, objective: string, task: string, k = 5): Promise<string> {

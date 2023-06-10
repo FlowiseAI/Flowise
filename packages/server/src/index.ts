@@ -106,12 +106,9 @@ export class App {
 
         // Get all component nodes
         this.app.get('/api/v1/nodes', (req: Request, res: Response) => {
-            const returnData = []
-            for (const nodeName in this.nodesPool.componentNodes) {
-                const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
-                returnData.push(clonedNode)
-            }
-            return res.json(returnData)
+            const nodes = Object.values(this.nodesPool.componentNodes)
+            const clonedNodes = nodes.map((node) => cloneDeep(node))
+            return res.json(clonedNodes)
         })
 
         // Get specific component node via name
@@ -515,18 +512,16 @@ export class App {
             const files = (req.files as any[]) || []
 
             if (files.length) {
-                const overrideConfig: ICommonObject = { ...req.body }
-                for (const file of files) {
+                const overrideConfig: ICommonObject = files.reduce((acc, file) => {
                     const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
                     const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
-
                     const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                    if (overrideConfig[fileInputField]) {
-                        overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                    } else {
-                        overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
+
+                    return {
+                        ...acc, 
+                        [fileInputField]: acc[fileInputField] ? JSON.stringify([...JSON.parse(acc[fileInputField]), dataBase64String]) : JSON.stringify([dataBase64String])
                     }
-                }
+                }, { ...req.body })
                 incomingInput = {
                     question: req.body.question ?? 'hello',
                     overrideConfig,

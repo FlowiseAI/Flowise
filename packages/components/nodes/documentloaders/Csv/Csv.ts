@@ -57,45 +57,30 @@ class Csv_DocumentLoaders implements INode {
         const columnName = nodeData.inputs?.columnName as string
         const metadata = nodeData.inputs?.metadata
 
-        let alldocs = []
-        let files: string[] = []
+        const files: string[] = (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) ? JSON.parse(csvFileBase64) : [csvFileBase64]
 
-        if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
-            files = JSON.parse(csvFileBase64)
-        } else {
-            files = [csvFileBase64]
-        }
-
-        for (const file of files) {
+        const alldocs = await Promise.all(files.map(async (file) => {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
             const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
             const blob = new Blob([bf])
             const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
-            } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
-            }
-        }
+            return textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
+        }))
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of alldocs) {
-                const newdoc = {
+            return alldocs.map((doc) => {
+                return {
                     ...doc,
                     metadata: {
+                        // @ts-ignore-next-line
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+            })
         }
 
         return alldocs

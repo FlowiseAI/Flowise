@@ -93,8 +93,6 @@ class Github_DocumentLoaders implements INode {
                 }
             })
         }
-
-        return docs
     }
 }
 

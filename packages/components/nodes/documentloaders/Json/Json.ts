@@ -63,45 +63,30 @@ class Json_DocumentLoaders implements INode {
             pointers = outputString.split(',').map((pointer) => '/' + pointer.trim())
         }
 
-        let alldocs = []
-        let files: string[] = []
+        const files: string[] = (jsonFileBase64.startsWith('[') && jsonFileBase64.endsWith(']')) ? JSON.parse(jsonFileBase64) : [jsonFileBase64]
 
-        if (jsonFileBase64.startsWith('[') && jsonFileBase64.endsWith(']')) {
-            files = JSON.parse(jsonFileBase64)
-        } else {
-            files = [jsonFileBase64]
-        }
-
-        for (const file of files) {
+        const alldocs = files.map((file) => {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
             const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
             const blob = new Blob([bf])
             const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
-            } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
-            }
-        }
+            return (textSplitter) ? loader.loadAndSplit(textSplitter) : loader.load()
+        })
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of alldocs) {
-                const newdoc = {
+            return alldocs.map((doc) => {
+                return {
                     ...doc,
                     metadata: {
+                        // @ts-ignore-next-line
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+            })
         }
 
         return alldocs

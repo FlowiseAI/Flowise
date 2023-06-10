@@ -96,18 +96,15 @@ class Cheerio_DocumentLoaders implements INode {
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of docs) {
-                const newdoc = {
+            return docs.map((doc: any) => {
+                return {
                     ...doc,
                     metadata: {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+            })
         }
 
         return docs
