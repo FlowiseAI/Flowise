@@ -48,17 +48,20 @@ class Docx_DocumentLoaders implements INode {
         const docxFileBase64 = nodeData.inputs?.docxFile as string
         const metadata = nodeData.inputs?.metadata
 
-        const files: string[] = (docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']')) ? JSON.parse(docxFileBase64) : [docxFileBase64]
+        const files: string[] =
+            docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']') ? JSON.parse(docxFileBase64) : [docxFileBase64]
 
-        const alldocs = await Promise.all(files.map((file) => {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            const loader = new DocxLoader(blob)
+        const alldocs = await Promise.all(
+            files.map((file) => {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+                const loader = new DocxLoader(blob)
 
-            return (textSplitter) ? loader.loadAndSplit(textSplitter) : loader.load()
-        }))
+                return textSplitter ? loader.loadAndSplit(textSplitter) : loader.load()
+            })
+        )
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

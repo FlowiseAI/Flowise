@@ -57,17 +57,19 @@ class Csv_DocumentLoaders implements INode {
         const columnName = nodeData.inputs?.columnName as string
         const metadata = nodeData.inputs?.metadata
 
-        const files: string[] = (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) ? JSON.parse(csvFileBase64) : [csvFileBase64]
+        const files: string[] = csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']') ? JSON.parse(csvFileBase64) : [csvFileBase64]
 
-        const alldocs = await Promise.all(files.map(async (file) => {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+        const alldocs = await Promise.all(
+            files.map(async (file) => {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
-            return textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
-        }))
+                return textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
+            })
+        )
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

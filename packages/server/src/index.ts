@@ -512,16 +512,21 @@ export class App {
             const files = (req.files as any[]) || []
 
             if (files.length) {
-                const overrideConfig: ICommonObject = files.reduce((acc, file) => {
-                    const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                    const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
-                    const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                const overrideConfig: ICommonObject = files.reduce(
+                    (acc, file) => {
+                        const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
+                        const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+                        const fileInputField = mapMimeTypeToInputField(file.mimetype)
 
-                    return {
-                        ...acc, 
-                        [fileInputField]: acc[fileInputField] ? JSON.stringify([...JSON.parse(acc[fileInputField]), dataBase64String]) : JSON.stringify([dataBase64String])
-                    }
-                }, { ...req.body })
+                        return {
+                            ...acc,
+                            [fileInputField]: acc[fileInputField]
+                                ? JSON.stringify([...JSON.parse(acc[fileInputField]), dataBase64String])
+                                : JSON.stringify([dataBase64String])
+                        }
+                    },
+                    { ...req.body }
+                )
                 incomingInput = {
                     question: req.body.question ?? 'hello',
                     overrideConfig,

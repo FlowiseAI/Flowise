@@ -108,7 +108,7 @@ class Confluence_DocumentLoaders implements INode {
             })
         }
 
-        return docs;
+        return docs
     }
 }
 

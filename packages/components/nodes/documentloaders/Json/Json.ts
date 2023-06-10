@@ -63,7 +63,8 @@ class Json_DocumentLoaders implements INode {
             pointers = outputString.split(',').map((pointer) => '/' + pointer.trim())
         }
 
-        const files: string[] = (jsonFileBase64.startsWith('[') && jsonFileBase64.endsWith(']')) ? JSON.parse(jsonFileBase64) : [jsonFileBase64]
+        const files: string[] =
+            jsonFileBase64.startsWith('[') && jsonFileBase64.endsWith(']') ? JSON.parse(jsonFileBase64) : [jsonFileBase64]
 
         const alldocs = files.map((file) => {
             const splitDataURI = file.split(',')
@@ -72,7 +73,7 @@ class Json_DocumentLoaders implements INode {
             const blob = new Blob([bf])
             const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
-            return (textSplitter) ? loader.loadAndSplit(textSplitter) : loader.load()
+            return textSplitter ? loader.loadAndSplit(textSplitter) : loader.load()
         })
 
         if (metadata) {

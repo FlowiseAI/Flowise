@@ -111,7 +111,7 @@ const runPrediction = async (
             return res
         }
     } else if (inputVariables.length > 1) {
-        const seen: string[] = inputVariables.filter((variable) => promptValues[variable]);
+        const seen: string[] = inputVariables.filter((variable) => promptValues[variable])
 
         if (seen.length === 0) {
             // All inputVariables have fixed values specified

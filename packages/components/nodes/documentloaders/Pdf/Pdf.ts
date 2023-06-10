@@ -65,21 +65,23 @@ class Pdf_DocumentLoaders implements INode {
         const usage = nodeData.inputs?.usage as string
         const metadata = nodeData.inputs?.metadata
 
-        const files: string[] = (pdfFileBase64.startsWith('[') && pdfFileBase64.endsWith(']')) ? JSON.parse(pdfFileBase64) : [pdfFileBase64]
+        const files: string[] = pdfFileBase64.startsWith('[') && pdfFileBase64.endsWith(']') ? JSON.parse(pdfFileBase64) : [pdfFileBase64]
 
-        const alldocs = await Promise.all(files.map(async (file) => {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            
-            const loader = new PDFLoader(blob, {
-                splitPages: (usage === 'perFile') ? false : undefined,
-                // @ts-ignore
-                pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+        const alldocs = await Promise.all(
+            files.map(async (file) => {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+
+                const loader = new PDFLoader(blob, {
+                    splitPages: usage === 'perFile' ? false : undefined,
+                    // @ts-ignore
+                    pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                })
+                return textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
             })
-            return (textSplitter) ? await loader.loadAndSplit(textSplitter) : await loader.load()
-        }))
+        )
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

@@ -48,7 +48,7 @@ class Text_DocumentLoaders implements INode {
         const txtFileBase64 = nodeData.inputs?.txtFile as string
         const metadata = nodeData.inputs?.metadata
 
-        const files: string[] = (txtFileBase64.startsWith('[') && txtFileBase64.endsWith(']')) ? JSON.parse(txtFileBase64) : [txtFileBase64]
+        const files: string[] = txtFileBase64.startsWith('[') && txtFileBase64.endsWith(']') ? JSON.parse(txtFileBase64) : [txtFileBase64]
         const alldocs = files.map((file) => {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
@@ -56,7 +56,7 @@ class Text_DocumentLoaders implements INode {
             const blob = new Blob([bf])
             const loader = new TextLoader(blob)
 
-            return (textSplitter) ? loader.loadAndSplit(textSplitter) : loader.load()            
+            return textSplitter ? loader.loadAndSplit(textSplitter) : loader.load()
         })
 
         if (metadata) {
@@ -73,7 +73,6 @@ class Text_DocumentLoaders implements INode {
             })
         }
         return alldocs
-
     }
 }
 

@@ -53,7 +53,7 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
         path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
     ]
-    const checkPath = checkPaths.find(checkPath => fs.existsSync(checkPath))
+    const checkPath = checkPaths.find((checkPath) => fs.existsSync(checkPath))
     return checkPath || ''
 }
 
@@ -348,7 +348,7 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
         Object.keys(paramsObj).map((key) => {
             const paramValue: string = paramsObj[key]
             if (Array.isArray(paramValue)) {
-                paramsObj[key] = paramValue.map(param => {
+                paramsObj[key] = paramValue.map((param) => {
                     return getVariableValue(param, reactFlowNodes, question)
                 })
             } else {
@@ -597,29 +597,41 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
             if (inputParam.type === 'password' || inputParam.type === 'options') {
                 return configs
             } else if (inputParam.type === 'file') {
-                return configs.some((config) => JSON.stringify(config) === JSON.stringify({
-                    node: flowNode.data.label,
-                    label: inputParam.label,
-                    name: 'files',
-                    type: inputParam.fileType ?? inputParam.type
-                })) ? configs : configs.concat({
-                    node: flowNode.data.label,
-                    label: inputParam.label,
-                    name: 'files',
-                    type: inputParam.fileType ?? inputParam.type
-                })
+                return configs.some(
+                    (config) =>
+                        JSON.stringify(config) ===
+                        JSON.stringify({
+                            node: flowNode.data.label,
+                            label: inputParam.label,
+                            name: 'files',
+                            type: inputParam.fileType ?? inputParam.type
+                        })
+                )
+                    ? configs
+                    : configs.concat({
+                          node: flowNode.data.label,
+                          label: inputParam.label,
+                          name: 'files',
+                          type: inputParam.fileType ?? inputParam.type
+                      })
             } else {
-                return configs.some((config) => JSON.stringify(config) === JSON.stringify({
-                    node: flowNode.data.label,
-                    label: inputParam.label,
-                    name: inputParam.name,
-                    type: inputParam.type
-                })) ? configs : configs.concat({
-                    node: flowNode.data.label,
-                    label: inputParam.label,
-                    name: inputParam.name,
-                    type: inputParam.type
-                })
+                return configs.some(
+                    (config) =>
+                        JSON.stringify(config) ===
+                        JSON.stringify({
+                            node: flowNode.data.label,
+                            label: inputParam.label,
+                            name: inputParam.name,
+                            type: inputParam.type
+                        })
+                )
+                    ? configs
+                    : configs.concat({
+                          node: flowNode.data.label,
+                          label: inputParam.label,
+                          name: inputParam.name,
+                          type: inputParam.type
+                      })
             }
         }, configs)
     }, [])
@@ -637,7 +649,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         LLMs: ['azureOpenAI', 'openAI']
     }
 
-    const isChatOrLLMsExist = reactFlowNodes.some(flowNode => {
+    const isChatOrLLMsExist = reactFlowNodes.some((flowNode) => {
         const data = flowNode.data
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
             const validLLMs = streamAvailableLLMs[data.category]

@@ -114,7 +114,7 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
         path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
     ]
-    const checkPath = checkPaths.find(checkPath => fs.existsSync(checkPath))
+    const checkPath = checkPaths.find((checkPath) => fs.existsSync(checkPath))
     return checkPath || ''
 }
 
