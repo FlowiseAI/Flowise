@@ -69,26 +69,21 @@ class Github_DocumentLoaders implements INode {
         const accessToken = nodeData.inputs?.accessToken as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-
+        
         const options: GithubRepoLoaderParams = {
             branch,
             recursive,
-            unknown: 'warn',
+            unknown: 'warn'
         }
 
         if (accessToken) options.accessToken = accessToken
 
-        console.log('🤖[GithubRepoLoader]: Initializing!');
-
         const loader = new GithubRepoLoader(repoLink, options)
-        console.log('🤖[GithubRepoLoader]: Loading documents from ' + repoLink);
         const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
 
-        console.log('🤖[GithubRepoLoader]: Documents Loaded!');
-        
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            return docs.map(doc => {
+            return docs.map((doc) => {
                 return {
                     ...doc,
                     metadata: {
