@@ -1,5 +1,6 @@
 import { IChildProcessMessage, IReactFlowNode, IReactFlowObject, IRunChatflowMessageValue, INodeData } from './Interface'
 import { buildLangchain, constructGraphs, getEndingNode, getStartingNodes, resolveVariables } from './utils'
+import { getChatId } from './index'
 
 export class ChildProcess {
     /**
@@ -76,6 +77,7 @@ export class ChildProcess {
             const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
 
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
+            const chatId = await getChatId(chatflow.id)
             const reactFlowNodes = await buildLangchain(
                 startingNodeIds,
                 nodes,
@@ -83,7 +85,7 @@ export class ChildProcess {
                 depthQueue,
                 componentNodes,
                 incomingInput.question,
-                '',
+                chatId,
                 incomingInput?.overrideConfig
             )
 

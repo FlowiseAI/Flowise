@@ -506,15 +506,8 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-            // first chatmessage id as the unique chat id
-            const firstChatMessage = await this.AppDataSource.getRepository(ChatMessage)
-                .createQueryBuilder('cm')
-                .select('cm.id')
-                .where('chatflowid = :chatflowid', { chatflowid })
-                .orderBy('cm.createdDate', 'ASC')
-                .getOne()
-            if (!firstChatMessage) return res.status(500).send(`Chatflow ${chatflowid} first message not found`)
-            const chatId = firstChatMessage.id
+            const chatId = await getChatId(chatflow.id)
+            if (!chatId) return res.status(500).send(`Chatflow ${chatflowid} first message not found`)
 
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
@@ -670,6 +663,18 @@ export class App {
             console.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
+}
+
+export async function getChatId(chatflowid: string) {
+    // first chatmessage id as the unique chat id
+    const firstChatMessage = await getDataSource()
+        .getRepository(ChatMessage)
+        .createQueryBuilder('cm')
+        .select('cm.id')
+        .where('chatflowid = :chatflowid', { chatflowid })
+        .orderBy('cm.createdDate', 'ASC')
+        .getOne()
+    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined

@@ -36,6 +36,14 @@ class ZepMemory_Memory implements INode {
                 default: true
             },
             {
+                label: 'Session Id',
+                name: 'sessionId',
+                type: 'string',
+                placeholder: 'if empty, chatId will be used automatically',
+                default: '',
+                additionalParams: true
+            },
+            {
                 label: 'Auto Summary Template',
                 name: 'autoSummaryTemplate',
                 type: 'string',
@@ -88,11 +96,13 @@ class ZepMemory_Memory implements INode {
         const inputKey = nodeData.inputs?.inputKey as string
         const autoSummaryTemplate = nodeData.inputs?.autoSummaryTemplate as string
         const autoSummary = nodeData.inputs?.autoSummary as boolean
-        const sessionId = options?.chatId as string
+        const sessionId = nodeData.inputs?.sessionId as string
+
+        const chatId = options?.chatId as string
 
         const obj: ZepMemoryInput = {
             baseURL,
-            sessionId,
+            sessionId: sessionId ? sessionId : chatId,
             aiPrefix,
             humanPrefix,
             returnMessages: true,
