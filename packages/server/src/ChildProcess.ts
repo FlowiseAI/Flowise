@@ -83,6 +83,7 @@ export class ChildProcess {
                 depthQueue,
                 componentNodes,
                 incomingInput.question,
+                '',
                 incomingInput?.overrideConfig
             )
 

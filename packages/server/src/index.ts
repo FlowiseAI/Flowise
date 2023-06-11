@@ -506,6 +506,16 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
+            // first chatmessage id as the unique chat id
+            const firstChatMessage = await this.AppDataSource.getRepository(ChatMessage)
+                .createQueryBuilder('cm')
+                .select('cm.id')
+                .where('chatflowid = :chatflowid', { chatflowid })
+                .orderBy('cm.createdDate', 'ASC')
+                .getOne()
+            if (!firstChatMessage) return res.status(500).send(`Chatflow ${chatflowid} first message not found`)
+            const chatId = firstChatMessage.id
+
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
             }
@@ -618,6 +628,7 @@ export class App {
                         depthQueue,
                         this.nodesPool.componentNodes,
                         incomingInput.question,
+                        chatId,
                         incomingInput?.overrideConfig
                     )
 

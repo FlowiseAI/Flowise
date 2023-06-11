@@ -2,6 +2,7 @@ import { SystemChatMessage } from 'langchain/schema'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
+import { ICommonObject } from '../../../src'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -27,13 +28,6 @@ class ZepMemory_Memory implements INode {
                 name: 'baseURL',
                 type: 'string',
                 default: 'http://127.0.0.1:8000'
-            },
-            {
-                label: 'Session Id',
-                name: 'sessionId',
-                type: 'string',
-                placeholder: 'unique and manually change in every conversion!',
-                default: ''
             },
             {
                 label: 'Auto Summary',
@@ -86,15 +80,15 @@ class ZepMemory_Memory implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const baseURL = nodeData.inputs?.baseURL as string
-        const sessionId = nodeData.inputs?.sessionId as string
         const aiPrefix = nodeData.inputs?.aiPrefix as string
         const humanPrefix = nodeData.inputs?.humanPrefix as string
         const memoryKey = nodeData.inputs?.memoryKey as string
         const inputKey = nodeData.inputs?.inputKey as string
         const autoSummaryTemplate = nodeData.inputs?.autoSummaryTemplate as string
         const autoSummary = nodeData.inputs?.autoSummary as boolean
+        const sessionId = options?.chatId as string
 
         const obj: ZepMemoryInput = {
             baseURL,

@@ -118,7 +118,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
         setLoading(true)
         setMessages((prevMessages) => [...prevMessages, { message: userInput, type: 'userMessage' }])
-        addChatMessage(userInput, 'userMessage')
+        // waiting for first chatmessage uploaded, the first chatmessage id will be chatId for every components
+        await addChatMessage(userInput, 'userMessage')
 
         // Send user question and history to API
         try {
