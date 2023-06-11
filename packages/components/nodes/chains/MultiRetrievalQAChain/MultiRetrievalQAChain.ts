@@ -46,7 +46,7 @@ class MultiRetrievalQAChain_Chains implements INode {
         for (const vs of vectorStoreRetriever) {
             retrieverNames.push(vs.name)
             retrieverDescriptions.push(vs.description)
-            retrievers.push(vs.vectorStore.asRetriever())
+            retrievers.push(vs.vectorStore.asRetriever((vs.vectorStore as any).k ?? 4))
         }
 
         const chain = MultiRetrievalQAChain.fromRetrievers(model, retrieverNames, retrieverDescriptions, retrievers, undefined, {

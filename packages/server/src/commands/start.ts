@@ -16,7 +16,9 @@ export default class Start extends Command {
     static args = []
     static flags = {
         FLOWISE_USERNAME: Flags.string(),
-        FLOWISE_PASSWORD: Flags.string()
+        FLOWISE_PASSWORD: Flags.string(),
+        PORT: Flags.string(),
+        EXECUTION_MODE: Flags.string()
     }
 
     async stopProcess() {
@@ -50,6 +52,8 @@ export default class Start extends Command {
         const { flags } = await this.parse(Start)
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+        if (flags.PORT) process.env.PORT = flags.PORT
+        if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
 
         await (async () => {
             try {

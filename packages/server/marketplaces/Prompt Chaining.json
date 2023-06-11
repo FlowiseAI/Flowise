@@ -114,6 +114,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_2-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_2-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -461,6 +469,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_3-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],

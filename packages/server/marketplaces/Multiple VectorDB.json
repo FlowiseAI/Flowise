@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 330,
+            "height": 329,
             "id": "openAIEmbeddings_2",
             "position": {
                 "x": 155.07832615625986,
@@ -48,6 +48,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_2-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_2-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -76,11 +84,11 @@
         },
         {
             "width": 300,
-            "height": 355,
+            "height": 505,
             "id": "chromaExistingIndex_1",
             "position": {
                 "x": 522.8177328694987,
-                "y": -548.8355398674973
+                "y": -723.8834555183237
             },
             "type": "customNode",
             "data": {
@@ -97,6 +105,23 @@
                         "name": "collectionName",
                         "type": "string",
                         "id": "chromaExistingIndex_1-input-collectionName-string"
+                    },
+                    {
+                        "label": "Chroma URL",
+                        "name": "chromaURL",
+                        "type": "string",
+                        "optional": true,
+                        "id": "chromaExistingIndex_1-input-chromaURL-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "chromaExistingIndex_1-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -134,24 +159,24 @@
                     }
                 ],
                 "outputs": {
-                    "output": "vectorStore"
+                    "output": "retriever"
                 },
                 "selected": false
             },
             "positionAbsolute": {
                 "x": 522.8177328694987,
-                "y": -548.8355398674973
+                "y": -723.8834555183237
             },
             "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "openAI_3",
             "position": {
-                "x": 512.7434966474709,
-                "y": -1107.9938317347255
+                "x": 527.7101375911075,
+                "y": -1290.6752949922043
             },
             "type": "customNode",
             "data": {
@@ -258,6 +283,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_3-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_3-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -284,69 +317,15 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 512.7434966474709,
-                "y": -1107.9938317347255
+                "x": 527.7101375911075,
+                "y": -1290.6752949922043
             },
             "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 280,
-            "id": "vectorDBQAChain_2",
-            "position": {
-                "x": 880.7795222381183,
-                "y": -823.6550506138045
-            },
-            "type": "customNode",
-            "data": {
-                "id": "vectorDBQAChain_2",
-                "label": "VectorDB QA Chain",
-                "name": "vectorDBQAChain",
-                "type": "VectorDBQAChain",
-                "baseClasses": ["VectorDBQAChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "QA chain for vector databases",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "vectorDBQAChain_2-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Vector Store",
-                        "name": "vectorStore",
-                        "type": "VectorStore",
-                        "id": "vectorDBQAChain_2-input-vectorStore-VectorStore"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{openAI_3.data.instance}}",
-                    "vectorStore": "{{chromaExistingIndex_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
-                        "name": "vectorDBQAChain",
-                        "label": "VectorDBQAChain",
-                        "type": "VectorDBQAChain | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 880.7795222381183,
-                "y": -823.6550506138045
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 602,
+            "height": 601,
             "id": "chainTool_2",
             "position": {
                 "x": 1251.240972921597,
@@ -397,7 +376,7 @@
                     "name": "ai-paper-qa",
                     "description": "AI Paper QA - useful for when you need to ask questions about the AI-Generated Content paper.",
                     "returnDirect": "",
-                    "baseChain": "{{vectorDBQAChain_2.data.instance}}"
+                    "baseChain": "{{retrievalQAChain_0.data.instance}}"
                 },
                 "outputAnchors": [
                     {
@@ -419,7 +398,7 @@
         },
         {
             "width": 300,
-            "height": 143,
+            "height": 142,
             "id": "calculator_1",
             "position": {
                 "x": 1649.5389102641816,
@@ -457,7 +436,7 @@
         },
         {
             "width": 300,
-            "height": 278,
+            "height": 277,
             "id": "serpAPI_0",
             "position": {
                 "x": 1654.5273488033688,
@@ -502,7 +481,7 @@
         },
         {
             "width": 300,
-            "height": 330,
+            "height": 329,
             "id": "openAIEmbeddings_3",
             "position": {
                 "x": 163.902196956619,
@@ -547,6 +526,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_3-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_3-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -575,7 +562,7 @@
         },
         {
             "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "openAI_4",
             "position": {
                 "x": 529.8870809493459,
@@ -686,6 +673,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_4-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_4-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -720,11 +715,11 @@
         },
         {
             "width": 300,
-            "height": 703,
+            "height": 603,
             "id": "pineconeExistingIndex_1",
             "position": {
-                "x": 539.4840212380209,
-                "y": 452.3690065882661
+                "x": 525.6644489497978,
+                "y": 420.1233379157454
             },
             "type": "customNode",
             "data": {
@@ -760,6 +755,7 @@
                         "type": "string",
                         "placeholder": "my-first-namespace",
                         "optional": true,
+                        "additionalParams": true,
                         "id": "pineconeExistingIndex_1-input-pineconeNamespace-string"
                     },
                     {
@@ -769,6 +765,16 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "pineconeExistingIndex_1-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_1-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -808,78 +814,24 @@
                     }
                 ],
                 "outputs": {
-                    "output": "vectorStore"
+                    "output": "retriever"
                 },
                 "selected": false
             },
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 539.4840212380209,
-                "y": 452.3690065882661
+                "x": 525.6644489497978,
+                "y": 420.1233379157454
             }
         },
         {
             "width": 300,
-            "height": 280,
-            "id": "vectorDBQAChain_3",
-            "position": {
-                "x": 896.3238465010572,
-                "y": 173.57643605877104
-            },
-            "type": "customNode",
-            "data": {
-                "id": "vectorDBQAChain_3",
-                "label": "VectorDB QA Chain",
-                "name": "vectorDBQAChain",
-                "type": "VectorDBQAChain",
-                "baseClasses": ["VectorDBQAChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "QA chain for vector databases",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "vectorDBQAChain_3-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Vector Store",
-                        "name": "vectorStore",
-                        "type": "VectorStore",
-                        "id": "vectorDBQAChain_3-input-vectorStore-VectorStore"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{openAI_4.data.instance}}",
-                    "vectorStore": "{{pineconeExistingIndex_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
-                        "name": "vectorDBQAChain",
-                        "label": "VectorDBQAChain",
-                        "type": "VectorDBQAChain | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 896.3238465010572,
-                "y": 173.57643605877104
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 602,
+            "height": 601,
             "id": "chainTool_3",
             "position": {
-                "x": 1260.8044270644157,
-                "y": -244.7000095631508
+                "x": 1267.7142132085273,
+                "y": -85.7749282485849
             },
             "type": "customNode",
             "data": {
@@ -926,7 +878,7 @@
                     "name": "state-of-union-qa",
                     "description": "State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.",
                     "returnDirect": "",
-                    "baseChain": "{{vectorDBQAChain_3.data.instance}}"
+                    "baseChain": "{{retrievalQAChain_1.data.instance}}"
                 },
                 "outputAnchors": [
                     {
@@ -942,13 +894,13 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 1260.8044270644157,
-                "y": -244.7000095631508
+                "x": 1267.7142132085273,
+                "y": -85.7749282485849
             }
         },
         {
             "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "openAI_5",
             "position": {
                 "x": 1683.95439713088,
@@ -1059,6 +1011,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_5-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_5-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -1093,7 +1053,7 @@
         },
         {
             "width": 300,
-            "height": 280,
+            "height": 279,
             "id": "mrklAgentLLM_0",
             "position": {
                 "x": 2061.891333395338,
@@ -1150,6 +1110,114 @@
                 "y": -140.0694021759809
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "retrievalQAChain_0",
+            "position": {
+                "x": 898.1253096948574,
+                "y": -859.1174013418433
+            },
+            "type": "customNode",
+            "data": {
+                "id": "retrievalQAChain_0",
+                "label": "Retrieval QA Chain",
+                "name": "retrievalQAChain",
+                "type": "RetrievalQAChain",
+                "baseClasses": ["RetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "QA chain to answer a question based on the retrieved documents",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "retrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "retrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_3.data.instance}}",
+                    "vectorStoreRetriever": "{{chromaExistingIndex_1.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "retrievalQAChain_0-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain",
+                        "name": "retrievalQAChain",
+                        "label": "RetrievalQAChain",
+                        "type": "RetrievalQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 898.1253096948574,
+                "y": -859.1174013418433
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 279,
+            "id": "retrievalQAChain_1",
+            "position": {
+                "x": 895.4349543765911,
+                "y": 166.60331503487222
+            },
+            "type": "customNode",
+            "data": {
+                "id": "retrievalQAChain_1",
+                "label": "Retrieval QA Chain",
+                "name": "retrievalQAChain",
+                "type": "RetrievalQAChain",
+                "baseClasses": ["RetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "QA chain to answer a question based on the retrieved documents",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "retrievalQAChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "retrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{openAI_4.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeExistingIndex_1.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "retrievalQAChain_1-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain",
+                        "name": "retrievalQAChain",
+                        "label": "RetrievalQAChain",
+                        "type": "RetrievalQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 895.4349543765911,
+                "y": 166.60331503487222
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -1165,78 +1233,12 @@
             }
         },
         {
-            "source": "chromaExistingIndex_1",
-            "sourceHandle": "chromaExistingIndex_1-output-vectorStore-Chroma|VectorStore",
-            "target": "vectorDBQAChain_2",
-            "targetHandle": "vectorDBQAChain_2-input-vectorStore-VectorStore",
-            "type": "buttonedge",
-            "id": "chromaExistingIndex_1-chromaExistingIndex_1-output-vectorStore-Chroma|VectorStore-vectorDBQAChain_2-vectorDBQAChain_2-input-vectorStore-VectorStore",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAI_3",
-            "sourceHandle": "openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "vectorDBQAChain_2",
-            "targetHandle": "vectorDBQAChain_2-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "openAI_3-openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-vectorDBQAChain_2-vectorDBQAChain_2-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "vectorDBQAChain_2",
-            "sourceHandle": "vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
-            "target": "chainTool_2",
-            "targetHandle": "chainTool_2-input-baseChain-BaseChain",
-            "type": "buttonedge",
-            "id": "vectorDBQAChain_2-vectorDBQAChain_2-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain-chainTool_2-chainTool_2-input-baseChain-BaseChain",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAI_4",
-            "sourceHandle": "openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-            "target": "vectorDBQAChain_3",
-            "targetHandle": "vectorDBQAChain_3-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "openAI_4-openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-vectorDBQAChain_3-vectorDBQAChain_3-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "openAIEmbeddings_3",
             "sourceHandle": "openAIEmbeddings_3-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
             "target": "pineconeExistingIndex_1",
             "targetHandle": "pineconeExistingIndex_1-input-embeddings-Embeddings",
             "type": "buttonedge",
             "id": "openAIEmbeddings_3-openAIEmbeddings_3-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_1-pineconeExistingIndex_1-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "vectorDBQAChain_3",
-            "sourceHandle": "vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain",
-            "target": "chainTool_3",
-            "targetHandle": "chainTool_3-input-baseChain-BaseChain",
-            "type": "buttonedge",
-            "id": "vectorDBQAChain_3-vectorDBQAChain_3-output-vectorDBQAChain-VectorDBQAChain|BaseChain|BaseLangChain-chainTool_3-chainTool_3-input-baseChain-BaseChain",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "pineconeExistingIndex_1",
-            "sourceHandle": "pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore",
-            "target": "vectorDBQAChain_3",
-            "targetHandle": "vectorDBQAChain_3-input-vectorStore-VectorStore",
-            "type": "buttonedge",
-            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-vectorStore-Pinecone|VectorStore-vectorDBQAChain_3-vectorDBQAChain_3-input-vectorStore-VectorStore",
             "data": {
                 "label": ""
             }
@@ -1292,6 +1294,72 @@
             "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
             "id": "openAI_5-openAI_5-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_3",
+            "sourceHandle": "openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "retrievalQAChain_0",
+            "targetHandle": "retrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_3-openAI_3-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-retrievalQAChain_0-retrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chromaExistingIndex_1",
+            "sourceHandle": "chromaExistingIndex_1-output-retriever-Chroma|VectorStoreRetriever|BaseRetriever",
+            "target": "retrievalQAChain_0",
+            "targetHandle": "retrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "chromaExistingIndex_1-chromaExistingIndex_1-output-retriever-Chroma|VectorStoreRetriever|BaseRetriever-retrievalQAChain_0-retrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "retrievalQAChain_0",
+            "sourceHandle": "retrievalQAChain_0-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain",
+            "target": "chainTool_2",
+            "targetHandle": "chainTool_2-input-baseChain-BaseChain",
+            "type": "buttonedge",
+            "id": "retrievalQAChain_0-retrievalQAChain_0-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain-chainTool_2-chainTool_2-input-baseChain-BaseChain",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_4",
+            "sourceHandle": "openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "retrievalQAChain_1",
+            "targetHandle": "retrievalQAChain_1-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_4-openAI_4-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-retrievalQAChain_1-retrievalQAChain_1-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeExistingIndex_1",
+            "sourceHandle": "pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "retrievalQAChain_1",
+            "targetHandle": "retrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_1-pineconeExistingIndex_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-retrievalQAChain_1-retrievalQAChain_1-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "retrievalQAChain_1",
+            "sourceHandle": "retrievalQAChain_1-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain",
+            "target": "chainTool_3",
+            "targetHandle": "chainTool_3-input-baseChain-BaseChain",
+            "type": "buttonedge",
+            "id": "retrievalQAChain_1-retrievalQAChain_1-output-retrievalQAChain-RetrievalQAChain|BaseChain|BaseLangChain-chainTool_3-chainTool_3-input-baseChain-BaseChain",
             "data": {
                 "label": ""
             }
