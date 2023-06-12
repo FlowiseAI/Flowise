@@ -658,5 +658,10 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         }
     }
 
-    return isChatOrLLMsExist && endingNodeData.category === 'Chains' && !isVectorStoreFaiss(endingNodeData)
+    return (
+        isChatOrLLMsExist &&
+        endingNodeData.category === 'Chains' &&
+        !isVectorStoreFaiss(endingNodeData) &&
+        process.env.EXECUTION_MODE !== 'child'
+    )
 }
