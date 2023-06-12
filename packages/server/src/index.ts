@@ -432,7 +432,7 @@ export class App {
      * @param {IncomingInput} incomingInput
      * @param {INodeData} endingNodeData
      */
-    async startChildProcess(chatflow: ChatFlow, incomingInput: IncomingInput, endingNodeData?: INodeData) {
+    async startChildProcess(chatflow: ChatFlow, chatId: string, incomingInput: IncomingInput, endingNodeData?: INodeData) {
         try {
             const controller = new AbortController()
             const { signal } = controller
@@ -441,7 +441,6 @@ export class App {
             if (!fs.existsSync(childpath)) childpath = 'ChildProcess.ts'
 
             const childProcess = fork(childpath, [], { signal })
-            const chatId = await getChatId(chatflow.id)
 
             const value = {
                 chatflow,
@@ -562,7 +561,7 @@ export class App {
                 if (isRebuildNeeded()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     try {
-                        const result = await this.startChildProcess(chatflow, incomingInput, nodeToExecuteData)
+                        const result = await this.startChildProcess(chatflow, chatId, incomingInput, nodeToExecuteData)
 
                         return res.json(result)
                     } catch (error) {
@@ -570,7 +569,7 @@ export class App {
                     }
                 } else {
                     try {
-                        const result = await this.startChildProcess(chatflow, incomingInput)
+                        const result = await this.startChildProcess(chatflow, chatId, incomingInput)
                         return res.json(result)
                     } catch (error) {
                         return res.status(500).send(error)
