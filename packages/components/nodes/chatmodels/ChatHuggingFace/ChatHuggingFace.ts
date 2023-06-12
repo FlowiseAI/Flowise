@@ -2,7 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from 'langchain/llms/hf'
 
-class HuggingFaceInference_LLMs implements INode {
+class ChatHuggingFace_ChatModels implements INode {
     label: string
     name: string
     type: string
@@ -13,13 +13,13 @@ class HuggingFaceInference_LLMs implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'HuggingFace Inference'
-        this.name = 'huggingFaceInference_LLMs'
-        this.type = 'HuggingFaceInference'
+        this.label = 'ChatHuggingFace'
+        this.name = 'chatHuggingFace'
+        this.type = 'ChatHuggingFace'
         this.icon = 'huggingface.png'
-        this.category = 'LLMs'
+        this.category = 'Chat Models'
         this.description = 'Wrapper around HuggingFace large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(HuggingFaceInference)]
         this.inputs = [
             {
                 label: 'Model',
@@ -100,4 +100,4 @@ class HuggingFaceInference_LLMs implements INode {
     }
 }
 
-module.exports = { nodeClass: HuggingFaceInference_LLMs }
+module.exports = { nodeClass: ChatHuggingFace_ChatModels }
