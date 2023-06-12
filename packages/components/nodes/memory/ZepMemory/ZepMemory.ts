@@ -39,7 +39,7 @@ class ZepMemory_Memory implements INode {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                placeholder: 'if empty, chatId will be used automatically',
+                description: 'if empty, chatId will be used automatically',
                 default: '',
                 additionalParams: true
             },

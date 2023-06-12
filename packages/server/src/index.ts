@@ -441,9 +441,11 @@ export class App {
             if (!fs.existsSync(childpath)) childpath = 'ChildProcess.ts'
 
             const childProcess = fork(childpath, [], { signal })
+            const chatId = await getChatId(chatflow.id)
 
             const value = {
                 chatflow,
+                chatId,
                 incomingInput,
                 componentNodes: cloneDeep(this.nodesPool.componentNodes),
                 endingNodeData
@@ -665,6 +667,11 @@ export class App {
     }
 }
 
+/**
+ * Get first chat message id
+ * @param {string} chatflowid
+ * @returns {string}
+ */
 export async function getChatId(chatflowid: string) {
     // first chatmessage id as the unique chat id
     const firstChatMessage = await getDataSource()
