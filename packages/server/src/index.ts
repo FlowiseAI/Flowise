@@ -432,7 +432,7 @@ export class App {
      * @param {IncomingInput} incomingInput
      * @param {INodeData} endingNodeData
      */
-    async startChildProcess(chatflow: ChatFlow, incomingInput: IncomingInput, endingNodeData?: INodeData) {
+    async startChildProcess(chatflow: ChatFlow, chatId: string, incomingInput: IncomingInput, endingNodeData?: INodeData) {
         try {
             const controller = new AbortController()
             const { signal } = controller
@@ -444,6 +444,7 @@ export class App {
 
             const value = {
                 chatflow,
+                chatId,
                 incomingInput,
                 componentNodes: cloneDeep(this.nodesPool.componentNodes),
                 endingNodeData
@@ -506,6 +507,9 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
+            const chatId = await getChatId(chatflow.id)
+            if (!chatId) return res.status(500).send(`Chatflow ${chatflowid} first message not found`)
+
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
             }
@@ -557,7 +561,7 @@ export class App {
                 if (isRebuildNeeded()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     try {
-                        const result = await this.startChildProcess(chatflow, incomingInput, nodeToExecuteData)
+                        const result = await this.startChildProcess(chatflow, chatId, incomingInput, nodeToExecuteData)
 
                         return res.json(result)
                     } catch (error) {
@@ -565,7 +569,7 @@ export class App {
                     }
                 } else {
                     try {
-                        const result = await this.startChildProcess(chatflow, incomingInput)
+                        const result = await this.startChildProcess(chatflow, chatId, incomingInput)
                         return res.json(result)
                     } catch (error) {
                         return res.status(500).send(error)
@@ -618,6 +622,7 @@ export class App {
                         depthQueue,
                         this.nodesPool.componentNodes,
                         incomingInput.question,
+                        chatId,
                         incomingInput?.overrideConfig
                     )
 
@@ -659,6 +664,23 @@ export class App {
             console.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
+}
+
+/**
+ * Get first chat message id
+ * @param {string} chatflowid
+ * @returns {string}
+ */
+export async function getChatId(chatflowid: string) {
+    // first chatmessage id as the unique chat id
+    const firstChatMessage = await getDataSource()
+        .getRepository(ChatMessage)
+        .createQueryBuilder('cm')
+        .select('cm.id')
+        .where('chatflowid = :chatflowid', { chatflowid })
+        .orderBy('cm.createdDate', 'ASC')
+        .getOne()
+    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined

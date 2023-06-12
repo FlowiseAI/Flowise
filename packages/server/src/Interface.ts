@@ -143,6 +143,7 @@ export interface IDatabaseExport {
 
 export interface IRunChatflowMessageValue {
     chatflow: IChatFlow
+    chatId: string
     incomingInput: IncomingInput
     componentNodes: IComponentNodes
     endingNodeData?: INodeData
