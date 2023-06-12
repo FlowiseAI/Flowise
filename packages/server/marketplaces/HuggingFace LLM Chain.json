@@ -1,0 +1,274 @@
+{
+    "description": "Simple LLM Chain using HuggingFace Inference API on falcon-7b-instruct model",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 532,
+            "id": "promptTemplate_1",
+            "position": {
+                "x": 514.5434056794296,
+                "y": 507.47798128037107
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_1",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "What is a good name for a company that makes {product}?",
+                        "id": "promptTemplate_1-input-template-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{\n  \"input_language\": \"English\",\n  \"output_language\": \"French\"\n}",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "promptTemplate_1-input-promptValues-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Question: {question}\n\nAnswer: Let's think step by step.",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 514.5434056794296,
+                "y": 507.47798128037107
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 405,
+            "id": "llmChain_1",
+            "position": {
+                "x": 970.9254258940236,
+                "y": 320.56761595884564
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{huggingFaceInference_LLMs_0.data.instance}}",
+                    "prompt": "{{promptTemplate_1.data.instance}}",
+                    "chainName": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|BaseLangChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | BaseLangChain"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 970.9254258940236,
+                "y": 320.56761595884564
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 427,
+            "id": "huggingFaceInference_LLMs_0",
+            "position": {
+                "x": 503.5630827259226,
+                "y": 50.79125094823999
+            },
+            "type": "customNode",
+            "data": {
+                "id": "huggingFaceInference_LLMs_0",
+                "label": "HuggingFace Inference",
+                "name": "huggingFaceInference_LLMs",
+                "type": "HuggingFaceInference",
+                "baseClasses": ["HuggingFaceInference", "LLM", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
+                "category": "LLMs",
+                "description": "Wrapper around HuggingFace large language models",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "model",
+                        "type": "string",
+                        "placeholder": "gpt2",
+                        "id": "huggingFaceInference_LLMs_0-input-model-string"
+                    },
+                    {
+                        "label": "HuggingFace Api Key",
+                        "name": "apiKey",
+                        "type": "password",
+                        "id": "huggingFaceInference_LLMs_0-input-apiKey-password"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "description": "Temperature parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "description": "Max Tokens parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "description": "Top Probability parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-topP-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "hfTopK",
+                        "type": "number",
+                        "description": "Top K parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-hfTopK-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "description": "Frequency Penalty parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-frequencyPenalty-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "model": "tiiuae/falcon-7b-instruct",
+                    "temperature": "",
+                    "maxTokens": "200",
+                    "topP": "",
+                    "hfTopK": "10",
+                    "frequencyPenalty": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel|BaseLangChain",
+                        "name": "huggingFaceInference_LLMs",
+                        "label": "HuggingFaceInference",
+                        "type": "HuggingFaceInference | LLM | BaseLLM | BaseLanguageModel | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 503.5630827259226,
+                "y": 50.79125094823999
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "promptTemplate_1",
+            "sourceHandle": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_1-promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "huggingFaceInference_LLMs_0",
+            "sourceHandle": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "huggingFaceInference_LLMs_0-huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel|BaseLangChain-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}
