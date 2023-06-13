@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState, useCallback, useContext } from 'react'
 import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
@@ -35,11 +36,12 @@ import useApi from 'hooks/useApi'
 import useConfirm from 'hooks/useConfirm'
 
 // icons
-import { IconX } from '@tabler/icons'
+import { IconBrowser, IconBrowserOff, IconX } from '@tabler/icons'
 
 // utils
 import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
+import { StyledFab } from 'ui-component/button/StyledFab'
 
 const nodeTypes = { customNode: CanvasNode }
 const edgeTypes = { buttonedge: ButtonEdge }
@@ -77,6 +79,7 @@ const Canvas = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState()
 
     const [selectedNode, setSelectedNode] = useState(null)
+    const [hidden, setHidden] = useState(false)
 
     const reactFlowWrapper = useRef(null)
 
@@ -330,6 +333,15 @@ const Canvas = () => {
         dispatch({ type: SET_DIRTY })
     }
 
+    const hide = (hidden) => (nodeOrEdge) => {
+        nodeOrEdge.hidden = hidden
+        return nodeOrEdge
+    }
+
+    const handleToggle = () => {
+        setHidden((prevOpen) => !prevOpen)
+    }
+
     // ==============================|| useEffect ||============================== //
 
     // Get specific chatflow successful
@@ -462,6 +474,11 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
+    useEffect(() => {
+        setNodes((nds) => nds.map(hide(hidden)))
+        setEdges((eds) => eds.map(hide(hidden)))
+    }, [hidden])
+
     usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
 
     return (
@@ -514,6 +531,16 @@ const Canvas = () => {
                                 />
                                 <Background color='#aaa' gap={16} />
                                 <AddNodes nodesData={getNodesApi.data} node={selectedNode} />
+                                <StyledFab
+                                    sx={{ left: 70, top: 20, position: 'absolute' }}
+                                    size='small'
+                                    color='primary'
+                                    aria-label='toggle'
+                                    title='Toggle View'
+                                    onClick={handleToggle}
+                                >
+                                    {hidden ? <IconBrowser /> : <IconBrowserOff />}
+                                </StyledFab>
                                 <ChatPopUp chatflowid={chatflowId} />
                             </ReactFlow>
                         </div>
