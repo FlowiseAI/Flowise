@@ -95,6 +95,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         <Typography>
                             {inputAnchor.label}
                             {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                            {inputAnchor.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputAnchor.description} />}
                         </Typography>
                     </Box>
                 </>
