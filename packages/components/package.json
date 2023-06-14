@@ -32,7 +32,7 @@
         "faiss-node": "^0.2.1",
         "form-data": "^4.0.0",
         "graphql": "^16.6.0",
-        "langchain": "^0.0.91",
+        "langchain": "^0.0.94",
         "linkifyjs": "^4.1.1",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
