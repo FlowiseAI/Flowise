@@ -84,7 +84,14 @@
                 "baseClasses": ["MultiRetrievalQAChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
                 "description": "QA Chain that automatically picks an appropriate vector store from multiple retrievers",
-                "inputParams": [],
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true
+                    }
+                ],
                 "inputAnchors": [
                     {
                         "label": "Language Model",
