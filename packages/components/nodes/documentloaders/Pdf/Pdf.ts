@@ -50,6 +50,13 @@ class Pdf_DocumentLoaders implements INode {
                 default: 'perPage'
             },
             {
+                label: 'Use Legacy Build',
+                name: 'legacyBuild',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -64,6 +71,7 @@ class Pdf_DocumentLoaders implements INode {
         const pdfFileBase64 = nodeData.inputs?.pdfFile as string
         const usage = nodeData.inputs?.usage as string
         const metadata = nodeData.inputs?.metadata
+        const legacyBuild = nodeData.inputs?.legacyBuild as boolean
 
         let alldocs = []
         let files: string[] = []
@@ -82,7 +90,8 @@ class Pdf_DocumentLoaders implements INode {
                 const loader = new PDFLoader(new Blob([bf]), {
                     splitPages: false,
                     // @ts-ignore
-                    pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                    pdfjs: () =>
+                        legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                 })
                 if (textSplitter) {
                     const docs = await loader.loadAndSplit(textSplitter)
@@ -93,7 +102,10 @@ class Pdf_DocumentLoaders implements INode {
                 }
             } else {
                 // @ts-ignore
-                const loader = new PDFLoader(new Blob([bf]), { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
+                const loader = new PDFLoader(new Blob([bf]), {
+                    pdfjs: () =>
+                        legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                })
                 if (textSplitter) {
                     const docs = await loader.loadAndSplit(textSplitter)
                     alldocs.push(...docs)
