@@ -61,7 +61,7 @@ class MultiPromptChain_Chains implements INode {
         const obj = { input }
 
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
             const res = await chain.call(obj, [handler])
             return res?.text
         } else {
