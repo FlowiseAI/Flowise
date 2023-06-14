@@ -660,7 +660,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 
     return (
         isChatOrLLMsExist &&
-        endingNodeData.category === 'Chains' &&
+        (endingNodeData.category === 'Chains' || endingNodeData.name === 'openAIFunctionAgent') &&
         !isVectorStoreFaiss(endingNodeData) &&
         process.env.EXECUTION_MODE !== 'child'
     )

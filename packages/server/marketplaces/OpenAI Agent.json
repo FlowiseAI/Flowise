@@ -1,13 +1,13 @@
 {
-    "description": "Basic example of Conversation Chain with built-in memory - works exactly like ChatGPT",
+    "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
     "nodes": [
         {
             "width": 300,
             "height": 524,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 750.6529856117049,
-                "y": -75.72544375812092
+                "x": 373.8366297840716,
+                "y": 448.58765780622326
             },
             "type": "customNode",
             "data": {
@@ -15,7 +15,7 @@
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain", "Serializable"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -122,76 +122,122 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "modelName": "gpt-3.5-turbo",
+                    "modelName": "gpt-3.5-turbo-0613",
                     "temperature": 0.9,
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
-                    "timeout": ""
+                    "timeout": "",
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain|Serializable",
                         "name": "chatOpenAI",
                         "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain | Serializable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
-            "positionAbsolute": {
-                "x": 750.6529856117049,
-                "y": -75.72544375812092
-            },
             "selected": false,
+            "positionAbsolute": {
+                "x": 373.8366297840716,
+                "y": 448.58765780622326
+            },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 376,
-            "id": "bufferMemory_0",
+            "height": 280,
+            "id": "openAIFunctionAgent_0",
             "position": {
-                "x": 753.4300788823234,
-                "y": 479.5336426526603
+                "x": 1084.5405852317417,
+                "y": 384.4653768834282
             },
             "type": "customNode",
             "data": {
-                "id": "bufferMemory_0",
-                "label": "Buffer Memory",
-                "name": "bufferMemory",
-                "type": "BufferMemory",
-                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
-                "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
-                "inputParams": [
+                "id": "openAIFunctionAgent_0",
+                "label": "OpenAI Function Agent",
+                "name": "openAIFunctionAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain", "Serializable"],
+                "category": "Agents",
+                "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
+                "inputParams": [],
+                "inputAnchors": [
                     {
-                        "label": "Memory Key",
-                        "name": "memoryKey",
-                        "type": "string",
-                        "default": "chat_history",
-                        "id": "bufferMemory_0-input-memoryKey-string"
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "openAIFunctionAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_0-input-inputKey-string"
+                        "label": "OpenAI Chat Model",
+                        "name": "model",
+                        "description": "Only works with gpt-3.5-turbo-0613 and gpt-4-0613. Refer <a target=\"_blank\" href=\"https://platform.openai.com/docs/guides/gpt/function-calling\">docs</a> for more info",
+                        "type": "BaseChatModel",
+                        "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIFunctionAgent_0-output-openAIFunctionAgent-AgentExecutor|BaseChain|BaseLangChain|Serializable",
+                        "name": "openAIFunctionAgent",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | BaseLangChain | Serializable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1084.5405852317417,
+                "y": 384.4653768834282
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 278,
+            "id": "serper_0",
+            "position": {
+                "x": 691.7580226065319,
+                "y": 34.00444633899792
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serper_0",
+                "label": "Serper",
+                "name": "serper",
+                "type": "Serper",
+                "baseClasses": ["Serper", "Tool", "StructuredTool", "BaseLangChain", "Serializable"],
+                "category": "Tools",
+                "description": "Wrapper around Serper.dev - Google Search API",
+                "inputParams": [
+                    {
+                        "label": "Serper Api Key",
+                        "name": "apiKey",
+                        "type": "password",
+                        "id": "serper_0-input-apiKey-password"
                     }
                 ],
                 "inputAnchors": [],
-                "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
-                },
+                "inputs": {},
                 "outputAnchors": [
                     {
-                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-                        "name": "bufferMemory",
-                        "label": "BufferMemory",
-                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool|BaseLangChain|Serializable",
+                        "name": "serper",
+                        "label": "Serper",
+                        "type": "Serper | Tool | StructuredTool | BaseLangChain | Serializable"
                     }
                 ],
                 "outputs": {},
@@ -199,65 +245,37 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 753.4300788823234,
-                "y": 479.5336426526603
+                "x": 691.7580226065319,
+                "y": 34.00444633899792
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 332,
-            "id": "conversationChain_0",
+            "height": 143,
+            "id": "calculator_0",
             "position": {
-                "x": 1201.6630991237407,
-                "y": 291.86981791303066
+                "x": 341.63347110886497,
+                "y": 261.6753474034481
             },
             "type": "customNode",
             "data": {
-                "id": "conversationChain_0",
-                "label": "Conversation Chain",
-                "name": "conversationChain",
-                "type": "ConversationChain",
-                "baseClasses": ["ConversationChain", "LLMChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "Chat models specific conversational chain with memory",
-                "inputParams": [
-                    {
-                        "label": "System Message",
-                        "name": "systemMessagePrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "additionalParams": true,
-                        "optional": true,
-                        "placeholder": "You are a helpful assistant that write codes",
-                        "id": "conversationChain_0-input-systemMessagePrompt-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "conversationChain_0-input-model-BaseChatModel"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseMemory",
-                        "id": "conversationChain_0-input-memory-BaseMemory"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "memory": "{{bufferMemory_0.data.instance}}",
-                    "systemMessagePrompt": ""
-                },
+                "id": "calculator_0",
+                "label": "Calculator",
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain", "Serializable"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
                 "outputAnchors": [
                     {
-                        "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|BaseLangChain",
-                        "name": "conversationChain",
-                        "label": "ConversationChain",
-                        "type": "ConversationChain | LLMChain | BaseChain | BaseLangChain"
+                        "id": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Calculator | Tool | StructuredTool | BaseLangChain | Serializable"
                     }
                 ],
                 "outputs": {},
@@ -265,8 +283,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1201.6630991237407,
-                "y": 291.86981791303066
+                "x": 341.63347110886497,
+                "y": 261.6753474034481
             },
             "dragging": false
         }
@@ -274,22 +292,33 @@
     "edges": [
         {
             "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
-            "target": "conversationChain_0",
-            "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain|Serializable",
+            "target": "openAIFunctionAgent_0",
+            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-conversationChain_0-conversationChain_0-input-model-BaseChatModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain|Serializable-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "bufferMemory_0",
-            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "target": "conversationChain_0",
-            "targetHandle": "conversationChain_0-input-memory-BaseMemory",
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
+            "target": "openAIFunctionAgent_0",
+            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory",
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serper_0",
+            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool|BaseLangChain|Serializable",
+            "target": "openAIFunctionAgent_0",
+            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|BaseLangChain|Serializable-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
