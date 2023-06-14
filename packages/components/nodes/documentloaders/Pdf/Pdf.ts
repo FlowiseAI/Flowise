@@ -89,8 +89,8 @@ class Pdf_DocumentLoaders implements INode {
             if (usage === 'perFile') {
                 const loader = new PDFLoader(new Blob([bf]), {
                     splitPages: false,
-                    // @ts-ignore
                     pdfjs: () =>
+                        // @ts-ignore
                         legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                 })
                 if (textSplitter) {
@@ -101,9 +101,9 @@ class Pdf_DocumentLoaders implements INode {
                     alldocs.push(...docs)
                 }
             } else {
-                // @ts-ignore
                 const loader = new PDFLoader(new Blob([bf]), {
                     pdfjs: () =>
+                        // @ts-ignore
                         legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                 })
                 if (textSplitter) {
