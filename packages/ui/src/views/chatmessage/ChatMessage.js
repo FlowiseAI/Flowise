@@ -366,7 +366,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             value={userInput}
                             onChange={onChange}
                             multiline={true}
-                            maxRows={2}
+                            maxRows={isDialog ? 7 : 2}
                             endAdornment={
                                 <InputAdornment position='end' sx={{ padding: '15px' }}>
                                     <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
