@@ -39,6 +39,7 @@
         "moment": "^2.29.3",
         "node-fetch": "^2.6.11",
         "pdf-parse": "^1.1.1",
+        "playwright": "^1.35.0",
         "srt-parser-2": "^1.2.3",
         "puppeteer": "^20.7.1",
         "weaviate-ts-client": "^1.1.0",
