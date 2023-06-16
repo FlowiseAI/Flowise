@@ -49,9 +49,12 @@ class MultiPromptChain_Chains implements INode {
             promptTemplates.push(prompt.systemMessage)
         }
 
-        const chain = MultiPromptChain.fromPrompts(model, promptNames, promptDescriptions, promptTemplates, undefined, {
-            verbose: process.env.DEBUG === 'true' ? true : false
-        } as any)
+        const chain = MultiPromptChain.fromLLMAndPrompts(model, {
+            promptNames,
+            promptDescriptions,
+            promptTemplates,
+            llmChainOpts: { verbose: process.env.DEBUG === 'true' ? true : false }
+        })
 
         return chain
     }
@@ -61,7 +64,7 @@ class MultiPromptChain_Chains implements INode {
         const obj = { input }
 
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
             const res = await chain.call(obj, [handler])
             return res?.text
         } else {
