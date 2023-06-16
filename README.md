@@ -1,30 +1,28 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - LangchainJS UI
+This is a fork of https://github.com/FlowiseAI/Flowise
 
-<a href="https://github.com/FlowiseAI/Flowise">
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
+# LangchainJS UI
 
 Drag & drop UI to build your customized LLM flow using [LangchainJS](https://github.com/hwchase17/langchainjs)
 
 ## ⚡Quick Start
-
 Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
-1. Install Flowise
+1. Install klonium-flow
     ```bash
-    npm install -g flowise
+    npm install -g klonium-flow
     ```
-2. Start Flowise
+2. Start klonium-flow
 
     ```bash
-    npx flowise start
+    npx klonium-flow start
     ```
 
     With username & password
 
     ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
+    npx klonium-flow start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
@@ -43,22 +41,22 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 1. Build the image locally:
     ```bash
-    docker build --no-cache -t flowise .
+    docker build --no-cache -t klonium-flow .
     ```
 2. Run image:
 
     ```bash
-    docker run -d --name flowise -p 3000:3000 flowise
+    docker run -d --name klonium-flow -p 3000:3000 klonium-flow
     ```
 
 3. Stop image:
     ```bash
-    docker stop flowise
+    docker stop klonium-flow
     ```
 
-## 👨‍💻 Developers
+##  Developers
 
-Flowise has 3 different modules in a single mono repository.
+3 different modules in a single mono repository.
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
@@ -76,13 +74,13 @@ Flowise has 3 different modules in a single mono repository.
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/FlowiseAI/Flowise.git
+    git clone https://github.com/cloniumagent/klonium-flow.git
     ```
 
 2. Go into repository folder
 
     ```bash
-    cd Flowise
+    cd klonium-flow
     ```
 
 3. Install all dependencies of all modules:
@@ -123,37 +121,8 @@ FLOWISE_PASSWORD=1234
 ```
 
 ## 📖 Documentation
-
+Look at the original project documentation:
 [Flowise Docs](https://docs.flowiseai.com/)
-
-## 🌐 Self Host
-
-### [Railway](https://docs.flowiseai.com/deployment/railway)
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/YK7J0v)
-
-### [Render](https://docs.flowiseai.com/deployment/render)
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
-
-### [AWS](https://docs.flowiseai.com/deployment/aws)
-
-### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
-
-### [GCP](https://docs.flowiseai.com/deployment/gcp)
-
-## 💻 Cloud Hosted
-
-Coming soon
-
-## 🙋 Support
-
-Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/FlowiseAI/Flowise/discussions)
-
-## 🙌 Contributing
-
-See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
-[![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 License
 
