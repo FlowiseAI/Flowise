@@ -40,6 +40,7 @@
         "node-fetch": "^2.6.11",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^3.7.107",
+        "playwright": "^1.35.0",
         "puppeteer": "^20.7.1",
         "srt-parser-2": "^1.2.3",
         "weaviate-ts-client": "^1.1.0",
