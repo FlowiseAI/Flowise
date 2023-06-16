@@ -8,6 +8,7 @@ FROM node:18-alpine
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 WORKDIR /usr/src/packages
 
