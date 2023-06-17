@@ -45,8 +45,9 @@ class BabyAGI_Agents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const taskLoop = nodeData.inputs?.taskLoop as string
+        const k = (vectorStore as any)?.k ?? 4
 
-        const babyAgi = BabyAGI.fromLLM(model, vectorStore, parseInt(taskLoop, 10))
+        const babyAgi = BabyAGI.fromLLM(model, vectorStore, parseInt(taskLoop, 10), k)
         return babyAgi
     }
 

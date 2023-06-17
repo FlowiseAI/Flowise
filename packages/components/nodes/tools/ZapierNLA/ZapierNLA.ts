@@ -1,4 +1,4 @@
-import { ZapierNLAWrapper, ZapiterNLAWrapperParams } from 'langchain/tools'
+import { ZapierNLAWrapper, ZapierNLAWrapperParams } from 'langchain/tools'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ZapierToolKit } from 'langchain/agents'
 
@@ -32,7 +32,7 @@ class ZapierNLA_Tools implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const apiKey = nodeData.inputs?.apiKey as string
 
-        const obj: Partial<ZapiterNLAWrapperParams> = {
+        const obj: Partial<ZapierNLAWrapperParams> = {
             apiKey
         }
         const zapier = new ZapierNLAWrapper(obj)

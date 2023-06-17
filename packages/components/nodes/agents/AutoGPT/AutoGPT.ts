@@ -3,6 +3,7 @@ import { BaseChatModel } from 'langchain/chat_models/base'
 import { AutoGPT } from 'langchain/experimental/autogpt'
 import { Tool } from 'langchain/tools'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'
+import { flatten } from 'lodash'
 
 class AutoGPT_Agents implements INode {
     label: string
@@ -67,7 +68,7 @@ class AutoGPT_Agents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever
         let tools = nodeData.inputs?.tools as Tool[]
-        tools = tools.flat()
+        tools = flatten(tools)
         const aiName = (nodeData.inputs?.aiName as string) || 'AutoGPT'
         const aiRole = (nodeData.inputs?.aiRole as string) || 'Assistant'
         const maxLoop = nodeData.inputs?.maxLoop as string

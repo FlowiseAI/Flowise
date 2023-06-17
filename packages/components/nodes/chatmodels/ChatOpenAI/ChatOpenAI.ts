@@ -36,20 +36,32 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'gpt-4'
                     },
                     {
-                        label: 'gpt-4-0314',
-                        name: 'gpt-4-0314'
+                        label: 'gpt-4-0613',
+                        name: 'gpt-4-0613'
                     },
                     {
-                        label: 'gpt-4-32k-0314',
-                        name: 'gpt-4-32k-0314'
+                        label: 'gpt-4-32k',
+                        name: 'gpt-4-32k'
+                    },
+                    {
+                        label: 'gpt-4-32k-0613',
+                        name: 'gpt-4-32k-0613'
                     },
                     {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
                     },
                     {
-                        label: 'gpt-3.5-turbo-0301',
-                        name: 'gpt-3.5-turbo-0301'
+                        label: 'gpt-3.5-turbo-0613',
+                        name: 'gpt-3.5-turbo-0613'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-16k',
+                        name: 'gpt-3.5-turbo-16k'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-16k-0613',
+                        name: 'gpt-3.5-turbo-16k-0613'
                     }
                 ],
                 default: 'gpt-3.5-turbo',
@@ -96,6 +108,13 @@ class ChatOpenAI_ChatModels implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -110,6 +129,7 @@ class ChatOpenAI_ChatModels implements INode {
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const basePath = nodeData.inputs?.basepath as string
 
         const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
             temperature: parseInt(temperature, 10),
@@ -124,7 +144,9 @@ class ChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
-        const model = new ChatOpenAI(obj)
+        const model = new ChatOpenAI(obj, {
+            basePath
+        })
         return model
     }
 }

@@ -186,6 +186,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_1-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_1-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -254,7 +262,18 @@
                         "type": "string",
                         "placeholder": "my-first-namespace",
                         "optional": true,
+                        "additionalParams": true,
                         "id": "pineconeUpsert_1-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_1-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -347,20 +366,32 @@
                                 "name": "gpt-4"
                             },
                             {
-                                "label": "gpt-4-0314",
-                                "name": "gpt-4-0314"
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
                             },
                             {
-                                "label": "gpt-4-32k-0314",
-                                "name": "gpt-4-32k-0314"
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
                             },
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
                             },
                             {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
                             }
                         ],
                         "default": "gpt-3.5-turbo",
@@ -414,6 +445,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -463,6 +502,13 @@
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
                     {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
                         "label": "System Message",
                         "name": "systemMessagePrompt",
                         "type": "string",
@@ -471,6 +517,31 @@
                         "optional": true,
                         "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
                         "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Chain Option",
+                        "name": "chainOption",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "MapReduceDocumentsChain",
+                                "name": "map_reduce",
+                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
+                            },
+                            {
+                                "label": "RefineDocumentsChain",
+                                "name": "refine",
+                                "description": "Suitable for QA tasks over a large number of documents."
+                            },
+                            {
+                                "label": "StuffDocumentsChain",
+                                "name": "stuff",
+                                "description": "Suitable for QA tasks over a small number of documents."
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
                     }
                 ],
                 "inputAnchors": [

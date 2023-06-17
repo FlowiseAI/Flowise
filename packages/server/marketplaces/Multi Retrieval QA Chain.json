@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 505,
+            "height": 504,
             "id": "vectorStoreRetriever_0",
             "position": {
                 "x": 712.9322670298264,
@@ -69,7 +69,7 @@
         },
         {
             "width": 300,
-            "height": 280,
+            "height": 279,
             "id": "multiRetrievalQAChain_0",
             "position": {
                 "x": 1563.0150452201099,
@@ -84,7 +84,14 @@
                 "baseClasses": ["MultiRetrievalQAChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
                 "description": "QA Chain that automatically picks an appropriate vector store from multiple retrievers",
-                "inputParams": [],
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true
+                    }
+                ],
                 "inputAnchors": [
                     {
                         "label": "Language Model",
@@ -128,7 +135,7 @@
         },
         {
             "width": 300,
-            "height": 505,
+            "height": 504,
             "id": "vectorStoreRetriever_1",
             "position": {
                 "x": 711.4902931206071,
@@ -194,7 +201,7 @@
         },
         {
             "width": 300,
-            "height": 505,
+            "height": 504,
             "id": "vectorStoreRetriever_2",
             "position": {
                 "x": 706.0716220151372,
@@ -260,7 +267,7 @@
         },
         {
             "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 1206.027762600755,
@@ -292,20 +299,32 @@
                                 "name": "gpt-4"
                             },
                             {
-                                "label": "gpt-4-0314",
-                                "name": "gpt-4-0314"
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
                             },
                             {
-                                "label": "gpt-4-32k-0314",
-                                "name": "gpt-4-32k-0314"
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
                             },
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
                             },
                             {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
                             }
                         ],
                         "default": "gpt-3.5-turbo",
@@ -359,6 +378,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -391,7 +418,7 @@
         },
         {
             "width": 300,
-            "height": 330,
+            "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
                 "x": -254.88737984323413,
@@ -436,6 +463,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -464,7 +499,7 @@
         },
         {
             "width": 300,
-            "height": 703,
+            "height": 603,
             "id": "pineconeExistingIndex_0",
             "position": {
                 "x": 271.2513182410521,
@@ -504,6 +539,7 @@
                         "type": "string",
                         "placeholder": "my-first-namespace",
                         "optional": true,
+                        "additionalParams": true,
                         "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
                     },
                     {
@@ -513,6 +549,16 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -566,11 +612,11 @@
         },
         {
             "width": 300,
-            "height": 454,
+            "height": 505,
             "id": "chromaExistingIndex_0",
             "position": {
-                "x": 274.1430731555137,
-                "y": 335.15344698725556
+                "x": 269.2940530300552,
+                "y": 262.41814510537796
             },
             "type": "customNode",
             "data": {
@@ -594,6 +640,16 @@
                         "type": "string",
                         "optional": true,
                         "id": "chromaExistingIndex_0-input-chromaURL-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "chromaExistingIndex_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -638,14 +694,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 274.1430731555137,
-                "y": 335.15344698725556
+                "x": 269.2940530300552,
+                "y": 262.41814510537796
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 703,
+            "height": 702,
             "id": "supabaseExistingIndex_0",
             "position": {
                 "x": 273.7097153973373,
@@ -692,6 +748,16 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "supabaseExistingIndex_0-input-supabaseMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "supabaseExistingIndex_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [

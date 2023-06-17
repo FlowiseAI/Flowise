@@ -279,20 +279,32 @@
                                 "name": "gpt-4"
                             },
                             {
-                                "label": "gpt-4-0314",
-                                "name": "gpt-4-0314"
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
                             },
                             {
-                                "label": "gpt-4-32k-0314",
-                                "name": "gpt-4-32k-0314"
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
                             },
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
                             },
                             {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
                             }
                         ],
                         "default": "gpt-3.5-turbo",
@@ -346,6 +358,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -466,20 +486,32 @@
                                 "name": "gpt-4"
                             },
                             {
-                                "label": "gpt-4-0314",
-                                "name": "gpt-4-0314"
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
                             },
                             {
-                                "label": "gpt-4-32k-0314",
-                                "name": "gpt-4-32k-0314"
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
                             },
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
                             },
                             {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
                             }
                         ],
                         "default": "gpt-3.5-turbo",
@@ -533,6 +565,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -597,20 +637,32 @@
                                 "name": "gpt-4"
                             },
                             {
-                                "label": "gpt-4-0314",
-                                "name": "gpt-4-0314"
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
                             },
                             {
-                                "label": "gpt-4-32k-0314",
-                                "name": "gpt-4-32k-0314"
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
                             },
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
                             },
                             {
-                                "label": "gpt-3.5-turbo-0301",
-                                "name": "gpt-3.5-turbo-0301"
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
                             }
                         ],
                         "default": "gpt-3.5-turbo",
@@ -664,6 +716,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_2-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],

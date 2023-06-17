@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { BaseCallbackHandler } from 'langchain/callbacks'
 import { Server } from 'socket.io'
+import { ChainValues } from 'langchain/dist/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -131,7 +132,7 @@ export const getInputVariables = (paramValue: string): string[] => {
     const variableStack = []
     const inputVariables = []
     let startIdx = 0
-    const endIdx = returnVal.length - 1
+    const endIdx = returnVal.length
 
     while (startIdx < endIdx) {
         const substr = returnVal.substring(startIdx, startIdx + 1)
@@ -208,12 +209,14 @@ export class CustomChainHandler extends BaseCallbackHandler {
     socketIO: Server
     socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
+    returnSourceDocuments = false
 
-    constructor(socketIO: Server, socketIOClientId: string, skipK?: number) {
+    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
         this.socketIO = socketIO
         this.socketIOClientId = socketIOClientId
         this.skipK = skipK ?? this.skipK
+        this.returnSourceDocuments = returnSourceDocuments ?? this.returnSourceDocuments
     }
 
     handleLLMStart() {
@@ -233,4 +236,51 @@ export class CustomChainHandler extends BaseCallbackHandler {
     handleLLMEnd() {
         this.socketIO.to(this.socketIOClientId).emit('end')
     }
+
+    handleChainEnd(outputs: ChainValues): void | Promise<void> {
+        if (this.returnSourceDocuments) {
+            this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+        }
+    }
+}
+
+export const returnJSONStr = (jsonStr: string): string => {
+    let jsonStrArray = jsonStr.split(':')
+
+    let wholeString = ''
+    for (let i = 0; i < jsonStrArray.length; i++) {
+        if (jsonStrArray[i].includes(',') && jsonStrArray[i + 1] !== undefined) {
+            const splitValueAndTitle = jsonStrArray[i].split(',')
+            const value = splitValueAndTitle[0]
+            const newTitle = splitValueAndTitle[1]
+            wholeString += handleEscapeDoubleQuote(value) + ',' + newTitle + ':'
+        } else {
+            wholeString += wholeString === '' ? jsonStrArray[i] + ':' : handleEscapeDoubleQuote(jsonStrArray[i])
+        }
+    }
+    return wholeString
+}
+
+const handleEscapeDoubleQuote = (value: string): string => {
+    let newValue = ''
+    if (value.includes('"')) {
+        const valueArray = value.split('"')
+        for (let i = 0; i < valueArray.length; i++) {
+            if ((i + 1) % 2 !== 0) {
+                switch (valueArray[i]) {
+                    case '':
+                        newValue += '"'
+                        break
+                    case '}':
+                        newValue += '"}'
+                        break
+                    default:
+                        newValue += '\\"' + valueArray[i] + '\\"'
+                }
+            } else {
+                newValue += valueArray[i]
+            }
+        }
+    }
+    return newValue === '' ? value : newValue
 }

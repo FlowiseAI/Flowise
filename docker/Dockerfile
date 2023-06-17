@@ -4,6 +4,9 @@ USER root
 
 RUN apk add --no-cache git
 RUN apk add --no-cache python3 py3-pip make g++
+# needed for pdfjs-dist
+RUN apk add --no-cache build-base cairo-dev pango-dev
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 # You can install a specific version like: flowise@1.0.0
 RUN npm install -g flowise

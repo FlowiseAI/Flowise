@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.2.11",
+    "version": "1.2.13",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -17,6 +17,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@dqbd/tiktoken": "^1.0.7",
+        "@getzep/zep-js": "^0.3.1",
         "@huggingface/inference": "1",
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
@@ -28,17 +29,22 @@
         "d3-dsv": "2",
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
+        "faiss-node": "^0.2.1",
         "form-data": "^4.0.0",
         "graphql": "^16.6.0",
-        "langchain": "^0.0.84",
+        "html-to-text": "^9.0.5",
+        "langchain": "^0.0.94",
         "linkifyjs": "^4.1.1",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
         "node-fetch": "^2.6.11",
         "pdf-parse": "^1.1.1",
+        "pdfjs-dist": "^3.7.107",
+        "playwright": "^1.35.0",
+        "puppeteer": "^20.7.1",
+        "srt-parser-2": "^1.2.3",
         "weaviate-ts-client": "^1.1.0",
-        "ws": "^8.9.0",
-        "html-to-text": "^9.0.5"
+        "ws": "^8.9.0"
     },
     "devDependencies": {
         "@types/gulp": "4.0.9",

@@ -3,6 +3,7 @@ import { Chroma } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
+import { flatten } from 'lodash'
 
 class ChromaUpsert_VectorStores implements INode {
     label: string
@@ -45,6 +46,15 @@ class ChromaUpsert_VectorStores implements INode {
                 name: 'chromaURL',
                 type: 'string',
                 optional: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to 4',
+                placeholder: '4',
+                type: 'number',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -67,8 +77,10 @@ class ChromaUpsert_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const chromaURL = nodeData.inputs?.chromaURL as string
         const output = nodeData.outputs?.output as string
+        const topK = nodeData.inputs?.topK as string
+        const k = topK ? parseInt(topK, 10) : 4
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))
@@ -83,9 +95,10 @@ class ChromaUpsert_VectorStores implements INode {
         const vectorStore = await Chroma.fromDocuments(finalDocs, embeddings, obj)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever()
+            const retriever = vectorStore.asRetriever(k)
             return retriever
         } else if (output === 'vectorStore') {
+            ;(vectorStore as any).k = k
             return vectorStore
         }
         return vectorStore

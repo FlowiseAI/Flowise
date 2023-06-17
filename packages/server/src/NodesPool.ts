@@ -20,7 +20,8 @@ export class NodesPool {
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.js')) {
                     const nodeModule = await require(file)
-                    try {
+
+                    if (nodeModule.nodeClass) {
                         const newNodeInstance = new nodeModule.nodeClass()
                         newNodeInstance.filePath = file
 

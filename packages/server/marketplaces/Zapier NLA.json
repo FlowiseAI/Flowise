@@ -159,6 +159,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],

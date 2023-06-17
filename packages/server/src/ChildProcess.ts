@@ -23,7 +23,7 @@ export class ChildProcess {
         await sendToParentProcess('start', '_')
 
         // Create a Queue and add our initial node in it
-        const { endingNodeData, chatflow, incomingInput, componentNodes } = messageValue
+        const { endingNodeData, chatflow, chatId, incomingInput, componentNodes } = messageValue
 
         let nodeToExecuteData: INodeData
         let addToChatFlowPool: any = {}
@@ -83,6 +83,7 @@ export class ChildProcess {
                 depthQueue,
                 componentNodes,
                 incomingInput.question,
+                chatId,
                 incomingInput?.overrideConfig
             )
 

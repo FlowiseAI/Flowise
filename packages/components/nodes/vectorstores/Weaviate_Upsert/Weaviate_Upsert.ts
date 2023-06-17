@@ -4,6 +4,7 @@ import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
+import { flatten } from 'lodash'
 
 class WeaviateUpsert_VectorStores implements INode {
     label: string
@@ -86,6 +87,15 @@ class WeaviateUpsert_VectorStores implements INode {
                 placeholder: `["foo"]`,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to 4',
+                placeholder: '4',
+                type: 'number',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -109,10 +119,11 @@ class WeaviateUpsert_VectorStores implements INode {
         const weaviateApiKey = nodeData.inputs?.weaviateApiKey as string
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
-
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
+        const topK = nodeData.inputs?.topK as string
+        const k = topK ? parseInt(topK, 10) : 4
 
         const clientConfig: any = {
             scheme: weaviateScheme,
@@ -122,7 +133,7 @@ class WeaviateUpsert_VectorStores implements INode {
 
         const client: WeaviateClient = weaviate.client(clientConfig)
 
-        const flattenDocs = docs && docs.length ? docs.flat() : []
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
             finalDocs.push(new Document(flattenDocs[i]))
@@ -139,9 +150,10 @@ class WeaviateUpsert_VectorStores implements INode {
         const vectorStore = await WeaviateStore.fromDocuments(finalDocs, embeddings, obj)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever()
+            const retriever = vectorStore.asRetriever(k)
             return retriever
         } else if (output === 'vectorStore') {
+            ;(vectorStore as any).k = k
             return vectorStore
         }
         return vectorStore
