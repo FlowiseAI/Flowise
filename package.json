@@ -1,8 +1,8 @@
 {
-    "name": "flowise",
+    "name": "klonium-flow",
     "version": "1.2.12",
     "private": true,
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://klonium.com",
     "workspaces": [
         "packages/*",
         "flowise",
