@@ -4,6 +4,7 @@ import path from 'path'
 import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
+// import logger from './utils/logger'
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
@@ -38,7 +39,7 @@ export class NodesPool {
                             this.componentNodes[newNodeInstance.name].icon = nodeIconAbsolutePath
                         }
                     } catch (e) {
-                        // console.error(e);
+                        // logger.error(e);
                     }
                 }
             })
