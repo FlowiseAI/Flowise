@@ -75,7 +75,7 @@ const Marketplace = () => {
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
             <Stack flexDirection='row'>
-                <h1>Marketplace</h1>
+                <h1>Flow Templates</h1>
             </Stack>
             <Grid container spacing={gridSpacing}>
                 {!isLoading &&
