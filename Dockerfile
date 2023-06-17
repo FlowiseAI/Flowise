@@ -1,8 +1,8 @@
-# Build local monorepo image
-# docker build --no-cache -t  flowise .
+# Build local monorepo docker image
+# docker build --no-cache -t  klonium-flow .
 
 # Run image
-# docker run -d -p 3000:3000 flowise
+# docker run -d -p 3000:3000 klonium-flow
 
 FROM node:18-alpine
 RUN apk add --update libc6-compat python3 make g++
