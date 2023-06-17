@@ -43,3 +43,6 @@
 
 ## compressed
 **/*.tgz
+
+## custom
+data
