@@ -58,7 +58,7 @@ export class App {
         this.app = express()
 
         // Add the requestLogger middleware to log all requests
-        this.app.use(requestLogger);
+        this.app.use(requestLogger)
     }
 
     async initDatabase() {
