@@ -507,8 +507,8 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-            const chatId = await getChatId(chatflow.id)
-            if (!chatId) return res.status(500).send(`Chatflow ${chatflowid} first message not found`)
+            let chatId = await getChatId(chatflow.id)
+            if (!chatId) chatId = Date.now().toString()
 
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
