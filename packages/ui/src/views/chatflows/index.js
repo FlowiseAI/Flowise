@@ -103,7 +103,7 @@ const Chatflows = () => {
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
             <Stack flexDirection='row'>
-                <h1>Chatflows</h1>
+                <h1>Flows</h1>
                 <Grid sx={{ mb: 1.25 }} container direction='row'>
                     <Box sx={{ flexGrow: 1 }} />
                     <Grid item>
@@ -127,7 +127,7 @@ const Chatflows = () => {
                     <Box sx={{ p: 2, height: 'auto' }}>
                         <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
                     </Box>
-                    <div>No Chatflows Yet</div>
+                    <div>No flows yet</div>
                 </Stack>
             )}
             <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
