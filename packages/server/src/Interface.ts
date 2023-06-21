@@ -24,6 +24,17 @@ export interface IChatMessage {
     sourceDocuments: string
 }
 
+export interface ITool {
+    id: string
+    name: string
+    description: string
+    color: string
+    schema: string
+    func: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
