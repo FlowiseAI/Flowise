@@ -42,6 +42,14 @@ class OpenAIFunctionAgent_Agents implements INode {
                 description:
                     'Only works with gpt-3.5-turbo-0613 and gpt-4-0613. Refer <a target="_blank" href="https://platform.openai.com/docs/guides/gpt/function-calling">docs</a> for more info',
                 type: 'BaseChatModel'
+            },
+            {
+                label: 'System Message',
+                name: 'systemMessage',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -49,13 +57,17 @@ class OpenAIFunctionAgent_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const memory = nodeData.inputs?.memory as BaseChatMemory
+        const systemMessage = nodeData.inputs?.systemMessage as string
 
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
 
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'openai-functions',
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true' ? true : false,
+            agentArgs: {
+                prefix: systemMessage ?? `You are a helpful AI assistant.`
+            }
         })
         if (memory) executor.memory = memory
 
