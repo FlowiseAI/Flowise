@@ -128,7 +128,7 @@ export class ChildProcess {
  * @returns {DataSource}
  */
 async function initDB() {
-    const homePath = path.join(getUserHome(), '.flowise')
+    const homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
     const childAppDataSource = new DataSource({
         type: 'sqlite',
         database: path.resolve(homePath, 'database.sqlite'),
