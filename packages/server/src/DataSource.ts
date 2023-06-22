@@ -8,7 +8,7 @@ import { getUserHome } from './utils'
 let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
-    const homePath = path.join(getUserHome(), '.flowise')
+    const homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
 
     appDataSource = new DataSource({
         type: 'sqlite',

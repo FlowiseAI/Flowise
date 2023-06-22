@@ -31,13 +31,27 @@ FLOWISE_PASSWORD=1234
 
 ## 📖 Documentation
 
-Coming Soon
-
-## 💻 Cloud Hosted
-
-Coming Soon
+[Flowise Docs](https://docs.flowiseai.com/)
 
 ## 🌐 Self Host
+
+### [Railway](https://docs.flowiseai.com/deployment/railway)
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/YK7J0v)
+
+### [Render](https://docs.flowiseai.com/deployment/render)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+
+### [AWS](https://docs.flowiseai.com/deployment/aws)
+
+### [Azure](https://docs.flowiseai.com/deployment/azure)
+
+### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
+
+### [GCP](https://docs.flowiseai.com/deployment/gcp)
+
+## 💻 Cloud Hosted
 
 Coming Soon
 
