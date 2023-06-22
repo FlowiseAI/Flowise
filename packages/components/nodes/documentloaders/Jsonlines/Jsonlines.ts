@@ -37,9 +37,8 @@ class Jsonlines_DocumentLoaders implements INode {
                 label: 'Pointer Extraction',
                 name: 'pointerName',
                 type: 'string',
-                description: 'Extracting the pointer',
                 placeholder: 'Enter pointer name',
-                optional: true
+                optional: false
             },
             {
                 label: 'Metadata',
@@ -60,6 +59,8 @@ class Jsonlines_DocumentLoaders implements INode {
         let alldocs = []
         let files: string[] = []
 
+        let pointer = '/' + pointerName.trim()
+
         if (jsonLinesFileBase64.startsWith('[') && jsonLinesFileBase64.endsWith(']')) {
             files = JSON.parse(jsonLinesFileBase64)
         } else {
@@ -71,7 +72,7 @@ class Jsonlines_DocumentLoaders implements INode {
             splitDataURI.pop()
             const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
             const blob = new Blob([bf])
-            const loader = new JSONLinesLoader(blob, pointerName)
+            const loader = new JSONLinesLoader(blob, pointer)
 
             if (textSplitter) {
                 const docs = await loader.loadAndSplit(textSplitter)
