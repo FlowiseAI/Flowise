@@ -1,0 +1,16 @@
+<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="26" width="26" y="-1" x="-1"/>
+  <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
+   <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
+  </g>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <text font-weight="bold" stroke="#000" transform="matrix(8.682896011956823,0,0,10.412942243751806,-30.866304860177404,-63.784276261342) " xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="1" id="svg_2" y="7.062874" x="3.579384" stroke-opacity="null" stroke-width="0" fill="#000000">JSON</text>
+  <text font-weight="bold" stroke="#000" transform="matrix(9.059566511875573,0,0,9.893934811310315,-1.3962337706973242,-106.08964247698567) " xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="1" id="svg_3" y="12.90427" x="0.172236" stroke-opacity="null" stroke-width="0" fill="#000000">Lines</text>
+ </g>
+</svg>
