@@ -18,6 +18,7 @@ export default class Start extends Command {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
+        DATABASE_PATH: Flags.string(),
         EXECUTION_MODE: Flags.string()
     }
 
@@ -53,6 +54,7 @@ export default class Start extends Command {
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
         if (flags.PORT) process.env.PORT = flags.PORT
+        if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
         if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
 
         await (async () => {
