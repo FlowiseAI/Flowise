@@ -13,6 +13,7 @@
         "@emotion/styled": "^11.10.6",
         "@mui/icons-material": "^5.0.3",
         "@mui/material": "^5.11.12",
+        "@mui/x-data-grid": "^6.8.0",
         "@tabler/icons": "^1.39.1",
         "clsx": "^1.1.1",
         "formik": "^2.2.6",
