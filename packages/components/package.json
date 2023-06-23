@@ -22,6 +22,7 @@
         "@pinecone-database/pinecone": "^0.0.12",
         "@supabase/supabase-js": "^2.21.0",
         "@types/js-yaml": "^4.0.5",
+        "apify-client": "^2.7.1",
         "axios": "^0.27.2",
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "^1.4.2",
