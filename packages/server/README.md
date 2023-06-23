@@ -29,6 +29,10 @@ FLOWISE_USERNAME=user
 FLOWISE_PASSWORD=1234
 ```
 
+## 🔎 Debugging
+
+You can set `DEBUG=true` to the `.env` file. Refer [here](https://docs.flowiseai.com/environment-variables) for full list of env variables
+
 ## 📖 Documentation
 
 [Flowise Docs](https://docs.flowiseai.com/)
