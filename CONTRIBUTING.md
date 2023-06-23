@@ -42,7 +42,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Prerequisite
 
--   Install Yarn
+-   Install [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
     ```bash
     npm i -g yarn
     ```
@@ -84,7 +84,11 @@ Flowise has 3 different modules in a single mono repository.
     yarn start
     ```
 
-9. For development, run
+9. For development:
+
+    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/ui`
+    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+    - Run
 
     ```bash
     yarn dev

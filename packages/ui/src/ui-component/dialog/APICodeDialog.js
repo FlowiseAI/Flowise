@@ -135,6 +135,9 @@ const embedCodeCustomization = (chatflowid) => {
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
+        chatflowConfig: {
+            // topK: 2
+        },
         theme: {
             button: {
                 backgroundColor: "#3B81F6",
@@ -149,6 +152,7 @@ const embedCodeCustomization = (chatflowid) => {
                 backgroundColor: "#ffffff",
                 height: 700,
                 width: 400,
+                fontSize: 16,
                 poweredByTextColor: "#303235",
                 botMessage: {
                     backgroundColor: "#f7f8ff",
@@ -189,6 +193,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
+    const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
     const getConfigApi = useApi(configApi.getConfig)
 
     const onCheckBoxChanged = (newVal) => {
@@ -553,6 +558,7 @@ query({
     useEffect(() => {
         if (show) {
             getAllAPIKeysApi.request()
+            getIsChatflowStreamingApi.request(dialogProps.chatflowid)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -664,6 +670,15 @@ query({
                                 showLineNumbers={false}
                                 wrapLines
                             />
+                        )}
+                        {value !== 0 && getIsChatflowStreamingApi.data?.isStreaming && (
+                            <p>
+                                Read&nbsp;
+                                <a rel='noreferrer' target='_blank' href='https://docs.flowiseai.com/how-to-use#streaming'>
+                                    here
+                                </a>
+                                &nbsp;on how to stream response back to application
+                            </p>
                         )}
                     </TabPanel>
                 ))}
