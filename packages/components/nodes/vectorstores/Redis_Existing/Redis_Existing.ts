@@ -1,12 +1,10 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { createClient } from 'redis'
 import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
-import { flatten } from 'lodash'
 
-class RedisUpsert_VectorStores implements INode {
+class Redis_Existing_VectorStores implements INode {
     label: string
     name: string
     description: string
@@ -18,20 +16,14 @@ class RedisUpsert_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Redis Upsert Document'
-        this.name = 'redisUpsert'
+        this.label = 'Redis Load Existing Index'
+        this.name = 'redisExistingIndex'
         this.type = 'Redis'
         this.icon = 'redis.svg'
         this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Redis'
+        this.description = 'Load existing index from Redis (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.inputs = [
-            {
-                label: 'Document',
-                name: 'document',
-                type: 'Document',
-                list: true
-            },
             {
                 label: 'Embeddings',
                 name: 'embeddings',
@@ -55,6 +47,13 @@ class RedisUpsert_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Redis Filters',
+                name: 'redisFilters',
+                type: 'json',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -73,9 +72,9 @@ class RedisUpsert_VectorStores implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const redisURI = nodeData.inputs?.redisURI as string
-        const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const indexName = nodeData.inputs?.redisIndex as string
+        const redisFilters = nodeData.inputs?.redisFilters as string[]
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseInt(topK, 10) : 4
@@ -83,18 +82,15 @@ class RedisUpsert_VectorStores implements INode {
         const client = createClient({ url: redisURI })
         await client.connect()
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
-        }
-
         const dbConfig: RedisVectorStoreConfig = {
             redisClient: client,
             indexName
         }
+        if (redisFilters) {
+            if (Array.isArray(redisFilters)) dbConfig.filter = redisFilters
+        }
 
-        const vectorStore = await RedisVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+        const vectorStore = new RedisVectorStore(embeddings, dbConfig)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
@@ -107,4 +103,4 @@ class RedisUpsert_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: RedisUpsert_VectorStores }
+module.exports = { nodeClass: Redis_Existing_VectorStores }
