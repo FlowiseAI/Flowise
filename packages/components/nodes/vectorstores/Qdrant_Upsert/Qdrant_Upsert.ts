@@ -40,7 +40,8 @@ class QdrantUpsert_VectorStores implements INode {
             {
                 label: 'Qdrant Server URL',
                 name: 'qdrantServerUrl',
-                type: 'string'
+                type: 'string',
+                placeholder: 'http://localhost:6333'
             },
             {
                 label: 'Qdrant Collection Name',
@@ -50,7 +51,8 @@ class QdrantUpsert_VectorStores implements INode {
             {
                 label: 'Qdrant API Key',
                 name: 'qdrantApiKey',
-                type: 'password'
+                type: 'password',
+                optional: true
             },
             {
                 label: 'Top K',

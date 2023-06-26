@@ -32,7 +32,8 @@ class Qdrant_Existing_VectorStores implements INode {
             {
                 label: 'Qdrant Server URL',
                 name: 'qdrantServerUrl',
-                type: 'string'
+                type: 'string',
+                placeholder: 'http://localhost:6333'
             },
             {
                 label: 'Qdrant Collection Name',
@@ -42,14 +43,14 @@ class Qdrant_Existing_VectorStores implements INode {
             {
                 label: 'Qdrant API Key',
                 name: 'qdrantApiKey',
-                type: 'password'
+                type: 'password',
+                optional: true
             },
             {
                 label: 'Qdrant Collection Cofiguration',
                 name: 'qdrantCollectionCofiguration',
                 type: 'json',
                 optional: true,
-
                 additionalParams: true
             },
             {
