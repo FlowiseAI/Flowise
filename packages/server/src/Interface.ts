@@ -13,6 +13,7 @@ export interface IChatFlow {
     deployed: boolean
     updatedDate: Date
     createdDate: Date
+    chatbotConfig?: string
 }
 
 export interface IChatMessage {
