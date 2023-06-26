@@ -9,6 +9,8 @@ import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
 // Project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
+import ShareChatbot from './ShareChatbot'
+import EmbedChat from './EmbedChat'
 
 // Const
 import { baseURL } from 'store/constant'
@@ -19,6 +21,7 @@ import pythonSVG from 'assets/images/python.svg'
 import javascriptSVG from 'assets/images/javascript.svg'
 import cURLSVG from 'assets/images/cURL.svg'
 import EmbedSVG from 'assets/images/embed.svg'
+import ShareChatbotSVG from 'assets/images/sharing.png'
 
 // API
 import apiKeyApi from 'api/apikey'
@@ -119,77 +122,19 @@ const getConfigExamplesForCurl = (configData, bodyType) => {
     return finalStr
 }
 
-const embedCode = (chatflowid) => {
-    return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-    })
-</script>`
-}
-
-const embedCodeCustomization = (chatflowid) => {
-    return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-        chatflowConfig: {
-            // topK: 2
-        },
-        theme: {
-            button: {
-                backgroundColor: "#3B81F6",
-                right: 20,
-                bottom: 20,
-                size: "medium",
-                iconColor: "white",
-                customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
-            },
-            chatWindow: {
-                welcomeMessage: "Hello! This is custom welcome message",
-                backgroundColor: "#ffffff",
-                height: 700,
-                width: 400,
-                fontSize: 16,
-                poweredByTextColor: "#303235",
-                botMessage: {
-                    backgroundColor: "#f7f8ff",
-                    textColor: "#303235",
-                    showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
-                },
-                userMessage: {
-                    backgroundColor: "#3B81F6",
-                    textColor: "#ffffff",
-                    showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
-                },
-                textInput: {
-                    placeholder: "Type your question",
-                    backgroundColor: "#ffffff",
-                    textColor: "#303235",
-                    sendButtonColor: "#3B81F6",
-                }
-            }
-        }
-    })
-</script>`
-}
-
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL']
+
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
     const [checkboxVal, setCheckbox] = useState(false)
-    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
+    const [chatbotConfig, setChatbotConfig] = useState(null)
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -201,10 +146,6 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         if (newVal) {
             getConfigApi.request(dialogProps.chatflowid)
         }
-    }
-
-    const onCheckBoxEmbedChatChanged = (newVal) => {
-        setEmbedChatCheckbox(newVal)
     }
 
     const onApiKeySelected = (keyValue) => {
@@ -265,8 +206,6 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}'`
-        } else if (codeLang === 'Embed') {
-            return embedCode(dialogProps.chatflowid)
         }
         return ''
     }
@@ -309,8 +248,6 @@ query({"question": "Hey, how are you?"}).then((response) => {
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
-        } else if (codeLang === 'Embed') {
-            return embedCode(dialogProps.chatflowid)
         }
         return ''
     }
@@ -318,7 +255,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
             return 'python'
-        } else if (codeLang === 'JavaScript' || codeLang === 'Embed') {
+        } else if (codeLang === 'JavaScript') {
             return 'javascript'
         } else if (codeLang === 'cURL') {
             return 'bash'
@@ -335,6 +272,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return EmbedSVG
         } else if (codeLang === 'cURL') {
             return cURLSVG
+        } else if (codeLang === 'Share Chatbot') {
+            return ShareChatbotSVG
         }
         return pythonSVG
     }
@@ -552,6 +491,12 @@ query({
                 setChatflowApiKeyId(dialogProps.chatflowApiKeyId)
                 setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId))
             }
+
+            if (dialogProps.chatbotConfig) {
+                setChatbotConfig(JSON.parse(dialogProps.chatbotConfig))
+            } else {
+                setChatbotConfig(null)
+            }
         }
     }, [dialogProps, getAllAPIKeysApi.data])
 
@@ -593,92 +538,71 @@ query({
                             ))}
                         </Tabs>
                     </div>
-                    {value !== 0 && (
-                        <div style={{ flex: 20 }}>
-                            <Dropdown
-                                name='SelectKey'
-                                disableClearable={true}
-                                options={keyOptions}
-                                onSelect={(newValue) => onApiKeySelected(newValue)}
-                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
-                            />
-                        </div>
-                    )}
+                    <div style={{ flex: 20 }}>
+                        <Dropdown
+                            name='SelectKey'
+                            disableClearable={true}
+                            options={keyOptions}
+                            onSelect={(newValue) => onApiKeySelected(newValue)}
+                            value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
+                        />
+                    </div>
                 </div>
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
-                        {value === 0 && (
+                        {(codeLang === 'Embed' || codeLang === 'Share Chatbot') && chatflowApiKeyId && (
                             <>
-                                <span>
-                                    Paste this anywhere in the <code>{`<body>`}</code> tag of your html file.
-                                    <p>
-                                        You can also specify a&nbsp;
-                                        <a
-                                            rel='noreferrer'
-                                            target='_blank'
-                                            href='https://www.npmjs.com/package/flowise-embed?activeTab=versions'
-                                        >
-                                            version
-                                        </a>
-                                        :&nbsp;<code>{`https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js`}</code>
-                                    </p>
-                                </span>
-                                <div style={{ height: 10 }}></div>
+                                <p>You cannot use API key while embedding/sharing chatbot.</p>
+                                <p>
+                                    Please select <b>&quot;No Authorization&quot;</b> from the dropdown at the top right corner.
+                                </p>
                             </>
                         )}
-                        <CopyBlock
-                            theme={atomOneDark}
-                            text={chatflowApiKeyId ? getCodeWithAuthorization(codeLang) : getCode(codeLang)}
-                            language={getLang(codeLang)}
-                            showLineNumbers={false}
-                            wrapLines
-                        />
-                        {value !== 0 && <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />}
-                        {value !== 0 && checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
+                        {codeLang === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
+                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && (
                             <>
-                                <TableViewOnly rows={getConfigApi.data} columns={Object.keys(getConfigApi.data[0])} />
                                 <CopyBlock
                                     theme={atomOneDark}
-                                    text={
-                                        chatflowApiKeyId
-                                            ? dialogProps.isFormDataRequired
-                                                ? getConfigCodeWithFormDataWithAuth(codeLang, getConfigApi.data)
-                                                : getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
-                                            : dialogProps.isFormDataRequired
-                                            ? getConfigCodeWithFormData(codeLang, getConfigApi.data)
-                                            : getConfigCode(codeLang, getConfigApi.data)
-                                    }
+                                    text={chatflowApiKeyId ? getCodeWithAuthorization(codeLang) : getCode(codeLang)}
                                     language={getLang(codeLang)}
                                     showLineNumbers={false}
                                     wrapLines
                                 />
+                                <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
+                                {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
+                                    <>
+                                        <TableViewOnly rows={getConfigApi.data} columns={Object.keys(getConfigApi.data[0])} />
+                                        <CopyBlock
+                                            theme={atomOneDark}
+                                            text={
+                                                chatflowApiKeyId
+                                                    ? dialogProps.isFormDataRequired
+                                                        ? getConfigCodeWithFormDataWithAuth(codeLang, getConfigApi.data)
+                                                        : getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
+                                                    : dialogProps.isFormDataRequired
+                                                    ? getConfigCodeWithFormData(codeLang, getConfigApi.data)
+                                                    : getConfigCode(codeLang, getConfigApi.data)
+                                            }
+                                            language={getLang(codeLang)}
+                                            showLineNumbers={false}
+                                            wrapLines
+                                        />
+                                    </>
+                                )}
+                                {getIsChatflowStreamingApi.data?.isStreaming && (
+                                    <p>
+                                        Read&nbsp;
+                                        <a rel='noreferrer' target='_blank' href='https://docs.flowiseai.com/how-to-use#streaming'>
+                                            here
+                                        </a>
+                                        &nbsp;on how to stream response back to application
+                                    </p>
+                                )}
                             </>
                         )}
-                        {value === 0 && (
-                            <CheckboxInput
-                                label='Show Embed Chat Config'
-                                value={embedChatCheckboxVal}
-                                onChange={onCheckBoxEmbedChatChanged}
-                            />
-                        )}
-                        {value === 0 && embedChatCheckboxVal && (
-                            <CopyBlock
-                                theme={atomOneDark}
-                                text={embedCodeCustomization(dialogProps.chatflowid)}
-                                language={getLang('Embed')}
-                                showLineNumbers={false}
-                                wrapLines
-                            />
-                        )}
-                        {value !== 0 && getIsChatflowStreamingApi.data?.isStreaming && (
-                            <p>
-                                Read&nbsp;
-                                <a rel='noreferrer' target='_blank' href='https://docs.flowiseai.com/how-to-use#streaming'>
-                                    here
-                                </a>
-                                &nbsp;on how to stream response back to application
-                            </p>
+                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
+                            <ShareChatbot chatflowid={dialogProps.chatflowid} chatbotConfig={chatbotConfig} />
                         )}
                     </TabPanel>
                 ))}
