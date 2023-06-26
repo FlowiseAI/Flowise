@@ -1,11 +1,11 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - LangchainJS UI
+# Flowise - Low-Code LLM apps builder
 
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-Drag & drop UI to build your customized LLM flow using [LangchainJS](https://github.com/hwchase17/langchainjs)
+Drag & drop UI to build your customized LLM flow
 
 ## ⚡Quick Start
 
