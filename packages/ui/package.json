@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.2.11",
+    "version": "1.2.12",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -13,8 +13,11 @@
         "@emotion/styled": "^11.10.6",
         "@mui/icons-material": "^5.0.3",
         "@mui/material": "^5.11.12",
+        "@mui/x-data-grid": "^6.8.0",
         "@tabler/icons": "^1.39.1",
         "clsx": "^1.1.1",
+        "flowise-embed": "*",
+        "flowise-embed-react": "*",
         "formik": "^2.2.6",
         "framer-motion": "^4.1.13",
         "history": "^5.0.0",
@@ -26,6 +29,7 @@
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-code-blocks": "^0.0.9-0",
+        "react-color": "^2.19.3",
         "react-datepicker": "^4.8.0",
         "react-device-detect": "^1.17.0",
         "react-dom": "^18.2.0",
@@ -46,11 +50,11 @@
         "yup": "^0.32.9"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "dev": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "start": "craco start",
+        "dev": "craco start",
+        "build": "craco build",
+        "test": "craco test",
+        "eject": "craco eject"
     },
     "babel": {
         "presets": [
@@ -71,6 +75,7 @@
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.15.8",
+        "@craco/craco": "^7.1.0",
         "@testing-library/jest-dom": "^5.11.10",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^12.8.3",

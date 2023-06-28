@@ -7,10 +7,11 @@ import { useSelector } from 'react-redux'
 import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit } from '@tabler/icons'
 
 // project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
+import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
 import { SwitchInput } from 'ui-component/switch/Switch'
@@ -18,6 +19,9 @@ import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import ToolDialog from 'views/tools/ToolDialog'
+
+const EDITABLE_TOOLS = ['selectedTool']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -36,6 +40,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [position, setPosition] = useState(0)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [showAsyncOptionDialog, setAsyncOptionEditDialog] = useState('')
+    const [asyncOptionEditDialogProps, setAsyncOptionEditDialogProps] = useState({})
+    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -59,6 +66,42 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
         data.inputs[inputParamName] = newValue
+    }
+
+    const editAsyncOption = (inputParamName, inputValue) => {
+        if (inputParamName === 'selectedTool') {
+            setAsyncOptionEditDialogProps({
+                title: 'Edit Tool',
+                type: 'EDIT',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Save',
+                toolId: inputValue
+            })
+        }
+        setAsyncOptionEditDialog(inputParamName)
+    }
+
+    const addAsyncOption = (inputParamName) => {
+        if (inputParamName === 'selectedTool') {
+            setAsyncOptionEditDialogProps({
+                title: 'Add New Tool',
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add'
+            })
+        }
+        setAsyncOptionEditDialog(inputParamName)
+    }
+
+    const onConfirmAsyncOption = (selectedOptionId = '') => {
+        if (!selectedOptionId) {
+            data.inputs[showAsyncOptionDialog] = ''
+        } else {
+            data.inputs[showAsyncOptionDialog] = selectedOptionId
+            setReloadTimestamp(Date.now().toString())
+        }
+        setAsyncOptionEditDialogProps({})
+        setAsyncOptionEditDialog('')
     }
 
     useEffect(() => {
@@ -162,6 +205,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
+                                key={data.inputs[inputParam.name]}
                                 disabled={disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
@@ -186,12 +230,44 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
+                        )}
+                        {inputParam.type === 'asyncOptions' && (
+                            <>
+                                {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
+                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <AsyncDropdown
+                                        disabled={disabled}
+                                        name={inputParam.name}
+                                        nodeData={data}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                        isCreateNewOption={EDITABLE_TOOLS.includes(inputParam.name)}
+                                        onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        onCreateNew={() => addAsyncOption(inputParam.name)}
+                                    />
+                                    {EDITABLE_TOOLS.includes(inputParam.name) && data.inputs[inputParam.name] && (
+                                        <IconButton
+                                            title='Edit'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
+                                        >
+                                            <IconEdit />
+                                        </IconButton>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </Box>
                 </>
             )}
+            <ToolDialog
+                show={EDITABLE_TOOLS.includes(showAsyncOptionDialog)}
+                dialogProps={asyncOptionEditDialogProps}
+                onCancel={() => setAsyncOptionEditDialog('')}
+                onConfirm={onConfirmAsyncOption}
+            ></ToolDialog>
         </div>
     )
 }

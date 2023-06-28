@@ -13,6 +13,7 @@ export interface IChatFlow {
     deployed: boolean
     updatedDate: Date
     createdDate: Date
+    chatbotConfig?: string
 }
 
 export interface IChatMessage {
@@ -22,6 +23,17 @@ export interface IChatMessage {
     chatflowid: string
     createdDate: Date
     sourceDocuments: string
+}
+
+export interface ITool {
+    id: string
+    name: string
+    description: string
+    color: string
+    schema: string
+    func: string
+    updatedDate: Date
+    createdDate: Date
 }
 
 export interface IComponentNodes {

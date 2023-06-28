@@ -13,7 +13,7 @@ import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck,
 // project imports
 import Settings from 'views/settings'
 import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
-import APICodeDialog from 'ui-component/dialog/APICodeDialog'
+import APICodeDialog from 'views/chatflows/APICodeDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -107,7 +107,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             title: 'Embed in website or use as API',
             chatflowid: chatflow.id,
             chatflowApiKeyId: chatflow.apikeyid,
-            isFormDataRequired
+            isFormDataRequired,
+            chatbotConfig: chatflow.chatbotConfig
         })
         setAPIDialogOpen(true)
     }

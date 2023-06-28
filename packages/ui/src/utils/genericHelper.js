@@ -39,7 +39,7 @@ export const initNode = (nodeData, newNodeId) => {
     const incoming = nodeData.inputs ? nodeData.inputs.length : 0
     const outgoing = 1
 
-    const whitelistTypes = ['options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
+    const whitelistTypes = ['asyncOptions', 'options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
 
     for (let i = 0; i < incoming; i += 1) {
         const newInput = {
@@ -333,4 +333,23 @@ export const throttle = (func, limit) => {
             }, limit - (Date.now() - lastRan))
         }
     }
+}
+
+export const generateRandomGradient = () => {
+    function randomColor() {
+        var color = 'rgb('
+        for (var i = 0; i < 3; i++) {
+            var random = Math.floor(Math.random() * 256)
+            color += random
+            if (i < 2) {
+                color += ','
+            }
+        }
+        color += ')'
+        return color
+    }
+
+    var gradient = 'linear-gradient(' + randomColor() + ', ' + randomColor() + ')'
+
+    return gradient
 }

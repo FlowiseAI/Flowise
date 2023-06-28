@@ -8,6 +8,9 @@ services:
             - PORT=${PORT}
             - FLOWISE_USERNAME=${FLOWISE_USERNAME}
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+            - DATABASE_PATH=${DATABASE_PATH}
+            - EXECUTION_MODE=${EXECUTION_MODE}
+            - DEBUG=${DEBUG}
         ports:
             - '${PORT}:${PORT}'
         volumes:
