@@ -285,7 +285,7 @@ export const generateExportFlowData = (flowData) => {
 }
 
 export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle) => {
-    // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string-llmChain_1-llmChain_1-input-promptValues-string"
+    // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string|json-llmChain_1-llmChain_1-input-promptValues-string"
     //                    {source}  -{sourceHandle}                           -{target}  -{targetHandle}
     const parentNodes = []
     const inputEdges = edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
@@ -352,4 +352,32 @@ export const generateRandomGradient = () => {
     var gradient = 'linear-gradient(' + randomColor() + ', ' + randomColor() + ')'
 
     return gradient
+}
+
+export const getInputVariables = (paramValue) => {
+    let returnVal = paramValue
+    const variableStack = []
+    const inputVariables = []
+    let startIdx = 0
+    const endIdx = returnVal.length
+
+    while (startIdx < endIdx) {
+        const substr = returnVal.substring(startIdx, startIdx + 1)
+
+        // Store the opening double curly bracket
+        if (substr === '{') {
+            variableStack.push({ substr, startIdx: startIdx + 1 })
+        }
+
+        // Found the complete variable
+        if (substr === '}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{') {
+            const variableStartIdx = variableStack[variableStack.length - 1].startIdx
+            const variableEndIdx = startIdx
+            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
+            inputVariables.push(variableFullPath)
+            variableStack.pop()
+        }
+        startIdx += 1
+    }
+    return inputVariables
 }
