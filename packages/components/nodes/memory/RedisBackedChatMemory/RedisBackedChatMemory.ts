@@ -19,7 +19,7 @@ class RedisBackedChatMemory_Memory implements INode {
         this.label = 'Redis-Backed Chat Memory'
         this.name = 'RedisBackedChatMemory'
         this.type = 'RedisBackedChatMemory'
-        this.icon = 'memory.svg'
+        this.icon = 'redis.svg'
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in Redis server'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
