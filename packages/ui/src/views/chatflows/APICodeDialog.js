@@ -134,7 +134,6 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
     const [checkboxVal, setCheckbox] = useState(false)
-    const [chatbotConfig, setChatbotConfig] = useState(null)
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -491,12 +490,6 @@ query({
                 setChatflowApiKeyId(dialogProps.chatflowApiKeyId)
                 setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId))
             }
-
-            if (dialogProps.chatbotConfig) {
-                setChatbotConfig(JSON.parse(dialogProps.chatbotConfig))
-            } else {
-                setChatbotConfig(null)
-            }
         }
     }, [dialogProps, getAllAPIKeysApi.data])
 
@@ -601,9 +594,7 @@ query({
                                 )}
                             </>
                         )}
-                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
-                            <ShareChatbot chatflowid={dialogProps.chatflowid} chatbotConfig={chatbotConfig} />
-                        )}
+                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && <ShareChatbot />}
                     </TabPanel>
                 ))}
             </DialogContent>
