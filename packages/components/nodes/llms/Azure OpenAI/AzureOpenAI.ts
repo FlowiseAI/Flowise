@@ -179,7 +179,7 @@ class AzureOpenAI_LLMs implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
