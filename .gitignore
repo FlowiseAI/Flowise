@@ -43,3 +43,8 @@
 
 ## compressed
 **/*.tgz
+
+## data
+data
+*.db
+
