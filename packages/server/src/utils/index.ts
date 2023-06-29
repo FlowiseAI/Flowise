@@ -463,7 +463,7 @@ export const isSameOverrideConfig = (
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return path.join(__dirname, '..', '..', 'api.json')
+    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
 }
 
 /**
