@@ -19,6 +19,9 @@ export class ChatFlow implements IChatFlow {
     @Column()
     deployed: boolean
 
+    @Column({ nullable: true })
+    chatbotConfig?: string
+
     @CreateDateColumn()
     createdDate: Date
 
