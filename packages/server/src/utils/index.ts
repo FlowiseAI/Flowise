@@ -463,7 +463,7 @@ export const isSameOverrideConfig = (
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return path.join(__dirname, '..', '..', 'api.json')
+    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
 }
 
 /**
@@ -545,6 +545,18 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
     ]
     await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     return content
+}
+
+/**
+ * Get API Key details
+ * @param {string} apiKey
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const getApiKey = async (apiKey: string) => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
+    if (keyIndex < 0) return undefined
+    return existingAPIKeys[keyIndex]
 }
 
 /**

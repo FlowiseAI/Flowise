@@ -124,7 +124,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,

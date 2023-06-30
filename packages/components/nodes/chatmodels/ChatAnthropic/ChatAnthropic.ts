@@ -120,7 +120,7 @@ class ChatAnthropic_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AnthropicInput> & { anthropicApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             anthropicApiKey,
             streaming: streaming ?? true
