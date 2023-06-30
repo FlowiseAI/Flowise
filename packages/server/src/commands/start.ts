@@ -20,6 +20,7 @@ export default class Start extends Command {
         PORT: Flags.string(),
         DEBUG: Flags.string(),
         DATABASE_PATH: Flags.string(),
+        APIKEY_PATH: Flags.string(),
         EXECUTION_MODE: Flags.string()
     }
 
@@ -56,6 +57,7 @@ export default class Start extends Command {
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
         if (flags.PORT) process.env.PORT = flags.PORT
         if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
+        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
         if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
 
