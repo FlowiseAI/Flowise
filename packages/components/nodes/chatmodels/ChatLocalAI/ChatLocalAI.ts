@@ -74,7 +74,7 @@ class ChatLocalAI_ChatModels implements INode {
         const basePath = nodeData.inputs?.basePath as string
 
         const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
         }
