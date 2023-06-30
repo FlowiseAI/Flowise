@@ -1,19 +1,25 @@
-import * as path from 'path'
-import * as fs from 'fs'
+// BEWARE: This file is an intereem solution until we have a proper config strategy
 
-// should be config via .env or config file
-const logDir = path.join(__dirname, '../../../..', 'logs')
+import path from 'path'
+import dotenv from 'dotenv'
 
-// Create the log directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir)
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
+
+// default config
+const loggingConfig = {
+    dir: process.env.LOG_PATH ?? './logs',
+    server: {
+        level: 'info',
+        filename: 'server.log',
+        errorFilename: 'server-error.log'
+    },
+    express: {
+        level: 'info',
+        format: 'jsonl', // can't be changed currently
+        filename: 'server-requests.log.jsonl' // should end with .jsonl
+    }
 }
 
-console.info('Defined logDir:', logDir, ' in ' + __filename)
-
-export const config = {
-    logLevel: 'info', // Set your desired log level
-    logDir: logDir
+export default {
+    logging: loggingConfig
 }
-
-export default config

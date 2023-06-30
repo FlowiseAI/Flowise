@@ -1,9 +1,18 @@
 import * as path from 'path'
-import config from './config'
+import * as fs from 'fs'
+import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 
 const { combine, timestamp, printf } = format
+
+// expect the log dir be relative to the projects root
+const logDir = path.join(__dirname, '../../../..', config.logging.dir ?? './logs')
+
+// Create the log directory if it doesn't exist
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir)
+}
 
 const logger = createLogger({
     format: combine(
@@ -19,26 +28,33 @@ const logger = createLogger({
     transports: [
         new transports.Console(),
         new transports.File({
-            filename: path.join(config.logDir, 'server-error.log'),
-            level: 'error' // Log only errors to this file
+            filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
+            level: config.logging.server.level ?? 'info'
         }),
         new transports.File({
-            filename: path.join(config.logDir, 'server.log')
+            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log'),
+            level: 'error' // Log only errors to this file
         })
     ],
     exceptionHandlers: [
         new transports.File({
-            filename: path.join(config.logDir, 'server-exceptions.log')
+            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
         })
     ],
     rejectionHandlers: [
         new transports.File({
-            filename: path.join(config.logDir, 'server-rejections.log')
+            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
         })
     ]
 })
 
-export function requestLogger(req: Request, res: Response, next: NextFunction): void {
+/**
+ * This function is used by express as a middleware.
+ * @example
+ *   this.app = express()
+ *   this.app.use(expressRequestLogger)
+ */
+export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
     const fileLogger = createLogger({
         format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json()),
         defaultMeta: {
@@ -54,11 +70,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
         },
         transports: [
             new transports.File({
-                filename: path.join(config.logDir, 'server-requests.jsonl.log'),
+                filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
                 level: 'debug'
-            }),
-            new transports.File({
-                filename: path.join(config.logDir, 'server-updates.jsonl.log')
             })
         ]
     })
@@ -78,7 +91,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
         fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
     } else {
-        fileLogger.verbose(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+        fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
     }
 
     next()

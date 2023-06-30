@@ -43,3 +43,6 @@
 
 ## compressed
 **/*.tgz
+
+## data
+logs

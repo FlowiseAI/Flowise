@@ -7,7 +7,7 @@ import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
-import { requestLogger } from './utils/logger'
+import { expressRequestLogger } from './utils/logger'
 
 import {
     IChatFlow,
@@ -59,8 +59,8 @@ export class App {
     constructor() {
         this.app = express()
 
-        // Add the requestLogger middleware to log all requests
-        this.app.use(requestLogger)
+        // Add the expressRequestLogger middleware to log all requests
+        this.app.use(expressRequestLogger)
     }
 
     async initDatabase() {
