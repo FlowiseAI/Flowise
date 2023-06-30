@@ -9,6 +9,7 @@
 
 ## logs
 **/*.log
+**/logs
 
 ## build
 **/dist
@@ -43,6 +44,3 @@
 
 ## compressed
 **/*.tgz
-
-## data
-logs
