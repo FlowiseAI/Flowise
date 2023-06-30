@@ -548,6 +548,18 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
 }
 
 /**
+ * Get API Key details
+ * @param {string} apiKey
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const getApiKey = async (apiKey: string) => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
+    if (keyIndex < 0) return undefined
+    return existingAPIKeys[keyIndex]
+}
+
+/**
  * Update existing API key
  * @param {string} keyIdToUpdate
  * @param {string} newKeyName
