@@ -96,6 +96,7 @@ export class App {
             const whitelistURLs = [
                 '/api/v1/verify/apikey/',
                 '/api/v1/chatflows/apikey/',
+                '/api/v1/public-chatflows',
                 '/api/v1/prediction/',
                 '/api/v1/node-icon/',
                 '/api/v1/chatflows-streaming'
