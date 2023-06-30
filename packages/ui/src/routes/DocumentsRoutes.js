@@ -18,11 +18,11 @@ const DocumentsRoutes = {
             element: <Sources />
         },
         {
-            path: '/sources/:id/documents',
+            path: '/sources/:id',
             element: <Documents />
         },
         {
-            path: '/sources/:id/documents/:documentId/parts',
+            path: '/sources/:id/documents/:documentId',
             element: <Embeddings />
         }
     ]

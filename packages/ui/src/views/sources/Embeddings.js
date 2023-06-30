@@ -18,11 +18,11 @@ function Embeddings() {
         },
         {
             name: 'Documents',
-            link: `/sources/${params?.id}/documents`
+            link: `/sources/${params?.id}`
         },
         {
             name: 'parts',
-            link: `/sources/${params?.id}/documents/${params?.documentId}/parts`
+            link: `/sources/${params?.id}/documents/${params?.documentId}`
         }
     ]
 

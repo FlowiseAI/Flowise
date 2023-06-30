@@ -14,7 +14,7 @@ export default function Sources() {
     const customization = useSelector((state) => state.customization)
 
     const navigate = useNavigate()
-    const onClickRow = (id) => navigate(`/sources/${id}/documents`)
+    const onClickRow = (id) => navigate(`/sources/${id}`)
 
     const prepareData = (data) => {
         return data.map(({ id, loaded, title, location, documents, type }) => ({

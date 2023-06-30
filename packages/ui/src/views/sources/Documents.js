@@ -16,7 +16,7 @@ function Documents() {
 
     const params = useParams()
     const navigate = useNavigate()
-    const onClickRow = (id) => navigate(`/sources/${id}/documents/${id}/parts`)
+    const onClickRow = (id) => navigate(`/sources/${id}/documents/${id}`)
 
     const crumbs = [
         {
@@ -25,7 +25,7 @@ function Documents() {
         },
         {
             name: 'Documents',
-            link: `/sources/${params?.id}/documents`
+            link: `/sources/${params?.id}`
         }
     ]
 
