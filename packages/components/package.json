@@ -43,6 +43,7 @@
         "pdfjs-dist": "^3.7.107",
         "playwright": "^1.35.0",
         "puppeteer": "^20.7.1",
+        "redis": "^4.6.7",
         "srt-parser-2": "^1.2.3",
         "vm2": "^3.9.19",
         "weaviate-ts-client": "^1.1.0",

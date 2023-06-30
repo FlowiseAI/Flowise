@@ -89,7 +89,7 @@ class HuggingFaceInference_LLMs implements INode {
             apiKey
         }
 
-        if (temperature) obj.temperature = parseInt(temperature, 10)
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseInt(topP, 10)
         if (hfTopK) obj.topK = parseInt(hfTopK, 10)

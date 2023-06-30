@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
 
 // material-ui
@@ -24,11 +24,13 @@ import useApi from 'hooks/useApi'
 // utils
 import { generateExportFlowData } from 'utils/genericHelper'
 import { uiBaseURL } from 'store/constant'
+import { SET_CHATFLOW } from 'store/actions'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
 const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const flowNameRef = useRef()
     const settingsRef = useRef()
@@ -107,8 +109,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             title: 'Embed in website or use as API',
             chatflowid: chatflow.id,
             chatflowApiKeyId: chatflow.apikeyid,
-            isFormDataRequired,
-            chatbotConfig: chatflow.chatbotConfig
+            isFormDataRequired
         })
         setAPIDialogOpen(true)
     }
@@ -126,6 +127,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
+            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
         }
         setEditingFlowName(false)
 

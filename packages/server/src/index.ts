@@ -211,6 +211,16 @@ export class App {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         })
 
+        // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
+        this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (chatflow && chatflow.isPublic) return res.json(chatflow)
+            else if (chatflow && !chatflow.isPublic) return res.status(401).send(`Unauthorized`)
+            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        })
+
         // Save chatflow
         this.app.post('/api/v1/chatflows', async (req: Request, res: Response) => {
             const body = req.body
