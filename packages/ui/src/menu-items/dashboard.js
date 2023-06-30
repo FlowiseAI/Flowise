@@ -1,8 +1,9 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool } from '@tabler/icons'
+import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconArticle } from '@tabler/icons'
+import DataObjectIcon from '@mui/icons-material/DataObject'
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool }
+const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, DataObjectIcon, IconArticle }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -41,6 +42,22 @@ const dashboard = {
             type: 'item',
             url: '/apikey',
             icon: icons.IconKey,
+            breadcrumbs: true
+        },
+        {
+            id: 'chat-logs',
+            title: 'Chat Logs',
+            type: 'item',
+            url: '/chat-logs',
+            icon: icons.IconArticle,
+            breadcrumbs: true
+        },
+        {
+            id: 'sources',
+            title: 'Data sources',
+            type: 'item',
+            url: '/sources',
+            icon: icons.DataObjectIcon,
             breadcrumbs: true
         }
     ]
