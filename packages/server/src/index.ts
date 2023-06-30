@@ -93,7 +93,13 @@ export class App {
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = ['/api/v1/prediction/', '/api/v1/node-icon/', '/api/v1/chatflows-streaming']
+            const whitelistURLs = [
+                '/api/v1/verify/apikey/',
+                '/api/v1/chatflows/apikey/',
+                '/api/v1/prediction/',
+                '/api/v1/node-icon/',
+                '/api/v1/chatflows-streaming'
+            ]
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
                     whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
@@ -492,7 +498,7 @@ export class App {
         })
 
         // Verify api key
-        this.app.get('/api/v1/apikey/:apiKey', async (req: Request, res: Response) => {
+        this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
             try {
                 const apiKey = await getApiKey(req.params.apiKey)
                 if (!apiKey) return res.status(401).send('Unauthorized')
