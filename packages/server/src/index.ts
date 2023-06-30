@@ -194,6 +194,7 @@ export class App {
                     .createQueryBuilder('cf')
                     .where('cf.apikeyid = :apikeyid', { apikeyid: apiKey.id })
                     .orWhere('cf.apikeyid IS NULL')
+                    .orWhere('cf.apikeyid = ""')
                     .orderBy('cf.name', 'ASC')
                     .getMany()
                 if (chatflows.length >= 1) return res.status(200).send(chatflows)
