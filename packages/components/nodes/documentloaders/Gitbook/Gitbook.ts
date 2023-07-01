@@ -16,7 +16,7 @@ class Gitbook_DocumentLoaders implements INode {
         this.label = 'GitBook'
         this.name = 'gitbook'
         this.type = 'Document'
-        this.icon = 'gitbook_logo.svg'
+        this.icon = 'gitbook.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from GitBook`
         this.baseClasses = [this.type]
