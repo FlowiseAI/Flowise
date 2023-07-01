@@ -1,0 +1,21 @@
+name: Sync with parent flowise repo
+on:
+  schedule:
+    - cron:  '0 */12 * * *'  
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: main  
+
+      - name: Pull changes from parent repo
+        run: |
+          git remote add parent https://github.com/FlowiseAI/Flowise.git
+          git fetch parent main
+          git checkout staging
+          git merge parent/main
+          git push origin staging
