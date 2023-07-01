@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack } from '@mui/material'
+import { Grid, Box, Stack, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -20,7 +20,7 @@ import toolsApi from 'api/tools'
 import useApi from 'hooks/useApi'
 
 // icons
-import { IconPlus } from '@tabler/icons'
+import { IconPlus, IconFileImport } from '@tabler/icons'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -32,6 +32,40 @@ const Tools = () => {
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
+
+    const inputRef = useRef(null)
+
+    const onUploadFile = (file) => {
+        try {
+            const dialogProp = {
+                title: 'Add New Tool',
+                type: 'IMPORT',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Save',
+                data: JSON.parse(file)
+            }
+            setDialogProps(dialogProp)
+            setShowDialog(true)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const handleFileUpload = (e) => {
+        if (!e.target.files) return
+
+        const file = e.target.files[0]
+
+        const reader = new FileReader()
+        reader.onload = (evt) => {
+            if (!evt?.target?.result) {
+                return
+            }
+            const { result } = evt.target
+            onUploadFile(result)
+        }
+        reader.readAsText(file)
+    }
 
     const addNew = () => {
         const dialogProp = {
@@ -75,8 +109,17 @@ const Tools = () => {
                     <Grid sx={{ mb: 1.25 }} container direction='row'>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
+                            <Button
+                                variant='outlined'
+                                sx={{ mr: 2 }}
+                                onClick={() => inputRef.current.click()}
+                                startIcon={<IconFileImport />}
+                            >
+                                Load
+                            </Button>
+                            <input ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
                             <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                                Create New
+                                Create
                             </StyledButton>
                         </Grid>
                     </Grid>
@@ -86,7 +129,7 @@ const Tools = () => {
                         getAllToolsApi.data &&
                         getAllToolsApi.data.map((data, index) => (
                             <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                <ItemCard data={data} color={data.color} onClick={() => edit(data)} />
+                                <ItemCard data={data} onClick={() => edit(data)} />
                             </Grid>
                         ))}
                 </Grid>

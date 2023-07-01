@@ -462,12 +462,12 @@ export class App {
         // ----------------------------------------
 
         // Get all chatflows for marketplaces
-        this.app.get('/api/v1/marketplaces', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces')
+        this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
+            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
             const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
             const templates: any[] = []
             jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', file)
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
@@ -475,6 +475,25 @@ export class App {
                     name: file.split('.json')[0],
                     flowData: fileData.toString(),
                     description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+            return res.json(templates)
+        })
+
+        // Get all tools for marketplaces
+        this.app.get('/api/v1/marketplaces/tools', async (req: Request, res: Response) => {
+            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
+            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            const templates: any[] = []
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: index,
+                    templateName: file.split('.json')[0]
                 }
                 templates.push(template)
             })
