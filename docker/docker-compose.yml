@@ -3,6 +3,7 @@ version: '3.1'
 services:
     flowise:
         image: flowiseai/flowise
+        platform: linux/amd64
         restart: always
         environment:
             - PORT=${PORT}
