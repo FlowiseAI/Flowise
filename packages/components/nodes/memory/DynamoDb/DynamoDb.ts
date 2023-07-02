@@ -18,7 +18,7 @@ class DynamoDb_Memory implements INode {
         this.icon = 'dynamodb.svg'
         this.category = 'Memory'
         this.description = 'Stores the conversation in dynamo db table'
-        this.baseClasses = [this.type, ...getBaseClasses(DynamoDBChatMessageHistory)]
+        this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
         this.inputs = [
             {
                 label: 'Table Name',
@@ -54,6 +54,12 @@ class DynamoDb_Memory implements INode {
                 label: 'Secret Access Key',
                 name: 'secretAccessKey',
                 type: 'password'
+            },
+            {
+                label: 'Memory Key',
+                name: 'memoryKey',
+                type: 'string',
+                default: 'chat_history'
             }
         ]
     }
@@ -64,6 +70,7 @@ class DynamoDb_Memory implements INode {
         const region = nodeData.inputs?.region as string
         const accessKey = nodeData.inputs?.accessKey as string
         const secretAccessKey = nodeData.inputs?.secretAccessKey as string
+        const memoryKey = nodeData.inputs?.memoryKey as string
 
         const chatId = options.chatId
 
@@ -81,7 +88,9 @@ class DynamoDb_Memory implements INode {
         })
 
         const memory = new BufferMemory({
-            chatHistory: dynamoDb
+            memoryKey,
+            chatHistory: dynamoDb,
+            returnMessages: true
         })
         return memory
     }
