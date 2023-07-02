@@ -105,18 +105,10 @@ class AzureOpenAI_LLMs implements INode {
             {
                 label: 'Azure OpenAI Api Version',
                 name: 'azureOpenAIApiVersion',
-                type: 'options',
-                options: [
-                    {
-                        label: '2023-03-15-preview',
-                        name: '2023-03-15-preview'
-                    },
-                    {
-                        label: '2022-12-01',
-                        name: '2022-12-01'
-                    }
-                ],
-                default: '2023-03-15-preview'
+                type: 'string',
+                placeholder: '2023-06-01-preview',
+                description:
+                    'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions">examples</a>'
             },
             {
                 label: 'Max Tokens',
