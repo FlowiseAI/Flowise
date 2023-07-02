@@ -9,6 +9,7 @@ services:
             - FLOWISE_USERNAME=${FLOWISE_USERNAME}
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
             - DATABASE_PATH=${DATABASE_PATH}
+            - APIKEY_PATH=${APIKEY_PATH}
             - EXECUTION_MODE=${EXECUTION_MODE}
             - DEBUG=${DEBUG}
         ports:
