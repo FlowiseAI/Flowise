@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from 'express'
 const { combine, timestamp, printf } = format
 
 // expect the log dir be relative to the projects root
-const logDir = path.join(__dirname, '../../../..', config.logging.dir ?? './logs')
+const logDir = config.logging.dir
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
