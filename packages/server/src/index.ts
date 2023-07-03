@@ -61,7 +61,7 @@ export class App {
         this.app = express()
 
         // Add the expressRequestLogger middleware to log all requests
-        this.app.use(expressRequestLogger)
+        if (process.env.DEBUG === 'true') this.app.use(expressRequestLogger)
     }
 
     async initDatabase() {
