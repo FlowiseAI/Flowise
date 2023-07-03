@@ -58,7 +58,8 @@
         "reflect-metadata": "^0.1.13",
         "socket.io": "^4.6.1",
         "sqlite3": "^5.1.6",
-        "typeorm": "^0.3.6"
+        "typeorm": "^0.3.6",
+        "winston": "^3.9.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.12",

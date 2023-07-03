@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import moment from 'moment'
+import logger from './logger'
 import {
     IComponentNodes,
     IDepthQueue,
@@ -227,7 +228,7 @@ export const buildLangchain = async (
                 databaseEntities
             })
         } catch (e: any) {
-            console.error(e)
+            logger.error(e)
             throw new Error(e)
         }
 
@@ -595,7 +596,7 @@ export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void>
     try {
         await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     } catch (error) {
-        console.error(error)
+        logger.error(error)
     }
 }
 
