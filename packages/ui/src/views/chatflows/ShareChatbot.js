@@ -1,7 +1,6 @@
-import PropTypes from 'prop-types'
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { useDispatch, useSelector } from 'react-redux'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 import { SketchPicker } from 'react-color'
 
 import { Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material'
@@ -9,6 +8,7 @@ import { useTheme } from '@mui/material/styles'
 
 // Project import
 import { StyledButton } from 'ui-component/button/StyledButton'
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 
 // Icons
 import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons'
@@ -41,14 +41,19 @@ const defaultConfig = {
     }
 }
 
-const ShareChatbot = ({ chatflowid, chatbotConfig }) => {
+const ShareChatbot = () => {
     const dispatch = useDispatch()
     const theme = useTheme()
+    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const chatflowid = chatflow.id
+    const chatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
 
     useNotifier()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
+    const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false)
 
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
@@ -141,6 +146,44 @@ const ShareChatbot = ({ chatflowid, chatbotConfig }) => {
                         )
                     }
                 })
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+            }
+        } catch (error) {
+            console.error(error)
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            enqueueSnackbar({
+                message: `Failed to save Chatbot Configuration: ${errorData}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
+    const onSwitchChange = async (checked) => {
+        try {
+            const saveResp = await chatflowsApi.updateChatflow(chatflowid, { isPublic: checked })
+            if (saveResp.data) {
+                enqueueSnackbar({
+                    message: 'Chatbot Configuration Saved',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
             console.error(error)
@@ -328,6 +371,21 @@ const ShareChatbot = ({ chatflowid, chatbotConfig }) => {
                 <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
                     <IconArrowUpRightCircle />
                 </IconButton>
+                <div style={{ flex: 1 }} />
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Switch
+                        checked={isPublicChatflow}
+                        onChange={(event) => {
+                            setChatflowIsPublic(event.target.checked)
+                            onSwitchChange(event.target.checked)
+                        }}
+                    />
+                    <Typography>Make Public</Typography>
+                    <TooltipWithParser
+                        style={{ marginLeft: 10 }}
+                        title={'Making public will allow anyone to access the chatbot without username & password'}
+                    />
+                </div>
             </Stack>
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
@@ -410,11 +468,6 @@ const ShareChatbot = ({ chatflowid, chatbotConfig }) => {
             </Popover>
         </>
     )
-}
-
-ShareChatbot.propTypes = {
-    chatflowid: PropTypes.string,
-    chatbotConfig: PropTypes.object
 }
 
 export default ShareChatbot
