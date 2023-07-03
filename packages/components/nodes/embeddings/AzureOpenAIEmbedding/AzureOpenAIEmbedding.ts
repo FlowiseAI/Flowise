@@ -43,7 +43,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 label: 'Azure OpenAI Api Version',
                 name: 'azureOpenAIApiVersion',
                 type: 'string',
-                placeholder: 'YOUR-API-VERSION',
+                placeholder: '2023-03-15-preview',
                 description:
                     'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings">examples</a>'
             },

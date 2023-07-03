@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
-import { Box, Typography, Tooltip, IconButton } from '@mui/material'
+import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconEdit } from '@tabler/icons'
 
@@ -16,10 +16,13 @@ import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
-import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
+import { isValidConnection } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import ToolDialog from 'views/tools/ToolDialog'
+import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
+
+import { getInputVariables } from 'utils/genericHelper'
 
 const EDITABLE_TOOLS = ['selectedTool']
 
@@ -43,6 +46,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [showAsyncOptionDialog, setAsyncOptionEditDialog] = useState('')
     const [asyncOptionEditDialogProps, setAsyncOptionEditDialogProps] = useState({})
     const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
+    const [showFormatPromptValuesDialog, setShowFormatPromptValuesDialog] = useState(false)
+    const [formatPromptValuesDialogProps, setFormatPromptValuesDialogProps] = useState({})
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -52,15 +57,32 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
         }
-
-        if (!disabled) {
-            const nodes = reactFlowInstance.getNodes()
-            const edges = reactFlowInstance.getEdges()
-            const nodesForVariable = inputParam.acceptVariable ? getAvailableNodesForVariable(nodes, edges, data.id, inputParam.id) : []
-            dialogProp.availableNodesForVariable = nodesForVariable
-        }
         setExpandDialogProps(dialogProp)
         setShowExpandDialog(true)
+    }
+
+    const onFormatPromptValuesClicked = (value, inputParam) => {
+        // Preset values if the field is format prompt values
+        let inputValue = value
+        if (inputParam.name === 'promptValues' && !value) {
+            const obj = {}
+            const templateValue =
+                (data.inputs['template'] ?? '') + (data.inputs['systemMessagePrompt'] ?? '') + (data.inputs['humanMessagePrompt'] ?? '')
+            const inputVariables = getInputVariables(templateValue)
+            for (const inputVariable of inputVariables) {
+                obj[inputVariable] = ''
+            }
+            if (Object.keys(obj).length) inputValue = JSON.stringify(obj)
+        }
+        const dialogProp = {
+            value: inputValue,
+            inputParam,
+            nodes: reactFlowInstance.getNodes(),
+            edges: reactFlowInstance.getEdges(),
+            nodeId: data.id
+        }
+        setFormatPromptValuesDialogProps(dialogProp)
+        setShowFormatPromptValuesDialog(true)
     }
 
     const onExpandDialogSave = (newValue, inputParamName) => {
@@ -217,12 +239,33 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                             />
                         )}
                         {inputParam.type === 'json' && (
-                            <JsonEditorInput
-                                disabled={disabled}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                isDarkMode={customization.isDarkMode}
-                            />
+                            <>
+                                {!inputParam?.acceptVariable && (
+                                    <JsonEditorInput
+                                        disabled={disabled}
+                                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                        isDarkMode={customization.isDarkMode}
+                                    />
+                                )}
+                                {inputParam?.acceptVariable && (
+                                    <>
+                                        <Button
+                                            sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 2 }}
+                                            variant='outlined'
+                                            onClick={() => onFormatPromptValuesClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                        >
+                                            Format Prompt Values
+                                        </Button>
+                                        <FormatPromptValuesDialog
+                                            show={showFormatPromptValuesDialog}
+                                            dialogProps={formatPromptValuesDialogProps}
+                                            onCancel={() => setShowFormatPromptValuesDialog(false)}
+                                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        ></FormatPromptValuesDialog>
+                                    </>
+                                )}
+                            </>
                         )}
                         {inputParam.type === 'options' && (
                             <Dropdown

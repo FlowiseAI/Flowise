@@ -50,7 +50,7 @@ class LLMChain_Chains implements INode {
             {
                 label: 'Output Prediction',
                 name: 'outputPrediction',
-                baseClasses: ['string']
+                baseClasses: ['string', 'json']
             }
         ]
     }

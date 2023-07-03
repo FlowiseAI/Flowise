@@ -97,7 +97,14 @@ export class App {
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = ['/api/v1/prediction/', '/api/v1/node-icon/', '/api/v1/chatflows-streaming']
+            const whitelistURLs = [
+                '/api/v1/verify/apikey/',
+                '/api/v1/chatflows/apikey/',
+                '/api/v1/public-chatflows',
+                '/api/v1/prediction/',
+                '/api/v1/node-icon/',
+                '/api/v1/chatflows-streaming'
+            ]
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
                     whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
@@ -180,6 +187,25 @@ export class App {
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
             const chatflows: IChatFlow[] = await this.AppDataSource.getRepository(ChatFlow).find()
             return res.json(chatflows)
+        })
+
+        // Get specific chatflow via api key
+        this.app.get('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
+            try {
+                const apiKey = await getApiKey(req.params.apiKey)
+                if (!apiKey) return res.status(401).send('Unauthorized')
+                const chatflows = await this.AppDataSource.getRepository(ChatFlow)
+                    .createQueryBuilder('cf')
+                    .where('cf.apikeyid = :apikeyid', { apikeyid: apiKey.id })
+                    .orWhere('cf.apikeyid IS NULL')
+                    .orWhere('cf.apikeyid = ""')
+                    .orderBy('cf.name', 'ASC')
+                    .getMany()
+                if (chatflows.length >= 1) return res.status(200).send(chatflows)
+                return res.status(404).send('Chatflow not found')
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
         })
 
         // Get specific chatflow via id
@@ -475,6 +501,17 @@ export class App {
         this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await deleteAPIKey(req.params.id)
             return res.json(keys)
+        })
+
+        // Verify api key
+        this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
+            try {
+                const apiKey = await getApiKey(req.params.apiKey)
+                if (!apiKey) return res.status(401).send('Unauthorized')
+                return res.status(200).send('OK')
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
         })
 
         // ----------------------------------------
