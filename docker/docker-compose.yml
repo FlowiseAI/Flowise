@@ -10,6 +10,7 @@ services:
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
             - DATABASE_PATH=${DATABASE_PATH}
             - APIKEY_PATH=${APIKEY_PATH}
+            - LOG_PATH=${LOG_PATH}
             - EXECUTION_MODE=${EXECUTION_MODE}
             - DEBUG=${DEBUG}
         ports:
