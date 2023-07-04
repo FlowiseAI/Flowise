@@ -136,6 +136,9 @@ export default function componentStyleOverrides(theme) {
                     '&::placeholder': {
                         color: theme.darkTextSecondary,
                         fontSize: '0.875rem'
+                    },
+                    '&.Mui-disabled': {
+                        WebkitTextFillColor: theme?.customization?.isDarkMode ? theme.colors?.grey500 : theme.darkTextSecondary
                     }
                 }
             }
