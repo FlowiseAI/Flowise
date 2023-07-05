@@ -202,6 +202,9 @@ export const getAvailableURLs = async (url: string, limit: number) => {
     }
 }
 
+/**
+ * Search for href through htmlBody string
+ */
 function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
     const dom = new JSDOM(htmlBody)
     const linkElements = dom.window.document.querySelectorAll('a')
@@ -228,6 +231,9 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
     return urls
 }
 
+/**
+ * Normalize URL to prevent crawling the same page
+ */
 function normalizeURL(urlString: string): string {
     const urlObj = new URL(urlString)
     const hostPath = urlObj.hostname + urlObj.pathname
@@ -238,7 +244,10 @@ function normalizeURL(urlString: string): string {
     return hostPath
 }
 
-export async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
+/**
+ * Recursive crawl using normalizeURL and getURLsFromHTML
+ */
+async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
     const baseURLObj = new URL(baseURL)
     const currentURLObj = new URL(currentURL)
 
@@ -279,6 +288,9 @@ export async function crawl(baseURL: string, currentURL: string, pages: string[]
     return pages
 }
 
+/**
+ * Prep URL before passing into recursive carwl function
+ */
 export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
     const URLObj = new URL(stringURL)
     const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
