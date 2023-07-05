@@ -242,7 +242,7 @@ export async function crawl(baseURL: string, currentURL: string, pages: string[]
     const baseURLObj = new URL(baseURL)
     const currentURLObj = new URL(currentURL)
 
-    if (limit !== 0) if (pages.length === limit) return pages
+    if (limit !== 0 && pages.length === limit) return pages
 
     if (baseURLObj.hostname !== currentURLObj.hostname) return pages
 
