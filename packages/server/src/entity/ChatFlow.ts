@@ -14,6 +14,9 @@ export class ChatFlow implements IChatFlow {
     flowData: string
 
     @Column()
+    deployed: boolean
+
+    @Column()
     isPublic: boolean
 
     @Column({ nullable: true })
