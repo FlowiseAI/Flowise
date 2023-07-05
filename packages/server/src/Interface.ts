@@ -9,9 +9,10 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
-    isPublic: boolean
+    deployed: boolean
     updatedDate: Date
     createdDate: Date
+    isPublic?: boolean
     apikeyid?: string
     chatbotConfig?: string
 }
