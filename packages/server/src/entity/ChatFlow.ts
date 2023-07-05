@@ -13,8 +13,8 @@ export class ChatFlow implements IChatFlow {
     @Column()
     flowData: string
 
-    @Column()
-    deployed: boolean
+    @Column({ nullable: true })
+    deployed?: boolean
 
     @Column({ nullable: true })
     isPublic?: boolean
