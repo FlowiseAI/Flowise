@@ -66,7 +66,7 @@ class SqlDatabaseChain_Chains implements INode {
 
         const chain = await getSQLDBChain(databaseType, dbFilePath, model)
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
             const res = await chain.run(input, [handler])
             return res
         } else {
