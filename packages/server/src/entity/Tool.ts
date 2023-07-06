@@ -17,6 +17,9 @@ export class Tool implements ITool {
     color: string
 
     @Column({ nullable: true })
+    iconSrc?: string
+
+    @Column({ nullable: true })
     schema?: string
 
     @Column({ nullable: true })

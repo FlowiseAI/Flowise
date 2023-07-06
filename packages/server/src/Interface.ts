@@ -9,9 +9,10 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
-    isPublic: boolean
     updatedDate: Date
     createdDate: Date
+    deployed?: boolean
+    isPublic?: boolean
     apikeyid?: string
     chatbotConfig?: string
 }
@@ -30,6 +31,7 @@ export interface ITool {
     name: string
     description: string
     color: string
+    iconSrc?: string
     schema?: string
     func?: string
     updatedDate: Date

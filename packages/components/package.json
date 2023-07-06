@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.2.14",
+    "version": "1.2.15",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -16,6 +16,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.360.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@getzep/zep-js": "^0.3.1",
         "@huggingface/inference": "1",
