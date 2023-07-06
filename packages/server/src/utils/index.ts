@@ -15,10 +15,15 @@ import {
     IOverrideConfig
 } from '../Interface'
 import { cloneDeep, get, omit, merge } from 'lodash'
-import { ICommonObject, getInputVariables } from 'flowise-components'
+import { ICommonObject, getInputVariables, IDatabaseEntity } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
+import { ChatFlow } from '../entity/ChatFlow'
+import { ChatMessage } from '../entity/ChatMessage'
+import { Tool } from '../entity/Tool'
+import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'
+export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool }
 
 /**
  * Returns the home folder path of the user if
@@ -183,6 +188,7 @@ export const buildLangchain = async (
     componentNodes: IComponentNodes,
     question: string,
     chatId: string,
+    appDataSource: DataSource,
     overrideConfig?: ICommonObject
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
@@ -215,7 +221,11 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
 
-            flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, { chatId })
+            flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
+                chatId,
+                appDataSource,
+                databaseEntities
+            })
         } catch (e: any) {
             console.error(e)
             throw new Error(e)
@@ -453,7 +463,7 @@ export const isSameOverrideConfig = (
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return path.join(__dirname, '..', '..', 'api.json')
+    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
 }
 
 /**
@@ -535,6 +545,18 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
     ]
     await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     return content
+}
+
+/**
+ * Get API Key details
+ * @param {string} apiKey
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const getApiKey = async (apiKey: string) => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
+    if (keyIndex < 0) return undefined
+    return existingAPIKeys[keyIndex]
 }
 
 /**

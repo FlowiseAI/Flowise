@@ -18,6 +18,7 @@ export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is no
  */
 export const getBaseClasses = (targetClass: any) => {
     const baseClasses: string[] = []
+    const skipClassNames = ['BaseLangChain', 'Serializable']
 
     if (targetClass instanceof Function) {
         let baseClass = targetClass
@@ -26,7 +27,7 @@ export const getBaseClasses = (targetClass: any) => {
             const newBaseClass = Object.getPrototypeOf(baseClass)
             if (newBaseClass && newBaseClass !== Object && newBaseClass.name) {
                 baseClass = newBaseClass
-                baseClasses.push(baseClass.name)
+                if (!skipClassNames.includes(baseClass.name)) baseClasses.push(baseClass.name)
             } else {
                 break
             }
@@ -244,43 +245,30 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 }
 
-export const returnJSONStr = (jsonStr: string): string => {
-    let jsonStrArray = jsonStr.split(':')
-
-    let wholeString = ''
-    for (let i = 0; i < jsonStrArray.length; i++) {
-        if (jsonStrArray[i].includes(',') && jsonStrArray[i + 1] !== undefined) {
-            const splitValueAndTitle = jsonStrArray[i].split(',')
-            const value = splitValueAndTitle[0]
-            const newTitle = splitValueAndTitle[1]
-            wholeString += handleEscapeDoubleQuote(value) + ',' + newTitle + ':'
-        } else {
-            wholeString += wholeString === '' ? jsonStrArray[i] + ':' : handleEscapeDoubleQuote(jsonStrArray[i])
-        }
-    }
-    return wholeString
-}
-
-const handleEscapeDoubleQuote = (value: string): string => {
-    let newValue = ''
-    if (value.includes('"')) {
-        const valueArray = value.split('"')
-        for (let i = 0; i < valueArray.length; i++) {
-            if ((i + 1) % 2 !== 0) {
-                switch (valueArray[i]) {
-                    case '':
-                        newValue += '"'
-                        break
-                    case '}':
-                        newValue += '"}'
-                        break
-                    default:
-                        newValue += '\\"' + valueArray[i] + '\\"'
-                }
-            } else {
-                newValue += valueArray[i]
-            }
-        }
-    }
-    return newValue === '' ? value : newValue
-}
+export const availableDependencies = [
+    '@dqbd/tiktoken',
+    '@getzep/zep-js',
+    '@huggingface/inference',
+    '@pinecone-database/pinecone',
+    '@supabase/supabase-js',
+    'axios',
+    'cheerio',
+    'chromadb',
+    'cohere-ai',
+    'd3-dsv',
+    'form-data',
+    'graphql',
+    'html-to-text',
+    'langchain',
+    'linkifyjs',
+    'mammoth',
+    'moment',
+    'node-fetch',
+    'pdf-parse',
+    'pdfjs-dist',
+    'playwright',
+    'puppeteer',
+    'srt-parser-2',
+    'typeorm',
+    'weaviate-ts-client'
+]

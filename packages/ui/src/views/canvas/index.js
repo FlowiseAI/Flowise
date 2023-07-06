@@ -202,6 +202,7 @@ const Canvas = () => {
                 const newChatflowBody = {
                     name: chatflowName,
                     deployed: false,
+                    isPublic: false,
                     flowData
                 }
                 createNewChatflowApi.request(newChatflowBody)

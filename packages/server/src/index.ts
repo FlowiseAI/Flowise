@@ -35,7 +35,9 @@ import {
     isSameOverrideConfig,
     replaceAllAPIKeys,
     isFlowValidForStream,
-    isVectorStoreFaiss
+    isVectorStoreFaiss,
+    databaseEntities,
+    getApiKey
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -43,8 +45,9 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
-import { ICommonObject } from 'flowise-components'
+import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
+import { Tool } from './entity/Tool'
 
 export class App {
     app: express.Application
@@ -90,7 +93,14 @@ export class App {
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = ['/api/v1/prediction/', '/api/v1/node-icon/', '/api/v1/chatflows-streaming']
+            const whitelistURLs = [
+                '/api/v1/verify/apikey/',
+                '/api/v1/chatflows/apikey/',
+                '/api/v1/public-chatflows',
+                '/api/v1/prediction/',
+                '/api/v1/node-icon/',
+                '/api/v1/chatflows-streaming'
+            ]
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
                     whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
@@ -142,6 +152,29 @@ export class App {
             }
         })
 
+        // load async options
+        this.app.post('/api/v1/node-load-method/:name', async (req: Request, res: Response) => {
+            const nodeData: INodeData = req.body
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
+                try {
+                    const nodeInstance = this.nodesPool.componentNodes[req.params.name]
+                    const methodName = nodeData.loadMethod || ''
+
+                    const returnOptions: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
+                        appDataSource: this.AppDataSource,
+                        databaseEntities: databaseEntities
+                    })
+
+                    return res.json(returnOptions)
+                } catch (error) {
+                    return res.json([])
+                }
+            } else {
+                res.status(404).send(`Node ${req.params.name} not found`)
+                return
+            }
+        })
+
         // ----------------------------------------
         // Chatflows
         // ----------------------------------------
@@ -152,12 +185,41 @@ export class App {
             return res.json(chatflows)
         })
 
+        // Get specific chatflow via api key
+        this.app.get('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
+            try {
+                const apiKey = await getApiKey(req.params.apiKey)
+                if (!apiKey) return res.status(401).send('Unauthorized')
+                const chatflows = await this.AppDataSource.getRepository(ChatFlow)
+                    .createQueryBuilder('cf')
+                    .where('cf.apikeyid = :apikeyid', { apikeyid: apiKey.id })
+                    .orWhere('cf.apikeyid IS NULL')
+                    .orWhere('cf.apikeyid = ""')
+                    .orderBy('cf.name', 'ASC')
+                    .getMany()
+                if (chatflows.length >= 1) return res.status(200).send(chatflows)
+                return res.status(404).send('Chatflow not found')
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
         // Get specific chatflow via id
         this.app.get('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
             if (chatflow) return res.json(chatflow)
+            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        })
+
+        // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
+        this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (chatflow && chatflow.isPublic) return res.json(chatflow)
+            else if (chatflow && !chatflow.isPublic) return res.status(401).send(`Unauthorized`)
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         })
 
@@ -258,6 +320,63 @@ export class App {
         })
 
         // ----------------------------------------
+        // Tools
+        // ----------------------------------------
+
+        // Get all tools
+        this.app.get('/api/v1/tools', async (req: Request, res: Response) => {
+            const tools = await this.AppDataSource.getRepository(Tool).find()
+            return res.json(tools)
+        })
+
+        // Get specific tool
+        this.app.get('/api/v1/tools/:id', async (req: Request, res: Response) => {
+            const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
+                id: req.params.id
+            })
+            return res.json(tool)
+        })
+
+        // Add tool
+        this.app.post('/api/v1/tools', async (req: Request, res: Response) => {
+            const body = req.body
+            const newTool = new Tool()
+            Object.assign(newTool, body)
+
+            const tool = this.AppDataSource.getRepository(Tool).create(newTool)
+            const results = await this.AppDataSource.getRepository(Tool).save(tool)
+
+            return res.json(results)
+        })
+
+        // Update tool
+        this.app.put('/api/v1/tools/:id', async (req: Request, res: Response) => {
+            const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
+                id: req.params.id
+            })
+
+            if (!tool) {
+                res.status(404).send(`Tool ${req.params.id} not found`)
+                return
+            }
+
+            const body = req.body
+            const updateTool = new Tool()
+            Object.assign(updateTool, body)
+
+            this.AppDataSource.getRepository(Tool).merge(tool, updateTool)
+            const result = await this.AppDataSource.getRepository(Tool).save(tool)
+
+            return res.json(result)
+        })
+
+        // Delete tool
+        this.app.delete('/api/v1/tools/:id', async (req: Request, res: Response) => {
+            const results = await this.AppDataSource.getRepository(Tool).delete({ id: req.params.id })
+            return res.json(results)
+        })
+
+        // ----------------------------------------
         // Configuration
         // ----------------------------------------
 
@@ -343,12 +462,12 @@ export class App {
         // ----------------------------------------
 
         // Get all chatflows for marketplaces
-        this.app.get('/api/v1/marketplaces', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces')
+        this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
+            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
             const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
             const templates: any[] = []
             jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', file)
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
@@ -356,6 +475,25 @@ export class App {
                     name: file.split('.json')[0],
                     flowData: fileData.toString(),
                     description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+            return res.json(templates)
+        })
+
+        // Get all tools for marketplaces
+        this.app.get('/api/v1/marketplaces/tools', async (req: Request, res: Response) => {
+            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
+            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            const templates: any[] = []
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: index,
+                    templateName: file.split('.json')[0]
                 }
                 templates.push(template)
             })
@@ -388,6 +526,17 @@ export class App {
         this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await deleteAPIKey(req.params.id)
             return res.json(keys)
+        })
+
+        // Verify api key
+        this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
+            try {
+                const apiKey = await getApiKey(req.params.apiKey)
+                if (!apiKey) return res.status(401).send('Unauthorized')
+                return res.status(200).send('OK')
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
         })
 
         // ----------------------------------------
@@ -623,6 +772,7 @@ export class App {
                         this.nodesPool.componentNodes,
                         incomingInput.question,
                         chatId,
+                        this.AppDataSource,
                         incomingInput?.overrideConfig
                     )
 

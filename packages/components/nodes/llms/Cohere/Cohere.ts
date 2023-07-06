@@ -87,7 +87,7 @@ class Cohere_LLMs implements INode {
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (modelName) obj.model = modelName
-        if (temperature) obj.temperature = parseInt(temperature, 10)
+        if (temperature) obj.temperature = parseFloat(temperature)
 
         const model = new Cohere(obj)
         return model

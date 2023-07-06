@@ -9,10 +9,12 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
-    apikeyid: string
-    deployed: boolean
     updatedDate: Date
     createdDate: Date
+    deployed?: boolean
+    isPublic?: boolean
+    apikeyid?: string
+    chatbotConfig?: string
 }
 
 export interface IChatMessage {
@@ -21,7 +23,19 @@ export interface IChatMessage {
     content: string
     chatflowid: string
     createdDate: Date
-    sourceDocuments: string
+    sourceDocuments?: string
+}
+
+export interface ITool {
+    id: string
+    name: string
+    description: string
+    color: string
+    iconSrc?: string
+    schema?: string
+    func?: string
+    updatedDate: Date
+    createdDate: Date
 }
 
 export interface IComponentNodes {

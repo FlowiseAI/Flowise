@@ -132,7 +132,7 @@ class OpenAI_LLMs implements INode {
         const basePath = nodeData.inputs?.basepath as string
 
         const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             streaming: streaming ?? true
