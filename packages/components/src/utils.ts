@@ -297,6 +297,45 @@ export async function webCrawl(stringURL: string, limit: number): Promise<string
     return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
 }
 
+export function getURLsFromXML(xmlBody: string, limit: number): string[] {
+    const dom = new JSDOM(xmlBody, { contentType: 'text/xml' })
+    const linkElements = dom.window.document.querySelectorAll('url')
+    const urls: string[] = []
+    for (const linkElement of linkElements) {
+        const locElement = linkElement.querySelector('loc')
+        if (limit !== 0 && urls.length === limit) break
+        if (locElement?.textContent) {
+            urls.push(locElement.textContent)
+        }
+    }
+    return urls
+}
+
+export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
+    let urls: string[] = []
+    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+
+        if (resp.status > 399) {
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const contentType: string | null = resp.headers.get('content-type')
+        if ((contentType && !contentType.includes('application/xml')) || !contentType) {
+            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const xmlBody = await resp.text()
+        urls = getURLsFromXML(xmlBody, limit)
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+    }
+    return urls
+}
+
 /**
  * Custom chain handler class
  */
