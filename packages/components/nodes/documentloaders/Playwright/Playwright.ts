@@ -2,7 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { PlaywrightWebBaseLoader } from 'langchain/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
-import { webCrawl } from '../../../src'
+import { webCrawl, xmlScrape } from '../../../src'
 
 class Playwright_DocumentLoaders implements INode {
     label: string
@@ -35,20 +35,30 @@ class Playwright_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Web Crawl for Relative Links',
-                name: 'boolWebCrawl',
-                type: 'boolean',
+                label: 'Get Relative Links Method',
+                name: 'relativeLinksMethod',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Web Crawl',
+                        name: 'webCrawl'
+                    },
+                    {
+                        label: 'Scrape XML Sitemap',
+                        name: 'scrapeXMLSitemap'
+                    }
+                ],
                 optional: true,
                 additionalParams: true
             },
             {
-                label: 'Web Crawl Links Limit',
+                label: 'Crawl/Scrape Links Limit',
                 name: 'limit',
                 type: 'number',
                 default: 10,
                 optional: true,
                 additionalParams: true,
-                description: 'Set 0 to crawl all relative links'
+                description: 'Set 0 to crawl/scrape all relative links'
             },
             {
                 label: 'Metadata',
@@ -63,7 +73,7 @@ class Playwright_DocumentLoaders implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        const boolWebCrawl = nodeData.inputs?.boolWebCrawl as boolean
+        const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         let limit = nodeData.inputs?.limit as string
 
         let url = nodeData.inputs?.url as string
@@ -88,16 +98,18 @@ class Playwright_DocumentLoaders implements INode {
         }
 
         let docs = []
-        if (boolWebCrawl) {
-            if (process.env.DEBUG === 'true') console.info('Start Web Crawl')
-            if (!limit) throw new Error('Please set a limit to crawl')
+        if (relativeLinksMethod) {
+            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+            if (!limit) throw new Error('Please set a limit to crawl/scrape')
             else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
-            const pages: string[] = await webCrawl(url, parseInt(limit))
+            const pages: string[] =
+                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+            if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await playwrightLoader(page)))
             }
-            if (process.env.DEBUG === 'true') console.info('Finish Web Crawl')
+            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
         } else {
             docs = await playwrightLoader(url)
         }
