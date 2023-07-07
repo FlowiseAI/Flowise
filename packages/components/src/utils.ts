@@ -336,6 +336,20 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
     return urls
 }
 
+/*
+ * Get env variables
+ * @param {string} url
+ * @param {number} limit
+ * @returns {string[]}
+ */
+export const getEnvironmentVariable = (name: string): string | undefined => {
+    try {
+        return typeof process !== 'undefined' ? process.env?.[name] : undefined
+    } catch (e) {
+        return undefined
+    }
+}
+
 /**
  * Custom chain handler class
  */
