@@ -156,6 +156,16 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "huggingFaceInference_LLMs_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Endpoint",
+                        "name": "endpoint",
+                        "type": "string",
+                        "placeholder": "https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2",
+                        "description": "Using your own inference endpoint",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-endpoint-string"
                     }
                 ],
                 "inputAnchors": [],
