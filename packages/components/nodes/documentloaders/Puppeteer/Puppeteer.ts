@@ -58,7 +58,8 @@ class Puppeteer_DocumentLoaders implements INode {
                 default: 10,
                 optional: true,
                 additionalParams: true,
-                description: 'Set 0 to crawl/scrape all relative links'
+                description: 'Set 0 to crawl/scrape all relative links',
+                warning: `Scraping all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc) `
             },
             {
                 label: 'Metadata',

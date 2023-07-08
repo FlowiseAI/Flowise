@@ -57,6 +57,7 @@ export interface INodeParams {
     type: NodeParamsType | string
     default?: CommonType | ICommonObject | ICommonObject[]
     description?: string
+    warning?: string
     options?: Array<INodeOptionsValue>
     optional?: boolean | INodeDisplay
     rows?: number
