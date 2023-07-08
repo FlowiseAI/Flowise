@@ -680,10 +680,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         }
     }
 
-    return (
-        isChatOrLLMsExist &&
-        (endingNodeData.category === 'Chains' || endingNodeData.name === 'openAIFunctionAgent') &&
-        !isVectorStoreFaiss(endingNodeData) &&
-        process.env.EXECUTION_MODE !== 'child'
-    )
+    let isValidChainOrAgent = false
+    if (endingNodeData.category === 'Chains') {
+        // Chains that are not available to stream
+        const blacklistChains = ['openApiChain']
+        isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
+    } else if (endingNodeData.category === 'Agents') {
+        // Agent that are available to stream
+        const whitelistAgents = ['openAIFunctionAgent']
+        isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData) && process.env.EXECUTION_MODE !== 'child'
 }
