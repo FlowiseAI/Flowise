@@ -34,7 +34,7 @@ import Transitions from 'ui-component/extended/Transitions'
 import { StyledFab } from 'ui-component/button/StyledFab'
 
 // icons
-import { IconPlus, IconSearch, IconMinus } from '@tabler/icons'
+import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons'
 
 // const
 import { baseURL } from 'store/constant'
@@ -61,11 +61,20 @@ const AddNodes = ({ nodesData, node }) => {
         }
     }
 
+    const getSearchedNodes = (value) => {
+        const passed = nodesData.filter((nd) => {
+            const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
+            const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
+            return passesQuery || passesCategory
+        })
+        return passed
+    }
+
     const filterSearch = (value) => {
         setSearchValue(value)
         setTimeout(() => {
             if (value) {
-                const returnData = nodesData.filter((nd) => nd.name.toLowerCase().includes(value.toLowerCase()))
+                const returnData = getSearchedNodes(value)
                 groupByCategory(returnData, true)
                 scrollTop()
             } else if (value === '') {
@@ -167,7 +176,7 @@ const AddNodes = ({ nodesData, node }) => {
                                             <Typography variant='h4'>Add Nodes</Typography>
                                         </Stack>
                                         <OutlinedInput
-                                            sx={{ width: '100%', pr: 1, pl: 2, my: 2 }}
+                                            sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
                                             id='input-search-node'
                                             value={searchValue}
                                             onChange={(e) => filterSearch(e.target.value)}
@@ -175,6 +184,28 @@ const AddNodes = ({ nodesData, node }) => {
                                             startAdornment={
                                                 <InputAdornment position='start'>
                                                     <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
+                                                </InputAdornment>
+                                            }
+                                            endAdornment={
+                                                <InputAdornment
+                                                    position='end'
+                                                    sx={{
+                                                        cursor: 'pointer',
+                                                        color: theme.palette.grey[500],
+                                                        '&:hover': {
+                                                            color: theme.palette.grey[900]
+                                                        }
+                                                    }}
+                                                    title='Clear Search'
+                                                >
+                                                    <IconX
+                                                        stroke={1.5}
+                                                        size='1rem'
+                                                        onClick={() => filterSearch('')}
+                                                        style={{
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    />
                                                 </InputAdornment>
                                             }
                                             aria-describedby='search-helper-text'
