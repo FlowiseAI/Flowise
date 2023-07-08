@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains'
+import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains/sql_db'
 import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
