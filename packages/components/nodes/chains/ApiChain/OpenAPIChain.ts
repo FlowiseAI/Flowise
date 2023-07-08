@@ -60,7 +60,7 @@ class OpenApiChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const model = nodeData.inputs?.model as ChatOpenAI
-        const headers = nodeData.inputs?.headers as Record<string, string>
+        const headers = nodeData.inputs?.headers as string
         const yamlFileBase64 = nodeData.inputs?.yamlFile as string
         const splitDataURI = yamlFileBase64.split(',')
         splitDataURI.pop()
@@ -68,7 +68,7 @@ class OpenApiChain_Chains implements INode {
         const utf8String = bf.toString('utf-8')
         const chain = await createOpenAPIChain(utf8String, {
             llm: model,
-            headers
+            headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {}
         })
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
