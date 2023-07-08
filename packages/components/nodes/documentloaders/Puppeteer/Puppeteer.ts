@@ -94,7 +94,7 @@ class Puppeteer_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true') console.error(`error in PuppeteerWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
