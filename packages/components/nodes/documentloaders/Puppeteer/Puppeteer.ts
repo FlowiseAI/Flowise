@@ -86,7 +86,12 @@ class Puppeteer_DocumentLoaders implements INode {
         async function puppeteerLoader(url: string): Promise<any> {
             try {
                 let docs = []
-                const loader = new PuppeteerWebBaseLoader(url)
+                const loader = new PuppeteerWebBaseLoader(url, {
+                    launchOptions: {
+                        args: ['--no-sandbox'],
+                        headless: 'new'
+                    }
+                })
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {
