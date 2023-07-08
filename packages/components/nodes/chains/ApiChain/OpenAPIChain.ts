@@ -28,10 +28,18 @@ class OpenApiChain_Chains implements INode {
                 type: 'ChatOpenAI'
             },
             {
+                label: 'YAML Link',
+                name: 'yamlLink',
+                type: 'string',
+                placeholder: 'https://api.speak.com/openapi.yaml',
+                description: 'If YAML link is provided, uploaded YAML File will be ignored and YAML link will be used instead'
+            },
+            {
                 label: 'YAML File',
                 name: 'yamlFile',
                 type: 'file',
-                fileType: '.yaml'
+                fileType: '.yaml',
+                description: 'If YAML link is provided, uploaded YAML File will be ignored and YAML link will be used instead'
             },
             {
                 label: 'Headers',
@@ -44,34 +52,13 @@ class OpenApiChain_Chains implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as ChatOpenAI
-        const headers = nodeData.inputs?.headers as string
-        const yamlFileBase64 = nodeData.inputs?.yamlFile as string
-        const splitDataURI = yamlFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        const utf8String = bf.toString('utf-8')
-        const chain = await createOpenAPIChain(utf8String, {
-            llm: model,
-            headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {}
-        })
-        return chain
+        return await initChain(nodeData)
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const model = nodeData.inputs?.model as ChatOpenAI
-        const headers = nodeData.inputs?.headers as string
-        const yamlFileBase64 = nodeData.inputs?.yamlFile as string
-        const splitDataURI = yamlFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        const utf8String = bf.toString('utf-8')
-        const chain = await createOpenAPIChain(utf8String, {
-            llm: model,
-            headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {}
-        })
+        const chain = await initChain(nodeData)
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             const res = await chain.run(input, [handler])
             return res
         } else {
@@ -79,6 +66,30 @@ class OpenApiChain_Chains implements INode {
             return res
         }
     }
+}
+
+const initChain = async (nodeData: INodeData) => {
+    const model = nodeData.inputs?.model as ChatOpenAI
+    const headers = nodeData.inputs?.headers as string
+    const yamlLink = nodeData.inputs?.yamlLink as string
+    const yamlFileBase64 = nodeData.inputs?.yamlFile as string
+
+    let yamlString = ''
+
+    if (yamlLink) {
+        yamlString = yamlLink
+    } else {
+        const splitDataURI = yamlFileBase64.split(',')
+        splitDataURI.pop()
+        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+        yamlString = bf.toString('utf-8')
+    }
+
+    return await createOpenAPIChain(yamlString, {
+        llm: model,
+        headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {},
+        verbose: process.env.DEBUG === 'true' ? true : false
+    })
 }
 
 module.exports = { nodeClass: OpenApiChain_Chains }
