@@ -38,28 +38,31 @@ class Playwright_DocumentLoaders implements INode {
                 label: 'Get Relative Links Method',
                 name: 'relativeLinksMethod',
                 type: 'options',
+                description: 'Select a method to retrieve relative links',
                 options: [
                     {
                         label: 'Web Crawl',
-                        name: 'webCrawl'
+                        name: 'webCrawl',
+                        description: 'Crawl relative links from HTML URL'
                     },
                     {
                         label: 'Scrape XML Sitemap',
-                        name: 'scrapeXMLSitemap'
+                        name: 'scrapeXMLSitemap',
+                        description: 'Scrape relative links from XML sitemap URL'
                     }
                 ],
                 optional: true,
                 additionalParams: true
             },
             {
-                label: 'Crawl/Scrape Links Limit',
+                label: 'Get Relative Links Limit',
                 name: 'limit',
                 type: 'number',
-                default: 10,
                 optional: true,
                 additionalParams: true,
-                description: 'Set 0 to crawl/scrape all relative links',
-                warning: `Scraping all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc) `
+                description:
+                    'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
+                warning: `Retreiving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
             },
             {
                 label: 'Metadata',
@@ -101,7 +104,7 @@ class Playwright_DocumentLoaders implements INode {
         let docs = []
         if (relativeLinksMethod) {
             if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            if (!limit) throw new Error('Please set a limit to crawl/scrape')
+            if (!limit) limit = '10'
             else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
                 relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
