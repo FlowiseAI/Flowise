@@ -2,6 +2,7 @@ import axios from 'axios'
 import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
+import { JSDOM } from 'jsdom'
 import { BaseCallbackHandler } from 'langchain/callbacks'
 import { Server } from 'socket.io'
 import { ChainValues } from 'langchain/dist/schema'
@@ -202,6 +203,140 @@ export const getAvailableURLs = async (url: string, limit: number) => {
 }
 
 /**
+ * Search for href through htmlBody string
+ */
+function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
+    const dom = new JSDOM(htmlBody)
+    const linkElements = dom.window.document.querySelectorAll('a')
+    const urls: string[] = []
+    for (const linkElement of linkElements) {
+        if (linkElement.href.slice(0, 1) === '/') {
+            try {
+                const urlObj = new URL(baseURL + linkElement.href)
+                urls.push(urlObj.href) //relative
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
+                continue
+            }
+        } else {
+            try {
+                const urlObj = new URL(linkElement.href)
+                urls.push(urlObj.href) //absolute
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
+                continue
+            }
+        }
+    }
+    return urls
+}
+
+/**
+ * Normalize URL to prevent crawling the same page
+ */
+function normalizeURL(urlString: string): string {
+    const urlObj = new URL(urlString)
+    const hostPath = urlObj.hostname + urlObj.pathname
+    if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
+        // handling trailing slash
+        return hostPath.slice(0, -1)
+    }
+    return hostPath
+}
+
+/**
+ * Recursive crawl using normalizeURL and getURLsFromHTML
+ */
+async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
+    const baseURLObj = new URL(baseURL)
+    const currentURLObj = new URL(currentURL)
+
+    if (limit !== 0 && pages.length === limit) return pages
+
+    if (baseURLObj.hostname !== currentURLObj.hostname) return pages
+
+    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+    if (pages.includes(normalizeCurrentURL)) {
+        return pages
+    }
+
+    pages.push(normalizeCurrentURL)
+
+    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+
+        if (resp.status > 399) {
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            return pages
+        }
+
+        const contentType: string | null = resp.headers.get('content-type')
+        if ((contentType && !contentType.includes('text/html')) || !contentType) {
+            if (process.env.DEBUG === 'true') console.error(`non html response, content type: ${contentType}, on page: ${currentURL}`)
+            return pages
+        }
+
+        const htmlBody = await resp.text()
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
+        for (const nextURL of nextURLs) {
+            pages = await crawl(baseURL, nextURL, pages, limit)
+        }
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+    }
+    return pages
+}
+
+/**
+ * Prep URL before passing into recursive carwl function
+ */
+export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+    const URLObj = new URL(stringURL)
+    const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
+    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
+}
+
+export function getURLsFromXML(xmlBody: string, limit: number): string[] {
+    const dom = new JSDOM(xmlBody, { contentType: 'text/xml' })
+    const linkElements = dom.window.document.querySelectorAll('url')
+    const urls: string[] = []
+    for (const linkElement of linkElements) {
+        const locElement = linkElement.querySelector('loc')
+        if (limit !== 0 && urls.length === limit) break
+        if (locElement?.textContent) {
+            urls.push(locElement.textContent)
+        }
+    }
+    return urls
+}
+
+export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
+    let urls: string[] = []
+    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+
+        if (resp.status > 399) {
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const contentType: string | null = resp.headers.get('content-type')
+        if ((contentType && !contentType.includes('application/xml')) || !contentType) {
+            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const xmlBody = await resp.text()
+        urls = getURLsFromXML(xmlBody, limit)
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+    }
+    return urls
+}
+
+/*
  * Get env variables
  * @param {string} url
  * @param {number} limit
