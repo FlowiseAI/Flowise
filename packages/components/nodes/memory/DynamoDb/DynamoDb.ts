@@ -13,8 +13,9 @@ class DynamoDb_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'DynamoDB Memory'
-        this.name = 'DynamoDbMemory'
+        this.label = 'DynamoDB Chat Memory'
+        this.name = 'DynamoDBChatMemory'
+        this.type = 'DynamoDBChatMemory'
         this.icon = 'dynamodb.svg'
         this.category = 'Memory'
         this.description = 'Stores the conversation in dynamo db table'
