@@ -131,6 +131,14 @@
                         "name": "vectorStoreRetriever",
                         "type": "BaseRetriever",
                         "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+                        "optional": true,
+                        "description": "If no memory connected, default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
                     }
                 ],
                 "inputs": {
