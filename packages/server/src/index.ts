@@ -687,13 +687,13 @@ export class App {
                 }
             }
 
-            /* Don't rebuild the flow (to avoid duplicated upsert, recomputation) when all these conditions met:
+            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with nodes that depend on incomingInput.question
              ***/
-            const isRebuildNeeded = () => {
+            const isFlowReusable = () => {
                 return (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
@@ -707,7 +707,7 @@ export class App {
             }
 
             if (process.env.EXECUTION_MODE === 'child') {
-                if (isRebuildNeeded()) {
+                if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     try {
                         const result = await this.startChildProcess(chatflow, chatId, incomingInput, nodeToExecuteData)
@@ -731,7 +731,7 @@ export class App {
                 const nodes = parsedFlowData.nodes
                 const edges = parsedFlowData.edges
 
-                if (isRebuildNeeded()) {
+                if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
                 } else {

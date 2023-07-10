@@ -1,4 +1,4 @@
-import { SystemChatMessage } from 'langchain/schema'
+import { SystemMessage } from 'langchain/schema'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
@@ -123,7 +123,7 @@ class ZepMemory_Memory implements INode {
                     let summary = autoSummaryTemplate.replace(/{summary}/g, memory.summary.content)
                     // eslint-disable-next-line no-console
                     console.log('[ZepMemory] auto summary:', summary)
-                    data[zep.memoryKey].unshift(new SystemChatMessage(summary))
+                    data[zep.memoryKey].unshift(new SystemMessage(summary))
                 }
             }
             // for langchain zep memory compatibility, or we will get "Missing value for input variable chat_history"

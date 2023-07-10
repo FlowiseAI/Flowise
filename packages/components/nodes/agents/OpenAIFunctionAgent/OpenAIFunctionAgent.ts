@@ -4,7 +4,7 @@ import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
-import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage } from 'langchain/schema'
 
 class OpenAIFunctionAgent_Agents implements INode {
     label: string
@@ -84,9 +84,9 @@ class OpenAIFunctionAgent_Agents implements INode {
 
             for (const message of histories) {
                 if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIChatMessage(message.message))
+                    chatHistory.push(new AIMessage(message.message))
                 } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanChatMessage(message.message))
+                    chatHistory.push(new HumanMessage(message.message))
                 }
             }
             memory.chatHistory = new ChatMessageHistory(chatHistory)
