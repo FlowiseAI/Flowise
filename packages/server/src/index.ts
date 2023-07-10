@@ -6,6 +6,8 @@ import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
+import logger from './utils/logger'
+import { expressRequestLogger } from './utils/logger'
 
 import {
     IChatFlow,
@@ -57,13 +59,16 @@ export class App {
 
     constructor() {
         this.app = express()
+
+        // Add the expressRequestLogger middleware to log all requests
+        this.app.use(expressRequestLogger)
     }
 
     async initDatabase() {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                console.info('📦[server]: Data Source has been initialized!')
+                logger.info('📦 [server]: Data Source has been initialized!')
 
                 // Initialize pools
                 this.nodesPool = new NodesPool()
@@ -75,7 +80,7 @@ export class App {
                 await getAPIKeys()
             })
             .catch((err) => {
-                console.error('❌[server]: Error during Data Source initialization:', err)
+                logger.error('❌ [server]: Error during Data Source initialization:', err)
             })
     }
 
@@ -633,7 +638,7 @@ export class App {
                 })
             })
         } catch (err) {
-            console.error(err)
+            logger.error(err)
         }
     }
 
@@ -811,7 +816,7 @@ export class App {
             const removePromises: any[] = []
             await Promise.all(removePromises)
         } catch (e) {
-            console.error(`❌[server]: Flowise Server shut down error: ${e}`)
+            logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
 }
@@ -851,7 +856,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, () => {
-        console.info(`⚡️[server]: Flowise Server is listening at ${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
     })
 }
 
