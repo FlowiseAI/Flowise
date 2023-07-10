@@ -48,12 +48,16 @@ class MotorMemory_Memory implements INode {
                 label: 'API Key',
                 name: 'apiKey',
                 type: 'string',
+                description: 'Only needed when using hosted solution - https://getmetal.io',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Client ID',
                 name: 'clientId',
                 type: 'string',
+                description: 'Only needed when using hosted solution - https://getmetal.io',
+                additionalParams: true,
                 optional: true
             }
         ]
@@ -67,8 +71,6 @@ class MotorMemory_Memory implements INode {
         const clientId = nodeData.inputs?.clientId as string
 
         const chatId = options?.chatId as string
-
-        console.log(chatId)
 
         let obj: MotorheadMemoryInput = {
             returnMessages: true,
