@@ -29,9 +29,27 @@ FLOWISE_USERNAME=user
 FLOWISE_PASSWORD=1234
 ```
 
-## 🔎 Debugging
+## 🌱 Env Variables
 
-You can set `DEBUG=true` to the `.env` file. Refer [here](https://docs.flowiseai.com/environment-variables) for full list of env variables
+Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder.
+
+| Variable         | Description                                                      | Type                                             | Default                             |
+| ---------------- | ---------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
+| PORT             | The HTTP port Flowise runs on                                    | Number                                           | 3000                                |
+| FLOWISE_USERNAME | Username to login                                                | String                                           |
+| FLOWISE_PASSWORD | Password to login                                                | String                                           |
+| DEBUG            | Print logs from components                                       | Boolean                                          |
+| LOG_PATH         | Location where log files are stored                              | String                                           | `your-path/Flowise/logs`            |
+| LOG_LEVEL        | Different levels of logs                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
+| DATABASE_PATH    | Location where database is saved                                 | String                                           | `your-home-dir/.flowise`            |
+| APIKEY_PATH      | Location where api keys are saved                                | String                                           | `your-path/Flowise/packages/server` |
+| EXECUTION_MODE   | Whether predictions run in their own process or the main process | Enum String: `child`, `main`                     | `main`                              |
+
+You can also specify the env variables when using `npx`. For example:
+
+```
+npx flowise start --PORT=3000 --DEBUG=true
+```
 
 ## 📖 Documentation
 
