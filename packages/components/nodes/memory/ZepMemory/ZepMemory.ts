@@ -45,6 +45,20 @@ class ZepMemory_Memory implements INode {
                 optional: true
             },
             {
+                label: 'API Key',
+                name: 'apiKey',
+                type: 'string',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Size',
+                name: 'k',
+                type: 'number',
+                default: '10',
+                description: 'Window of size k to surface the last k back-and-forths to use as memory.'
+            },
+            {
                 label: 'Auto Summary Template',
                 name: 'autoSummaryTemplate',
                 type: 'string',
@@ -98,6 +112,8 @@ class ZepMemory_Memory implements INode {
         const autoSummaryTemplate = nodeData.inputs?.autoSummaryTemplate as string
         const autoSummary = nodeData.inputs?.autoSummary as boolean
         const sessionId = nodeData.inputs?.sessionId as string
+        const apiKey = nodeData.inputs?.apiKey as string
+        const k = nodeData.inputs?.k as string
 
         const chatId = options?.chatId as string
 
@@ -110,6 +126,7 @@ class ZepMemory_Memory implements INode {
             memoryKey,
             inputKey
         }
+        if (apiKey) obj.apiKey = apiKey
 
         let zep = new ZepMemory(obj)
 
@@ -118,7 +135,7 @@ class ZepMemory_Memory implements INode {
         zep.loadMemoryVariables = async (values) => {
             let data = await tmpFunc.bind(zep, values)()
             if (autoSummary && zep.returnMessages && data[zep.memoryKey] && data[zep.memoryKey].length) {
-                const memory = await zep.zepClient.getMemory(zep.sessionId, 10)
+                const memory = await zep.zepClient.getMemory(zep.sessionId, parseInt(k, 10) ?? 10)
                 if (memory?.summary) {
                     let summary = autoSummaryTemplate.replace(/{summary}/g, memory.summary.content)
                     // eslint-disable-next-line no-console
