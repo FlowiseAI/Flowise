@@ -1,7 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { APIChain, createOpenAPIChain } from 'langchain/chains'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { ChatOpenAI } from 'langchain/chat_models/openai'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class OpenApiChain_Chains implements INode {
     label: string
@@ -57,12 +58,14 @@ class OpenApiChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = await initChain(nodeData)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.run(input, [handler])
+            const res = await chain.run(input, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(input)
+            const res = await chain.run(input, [loggerHandler])
             return res
         }
     }

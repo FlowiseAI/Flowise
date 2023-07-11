@@ -180,6 +180,9 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {IDepthQueue} depthQueue
  * @param {IComponentNodes} componentNodes
  * @param {string} question
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {ICommonObject} overrideConfig
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -222,11 +225,14 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
 
+            logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
                 appDataSource,
-                databaseEntities
+                databaseEntities,
+                logger
             })
+            logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
             logger.error(e)
             throw new Error(e)

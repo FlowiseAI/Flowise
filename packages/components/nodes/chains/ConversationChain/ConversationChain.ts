@@ -1,10 +1,11 @@
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { AIMessage, HumanMessage } from 'langchain/schema'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 const systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 
@@ -90,12 +91,14 @@ class ConversationChain_Chains implements INode {
             chain.memory = memory
         }
 
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.call({ input }, [handler])
+            const res = await chain.call({ input }, [loggerHandler, handler])
             return res?.response
         } else {
-            const res = await chain.call({ input })
+            const res = await chain.call({ input }, [loggerHandler])
             return res?.response
         }
     }

@@ -283,10 +283,16 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
             const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+
             const endingNodeId = getEndingNode(nodeDependencies, graph)
-            if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
+
             const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-            if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+
+            if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            }
 
             const obj = {
                 isStreaming: isFlowValidForStream(nodes, endingNodeData)
@@ -638,7 +644,7 @@ export class App {
                 })
             })
         } catch (err) {
-            logger.error(err)
+            logger.error('[server] [mode:child]: Error:', err)
         }
     }
 
@@ -714,9 +720,11 @@ export class App {
             if (process.env.EXECUTION_MODE === 'child') {
                 if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                    logger.debug(
+                        `[server] [mode:child]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
+                    )
                     try {
                         const result = await this.startChildProcess(chatflow, chatId, incomingInput, nodeToExecuteData)
-
                         return res.json(result)
                     } catch (error) {
                         return res.status(500).send(error)
@@ -739,15 +747,22 @@ export class App {
                 if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
+                    logger.debug(
+                        `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
+                    )
                 } else {
                     /*** Get Ending Node with Directed Graph  ***/
                     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
                     const directedGraph = graph
                     const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
-                    if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
 
                     const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-                    if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+
+                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    }
 
                     if (
                         endingNodeData.outputs &&
@@ -768,6 +783,7 @@ export class App {
                     const nonDirectedGraph = constructedObj.graph
                     const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
 
+                    logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                     /*** BFS to traverse from Starting Nodes to Ending Node ***/
                     const reactFlowNodes = await buildLangchain(
                         startingNodeIds,
@@ -796,17 +812,21 @@ export class App {
                 const nodeInstance = new nodeModule.nodeClass()
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
+                logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
                           socketIO,
-                          socketIOClientId: incomingInput.socketIOClientId
+                          socketIOClientId: incomingInput.socketIOClientId,
+                          logger
                       })
-                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
+                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
 
+                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 return res.json(result)
             }
         } catch (e: any) {
+            logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)
         }
     }
