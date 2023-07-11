@@ -47,7 +47,7 @@ class ZepMemory_Memory implements INode {
             {
                 label: 'API Key',
                 name: 'apiKey',
-                type: 'string',
+                type: 'password',
                 additionalParams: true,
                 optional: true
             },

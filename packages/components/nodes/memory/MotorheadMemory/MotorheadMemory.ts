@@ -47,7 +47,7 @@ class MotorMemory_Memory implements INode {
             {
                 label: 'API Key',
                 name: 'apiKey',
-                type: 'string',
+                type: 'password',
                 description: 'Only needed when using hosted solution - https://getmetal.io',
                 additionalParams: true,
                 optional: true
