@@ -1,8 +1,9 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { APIChain } from 'langchain/chains'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate } from 'langchain/prompts'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:
 {api_docs}
@@ -95,12 +96,14 @@ class GETApiChain_Chains implements INode {
         const ansPrompt = nodeData.inputs?.ansPrompt as string
 
         const chain = await getAPIChain(apiDocs, model, headers, urlPrompt, ansPrompt)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(input, [handler])
+            const res = await chain.run(input, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(input)
+            const res = await chain.run(input, [loggerHandler])
             return res
         }
     }

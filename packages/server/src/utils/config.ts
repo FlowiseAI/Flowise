@@ -9,12 +9,12 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true }
 const loggingConfig = {
     dir: process.env.LOG_PATH ?? path.join(__dirname, '..', '..', '..', '..', 'logs'),
     server: {
-        level: 'info',
+        level: process.env.LOG_LEVEL ?? 'info',
         filename: 'server.log',
         errorFilename: 'server-error.log'
     },
     express: {
-        level: 'info',
+        level: process.env.LOG_LEVEL ?? 'info',
         format: 'jsonl', // can't be changed currently
         filename: 'server-requests.log.jsonl' // should end with .jsonl
     }
