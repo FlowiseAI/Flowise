@@ -1,7 +1,7 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
-import { ConversationalRetrievalQAChain } from 'langchain/chains'
+import { CustomChainHandler, CustomChainLogsHandler, getBaseClasses, getChainCallbackHandlerDataByKey } from '../../../src/utils'
+import { ConversationalRetrievalQAChain, BaseChain } from 'langchain/chains'
 import { AIChatMessage, BaseRetriever, HumanChatMessage } from 'langchain/schema'
 import { BaseChatMemory, BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
@@ -111,7 +111,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 inputKey: 'question',
                 outputKey: 'text',
                 returnMessages: true
-            })
+            }),
+            callbacks: [new CustomChainLogsHandler()]
         }
         if (returnSourceDocuments) obj.returnSourceDocuments = returnSourceDocuments
         if (chainOption) obj.qaChainOptions = { ...obj.qaChainOptions, type: chainOption }
@@ -150,11 +151,16 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, undefined, returnSourceDocuments)
             const res = await chain.call(obj, [handler])
-            if (res.text && res.sourceDocuments) return res
+
+            const chainLogs = getChainCallbackHandlerDataByKey(chain, 'custom_chain_logs_handler', 'logs')
+            if (res.text && res.sourceDocuments) return { ...res, chainLogs }
+
             return res?.text
         } else {
             const res = await chain.call(obj)
-            if (res.text && res.sourceDocuments) return res
+            const chainLogs = getChainCallbackHandlerDataByKey(chain, 'custom_chain_logs_handler', 'logs')
+
+            if (res.text && res.sourceDocuments) return { ...res, chainLogs }
             return res?.text
         }
     }

@@ -4,7 +4,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { BaseCallbackHandler } from 'langchain/callbacks'
 import { Server } from 'socket.io'
-import { ChainValues } from 'langchain/dist/schema'
+import { AgentAction, AgentFinish, ChainValues } from 'langchain/dist/schema'
+import { Serialized } from 'langchain/load/serializable'
+import { BaseChain } from 'langchain/chains'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -242,6 +244,138 @@ export class CustomChainHandler extends BaseCallbackHandler {
         if (this.returnSourceDocuments) {
             this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
         }
+    }
+}
+
+export class CustomChainLogsHandler extends BaseCallbackHandler {
+    name = 'custom_chain_logs_handler'
+    private logs: Record<string, unknown>
+
+    getLogs(): Record<string, unknown> {
+        return this.logs
+    }
+
+    async handleLLMStart(
+        llm: Serialized,
+        prompts: string[],
+        runId: string,
+        parentRunId?: string,
+        extraParams?: Record<string, unknown>,
+        tags?: string[],
+        metadata?: Record<string, unknown>
+    ) {
+        this.logs = {
+            ...this.logs,
+            handleLLMStart: {
+                llm,
+                prompts,
+                runId,
+                parentRunId,
+                extraParams,
+                tags,
+                metadata
+            }
+        }
+    }
+
+    async handleLLMEnd?(output: object, runId: string, parentRunId?: string, tags?: string[]) {
+        this.logs = {
+            ...this.logs,
+            handleLLMEnd: {
+                output,
+                runId,
+                parentRunId,
+                tags
+            }
+        }
+    }
+
+    async handleChainStart(
+        chain: Serialized,
+        inputs: ChainValues,
+        runId: string,
+        parentRunId?: string,
+        tags?: string[],
+        metadata?: Record<string, unknown>
+    ) {
+        this.logs = {
+            ...this.logs,
+            handleChainStart: {
+                chain,
+                inputs,
+                runId,
+                parentRunId,
+                tags,
+                metadata
+            }
+        }
+    }
+
+    async handleChainEnd(outputs: ChainValues, runId: string, parentRunId?: string, tags?: string[]) {
+        this.logs = {
+            ...this.logs,
+            handleChainEnd: {
+                outputs,
+                runId,
+                parentRunId,
+                tags
+            }
+        }
+    }
+
+    async handleAgentAction(action: AgentAction) {
+        this.logs = {
+            ...this.logs,
+            handleAgentAction: {
+                action
+            }
+        }
+    }
+
+    handleText?(text: string, runId: string, parentRunId?: string, tags?: string[]) {
+        this.logs = {
+            ...this.logs,
+            handleText: {
+                text,
+                runId,
+                parentRunId,
+                tags
+            }
+        }
+    }
+
+    handleAgentEnd?(action: AgentFinish, runId: string, parentRunId?: string, tags?: string[]) {
+        this.logs = {
+            ...this.logs,
+            handleAgentEnd: {
+                action,
+                runId,
+                parentRunId,
+                tags
+            }
+        }
+    }
+}
+
+export function getChainCallbackHandlerDataByKey(chain: BaseChain, handlerName: string, valueKey: string) {
+    try {
+        if (!chain.callbacks) return null
+        const callbacks = chain.callbacks as Array<Record<string, unknown>>
+        const handler = callbacks.find((callback) => callback.name === handlerName)
+        if (!handler?.[valueKey]) {
+            throw Error(`[getChainCallbackHandlerDataByKey]: The callback handler doesn't have key: ${valueKey}`)
+        }
+        return handler[valueKey]
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+function tryJsonStringify(obj: unknown, fallback: string) {
+    try {
+        return JSON.stringify(obj, null, 2)
+    } catch (err) {
+        return fallback
     }
 }
 

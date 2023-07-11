@@ -61,7 +61,7 @@ export class App {
         this.app = express()
 
         // Add the requestLogger middleware to log all requests
-        this.app.use(requestLogger);
+        this.app.use(requestLogger)
     }
 
     async initDatabase() {
@@ -775,7 +775,6 @@ export class App {
                 const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
                 const nodeModule = await import(nodeInstanceFilePath)
                 const nodeInstance = new nodeModule.nodeClass()
-
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
@@ -801,7 +800,6 @@ export class App {
         }
     }
 }
-
 /**
  * Get first chat message id
  * @param {string} chatflowid
