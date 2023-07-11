@@ -633,21 +633,32 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
             let obj: IOverrideConfig
-            if (inputParam.type === 'password' || inputParam.type === 'options') {
-                continue
-            } else if (inputParam.type === 'file') {
+            if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
                 }
+            } else if (inputParam.type === 'options') {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.options
+                        ? inputParam.options
+                              ?.map((option) => {
+                                  return option.name
+                              })
+                              .join(', ')
+                        : 'string'
+                }
             } else {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: inputParam.name,
-                    type: inputParam.type
+                    type: inputParam.type === 'password' ? 'string' : inputParam.type
                 }
             }
             if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
