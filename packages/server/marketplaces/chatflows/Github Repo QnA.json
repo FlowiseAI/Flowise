@@ -99,6 +99,13 @@
                         "id": "github_1-input-accessToken-password"
                     },
                     {
+                        "label": "Recursive",
+                        "name": "recursive",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "github_1-input-recursive-boolean"
+                    },
+                    {
                         "label": "Metadata",
                         "name": "metadata",
                         "type": "json",
