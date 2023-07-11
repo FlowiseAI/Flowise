@@ -17,7 +17,7 @@ class MotorMemory_Memory implements INode {
         this.label = 'Motorhead Memory'
         this.name = 'motorheadMemory'
         this.type = 'MotorheadMemory'
-        this.icon = 'memory.svg'
+        this.icon = 'motorhead.png'
         this.category = 'Memory'
         this.description = 'Remembers previous conversational back and forths directly'
         this.baseClasses = [this.type, ...getBaseClasses(MotorheadMemory)]
