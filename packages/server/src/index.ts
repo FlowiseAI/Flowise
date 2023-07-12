@@ -812,7 +812,7 @@ export class App {
                 const nodeInstance = new nodeModule.nodeClass()
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
-                logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
@@ -822,7 +822,17 @@ export class App {
                       })
                     : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
 
-                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+                logger.verbose(`[server/prediction]: Generated prediction for chat ${chatId} with chatflow ${chatflow.name}`, {
+                    question: incomingInput.question,
+                    text: result?.text,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    _incomingInput: incomingInput,
+                    _result: result
+                })
                 return res.json(result)
             }
         } catch (e: any) {
