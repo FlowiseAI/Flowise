@@ -1,54 +1,107 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import config from './config' // should be replaced by node-config or similar
-import { createLogger, transports, format } from 'winston'
+import dotenv from 'dotenv'
 import { NextFunction, Request, Response } from 'express'
+import { createLogger, transports, format } from 'winston'
+import { config as winstonConfig } from 'winston'
 
-const { combine, timestamp, printf, errors } = format
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') })
 
-// expect the log dir be relative to the projects root
-const logDir = config.logging.dir
+const { combine, timestamp, printf, errors, json, colorize } = format
+const LOG_LEVELS = winstonConfig.npm.levels
+const timestampFormat = 'YYYY-MM-DD HH:mm:ss'
+const logDir = process.env.LOG_PATH ?? path.join(__dirname, '..', '..', '..', '..', 'logs')
+const logLevel = process.env.LOG_LEVEL ?? 'info'
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir)
 }
 
+function printMessage(
+    options: { metadata?: boolean; pretty?: boolean; timestamp?: boolean } = { metadata: false, pretty: false, timestamp: true }
+) {
+    return printf(({ level, message, stack, timestamp, ...metadata }) => {
+        let text = `${options.timestamp ? timestamp + ' ' : ''}[${level}]: ${message}`
+
+        // Filter out metadata starting with _ unless debugLevel is DEBUG
+        const filteredMetadata =
+            LOG_LEVELS[logLevel] >= LOG_LEVELS['debug']
+                ? metadata
+                : Object.entries(metadata).reduce((acc, [key, value]) => (key.startsWith('_') ? acc : { ...acc, [key]: value }), {})
+
+        // Add metadata if present and metadata is true
+        if (options.metadata && Object.keys(filteredMetadata).length !== 0) {
+            text += `: ${JSON.stringify(filteredMetadata, null, options.pretty ? 2 : undefined)}`
+        }
+        return stack ? text + '\n' + stack : text
+    })
+}
+
+// Custom filter function to match specific metadata field
+const filterPredictions = format((info) => {
+    if (info.message && info.message.includes('[server/prediction]')) {
+        return info
+    }
+    return false
+})
+
 const logger = createLogger({
+    level: logLevel,
     format: combine(
-        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.json(),
-        printf(({ level, message, timestamp, stack }) => {
-            const text = `${timestamp} [${level.toUpperCase()}]: ${message}`
-            return stack ? text + '\n' + stack : text
-        }),
-        errors({ stack: true })
+        timestamp({ format: timestampFormat }),
+        errors({ stack: LOG_LEVELS[logLevel] >= LOG_LEVELS['debug'] }),
+        printMessage({ metadata: true, pretty: false, timestamp: false })
     ),
-    defaultMeta: {
-        package: 'server'
-    },
     transports: [
-        new transports.Console(),
-        new transports.File({
-            filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
-            level: config.logging.server.level ?? 'info'
+        new transports.Console({
+            format: combine(
+                colorize(),
+                errors({ stack: LOG_LEVELS[logLevel] >= LOG_LEVELS['debug'] }),
+                printMessage({ metadata: true, pretty: true, timestamp: false })
+            )
         }),
         new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log'),
+            format: combine(printMessage({ metadata: true, pretty: false, timestamp: true })),
+            filename: path.join(logDir, 'server.log')
+        }),
+        new transports.File({
+            format: combine(errors({ stack: true }), printMessage({ metadata: true, pretty: false, timestamp: true })),
+            filename: path.join(logDir, 'server-error.log'),
             level: 'error' // Log only errors to this file
+        }),
+        new transports.File({
+            filename: path.join(logDir, 'server.log.jsonl'),
+            format: combine(timestamp({ format: timestampFormat }), json())
+        }),
+        new transports.File({
+            filename: path.join(logDir, 'predictions.log'),
+            format: combine(
+                timestamp({ format: timestampFormat }),
+                printMessage({ metadata: true, pretty: true, timestamp: true }),
+                filterPredictions()
+            ) // only if message contains [server/prediction]
+        }),
+        new transports.File({
+            filename: path.join(logDir, 'predictions.log.jsonl'),
+            format: combine(timestamp({ format: timestampFormat }), json(), filterPredictions()) // only if message contains [server/prediction]
         })
     ],
     exceptionHandlers: [
+        new transports.Console(),
         new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
+            filename: path.join(logDir, 'server-error.log')
         })
     ],
     rejectionHandlers: [
+        new transports.Console(),
         new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
+            filename: path.join(logDir, 'server-error.log')
         })
     ]
 })
+
+logger.info(`logger configured with level: ${logLevel} using ${logDir}`)
 
 /**
  * This function is used by express as a middleware.
@@ -58,7 +111,7 @@ const logger = createLogger({
  */
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
     const fileLogger = createLogger({
-        format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
+        level: logLevel,
         defaultMeta: {
             package: 'server',
             request: {
@@ -71,9 +124,15 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
             }
         },
         transports: [
+            new transports.Console({
+                format: combine(
+                    colorize(),
+                    printf(({ level, message }) => `[${level}]: ${message}`)
+                )
+            }),
             new transports.File({
-                filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
-                level: config.logging.express.level ?? 'debug'
+                filename: path.join(logDir, 'server-requests.log.jsonl'),
+                format: combine(timestamp({ format: timestampFormat }), json(), errors({ stack: true }))
             })
         ]
     })

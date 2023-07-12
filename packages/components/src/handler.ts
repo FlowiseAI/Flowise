@@ -7,14 +7,6 @@ interface AgentRun extends Run {
     actions: AgentAction[]
 }
 
-function tryJsonStringify(obj: unknown, fallback: string) {
-    try {
-        return JSON.stringify(obj, null, 2)
-    } catch (err) {
-        return fallback
-    }
-}
-
 function elapsed(run: Run): string {
     if (!run.end_time) return ''
     const elapsed = run.end_time - run.start_time
@@ -56,82 +48,154 @@ export class ConsoleCallbackHandler extends BaseTracer {
 
     getBreadcrumbs(run: Run) {
         const parents = this.getParents(run).reverse()
-        const string = [...parents, run]
-            .map((parent) => {
-                const name = `${parent.execution_order}:${parent.run_type}:${parent.name}`
-                return name
-            })
-            .join(' > ')
-        return string
+        const breadcrumbs = [...parents, run]
+
+        return {
+            toJSON: () => {
+                return breadcrumbs
+            },
+            toString: () => {
+                return breadcrumbs
+                    .map((parent) => {
+                        return `${parent.execution_order}:${parent.run_type}:${parent.name}`
+                    })
+                    .join(' > ')
+            }
+        }
     }
 
     // logging methods
 
     onChainStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(`[chain/start] [${crumbs}] Entering Chain run with input: ${tryJsonStringify(run.inputs, '[inputs]')}`)
+        this.logger.verbose(`[chain/start] [${crumbs}] Entering Chain run`, {
+            input: run.inputs?.input,
+            inputs: run.inputs,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onChainEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[chain/end] [${crumbs}] [${elapsed(run)}] Exiting Chain run with output: ${tryJsonStringify(run.outputs, '[outputs]')}`
-        )
+        this.logger.verbose(`[chain/end] [${crumbs}] [${elapsed(run)}] Exiting Chain run`, {
+            output: run.outputs?.response,
+            outputs: run.outputs,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onChainError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[chain/error] [${crumbs}] [${elapsed(run)}] Chain run errored with error: ${tryJsonStringify(run.error, '[error]')}`
-        )
+        this.logger.verbose(`[chain/error] [${crumbs}] [${elapsed(run)}] Chain run reported an error`, {
+            error: run.error,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onLLMStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         const inputs = 'prompts' in run.inputs ? { prompts: (run.inputs.prompts as string[]).map((p) => p.trim()) } : run.inputs
-        this.logger.verbose(`[llm/start] [${crumbs}] Entering LLM run with input: ${tryJsonStringify(inputs, '[inputs]')}`)
+        this.logger.verbose(`[llm/start] [${crumbs}] Entering LLM run`, {
+            inputs: inputs,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onLLMEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[llm/end] [${crumbs}] [${elapsed(run)}] Exiting LLM run with output: ${tryJsonStringify(run.outputs, '[response]')}`
-        )
+        this.logger.verbose(`[llm/end] [${crumbs}] [${elapsed(run)}] Exiting LLM run`, {
+            outputs: run.outputs,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onLLMError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[llm/error] [${crumbs}] [${elapsed(run)}] LLM run errored with error: ${tryJsonStringify(run.error, '[error]')}`
-        )
+        this.logger.verbose(`[llm/error] [${crumbs}] [${elapsed(run)}] LLM run reported an error`, {
+            error: run.error,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onToolStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(`[tool/start] [${crumbs}] Entering Tool run with input: "${run.inputs.input?.trim()}"`)
+        this.logger.verbose(`[tool/start] [${crumbs}] Entering Tool run with input: "${run.inputs.input?.trim()}"`, {
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onToolEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(`[tool/end] [${crumbs}] [${elapsed(run)}] Exiting Tool run with output: "${run.outputs?.output?.trim()}"`)
+        this.logger.verbose(`[tool/end] [${crumbs}] [${elapsed(run)}] Exiting Tool run with output: "${run.outputs?.output?.trim()}"`, {
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onToolError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[tool/error] [${crumbs}] [${elapsed(run)}] Tool run errored with error: ${tryJsonStringify(run.error, '[error]')}`
-        )
+        this.logger.verbose(`[tool/error] [${crumbs}] [${elapsed(run)}] Tool run reported an error`, {
+            error: run.error,
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 
     onAgentAction(run: Run) {
         const agentRun = run as AgentRun
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(
-            `[agent/action] [${crumbs}] Agent selected action: ${tryJsonStringify(
-                agentRun.actions[agentRun.actions.length - 1],
-                '[action]'
-            )}`
-        )
+        this.logger.verbose(`[agent/action] [${crumbs}] Agent selected action`, {
+            action: agentRun.actions[agentRun.actions.length - 1],
+            id: run.id,
+            parentRunId: run.parent_run_id,
+            name: run.name,
+            run_type: run.run_type,
+            tags: run.tags,
+            _run: run
+        })
     }
 }
 
