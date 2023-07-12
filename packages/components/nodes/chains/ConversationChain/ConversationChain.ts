@@ -6,8 +6,10 @@ import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { AIMessage, HumanMessage } from 'langchain/schema'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { flatten } from 'lodash'
+import { Document } from 'langchain/document'
 
-const systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
+let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 
 class ConversationChain_Chains implements INode {
     label: string
@@ -39,6 +41,14 @@ class ConversationChain_Chains implements INode {
                 type: 'BaseMemory'
             },
             {
+                label: 'Document',
+                name: 'document',
+                type: 'Document',
+                description: 'Include whole document into the context window',
+                optional: true,
+                list: true
+            },
+            {
                 label: 'System Message',
                 name: 'systemMessagePrompt',
                 type: 'string',
@@ -54,6 +64,20 @@ class ConversationChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const memory = nodeData.inputs?.memory as BufferMemory
         const prompt = nodeData.inputs?.systemMessagePrompt as string
+        const docs = nodeData.inputs?.document as Document[]
+
+        const flattenDocs = docs && docs.length ? flatten(docs) : []
+        const finalDocs = []
+        for (let i = 0; i < flattenDocs.length; i += 1) {
+            finalDocs.push(new Document(flattenDocs[i]))
+        }
+
+        let finalText = ''
+        for (let i = 0; i < finalDocs.length; i += 1) {
+            finalText += finalDocs[i].pageContent
+        }
+
+        if (finalText) systemMessage = `${systemMessage}\nThe AI has the following context:\n${finalText}`
 
         const obj: any = {
             llm: model,
