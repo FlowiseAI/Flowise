@@ -104,31 +104,11 @@ class ZepMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const baseURL = nodeData.inputs?.baseURL as string
-        const aiPrefix = nodeData.inputs?.aiPrefix as string
-        const humanPrefix = nodeData.inputs?.humanPrefix as string
-        const memoryKey = nodeData.inputs?.memoryKey as string
-        const inputKey = nodeData.inputs?.inputKey as string
         const autoSummaryTemplate = nodeData.inputs?.autoSummaryTemplate as string
         const autoSummary = nodeData.inputs?.autoSummary as boolean
-        const sessionId = nodeData.inputs?.sessionId as string
-        const apiKey = nodeData.inputs?.apiKey as string
         const k = nodeData.inputs?.k as string
 
-        const chatId = options?.chatId as string
-
-        const obj: ZepMemoryInput = {
-            baseURL,
-            sessionId: sessionId ? sessionId : chatId,
-            aiPrefix,
-            humanPrefix,
-            returnMessages: true,
-            memoryKey,
-            inputKey
-        }
-        if (apiKey) obj.apiKey = apiKey
-
-        let zep = new ZepMemory(obj)
+        let zep = initalizeZep(nodeData, options)
 
         // hack to support summary
         let tmpFunc = zep.loadMemoryVariables
@@ -153,6 +133,37 @@ class ZepMemory_Memory implements INode {
         }
         return zep
     }
+
+    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        const zep = initalizeZep(nodeData, options)
+        zep.clear()
+    }
+}
+
+const initalizeZep = (nodeData: INodeData, options: ICommonObject) => {
+    const baseURL = nodeData.inputs?.baseURL as string
+    const aiPrefix = nodeData.inputs?.aiPrefix as string
+    const humanPrefix = nodeData.inputs?.humanPrefix as string
+    const memoryKey = nodeData.inputs?.memoryKey as string
+    const inputKey = nodeData.inputs?.inputKey as string
+
+    const sessionId = nodeData.inputs?.sessionId as string
+    const apiKey = nodeData.inputs?.apiKey as string
+
+    const chatId = options?.chatId as string
+
+    const obj: ZepMemoryInput = {
+        baseURL,
+        sessionId: sessionId ? sessionId : chatId,
+        aiPrefix,
+        humanPrefix,
+        returnMessages: true,
+        memoryKey,
+        inputKey
+    }
+    if (apiKey) obj.apiKey = apiKey
+
+    return new ZepMemory(obj)
 }
 
 module.exports = { nodeClass: ZepMemory_Memory }

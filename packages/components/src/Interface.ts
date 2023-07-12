@@ -96,6 +96,7 @@ export interface INode extends INodeProperties {
     }
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string | ICommonObject>
+    clearSessionMemory?(nodeData: INodeData, options?: ICommonObject): Promise<void>
 }
 
 export interface INodeData extends INodeProperties {

@@ -64,35 +64,44 @@ class MotorMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const memoryKey = nodeData.inputs?.memoryKey as string
-        const baseURL = nodeData.inputs?.baseURL as string
-        const sessionId = nodeData.inputs?.sessionId as string
-        const apiKey = nodeData.inputs?.apiKey as string
-        const clientId = nodeData.inputs?.clientId as string
-
-        const chatId = options?.chatId as string
-
-        let obj: MotorheadMemoryInput = {
-            returnMessages: true,
-            sessionId: sessionId ? sessionId : chatId,
-            memoryKey
-        }
-
-        if (baseURL) {
-            obj = {
-                ...obj,
-                url: baseURL
-            }
-        } else {
-            obj = {
-                ...obj,
-                apiKey,
-                clientId
-            }
-        }
-
-        return new MotorheadMemory(obj)
+        return initalizeMotorhead(nodeData, options)
     }
+
+    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        const motorhead = initalizeMotorhead(nodeData, options)
+        motorhead.clear()
+    }
+}
+
+const initalizeMotorhead = (nodeData: INodeData, options: ICommonObject): MotorheadMemory => {
+    const memoryKey = nodeData.inputs?.memoryKey as string
+    const baseURL = nodeData.inputs?.baseURL as string
+    const sessionId = nodeData.inputs?.sessionId as string
+    const apiKey = nodeData.inputs?.apiKey as string
+    const clientId = nodeData.inputs?.clientId as string
+
+    const chatId = options?.chatId as string
+
+    let obj: MotorheadMemoryInput = {
+        returnMessages: true,
+        sessionId: sessionId ? sessionId : chatId,
+        memoryKey
+    }
+
+    if (baseURL) {
+        obj = {
+            ...obj,
+            url: baseURL
+        }
+    } else {
+        obj = {
+            ...obj,
+            apiKey,
+            clientId
+        }
+    }
+
+    return new MotorheadMemory(obj)
 }
 
 module.exports = { nodeClass: MotorMemory_Memory }
