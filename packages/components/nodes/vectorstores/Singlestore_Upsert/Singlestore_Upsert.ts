@@ -2,9 +2,8 @@ import { INode, INodeData, INodeOutputsValue, INodeParams, INodeOptionsValue } f
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
-import { ConnectionOptions, SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
 import { flatten } from 'lodash'
-import { integer } from '@opensearch-project/opensearch/api/types'
 import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 
 class SingleStoreUpsert_VectorStores implements INode {
@@ -44,11 +43,6 @@ class SingleStoreUpsert_VectorStores implements INode {
                 type: 'string'
             },
             {
-                label: 'Port',
-                name: 'port',
-                type: 'string'
-            },
-            {
                 label: 'User',
                 name: 'user',
                 type: 'string'
@@ -66,27 +60,38 @@ class SingleStoreUpsert_VectorStores implements INode {
             {
                 label: 'Table Name',
                 name: 'tableName',
-                type: 'string'
+                type: 'string',
+                placeholder: 'embeddings',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Content Column Name',
                 name: 'contentColumnName',
-                type: 'string'
+                type: 'string',
+                placeholder: 'content',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Vector Column Name',
                 name: 'vectorColumnName',
-                type: 'string'
+                type: 'string',
+                placeholder: 'vector',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Metadata Column Name',
                 name: 'metadataColumnName',
-                type: 'string'
+                type: 'string',
+                placeholder: 'metadata',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Top K',
                 name: 'topK',
-                description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
                 additionalParams: true,
@@ -111,15 +116,15 @@ class SingleStoreUpsert_VectorStores implements INode {
         const singleStoreConnectionConfig = {
             connectionOptions: {
                 host: nodeData.inputs?.host as string,
-                port: nodeData.inputs?.port as integer,
+                port: 3306,
                 user: nodeData.inputs?.user as string,
                 password: nodeData.inputs?.password as string,
                 database: nodeData.inputs?.database as string
             },
-            tableName: nodeData.inputs?.tableName as string,
-            contentColumnName: nodeData.inputs?.contentColumnName as string,
-            vectorColumnName: nodeData.inputs?.vectorColumnName as string,
-            metadataColumnName: nodeData.inputs?.metadataColumnName as string
+            ...(nodeData.inputs?.tableName ? { tableName: nodeData.inputs.tableName as string } : {}),
+            ...(nodeData.inputs?.contentColumnName ? { contentColumnName: nodeData.inputs.contentColumnName as string } : {}),
+            ...(nodeData.inputs?.vectorColumnName ? { vectorColumnName: nodeData.inputs.vectorColumnName as string } : {}),
+            ...(nodeData.inputs?.metadataColumnName ? { metadataColumnName: nodeData.inputs.metadataColumnName as string } : {})
         } as SingleStoreVectorStoreConfig
 
         const docs = nodeData.inputs?.document as Document[]
@@ -134,11 +139,10 @@ class SingleStoreUpsert_VectorStores implements INode {
             finalDocs.push(new Document(flattenDocs[i]))
         }
 
-        let vectorStore: SingleStoreVectorStore | MemoryVectorStore
-        
+        let vectorStore: SingleStoreVectorStore
+
         vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
         vectorStore.addDocuments.bind(vectorStore)(finalDocs)
-        
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
