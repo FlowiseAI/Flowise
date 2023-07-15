@@ -27,7 +27,7 @@ export class NodesPool {
         const nodeFiles = await this.getFiles(nodesPath)
         return Promise.all(
             nodeFiles.map(async (file) => {
-                if (file.endsWith('.js') && !file.endsWith('.credential.js')) {
+                if (file.endsWith('.js')) {
                     const nodeModule = await require(file)
 
                     if (nodeModule.nodeClass) {
@@ -66,7 +66,7 @@ export class NodesPool {
      */
     private async initializeCrdentials() {
         const packagePath = getNodeModulesPackagePath('flowise-components')
-        const nodesPath = path.join(packagePath, 'dist', 'nodes')
+        const nodesPath = path.join(packagePath, 'dist', 'credentials')
         const nodeFiles = await this.getFiles(nodesPath)
         return Promise.all(
             nodeFiles.map(async (file) => {

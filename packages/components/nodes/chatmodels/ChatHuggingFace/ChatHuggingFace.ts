@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from './core'
 
 class ChatHuggingFace_ChatModels implements INode {
@@ -10,6 +10,7 @@ class ChatHuggingFace_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,17 +21,28 @@ class ChatHuggingFace_ChatModels implements INode {
         this.category = 'Chat Models'
         this.description = 'Wrapper around HuggingFace large language models'
         this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(HuggingFaceInference)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['huggingFaceApi']
+        }
         this.inputs = [
             {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                placeholder: 'gpt2'
+                description: 'If using own inference endpoint, leave this blank',
+                placeholder: 'gpt2',
+                optional: true
             },
             {
-                label: 'HuggingFace Api Key',
-                name: 'apiKey',
-                type: 'password'
+                label: 'Endpoint',
+                name: 'endpoint',
+                type: 'string',
+                placeholder: 'https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2',
+                description: 'Using your own inference endpoint',
+                optional: true
             },
             {
                 label: 'Temperature',
@@ -71,22 +83,12 @@ class ChatHuggingFace_ChatModels implements INode {
                 description: 'Frequency Penalty parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Endpoint',
-                name: 'endpoint',
-                type: 'string',
-                placeholder: 'https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2',
-                description: 'Using your own inference endpoint',
-                optional: true,
-                additionalParams: true
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const model = nodeData.inputs?.model as string
-        const apiKey = nodeData.inputs?.apiKey as string
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
@@ -94,9 +96,12 @@ class ChatHuggingFace_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const endpoint = nodeData.inputs?.endpoint as string
 
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
+
         const obj: Partial<HFInput> = {
             model,
-            apiKey
+            apiKey: huggingFaceApiKey
         }
 
         if (temperature) obj.temperature = parseFloat(temperature)

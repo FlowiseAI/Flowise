@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeData, INodeParams, getBaseClasses } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
 import { BufferMemory } from 'langchain/memory'
 
@@ -10,6 +10,7 @@ class DynamoDb_Memory implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,6 +21,12 @@ class DynamoDb_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Stores the conversation in dynamo db table'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['dynamodbMemoryApi']
+        }
         this.inputs = [
             {
                 label: 'Table Name',
@@ -32,6 +39,13 @@ class DynamoDb_Memory implements INode {
                 type: 'string'
             },
             {
+                label: 'Region',
+                name: 'region',
+                type: 'string',
+                description: 'The aws region in which table is located',
+                placeholder: 'us-east-1'
+            },
+            {
                 label: 'Session ID',
                 name: 'sessionId',
                 type: 'string',
@@ -41,27 +55,11 @@ class DynamoDb_Memory implements INode {
                 optional: true
             },
             {
-                label: 'Region',
-                name: 'region',
-                type: 'string',
-                description: 'The aws region in which table is located',
-                placeholder: 'us-east-1'
-            },
-            {
-                label: 'Access Key',
-                name: 'accessKey',
-                type: 'password'
-            },
-            {
-                label: 'Secret Access Key',
-                name: 'secretAccessKey',
-                type: 'password'
-            },
-            {
                 label: 'Memory Key',
                 name: 'memoryKey',
                 type: 'string',
-                default: 'chat_history'
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
@@ -70,11 +68,13 @@ class DynamoDb_Memory implements INode {
         const partitionKey = nodeData.inputs?.partitionKey as string
         const sessionId = nodeData.inputs?.sessionId as string
         const region = nodeData.inputs?.region as string
-        const accessKey = nodeData.inputs?.accessKey as string
-        const secretAccessKey = nodeData.inputs?.secretAccessKey as string
         const memoryKey = nodeData.inputs?.memoryKey as string
 
         const chatId = options.chatId
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const accessKey = getCredentialParam('accessKey', credentialData, nodeData)
+        const secretAccessKey = getCredentialParam('secretAccessKey', credentialData, nodeData)
 
         const dynamoDb = new DynamoDBChatMessageHistory({
             tableName,

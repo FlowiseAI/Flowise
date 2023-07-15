@@ -1,7 +1,7 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
 import { flatten } from 'lodash'
@@ -15,6 +15,7 @@ class WeaviateUpsert_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
@@ -25,6 +26,14 @@ class WeaviateUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Weaviate'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Only needed when using Weaviate cloud hosted',
+            optional: true,
+            credentialNames: ['weaviateApi']
+        }
         this.inputs = [
             {
                 label: 'Document',
@@ -64,12 +73,6 @@ class WeaviateUpsert_VectorStores implements INode {
                 name: 'weaviateIndex',
                 type: 'string',
                 placeholder: 'Test'
-            },
-            {
-                label: 'Weaviate API Key',
-                name: 'weaviateApiKey',
-                type: 'password',
-                optional: true
             },
             {
                 label: 'Weaviate Text Key',
@@ -112,11 +115,10 @@ class WeaviateUpsert_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const weaviateScheme = nodeData.inputs?.weaviateScheme as string
         const weaviateHost = nodeData.inputs?.weaviateHost as string
         const weaviateIndex = nodeData.inputs?.weaviateIndex as string
-        const weaviateApiKey = nodeData.inputs?.weaviateApiKey as string
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
         const docs = nodeData.inputs?.document as Document[]
@@ -124,6 +126,9 @@ class WeaviateUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseInt(topK, 10) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
         const clientConfig: any = {
             scheme: weaviateScheme,

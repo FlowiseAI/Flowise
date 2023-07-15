@@ -1,6 +1,7 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence'
+import { getCredentialData, getCredentialParam } from '../../../src'
 
 class Confluence_DocumentLoaders implements INode {
     label: string
@@ -10,6 +11,7 @@ class Confluence_DocumentLoaders implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,24 +22,18 @@ class Confluence_DocumentLoaders implements INode {
         this.category = 'Document Loaders'
         this.description = `Load data from a Confluence Document`
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['confluenceApi']
+        }
         this.inputs = [
             {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
-            },
-            {
-                label: 'Username',
-                name: 'username',
-                type: 'string',
-                placeholder: '<CONFLUENCE_USERNAME>'
-            },
-            {
-                label: 'Access Token',
-                name: 'accessToken',
-                type: 'password',
-                placeholder: '<CONFLUENCE_ACCESS_TOKEN>'
             },
             {
                 label: 'Base URL',
@@ -49,7 +45,9 @@ class Confluence_DocumentLoaders implements INode {
                 label: 'Space Key',
                 name: 'spaceKey',
                 type: 'string',
-                placeholder: '~EXAMPLE362906de5d343d49dcdbae5dEXAMPLE'
+                placeholder: '~EXAMPLE362906de5d343d49dcdbae5dEXAMPLE',
+                description:
+                    'Refer to <a target="_blank" href="https://community.atlassian.com/t5/Confluence-questions/How-to-find-the-key-for-a-space/qaq-p/864760">official guide</a> on how to get Confluence Space Key'
             },
             {
                 label: 'Limit',
@@ -68,16 +66,18 @@ class Confluence_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const username = nodeData.inputs?.username as string
-        const accessToken = nodeData.inputs?.accessToken as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const spaceKey = nodeData.inputs?.spaceKey as string
         const baseUrl = nodeData.inputs?.baseUrl as string
         const limit = nodeData.inputs?.limit as number
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
 
-        const options: ConfluencePagesLoaderParams = {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const username = getCredentialParam('username', credentialData, nodeData)
+
+        const confluenceOptions: ConfluencePagesLoaderParams = {
             username,
             accessToken,
             baseUrl,
@@ -85,7 +85,7 @@ class Confluence_DocumentLoaders implements INode {
             limit
         }
 
-        const loader = new ConfluencePagesLoader(options)
+        const loader = new ConfluencePagesLoader(confluenceOptions)
 
         let docs = []
 

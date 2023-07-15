@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { AzureOpenAIInput, OpenAI, OpenAIInput } from 'langchain/llms/openai'
 
 class AzureOpenAI_LLMs implements INode {
@@ -10,6 +10,7 @@ class AzureOpenAI_LLMs implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,12 +21,13 @@ class AzureOpenAI_LLMs implements INode {
         this.category = 'LLMs'
         this.description = 'Wrapper around Azure OpenAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['azureOpenAIApi']
+        }
         this.inputs = [
-            {
-                label: 'Azure OpenAI Api Key',
-                name: 'azureOpenAIApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -91,26 +93,6 @@ class AzureOpenAI_LLMs implements INode {
                 optional: true
             },
             {
-                label: 'Azure OpenAI Api Instance Name',
-                name: 'azureOpenAIApiInstanceName',
-                type: 'string',
-                placeholder: 'YOUR-INSTANCE-NAME'
-            },
-            {
-                label: 'Azure OpenAI Api Deployment Name',
-                name: 'azureOpenAIApiDeploymentName',
-                type: 'string',
-                placeholder: 'YOUR-DEPLOYMENT-NAME'
-            },
-            {
-                label: 'Azure OpenAI Api Version',
-                name: 'azureOpenAIApiVersion',
-                type: 'string',
-                placeholder: '2023-06-01-preview',
-                description:
-                    'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions">examples</a>'
-            },
-            {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
@@ -155,13 +137,9 @@ class AzureOpenAI_LLMs implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const azureOpenAIApiKey = nodeData.inputs?.azureOpenAIApiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
-        const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
-        const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
@@ -169,6 +147,12 @@ class AzureOpenAI_LLMs implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const bestOf = nodeData.inputs?.bestOf as string
         const streaming = nodeData.inputs?.streaming as boolean
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
+        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData)
+        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
+        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
         const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
             temperature: parseFloat(temperature),

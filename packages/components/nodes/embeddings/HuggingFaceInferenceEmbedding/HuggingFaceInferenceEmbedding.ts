@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HuggingFaceInferenceEmbeddings, HuggingFaceInferenceEmbeddingsParams } from './core'
 
 class HuggingFaceInferenceEmbedding_Embeddings implements INode {
@@ -10,6 +10,7 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,12 +21,13 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
         this.category = 'Embeddings'
         this.description = 'HuggingFace Inference API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInferenceEmbeddings)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['huggingFaceApi']
+        }
         this.inputs = [
-            {
-                label: 'HuggingFace Api Key',
-                name: 'apiKey',
-                type: 'password'
-            },
             {
                 label: 'Model',
                 name: 'modelName',
@@ -43,13 +45,15 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const apiKey = nodeData.inputs?.apiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
         const endpoint = nodeData.inputs?.endpoint as string
 
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
+
         const obj: Partial<HuggingFaceInferenceEmbeddingsParams> = {
-            apiKey
+            apiKey: huggingFaceApiKey
         }
 
         if (modelName) obj.model = modelName

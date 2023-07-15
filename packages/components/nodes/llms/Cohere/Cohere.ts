@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Cohere, CohereInput } from './core'
 
 class Cohere_LLMs implements INode {
@@ -10,6 +10,7 @@ class Cohere_LLMs implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,12 +21,13 @@ class Cohere_LLMs implements INode {
         this.category = 'LLMs'
         this.description = 'Wrapper around Cohere large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Cohere)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['cohereApi']
+        }
         this.inputs = [
-            {
-                label: 'Cohere Api Key',
-                name: 'cohereApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -75,14 +77,16 @@ class Cohere_LLMs implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const apiKey = nodeData.inputs?.cohereApiKey as string
         const maxTokens = nodeData.inputs?.maxTokens as string
 
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
+
         const obj: CohereInput = {
-            apiKey
+            apiKey: cohereApiKey
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

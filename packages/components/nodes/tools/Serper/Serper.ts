@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Serper } from 'langchain/tools'
 
 class Serper_Tools implements INode {
@@ -10,6 +10,7 @@ class Serper_Tools implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -19,19 +20,20 @@ class Serper_Tools implements INode {
         this.icon = 'serper.png'
         this.category = 'Tools'
         this.description = 'Wrapper around Serper.dev - Google Search API'
-        this.inputs = [
-            {
-                label: 'Serper Api Key',
-                name: 'apiKey',
-                type: 'password'
-            }
-        ]
+        this.inputs = []
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['serperApi']
+        }
         this.baseClasses = [this.type, ...getBaseClasses(Serper)]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const apiKey = nodeData.inputs?.apiKey as string
-        return new Serper(apiKey)
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const serperApiKey = getCredentialParam('serperApiKey', credentialData, nodeData)
+        return new Serper(serperApiKey)
     }
 }
 

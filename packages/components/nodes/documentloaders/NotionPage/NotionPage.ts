@@ -1,9 +1,9 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { GithubRepoLoader, GithubRepoLoaderParams } from 'langchain/document_loaders/web/github'
+import { NotionAPILoader, NotionAPILoaderOptions } from 'langchain/document_loaders/web/notionapi'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
-class Github_DocumentLoaders implements INode {
+class NotionPage_DocumentLoaders implements INode {
     label: string
     name: string
     description: string
@@ -15,45 +15,32 @@ class Github_DocumentLoaders implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Github'
-        this.name = 'github'
+        this.label = 'Notion Page'
+        this.name = 'notionPage'
         this.type = 'Document'
-        this.icon = 'github.png'
+        this.icon = 'notion.png'
         this.category = 'Document Loaders'
-        this.description = `Load data from a GitHub repository`
+        this.description = 'Load data from Notion Page (including child pages all as separate documents)'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            description: 'Only needed when accessing private repo',
-            optional: true,
-            credentialNames: ['githubApi']
+            credentialNames: ['notionApi']
         }
         this.inputs = [
-            {
-                label: 'Repo Link',
-                name: 'repoLink',
-                type: 'string',
-                placeholder: 'https://github.com/FlowiseAI/Flowise'
-            },
-            {
-                label: 'Branch',
-                name: 'branch',
-                type: 'string',
-                default: 'main'
-            },
-            {
-                label: 'Recursive',
-                name: 'recursive',
-                type: 'boolean',
-                optional: true
-            },
             {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
+            },
+            {
+                label: 'Notion Page Id',
+                name: 'pageId',
+                type: 'string',
+                description:
+                    'The last The 32 char hex in the url path. For example: https://www.notion.so/skarard/LangChain-Notion-API-b34ca03f219c4420a6046fc4bdfdf7b4, b34ca03f219c4420a6046fc4bdfdf7b4 is the Page ID'
             },
             {
                 label: 'Metadata',
@@ -66,41 +53,47 @@ class Github_DocumentLoaders implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const repoLink = nodeData.inputs?.repoLink as string
-        const branch = nodeData.inputs?.branch as string
-        const recursive = nodeData.inputs?.recursive as boolean
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const pageId = nodeData.inputs?.pageId as string
         const metadata = nodeData.inputs?.metadata
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData)
 
-        const githubOptions: GithubRepoLoaderParams = {
-            branch,
-            recursive,
-            unknown: 'warn'
+        const obj: NotionAPILoaderOptions = {
+            clientOptions: {
+                auth: notionIntegrationToken
+            },
+            id: pageId,
+            type: 'page'
         }
+        const loader = new NotionAPILoader(obj)
 
-        if (accessToken) githubOptions.accessToken = accessToken
-
-        const loader = new GithubRepoLoader(repoLink, githubOptions)
-        const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
+        let docs = []
+        if (textSplitter) {
+            docs = await loader.loadAndSplit(textSplitter)
+        } else {
+            docs = await loader.load()
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            return docs.map((doc) => {
-                return {
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
                     ...doc,
                     metadata: {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
                 }
-            })
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
         }
 
         return docs
     }
 }
 
-module.exports = { nodeClass: Github_DocumentLoaders }
+module.exports = { nodeClass: NotionPage_DocumentLoaders }

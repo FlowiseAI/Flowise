@@ -1,4 +1,4 @@
-import { INodeParams, INodeCredential } from '../../../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface'
 
 class OpenAIApi implements INodeCredential {
     label: string

@@ -1,9 +1,9 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
 import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
 
 class PineconeUpsert_VectorStores implements INode {
@@ -15,6 +15,7 @@ class PineconeUpsert_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
@@ -25,6 +26,12 @@ class PineconeUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Pinecone'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['pineconeApi']
+        }
         this.inputs = [
             {
                 label: 'Document',
@@ -36,16 +43,6 @@ class PineconeUpsert_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
-            },
-            {
-                label: 'Pinecone Api Key',
-                name: 'pineconeApiKey',
-                type: 'password'
-            },
-            {
-                label: 'Pinecone Environment',
-                name: 'pineconeEnv',
-                type: 'string'
             },
             {
                 label: 'Pinecone Index',
@@ -84,9 +81,7 @@ class PineconeUpsert_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
-        const pineconeEnv = nodeData.inputs?.pineconeEnv as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const index = nodeData.inputs?.pineconeIndex as string
         const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const docs = nodeData.inputs?.document as Document[]
@@ -94,6 +89,10 @@ class PineconeUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseInt(topK, 10) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
+        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new PineconeClient()
         await client.init({

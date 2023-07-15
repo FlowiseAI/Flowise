@@ -20,7 +20,7 @@ class MotorMemory_Memory implements INode {
         this.type = 'MotorheadMemory'
         this.icon = 'motorhead.png'
         this.category = 'Memory'
-        this.description = 'Remembers previous conversational back and forths directly'
+        this.description = 'Use Motorhead Memory to store chat conversations'
         this.baseClasses = [this.type, ...getBaseClasses(MotorheadMemory)]
         this.credential = {
             label: 'Connect Credential',
@@ -39,12 +39,6 @@ class MotorMemory_Memory implements INode {
                 description: 'To use the online version, leave the URL blank. More details at https://getmetal.io.'
             },
             {
-                label: 'Memory Key',
-                name: 'memoryKey',
-                type: 'string',
-                default: 'chat_history'
-            },
-            {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
@@ -52,6 +46,13 @@ class MotorMemory_Memory implements INode {
                 default: '',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Memory Key',
+                name: 'memoryKey',
+                type: 'string',
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }

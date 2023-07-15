@@ -44,13 +44,15 @@ class RedisBackedChatMemory_Memory implements INode {
                 name: 'sessionTTL',
                 type: 'number',
                 description: 'Omit this parameter to make sessions never expire',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Memory Key',
                 name: 'memoryKey',
                 type: 'string',
-                default: 'chat_history'
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
