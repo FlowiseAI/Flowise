@@ -127,7 +127,8 @@
 
 .cloud-dialog {
     width: 100%;
-    height: calc(100vh - 230px);
+    height: 100vh;
+    overflow-y: scroll;
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;
