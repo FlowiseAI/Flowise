@@ -312,7 +312,7 @@ export class App {
                 },
                 order: {
                     createdDate: 'ASC'
-                },
+                }
             })
             return res.json(chatmessages)
         })
