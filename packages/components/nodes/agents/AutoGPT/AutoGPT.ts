@@ -90,7 +90,6 @@ class AutoGPT_Agents implements INode {
             const res = await executor.run([input])
             return res || 'I have completed all my tasks.'
         } catch (e) {
-            console.error(e)
             throw new Error(e)
         }
     }
