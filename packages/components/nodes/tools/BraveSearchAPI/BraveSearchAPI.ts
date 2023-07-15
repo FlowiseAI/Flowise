@@ -31,7 +31,7 @@ class BraveSearchAPI_Tools implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const apiKey = nodeData.inputs?.apiKey as string
-        return new BraveSearch({apiKey})
+        return new BraveSearch({ apiKey })
     }
 }
 
