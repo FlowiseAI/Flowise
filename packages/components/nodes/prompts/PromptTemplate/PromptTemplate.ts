@@ -45,7 +45,20 @@ class PromptTemplate_Prompts implements INode {
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+            promptValues = JSON.parse(promptValuesStr)
+            // example['something'] = {
+            //     "userId": 1,
+            //     "id": 1,
+            //     "title": example.title,
+            //     "done": true
+            // }
+            // example['arraySomething'] = [{
+            //     "userId": 1,
+            //     "id": 1,
+            //     "title": example.title,
+            //     "done": true
+            // }]
+            // promptValues = iterateEscapesJSONParse(example, true)
         }
 
         const inputVariables = getInputVariables(template)

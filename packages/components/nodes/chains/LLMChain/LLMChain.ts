@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
@@ -68,12 +68,20 @@ class LLMChain_Chains implements INode {
         } else if (output === 'outputPrediction') {
             const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
-            const res = await runPrediction(inputVariables, chain, input, promptValues, options)
+            console.log(`LLMChain outputPrediction promptValues: ${JSON.stringify(handleEscapeCharacters(promptValues, true))}`)
+            console.log(`LLMChain outputPrediction input: ${handleEscapeCharacters(input, true)}`)
+            const res = await runPrediction(
+                inputVariables,
+                chain,
+                handleEscapeCharacters(input, true),
+                handleEscapeCharacters(promptValues, true),
+                options
+            )
             // eslint-disable-next-line no-console
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
-            console.log(res)
-            return res
+            console.log(`LLMChain outputPrediction res: ${res}`)
+            return handleEscapeCharacters(res, false)
         }
     }
 
@@ -81,12 +89,19 @@ class LLMChain_Chains implements INode {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
         const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
-
-        const res = await runPrediction(inputVariables, chain, input, promptValues, options)
+        console.log(`LLMChain finalPrediction promptValues: ${JSON.stringify(handleEscapeCharacters(promptValues, true))}`)
+        console.log(`LLMChain finalPrediction input: ${handleEscapeCharacters(input, true)}`)
+        const res = await runPrediction(
+            inputVariables,
+            chain,
+            handleEscapeCharacters(input, true),
+            handleEscapeCharacters(promptValues, true),
+            options
+        )
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
-        console.log(res)
+        console.log(`LLMChain finalPrediction res: ${res}`)
         return res
     }
 }

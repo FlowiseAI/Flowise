@@ -47,7 +47,7 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
-import { ICommonObject, INodeOptionsValue } from 'flowise-components'
+import { ICommonObject, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
 import { fork } from 'child_process'
 import { Tool } from './entity/Tool'
 
@@ -658,6 +658,7 @@ export class App {
     async processPrediction(req: Request, res: Response, socketIO?: Server, isInternal = false) {
         try {
             const chatflowid = req.params.id
+            req.body.question = handleEscapeCharacters(req.body.question + '\n\b\t\\', false)
             let incomingInput: IncomingInput = req.body
 
             let nodeToExecuteData: INodeData
