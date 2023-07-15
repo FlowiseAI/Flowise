@@ -1,13 +1,13 @@
 {
-    "description": "Load existing index with metadata filters and feed into conversational retrieval QA chain",
+    "description": "Use long term memory Zep to differentiate conversations between users with sessionId",
     "nodes": [
         {
             "width": 300,
             "height": 480,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
-                "x": 1643.035168558474,
-                "y": 360.96295365212774
+                "x": 1999.7302950816731,
+                "y": 365.33064907894243
             },
             "type": "customNode",
             "data": {
@@ -86,7 +86,9 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeExistingIndex_0.data.instance}}"
+                    "vectorStoreRetriever": "{{pineconeExistingIndex_0.data.instance}}",
+                    "memory": "{{ZepMemory_0.data.instance}}",
+                    "returnSourceDocuments": true
                 },
                 "outputAnchors": [
                     {
@@ -101,8 +103,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1643.035168558474,
-                "y": 360.96295365212774
+                "x": 1999.7302950816731,
+                "y": 365.33064907894243
             },
             "dragging": false
         },
@@ -111,8 +113,8 @@
             "height": 523,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "x": 1554.3875781165111,
+                "y": -14.792508259787212
             },
             "type": "customNode",
             "data": {
@@ -254,8 +256,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "x": 1554.3875781165111,
+                "y": -14.792508259787212
             },
             "dragging": false
         },
@@ -264,8 +266,8 @@
             "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 805.2662010688601,
-                "y": 389.3163571296623
+                "x": 789.6839176356616,
+                "y": 167.70165941305987
             },
             "type": "customNode",
             "data": {
@@ -337,8 +339,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 805.2662010688601,
-                "y": 389.3163571296623
+                "x": 789.6839176356616,
+                "y": 167.70165941305987
             },
             "dragging": false
         },
@@ -347,8 +349,8 @@
             "height": 505,
             "id": "pineconeExistingIndex_0",
             "position": {
-                "x": 1194.8300385699242,
-                "y": 542.8247838029442
+                "x": 1167.128201355349,
+                "y": 71.89355115516406
             },
             "type": "customNode",
             "data": {
@@ -445,8 +447,148 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1194.8300385699242,
-                "y": 542.8247838029442
+                "x": 1167.128201355349,
+                "y": 71.89355115516406
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 623,
+            "id": "ZepMemory_0",
+            "position": {
+                "x": 1552.2067611642792,
+                "y": 560.8352147865392
+            },
+            "type": "customNode",
+            "data": {
+                "id": "ZepMemory_0",
+                "label": "Zep Memory",
+                "name": "ZepMemory",
+                "type": "ZepMemory",
+                "baseClasses": ["ZepMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in zep server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "description": "Configure JWT authentication on your Zep instance (Optional)",
+                        "credentialNames": ["zepMemoryApi"],
+                        "id": "ZepMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Base URL",
+                        "name": "baseURL",
+                        "type": "string",
+                        "default": "http://127.0.0.1:8000",
+                        "id": "ZepMemory_0-input-baseURL-string"
+                    },
+                    {
+                        "label": "Auto Summary",
+                        "name": "autoSummary",
+                        "type": "boolean",
+                        "default": true,
+                        "id": "ZepMemory_0-input-autoSummary-boolean"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "if empty, chatId will be used automatically",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "ZepMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Size",
+                        "name": "k",
+                        "type": "number",
+                        "default": "10",
+                        "step": 1,
+                        "description": "Window of size k to surface the last k back-and-forths to use as memory.",
+                        "id": "ZepMemory_0-input-k-number"
+                    },
+                    {
+                        "label": "Auto Summary Template",
+                        "name": "autoSummaryTemplate",
+                        "type": "string",
+                        "default": "This is the summary of the following conversation:\n{summary}",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-autoSummaryTemplate-string"
+                    },
+                    {
+                        "label": "AI Prefix",
+                        "name": "aiPrefix",
+                        "type": "string",
+                        "default": "ai",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-aiPrefix-string"
+                    },
+                    {
+                        "label": "Human Prefix",
+                        "name": "humanPrefix",
+                        "type": "string",
+                        "default": "human",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-humanPrefix-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Input Key",
+                        "name": "inputKey",
+                        "type": "string",
+                        "default": "input",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-inputKey-string"
+                    },
+                    {
+                        "label": "Output Key",
+                        "name": "outputKey",
+                        "type": "string",
+                        "default": "text",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-outputKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "baseURL": "http://127.0.0.1:8000",
+                    "autoSummary": true,
+                    "sessionId": "",
+                    "k": "10",
+                    "autoSummaryTemplate": "This is the summary of the following conversation:\n{summary}",
+                    "aiPrefix": "ai",
+                    "humanPrefix": "human",
+                    "memoryKey": "chat_history",
+                    "inputKey": "input",
+                    "outputKey": "text"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory",
+                        "name": "ZepMemory",
+                        "label": "ZepMemory",
+                        "type": "ZepMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1552.2067611642792,
+                "y": 560.8352147865392
             },
             "dragging": false
         }
@@ -481,6 +623,17 @@
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
             "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "ZepMemory_0",
+            "sourceHandle": "ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+            "type": "buttonedge",
+            "id": "ZepMemory_0-ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
             "data": {
                 "label": ""
             }

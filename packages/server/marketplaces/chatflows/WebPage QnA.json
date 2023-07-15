@@ -1,13 +1,13 @@
 {
-    "description": "Load existing index with metadata filters and feed into conversational retrieval QA chain",
+    "description": "Scrape web pages for QnA using conversational retrieval QA chain",
     "nodes": [
         {
             "width": 300,
             "height": 480,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
-                "x": 1643.035168558474,
-                "y": 360.96295365212774
+                "x": 1574.2192193338556,
+                "y": 334.4358233039927
             },
             "type": "customNode",
             "data": {
@@ -15,7 +15,7 @@
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
@@ -86,24 +86,28 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeExistingIndex_0.data.instance}}"
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}",
+                    "memory": "",
+                    "returnSourceDocuments": "",
+                    "systemMessagePrompt": "",
+                    "chainOption": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
                         "name": "conversationalRetrievalQAChain",
                         "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
+                        "type": "ConversationalRetrievalQAChain | BaseChain"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 1643.035168558474,
-                "y": 360.96295365212774
+                "x": 1574.2192193338556,
+                "y": 334.4358233039927
             },
+            "selected": false,
             "dragging": false
         },
         {
@@ -111,8 +115,8 @@
             "height": 523,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "x": 1184.1176114500388,
+                "y": -44.15535835370571
             },
             "type": "customNode",
             "data": {
@@ -252,11 +256,11 @@
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "x": 1184.1176114500388,
+                "y": -44.15535835370571
             },
+            "selected": false,
             "dragging": false
         },
         {
@@ -264,8 +268,8 @@
             "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 805.2662010688601,
-                "y": 389.3163571296623
+                "x": 795.6162477805387,
+                "y": 603.260214150876
             },
             "type": "customNode",
             "data": {
@@ -337,41 +341,41 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 805.2662010688601,
-                "y": 389.3163571296623
+                "x": 795.6162477805387,
+                "y": 603.260214150876
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 505,
-            "id": "pineconeExistingIndex_0",
+            "height": 555,
+            "id": "pineconeUpsert_0",
             "position": {
-                "x": 1194.8300385699242,
-                "y": 542.8247838029442
+                "x": 1191.1792786926865,
+                "y": 514.2126330994578
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeExistingIndex_0",
-                "label": "Pinecone Load Existing Index",
-                "name": "pineconeExistingIndex",
+                "id": "pineconeUpsert_0",
+                "label": "Pinecone Upsert Document",
+                "name": "pineconeUpsert",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "description": "Upsert documents to Pinecone",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
                         "credentialNames": ["pineconeApi"],
-                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                        "id": "pineconeUpsert_0-input-credential-credential"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
                     },
                     {
                         "label": "Pinecone Namespace",
@@ -380,15 +384,7 @@
                         "placeholder": "my-first-namespace",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Pinecone Metadata Filter",
-                        "name": "pineconeMetadataFilter",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
                     },
                     {
                         "label": "Top K",
@@ -398,22 +394,29 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-topK-number"
+                        "id": "pineconeUpsert_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
                     {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "id": "pineconeUpsert_0-input-document-Document"
+                    },
+                    {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
+                    "document": ["{{cheerioWebScraper_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
-                    "pineconeMetadataFilter": "",
                     "topK": ""
                 },
                 "outputAnchors": [
@@ -423,13 +426,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -445,8 +448,163 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1194.8300385699242,
-                "y": 542.8247838029442
+                "x": 1191.1792786926865,
+                "y": 514.2126330994578
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 380,
+            "id": "cheerioWebScraper_0",
+            "position": {
+                "x": 788.9349009610441,
+                "y": 180.57790622561026
+            },
+            "type": "customNode",
+            "data": {
+                "id": "cheerioWebScraper_0",
+                "label": "Cheerio Web Scraper",
+                "name": "cheerioWebScraper",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from webpages",
+                "inputParams": [
+                    {
+                        "label": "URL",
+                        "name": "url",
+                        "type": "string",
+                        "id": "cheerioWebScraper_0-input-url-string"
+                    },
+                    {
+                        "label": "Get Relative Links Method",
+                        "name": "relativeLinksMethod",
+                        "type": "options",
+                        "description": "Select a method to retrieve relative links",
+                        "options": [
+                            {
+                                "label": "Web Crawl",
+                                "name": "webCrawl",
+                                "description": "Crawl relative links from HTML URL"
+                            },
+                            {
+                                "label": "Scrape XML Sitemap",
+                                "name": "scrapeXMLSitemap",
+                                "description": "Scrape relative links from XML sitemap URL"
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-relativeLinksMethod-options"
+                    },
+                    {
+                        "label": "Get Relative Links Limit",
+                        "name": "limit",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "description": "Only used when \"Get Relative Links Method\" is selected. Set 0 to retrieve all relative links, default limit is 10.",
+                        "warning": "Retreiving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)",
+                        "id": "cheerioWebScraper_0-input-limit-number"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "cheerioWebScraper_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "url": "https://www.itsjane.com",
+                    "textSplitter": "{{recursiveCharacterTextSplitter_0.data.instance}}",
+                    "relativeLinksMethod": "webCrawl",
+                    "limit": "0",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "cheerioWebScraper_0-output-cheerioWebScraper-Document",
+                        "name": "cheerioWebScraper",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 788.9349009610441,
+                "y": 180.57790622561026
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "recursiveCharacterTextSplitter_0",
+            "position": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
+            },
+            "type": "customNode",
+            "data": {
+                "id": "recursiveCharacterTextSplitter_0",
+                "label": "Recursive Character Text Splitter",
+                "name": "recursiveCharacterTextSplitter",
+                "type": "RecursiveCharacterTextSplitter",
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
+                "category": "Text Splitters",
+                "description": "Split documents recursively by different characters - starting with \"\\n\\n\", then \"\\n\", then \" \"",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkOverlap-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": 1000,
+                    "chunkOverlap": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+                        "name": "recursiveCharacterTextSplitter",
+                        "label": "RecursiveCharacterTextSplitter",
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
             },
             "dragging": false
         }
@@ -455,10 +613,21 @@
         {
             "source": "openAIEmbeddings_0",
             "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeExistingIndex_0",
-            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeUpsert_0",
+            "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }
@@ -475,12 +644,23 @@
             }
         },
         {
-            "source": "pineconeExistingIndex_0",
-            "sourceHandle": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "source": "recursiveCharacterTextSplitter_0",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "cheerioWebScraper_0",
+            "targetHandle": "cheerioWebScraper_0-input-textSplitter-TextSplitter",
             "type": "buttonedge",
-            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-cheerioWebScraper_0-cheerioWebScraper_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "cheerioWebScraper_0",
+            "sourceHandle": "cheerioWebScraper_0-output-cheerioWebScraper-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "cheerioWebScraper_0-cheerioWebScraper_0-output-cheerioWebScraper-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
             "data": {
                 "label": ""
             }

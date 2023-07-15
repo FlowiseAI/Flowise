@@ -88,7 +88,7 @@ class ChatAnthropic_ChatModels implements INode {
                         name: 'claude-instant-v1.1-100k'
                     }
                 ],
-                default: 'claude-v1',
+                default: 'claude-2',
                 optional: true
             },
             {
