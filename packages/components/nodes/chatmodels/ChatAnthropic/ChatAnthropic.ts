@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { AnthropicInput, ChatAnthropic } from 'langchain/chat_models/anthropic'
 
 class ChatAnthropic_ChatModels implements INode {
@@ -10,6 +10,7 @@ class ChatAnthropic_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,12 +21,13 @@ class ChatAnthropic_ChatModels implements INode {
         this.category = 'Chat Models'
         this.description = 'Wrapper around ChatAnthropic large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(ChatAnthropic)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['anthropicApi']
+        }
         this.inputs = [
-            {
-                label: 'ChatAnthropic Api Key',
-                name: 'anthropicApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -110,14 +112,16 @@ class ChatAnthropic_ChatModels implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const anthropicApiKey = nodeData.inputs?.anthropicApiKey as string
         const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
 
         const obj: Partial<AnthropicInput> & { anthropicApiKey?: string } = {
             temperature: parseFloat(temperature),

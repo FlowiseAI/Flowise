@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { Tool } from './entity/Tool'
+import { Credential } from './entity/Credential'
 
 export class ChildProcess {
     /**
@@ -133,7 +134,7 @@ async function initDB() {
         type: 'sqlite',
         database: path.resolve(homePath, 'database.sqlite'),
         synchronize: true,
-        entities: [ChatFlow, ChatMessage, Tool],
+        entities: [ChatFlow, ChatMessage, Tool, Credential],
         migrations: []
     })
     return await childAppDataSource.initialize()

@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
 
 class OpenAI_LLMs implements INode {
@@ -10,6 +10,7 @@ class OpenAI_LLMs implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -20,12 +21,13 @@ class OpenAI_LLMs implements INode {
         this.category = 'LLMs'
         this.description = 'Wrapper around OpenAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['openAIApi']
+        }
         this.inputs = [
-            {
-                label: 'OpenAI Api Key',
-                name: 'openAIApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -117,10 +119,9 @@ class OpenAI_LLMs implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const openAIApiKey = nodeData.inputs?.openAIApiKey as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
@@ -130,6 +131,9 @@ class OpenAI_LLMs implements INode {
         const bestOf = nodeData.inputs?.bestOf as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),

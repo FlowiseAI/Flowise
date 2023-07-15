@@ -1,6 +1,6 @@
 import { SystemMessage } from 'langchain/schema'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
 import { ICommonObject } from '../../../src'
 
@@ -12,6 +12,7 @@ class ZepMemory_Memory implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -22,6 +23,14 @@ class ZepMemory_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in zep server'
         this.baseClasses = [this.type, ...getBaseClasses(ZepMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            optional: true,
+            description: 'Configure JWT authentication on your Zep instance (Optional)',
+            credentialNames: ['zepMemoryApi']
+        }
         this.inputs = [
             {
                 label: 'Base URL',
@@ -45,17 +54,11 @@ class ZepMemory_Memory implements INode {
                 optional: true
             },
             {
-                label: 'API Key',
-                name: 'apiKey',
-                type: 'password',
-                additionalParams: true,
-                optional: true
-            },
-            {
                 label: 'Size',
                 name: 'k',
                 type: 'number',
                 default: '10',
+                step: 1,
                 description: 'Window of size k to surface the last k back-and-forths to use as memory.'
             },
             {
@@ -112,10 +115,12 @@ class ZepMemory_Memory implements INode {
         const autoSummaryTemplate = nodeData.inputs?.autoSummaryTemplate as string
         const autoSummary = nodeData.inputs?.autoSummary as boolean
         const sessionId = nodeData.inputs?.sessionId as string
-        const apiKey = nodeData.inputs?.apiKey as string
         const k = nodeData.inputs?.k as string
 
         const chatId = options?.chatId as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
         const obj: ZepMemoryInput = {
             baseURL,

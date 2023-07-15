@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput } from 'langchain/memory'
 
@@ -11,6 +11,7 @@ class MotorMemory_Memory implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -21,6 +22,14 @@ class MotorMemory_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Remembers previous conversational back and forths directly'
         this.baseClasses = [this.type, ...getBaseClasses(MotorheadMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            optional: true,
+            description: 'Only needed when using hosted solution - https://getmetal.io',
+            credentialNames: ['motorheadMemoryApi']
+        }
         this.inputs = [
             {
                 label: 'Base URL',
@@ -43,22 +52,6 @@ class MotorMemory_Memory implements INode {
                 default: '',
                 additionalParams: true,
                 optional: true
-            },
-            {
-                label: 'API Key',
-                name: 'apiKey',
-                type: 'password',
-                description: 'Only needed when using hosted solution - https://getmetal.io',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Client ID',
-                name: 'clientId',
-                type: 'string',
-                description: 'Only needed when using hosted solution - https://getmetal.io',
-                additionalParams: true,
-                optional: true
             }
         ]
     }
@@ -67,10 +60,12 @@ class MotorMemory_Memory implements INode {
         const memoryKey = nodeData.inputs?.memoryKey as string
         const baseURL = nodeData.inputs?.baseURL as string
         const sessionId = nodeData.inputs?.sessionId as string
-        const apiKey = nodeData.inputs?.apiKey as string
-        const clientId = nodeData.inputs?.clientId as string
 
         const chatId = options?.chatId as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        const clientId = getCredentialParam('clientId', credentialData, nodeData)
 
         let obj: MotorheadMemoryInput = {
             returnMessages: true,

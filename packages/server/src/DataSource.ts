@@ -3,6 +3,7 @@ import path from 'path'
 import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
+import { Credential } from './entity/Credential'
 import { Tool } from './entity/Tool'
 import { getUserHome } from './utils'
 
@@ -15,7 +16,7 @@ export const init = async (): Promise<void> => {
         type: 'sqlite',
         database: path.resolve(homePath, 'database.sqlite'),
         synchronize: true,
-        entities: [ChatFlow, ChatMessage, Tool],
+        entities: [ChatFlow, ChatMessage, Tool, Credential],
         migrations: []
     })
 }
