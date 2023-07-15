@@ -22,6 +22,7 @@ export default class Start extends Command {
         DEBUG: Flags.string(),
         DATABASE_PATH: Flags.string(),
         APIKEY_PATH: Flags.string(),
+        SECRETKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         EXECUTION_MODE: Flags.string()
@@ -61,6 +62,7 @@ export default class Start extends Command {
         if (flags.PORT) process.env.PORT = flags.PORT
         if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
+        if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
         if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
         if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
