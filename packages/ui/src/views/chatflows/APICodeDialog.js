@@ -190,7 +190,10 @@ output = query({
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: data
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -229,9 +232,12 @@ output = query({
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            headers: {
+                Authorization: "Bearer ${selectedApiKey?.apiKey}",
+                "Content-Type": "application/json"
+            },
             method: "POST",
-            body: data
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -303,7 +309,10 @@ async function query(formData) {
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: formData
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
         }
     );
     const result = await response.json();
@@ -347,9 +356,12 @@ async function query(formData) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            headers: {
+                Authorization: "Bearer ${selectedApiKey?.apiKey}",
+                "Content-Type": "application/json"
+            },
             method: "POST",
-            body: formData
+            body: JSON.stringify(formData)
         }
     );
     const result = await response.json();
@@ -392,7 +404,10 @@ output = query({
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: data
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -439,9 +454,12 @@ output = query({
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            headers: {
+                Authorization: "Bearer ${selectedApiKey?.apiKey}",
+                "Content-Type": "application/json"
+            },
             method: "POST",
-            body: data
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
