@@ -13,6 +13,8 @@ services:
             - LOG_PATH=${LOG_PATH}
             - EXECUTION_MODE=${EXECUTION_MODE}
             - DEBUG=${DEBUG}
+            - TOOL_FUNCTION_BUILTIN_DEP=${TOOL_FUNCTION_BUILTIN_DEP}
+            - TOOL_FUNCTION_EXTERNAL_DEP=${TOOL_FUNCTION_EXTERNAL_DEP}
         ports:
             - '${PORT}:${PORT}'
         volumes:

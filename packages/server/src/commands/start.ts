@@ -24,7 +24,9 @@ export default class Start extends Command {
         APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
-        EXECUTION_MODE: Flags.string()
+        EXECUTION_MODE: Flags.string(),
+        TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
+        TOOL_FUNCTION_EXTERNAL_DEP: Flags.string()
     }
 
     async stopProcess() {
@@ -65,6 +67,8 @@ export default class Start extends Command {
         if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
         if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
+        if (flags.TOOL_FUNCTION_BUILTIN_DEP) process.env.TOOL_FUNCTION_BUILTIN_DEP = flags.TOOL_FUNCTION_BUILTIN_DEP
+        if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
 
         await (async () => {
             try {
