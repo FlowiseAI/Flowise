@@ -6,6 +6,7 @@ services:
         restart: always
         environment:
             - PORT=${PORT}
+            - PASSPHRASE=${PASSPHRASE}
             - FLOWISE_USERNAME=${FLOWISE_USERNAME}
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
             - DATABASE_PATH=${DATABASE_PATH}
