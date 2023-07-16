@@ -59,13 +59,8 @@ class HtmlToMarkdownTextSplitter extends MarkdownTextSplitter implements Markdow
         }
     }
     splitText(text: string): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            const markdown = NodeHtmlMarkdown.translate(
-                /* html */ text,
-                /* options (optional) */ {},
-                /* customTranslators (optional) */ undefined,
-                /* customCodeBlockTranslators (optional) */ undefined
-            )
+        return new Promise((resolve) => {
+            const markdown = NodeHtmlMarkdown.translate(text)
             super.splitText(markdown).then((result) => {
                 resolve(result)
             })
