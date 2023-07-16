@@ -320,7 +320,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
         }
 
         const contentType: string | null = resp.headers.get('content-type')
-        if ((contentType && !contentType.includes('application/xml')) || !contentType) {
+        if ((contentType && !contentType.includes('application/xml') && !contentType.includes('text/xml')) || !contentType) {
             if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
             return urls
         }

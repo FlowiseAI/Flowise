@@ -156,7 +156,7 @@ npx flowise start --PORT=3000 --DEBUG=true
 
 ### [Railway](https://docs.flowiseai.com/deployment/railway)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/YK7J0v)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
 ### [Render](https://docs.flowiseai.com/deployment/render)
 
