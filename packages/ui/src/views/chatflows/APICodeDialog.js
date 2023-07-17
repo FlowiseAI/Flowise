@@ -310,9 +310,9 @@ async function query(formData) {
         {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: JSON.stringify(formData)
+            body: new URLSearchParams(formData)
         }
     );
     const result = await response.json();
@@ -358,10 +358,10 @@ async function query(formData) {
         {
             headers: {
                 Authorization: "Bearer ${selectedApiKey?.apiKey}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/x-www-form-urlencoded"
             },
             method: "POST",
-            body: JSON.stringify(formData)
+            body: new URLSearchParams(formData)
         }
     );
     const result = await response.json();
