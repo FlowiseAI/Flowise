@@ -65,37 +65,47 @@ class DynamoDb_Memory implements INode {
             }
         ]
     }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const tableName = nodeData.inputs?.tableName as string
-        const partitionKey = nodeData.inputs?.partitionKey as string
-        const sessionId = nodeData.inputs?.sessionId as string
-        const region = nodeData.inputs?.region as string
-        const accessKey = nodeData.inputs?.accessKey as string
-        const secretAccessKey = nodeData.inputs?.secretAccessKey as string
-        const memoryKey = nodeData.inputs?.memoryKey as string
-
-        const chatId = options.chatId
-
-        const dynamoDb = new DynamoDBChatMessageHistory({
-            tableName,
-            partitionKey,
-            sessionId: sessionId ? sessionId : chatId,
-            config: {
-                region,
-                credentials: {
-                    accessKeyId: accessKey,
-                    secretAccessKey
-                }
-            }
-        })
-
-        const memory = new BufferMemory({
-            memoryKey,
-            chatHistory: dynamoDb,
-            returnMessages: true
-        })
-        return memory
+        return initalizeDynamoDB(nodeData, options)
     }
+
+    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        const dynamodbMemory = initalizeDynamoDB(nodeData, options)
+        dynamodbMemory.clear()
+    }
+}
+
+const initalizeDynamoDB = (nodeData: INodeData, options: ICommonObject): BufferMemory => {
+    const tableName = nodeData.inputs?.tableName as string
+    const partitionKey = nodeData.inputs?.partitionKey as string
+    const sessionId = nodeData.inputs?.sessionId as string
+    const region = nodeData.inputs?.region as string
+    const accessKey = nodeData.inputs?.accessKey as string
+    const secretAccessKey = nodeData.inputs?.secretAccessKey as string
+    const memoryKey = nodeData.inputs?.memoryKey as string
+
+    const chatId = options.chatId
+
+    const dynamoDb = new DynamoDBChatMessageHistory({
+        tableName,
+        partitionKey,
+        sessionId: sessionId ? sessionId : chatId,
+        config: {
+            region,
+            credentials: {
+                accessKeyId: accessKey,
+                secretAccessKey
+            }
+        }
+    })
+
+    const memory = new BufferMemory({
+        memoryKey,
+        chatHistory: dynamoDb,
+        returnMessages: true
+    })
+    return memory
 }
 
 module.exports = { nodeClass: DynamoDb_Memory }
