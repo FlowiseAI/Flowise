@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { RetrievalQAChain } from 'langchain/chains'
 import { BaseRetriever } from 'langchain/schema'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
@@ -47,8 +47,10 @@ class RetrievalQAChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as RetrievalQAChain
+
+        const reverseInput = handleEscapeCharacters(input, true)
         const obj = {
-            query: input
+            query: reverseInput
         }
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 

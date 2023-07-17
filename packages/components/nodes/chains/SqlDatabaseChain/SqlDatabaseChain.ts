@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains/sql_db'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
 import { BaseLanguageModel } from 'langchain/base_language'
@@ -68,12 +68,13 @@ class SqlDatabaseChain_Chains implements INode {
         const chain = await getSQLDBChain(databaseType, dbFilePath, model)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
+        const reverseInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(input, [loggerHandler, handler])
+            const res = await chain.run(reverseInput, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(input, [loggerHandler])
+            const res = await chain.run(reverseInput, [loggerHandler])
             return res
         }
     }

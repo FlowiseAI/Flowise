@@ -377,7 +377,8 @@ function iterateEscapesJSONParse(input: any, reverse: Boolean): any {
 export function handleEscapeCharacters(input: any, reverse: Boolean): any {
     const type = typeof input
     if (type === 'string') return handleEscapesJSONParse(input, reverse)
-    return iterateEscapesJSONParse(input, reverse)
+    else if (type === 'object') return iterateEscapesJSONParse(input, reverse)
+    return input
 }
 
 /*

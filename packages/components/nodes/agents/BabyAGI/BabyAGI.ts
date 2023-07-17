@@ -1,3 +1,4 @@
+import { handleEscapeCharacters } from '../../../src'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { BabyAGI } from './core'
 import { BaseChatModel } from 'langchain/chat_models/base'
@@ -53,7 +54,7 @@ class BabyAGI_Agents implements INode {
 
     async run(nodeData: INodeData, input: string): Promise<string> {
         const executor = nodeData.instance as BabyAGI
-        const objective = input
+        const objective = handleEscapeCharacters(input, true)
 
         const res = await executor.call({ objective })
         return res

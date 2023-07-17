@@ -658,7 +658,7 @@ export class App {
     async processPrediction(req: Request, res: Response, socketIO?: Server, isInternal = false) {
         try {
             const chatflowid = req.params.id
-            req.body.question = handleEscapeCharacters(req.body.question + '\n\b\t\\', false)
+            req.body.question = handleEscapeCharacters(req.body.question, false)
             let incomingInput: IncomingInput = req.body
 
             let nodeToExecuteData: INodeData

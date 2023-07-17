@@ -2,7 +2,7 @@ import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../..
 import { initializeAgentExecutorWithOptions, AgentExecutor, InitializeAgentExecutorOptions } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
 import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { AIMessage, HumanMessage } from 'langchain/schema'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
@@ -107,7 +107,8 @@ class ConversationalAgent_Agents implements INode {
             memory.chatHistory = new ChatMessageHistory(chatHistory)
             executor.memory = memory
         }
-        const result = await executor.call({ input })
+        const reverseInput = handleEscapeCharacters(input, true)
+        const result = await executor.call({ input: reverseInput })
 
         return result?.output
     }

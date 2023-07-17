@@ -1,6 +1,6 @@
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
@@ -117,12 +117,13 @@ class ConversationChain_Chains implements INode {
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
+        const reverseInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.call({ input }, [loggerHandler, handler])
+            const res = await chain.call({ input: reverseInput }, [loggerHandler, handler])
             return res?.response
         } else {
-            const res = await chain.call({ input }, [loggerHandler])
+            const res = await chain.call({ input: reverseInput }, [loggerHandler])
             return res?.response
         }
     }

@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, INode, INodeData, INodeParams, VectorStoreRetriever } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { MultiRetrievalQAChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
@@ -71,7 +71,8 @@ class MultiRetrievalQAChain_Chains implements INode {
         const chain = nodeData.instance as MultiRetrievalQAChain
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
-        const obj = { input }
+        const reverseInput = handleEscapeCharacters(input, true)
+        const obj = { input: reverseInput }
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
         if (options.socketIO && options.socketIOClientId) {

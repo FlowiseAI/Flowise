@@ -68,8 +68,6 @@ class LLMChain_Chains implements INode {
         } else if (output === 'outputPrediction') {
             const chain = new LLMChain({ llm: model, prompt, verbose: process.env.DEBUG === 'true' ? true : false })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
-            console.log(`LLMChain outputPrediction promptValues: ${JSON.stringify(handleEscapeCharacters(promptValues, true))}`)
-            console.log(`LLMChain outputPrediction input: ${handleEscapeCharacters(input, true)}`)
             const res = await runPrediction(
                 inputVariables,
                 chain,
@@ -80,7 +78,7 @@ class LLMChain_Chains implements INode {
             // eslint-disable-next-line no-console
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
-            console.log(`LLMChain outputPrediction res: ${res}`)
+            console.log(res)
             return handleEscapeCharacters(res, false)
         }
     }
@@ -89,8 +87,6 @@ class LLMChain_Chains implements INode {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
         const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
-        console.log(`LLMChain finalPrediction promptValues: ${JSON.stringify(handleEscapeCharacters(promptValues, true))}`)
-        console.log(`LLMChain finalPrediction input: ${handleEscapeCharacters(input, true)}`)
         const res = await runPrediction(
             inputVariables,
             chain,
@@ -101,7 +97,7 @@ class LLMChain_Chains implements INode {
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
-        console.log(`LLMChain finalPrediction res: ${res}`)
+        console.log(res)
         return res
     }
 }

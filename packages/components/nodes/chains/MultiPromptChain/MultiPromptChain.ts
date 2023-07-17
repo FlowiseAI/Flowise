@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, INode, INodeData, INodeParams, PromptRetriever } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { MultiPromptChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
@@ -62,7 +62,8 @@ class MultiPromptChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as MultiPromptChain
-        const obj = { input }
+        const reverseInput = handleEscapeCharacters(input, true)
+        const obj = { input: reverseInput }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 

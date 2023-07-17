@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 
@@ -52,7 +52,8 @@ class MRKLAgentLLM_Agents implements INode {
 
     async run(nodeData: INodeData, input: string): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
-        const result = await executor.call({ input })
+        const reverseInput = handleEscapeCharacters(input, true)
+        const result = await executor.call({ input: reverseInput })
 
         return result?.output
     }

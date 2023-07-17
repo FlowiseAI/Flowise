@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { ConversationalRetrievalQAChain } from 'langchain/chains'
 import { AIMessage, BaseRetriever, HumanMessage } from 'langchain/schema'
 import { BaseChatMemory, BufferMemory, ChatMessageHistory } from 'langchain/memory'
@@ -157,7 +157,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         model.streaming = false
         chain.questionGeneratorChain.llm = model
 
-        const obj = { question: input }
+        const reverseInput = handleEscapeCharacters(input, true)
+        const obj = { question: reverseInput }
 
         // If external memory like Zep, Redis is being used, ignore below
         if (!memory && chain.memory && options && options.chatHistory) {

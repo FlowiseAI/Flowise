@@ -1,6 +1,6 @@
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
@@ -96,12 +96,13 @@ class OpenAIFunctionAgent_Agents implements INode {
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
+        const reverseInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const result = await executor.run(input, [loggerHandler, handler])
+            const result = await executor.run(reverseInput, [loggerHandler, handler])
             return result
         } else {
-            const result = await executor.run(input, [loggerHandler])
+            const result = await executor.run(reverseInput, [loggerHandler])
             return result
         }
     }

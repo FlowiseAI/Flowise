@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { APIChain } from 'langchain/chains'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
@@ -98,12 +98,13 @@ class GETApiChain_Chains implements INode {
         const chain = await getAPIChain(apiDocs, model, headers, urlPrompt, ansPrompt)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
+        const reverseInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(input, [loggerHandler, handler])
+            const res = await chain.run(reverseInput, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(input, [loggerHandler])
+            const res = await chain.run(reverseInput, [loggerHandler])
             return res
         }
     }

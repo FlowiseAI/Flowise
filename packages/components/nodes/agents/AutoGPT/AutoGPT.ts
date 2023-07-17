@@ -4,6 +4,7 @@ import { AutoGPT } from 'langchain/experimental/autogpt'
 import { Tool } from 'langchain/tools'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'
 import { flatten } from 'lodash'
+import { handleEscapeCharacters } from '../../../src'
 
 class AutoGPT_Agents implements INode {
     label: string
@@ -87,7 +88,7 @@ class AutoGPT_Agents implements INode {
     async run(nodeData: INodeData, input: string): Promise<string> {
         const executor = nodeData.instance as AutoGPT
         try {
-            const res = await executor.run([input])
+            const res = await executor.run([handleEscapeCharacters(input, true)])
             return res || 'I have completed all my tasks.'
         } catch (e) {
             throw new Error(e)
