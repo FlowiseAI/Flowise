@@ -136,7 +136,7 @@ Flowise support different environment variables to configure your instance. You 
 | FLOWISE_USERNAME | Username to login                                                | String                                           |
 | FLOWISE_PASSWORD | Password to login                                                | String                                           |
 | DEBUG            | Print logs from components                                       | Boolean                                          |
-| LOG_PATH         | Location where log files are stored                              | String                                           | `your-path/Flowise/logs`            |
+| LOG_PATH         | Location where log files are stored                              | String                                           | `your-path/Flowise/packages/server` |
 | LOG_LEVEL        | Different levels of logs                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | DATABASE_PATH    | Location where database is saved                                 | String                                           | `your-home-dir/.flowise`            |
 | APIKEY_PATH      | Location where api keys are saved                                | String                                           | `your-path/Flowise/packages/server` |
