@@ -31,7 +31,7 @@ FLOWISE_PASSWORD=1234
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder.
+Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
 | Variable         | Description                                                      | Type                                             | Default                             |
 | ---------------- | ---------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
