@@ -59,9 +59,6 @@ export class App {
 
     constructor() {
         this.app = express()
-
-        // Add the expressRequestLogger middleware to log all requests
-        this.app.use(expressRequestLogger)
     }
 
     async initDatabase() {
@@ -91,6 +88,9 @@ export class App {
 
         // Allow access from *
         this.app.use(cors())
+
+        // Add the expressRequestLogger middleware to log all requests
+        this.app.use(expressRequestLogger)
 
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -306,8 +306,13 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: req.params.id
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
+                where: {
+                    chatflowid: req.params.id
+                },
+                order: {
+                    createdDate: 'ASC'
+                }
             })
             return res.json(chatmessages)
         })
