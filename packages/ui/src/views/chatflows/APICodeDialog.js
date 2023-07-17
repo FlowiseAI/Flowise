@@ -319,7 +319,7 @@ query(formData).then((response) => {
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
-     -H "Content-Type: application/json"`
+     -H "Content-Type: multipart/form-data"`
         }
         return ''
     }
@@ -366,7 +366,7 @@ query(formData).then((response) => {
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
-     -H "Content-Type: application/json" \\
+     -H "Content-Type: multipart/form-data" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
         return ''
