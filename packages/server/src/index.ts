@@ -306,8 +306,13 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: req.params.id
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
+                where: {
+                    chatflowid: req.params.id
+                },
+                order: {
+                    createdDate: 'ASC'
+                }
             })
             return res.json(chatmessages)
         })
