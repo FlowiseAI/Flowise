@@ -51,24 +51,36 @@ export class DynamicStructuredTool<
             }
         }
 
+        const defaultAllowBuiltInDep = [
+            'assert',
+            'buffer',
+            'crypto',
+            'events',
+            'http',
+            'https',
+            'net',
+            'path',
+            'querystring',
+            'timers',
+            'tls',
+            'url',
+            'zlib'
+        ]
+
+        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
+            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
+            : defaultAllowBuiltInDep
+        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
+        const deps = availableDependencies.concat(externalDeps)
+
         const options = {
             console: 'inherit',
             sandbox,
             require: {
-                external: false as boolean | { modules: string[] },
-                builtin: ['*']
+                external: { modules: deps },
+                builtin: builtinDeps
             }
         } as any
-
-        const external = JSON.stringify(availableDependencies)
-        if (external) {
-            const deps = JSON.parse(external)
-            if (deps && deps.length) {
-                options.require.external = {
-                    modules: deps
-                }
-            }
-        }
 
         const vm = new NodeVM(options)
         const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)
