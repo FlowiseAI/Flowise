@@ -1,10 +1,9 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams, INodeOptionsValue } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses } from '../../../src/utils'
 import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
 import { flatten } from 'lodash'
-import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 
 class SingleStoreUpsert_VectorStores implements INode {
     label: string
