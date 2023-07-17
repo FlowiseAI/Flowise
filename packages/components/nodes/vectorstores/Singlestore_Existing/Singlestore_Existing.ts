@@ -124,7 +124,7 @@ class SingleStoreExisting_VectorStores implements INode {
         const k = topK ? parseInt(topK, 10) : 4
 
         let vectorStore: SingleStoreVectorStore
-        
+
         vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
 
         if (output === 'retriever') {
