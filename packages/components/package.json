@@ -42,6 +42,7 @@
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
         "node-fetch": "^2.6.11",
+        "node-html-markdown": "^1.3.0",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^3.7.107",
         "playwright": "^1.35.0",
