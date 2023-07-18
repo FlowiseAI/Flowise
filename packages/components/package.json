@@ -18,7 +18,7 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@dqbd/tiktoken": "^1.0.7",
-        "@getzep/zep-js": "^0.3.1",
+        "@getzep/zep-js": "^0.4.1",
         "@huggingface/inference": "^2.6.1",
         "@opensearch-project/opensearch": "^1.2.0",
         "@pinecone-database/pinecone": "^0.0.12",
