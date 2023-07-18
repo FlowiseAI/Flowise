@@ -157,8 +157,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         model.streaming = false
         chain.questionGeneratorChain.llm = model
 
-        const reverseInput = handleEscapeCharacters(input, true)
-        const obj = { question: reverseInput }
+        const escapedCharInput = handleEscapeCharacters(input, true)
+        const obj = { question: escapedCharInput }
 
         // If external memory like Zep, Redis is being used, ignore below
         if (!memory && chain.memory && options && options.chatHistory) {

@@ -107,8 +107,8 @@ class ConversationalAgent_Agents implements INode {
             memory.chatHistory = new ChatMessageHistory(chatHistory)
             executor.memory = memory
         }
-        const reverseInput = handleEscapeCharacters(input, true)
-        const result = await executor.call({ input: reverseInput })
+        const escapedCharInput = handleEscapeCharacters(input, true)
+        const result = await executor.call({ input: escapedCharInput })
 
         return result?.output
     }

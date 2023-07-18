@@ -62,8 +62,8 @@ class MultiPromptChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as MultiPromptChain
-        const reverseInput = handleEscapeCharacters(input, true)
-        const obj = { input: reverseInput }
+        const escapedCharInput = handleEscapeCharacters(input, true)
+        const obj = { input: escapedCharInput }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 

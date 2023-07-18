@@ -71,8 +71,8 @@ class MultiRetrievalQAChain_Chains implements INode {
         const chain = nodeData.instance as MultiRetrievalQAChain
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
-        const reverseInput = handleEscapeCharacters(input, true)
-        const obj = { input: reverseInput }
+        const escapedCharInput = handleEscapeCharacters(input, true)
+        const obj = { input: escapedCharInput }
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
         if (options.socketIO && options.socketIOClientId) {

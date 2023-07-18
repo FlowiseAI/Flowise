@@ -96,13 +96,13 @@ class OpenAIFunctionAgent_Agents implements INode {
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
-        const reverseInput = handleEscapeCharacters(input, true)
+        const escapedCharInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const result = await executor.run(reverseInput, [loggerHandler, handler])
+            const result = await executor.run(escapedCharInput, [loggerHandler, handler])
             return result
         } else {
-            const result = await executor.run(reverseInput, [loggerHandler])
+            const result = await executor.run(escapedCharInput, [loggerHandler])
             return result
         }
     }

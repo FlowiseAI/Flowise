@@ -68,13 +68,13 @@ class SqlDatabaseChain_Chains implements INode {
         const chain = await getSQLDBChain(databaseType, dbFilePath, model)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
-        const reverseInput = handleEscapeCharacters(input, true)
+        const escapedCharInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(reverseInput, [loggerHandler, handler])
+            const res = await chain.run(escapedCharInput, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(reverseInput, [loggerHandler])
+            const res = await chain.run(escapedCharInput, [loggerHandler])
             return res
         }
     }

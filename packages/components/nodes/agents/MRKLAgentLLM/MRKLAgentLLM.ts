@@ -52,8 +52,8 @@ class MRKLAgentLLM_Agents implements INode {
 
     async run(nodeData: INodeData, input: string): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
-        const reverseInput = handleEscapeCharacters(input, true)
-        const result = await executor.call({ input: reverseInput })
+        const escapedCharInput = handleEscapeCharacters(input, true)
+        const result = await executor.call({ input: escapedCharInput })
 
         return result?.output
     }

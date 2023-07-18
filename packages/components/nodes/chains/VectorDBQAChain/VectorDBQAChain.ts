@@ -51,9 +51,9 @@ class VectorDBQAChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as VectorDBQAChain
 
-        const reverseInput = handleEscapeCharacters(input, true)
+        const escapedCharInput = handleEscapeCharacters(input, true)
         const obj = {
-            query: reverseInput
+            query: escapedCharInput
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)

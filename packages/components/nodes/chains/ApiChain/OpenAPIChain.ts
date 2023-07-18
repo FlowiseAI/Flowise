@@ -60,13 +60,13 @@ class OpenApiChain_Chains implements INode {
         const chain = await initChain(nodeData)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
-        const reverseInput = handleEscapeCharacters(input, true)
+        const escapedCharInput = handleEscapeCharacters(input, true)
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.run(reverseInput, [loggerHandler, handler])
+            const res = await chain.run(escapedCharInput, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(reverseInput, [loggerHandler])
+            const res = await chain.run(escapedCharInput, [loggerHandler])
             return res
         }
     }
