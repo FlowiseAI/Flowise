@@ -39,7 +39,8 @@ import {
     isFlowValidForStream,
     isVectorStoreFaiss,
     databaseEntities,
-    getApiKey
+    getApiKey,
+    clearSessionMemory
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -59,9 +60,6 @@ export class App {
 
     constructor() {
         this.app = express()
-
-        // Add the expressRequestLogger middleware to log all requests
-        this.app.use(expressRequestLogger)
     }
 
     async initDatabase() {
@@ -91,6 +89,9 @@ export class App {
 
         // Allow access from *
         this.app.use(cors())
+
+        // Add the expressRequestLogger middleware to log all requests
+        this.app.use(expressRequestLogger)
 
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -306,8 +307,13 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: req.params.id
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
+                where: {
+                    chatflowid: req.params.id
+                },
+                order: {
+                    createdDate: 'ASC'
+                }
             })
             return res.json(chatmessages)
         })
@@ -326,6 +332,19 @@ export class App {
 
         // Delete all chatmessages from chatflowid
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) {
+                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                return
+            }
+            const flowData = chatflow.flowData
+            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+            const nodes = parsedFlowData.nodes
+            let chatId = await getChatId(chatflow.id)
+            if (!chatId) chatId = chatflow.id
+            clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, req.query.sessionId as string)
             const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
             return res.json(results)
         })
@@ -668,7 +687,7 @@ export class App {
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
             let chatId = await getChatId(chatflow.id)
-            if (!chatId) chatId = Date.now().toString()
+            if (!chatId) chatId = chatflowid
 
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)

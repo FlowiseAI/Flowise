@@ -56,31 +56,40 @@ class RedisBackedChatMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const baseURL = nodeData.inputs?.baseURL as string
-        const sessionId = nodeData.inputs?.sessionId as string
-        const sessionTTL = nodeData.inputs?.sessionTTL as number
-        const memoryKey = nodeData.inputs?.memoryKey as string
-
-        const chatId = options?.chatId as string
-
-        const redisClient = createClient({ url: baseURL })
-        let obj: RedisChatMessageHistoryInput = {
-            sessionId: sessionId ? sessionId : chatId,
-            client: redisClient
-        }
-
-        if (sessionTTL) {
-            obj = {
-                ...obj,
-                sessionTTL
-            }
-        }
-
-        let redisChatMessageHistory = new RedisChatMessageHistory(obj)
-        let redis = new BufferMemory({ memoryKey, chatHistory: redisChatMessageHistory, returnMessages: true })
-
-        return redis
+        return initalizeRedis(nodeData, options)
     }
+
+    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        const redis = initalizeRedis(nodeData, options)
+        redis.clear()
+    }
+}
+
+const initalizeRedis = (nodeData: INodeData, options: ICommonObject): BufferMemory => {
+    const baseURL = nodeData.inputs?.baseURL as string
+    const sessionId = nodeData.inputs?.sessionId as string
+    const sessionTTL = nodeData.inputs?.sessionTTL as number
+    const memoryKey = nodeData.inputs?.memoryKey as string
+
+    const chatId = options?.chatId as string
+
+    const redisClient = createClient({ url: baseURL })
+    let obj: RedisChatMessageHistoryInput = {
+        sessionId: sessionId ? sessionId : chatId,
+        client: redisClient
+    }
+
+    if (sessionTTL) {
+        obj = {
+            ...obj,
+            sessionTTL
+        }
+    }
+
+    let redisChatMessageHistory = new RedisChatMessageHistory(obj)
+    let redis = new BufferMemory({ memoryKey, chatHistory: redisChatMessageHistory, returnMessages: true })
+
+    return redis
 }
 
 module.exports = { nodeClass: RedisBackedChatMemory_Memory }

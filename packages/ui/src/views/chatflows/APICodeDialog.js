@@ -190,7 +190,10 @@ output = query({
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: data
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -204,7 +207,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?"}'`
+     -d '{"question": "Hey, how are you?"}' \\
+     -H "Content-Type: application/json"`
         }
         return ''
     }
@@ -229,9 +233,12 @@ output = query({
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            headers: {
+                Authorization: "Bearer ${selectedApiKey?.apiKey}",
+                "Content-Type": "application/json"
+            },
             method: "POST",
-            body: data
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -246,6 +253,7 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
+     -H "Content-Type: application/json" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
         return ''
@@ -316,7 +324,8 @@ query(formData).then((response) => {
 `
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
-     -X POST \\${getConfigExamplesForCurl(configData, 'formData')}`
+     -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
+     -H "Content-Type: multipart/form-data"`
         }
         return ''
     }
@@ -363,6 +372,7 @@ query(formData).then((response) => {
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
+     -H "Content-Type: multipart/form-data" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
         return ''
@@ -392,7 +402,10 @@ output = query({
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            body: data
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -410,7 +423,8 @@ query({
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}'`
+     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
+     -H "Content-Type: application/json"`
         }
         return ''
     }
@@ -439,9 +453,12 @@ output = query({
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
+            headers: {
+                Authorization: "Bearer ${selectedApiKey?.apiKey}",
+                "Content-Type": "application/json"
+            },
             method: "POST",
-            body: data
+            body: JSON.stringify(data)
         }
     );
     const result = await response.json();
@@ -460,6 +477,7 @@ query({
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
+     -H "Content-Type: application/json" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
         return ''
