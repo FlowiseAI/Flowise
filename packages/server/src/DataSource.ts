@@ -9,18 +9,18 @@ import { getUserHome } from './utils'
 let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
-    let homePath;
+    let homePath
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: (process.env.OVERRIDE_DATABASE == 'true'),
+                synchronize: process.env.OVERRIDE_DATABASE == 'true',
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
-            break;
+            break
         case 'mysql':
             appDataSource = new DataSource({
                 type: 'mysql',
@@ -30,11 +30,11 @@ export const init = async (): Promise<void> => {
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
-                synchronize: (process.env.OVERRIDE_DATABASE == 'true'),
+                synchronize: process.env.OVERRIDE_DATABASE == 'true',
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
-            break;
+            break
         case 'postgres':
             appDataSource = new DataSource({
                 type: 'postgres',
@@ -43,21 +43,21 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                synchronize: (process.env.OVERRIDE_DATABASE == 'true'),
+                synchronize: process.env.OVERRIDE_DATABASE == 'true',
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
-            break;
+            break
         default:
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: (process.env.OVERRIDE_DATABASE == 'true'),
+                synchronize: process.env.OVERRIDE_DATABASE == 'true',
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
-            break;
+            break
     }
 }
 
