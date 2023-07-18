@@ -309,10 +309,7 @@ async function query(formData) {
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams(formData)
+            body: formData
         }
     );
     const result = await response.json();
@@ -356,12 +353,9 @@ async function query(formData) {
     const response = await fetch(
         "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}",
         {
-            headers: {
-                Authorization: "Bearer ${selectedApiKey?.apiKey}",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
+            headers: { Authorization: "Bearer ${selectedApiKey?.apiKey}" },
             method: "POST",
-            body: new URLSearchParams(formData)
+            body: formData
         }
     );
     const result = await response.json();
