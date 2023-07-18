@@ -41,9 +41,16 @@ Flowise support different environment variables to configure your instance. You 
 | DEBUG            | Print logs from components                                       | Boolean                                          |
 | LOG_PATH         | Location where log files are stored                              | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL        | Different levels of logs                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
-| DATABASE_PATH    | Location where database is saved                                 | String                                           | `your-home-dir/.flowise`            |
 | APIKEY_PATH      | Location where api keys are saved                                | String                                           | `your-path/Flowise/packages/server` |
 | EXECUTION_MODE   | Whether predictions run in their own process or the main process | Enum String: `child`, `main`                     | `main`                              |
+| OVERRIDE_DATABASE| Override current database with default                           | Enum String: `true`, `false`                     | `true`                              |
+| DATABASE_TYPE    | Type of database to store the flowise data                       | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
+| DATABASE_PATH    | Location where database is saved (When DATABASE_TYPE is sqlite)  | String                                           | `your-home-dir/.flowise`            |
+| DATABASE_HOST    | Host URL or IP address (When DATABASE_TYPE is not sqlite)        | String                                           |                                     |
+| DATABASE_PORT    | Database port (When DATABASE_TYPE is not sqlite)                 | String                                           |                                     |
+| DATABASE_USERNAME| Database username (When DATABASE_TYPE is not sqlite)             | String                                           |                                     |
+| DATABASE_PASSWORD| Database password (When DATABASE_TYPE is not sqlite)             | String                                           |                                     |
+| DATABASE_NAME    | Database name (When DATABASE_TYPE is not sqlite)                 | String                                           |                                     |
 
 You can also specify the env variables when using `npx`. For example:
 
