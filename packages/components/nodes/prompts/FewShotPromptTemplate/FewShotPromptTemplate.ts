@@ -31,32 +31,38 @@ class FewShotPromptTemplate_Prompts implements INode {
                 placeholder: `[
   { "word": "happy", "antonym": "sad" },
   { "word": "tall", "antonym": "short" },
-]`
+]`,
+                description: 'These are the examples we want to insert into the prompt.'
             },
             {
                 label: 'Example Prompt',
                 name: 'examplePrompt',
-                type: 'PromptTemplate'
+                type: 'PromptTemplate',
+                description: 'This is how we want to format the examples when we insert them into the prompt.'
             },
             {
                 label: 'Prefix',
                 name: 'prefix',
                 type: 'string',
                 rows: 4,
-                placeholder: `Give the antonym of every input`
+                placeholder: `Give the antonym of every input`,
+                description: 'The prefix is some text that goes before the examples in the prompt. Usually, this consists of instructions.'
             },
             {
                 label: 'Suffix',
                 name: 'suffix',
                 type: 'string',
                 rows: 4,
-                placeholder: `Word: {input}\nAntonym:`
+                placeholder: `Word: {input}\nAntonym:`,
+                description:
+                    'The suffix is some text that goes after the examples in the prompt. Usually, this is where the user input will go'
             },
             {
                 label: 'Example Seperator',
                 name: 'exampleSeparator',
                 type: 'string',
-                placeholder: `\n\n`
+                placeholder: `\n\n`,
+                description: 'The example separator is the string we will use to join the prefix, examples, and suffix together with.'
             },
             {
                 label: 'Template Format',
@@ -72,7 +78,8 @@ class FewShotPromptTemplate_Prompts implements INode {
                         name: 'jinja-2'
                     }
                 ],
-                default: `f-string`
+                default: `f-string`,
+                description: 'The template format is the formatting method to use for the template. Should usually be f-string.'
             }
         ]
     }
@@ -86,7 +93,7 @@ class FewShotPromptTemplate_Prompts implements INode {
         const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate
 
         const inputVariables = getInputVariables(suffix)
-        const examples: Example[] = JSON.parse(examplesStr.replace(/\s/g, ''))
+        const examples: Example[] = JSON.parse(examplesStr)
 
         try {
             const obj: FewShotPromptTemplateInput = {
