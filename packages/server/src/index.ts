@@ -6,6 +6,8 @@ import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
+import logger from './utils/logger'
+import { expressRequestLogger } from './utils/logger'
 
 import {
     IChatFlow,
@@ -37,7 +39,8 @@ import {
     isFlowValidForStream,
     isVectorStoreFaiss,
     databaseEntities,
-    getApiKey
+    getApiKey,
+    clearSessionMemory
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -63,7 +66,7 @@ export class App {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                console.info('📦[server]: Data Source has been initialized!')
+                logger.info('📦 [server]: Data Source has been initialized!')
 
                 // Initialize pools
                 this.nodesPool = new NodesPool()
@@ -75,7 +78,7 @@ export class App {
                 await getAPIKeys()
             })
             .catch((err) => {
-                console.error('❌[server]: Error during Data Source initialization:', err)
+                logger.error('❌ [server]: Error during Data Source initialization:', err)
             })
     }
 
@@ -86,6 +89,9 @@ export class App {
 
         // Allow access from *
         this.app.use(cors())
+
+        // Add the expressRequestLogger middleware to log all requests
+        this.app.use(expressRequestLogger)
 
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -278,10 +284,16 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
             const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+
             const endingNodeId = getEndingNode(nodeDependencies, graph)
-            if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
+
             const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-            if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+
+            if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            }
 
             const obj = {
                 isStreaming: isFlowValidForStream(nodes, endingNodeData)
@@ -295,8 +307,13 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).findBy({
-                chatflowid: req.params.id
+            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
+                where: {
+                    chatflowid: req.params.id
+                },
+                order: {
+                    createdDate: 'ASC'
+                }
             })
             return res.json(chatmessages)
         })
@@ -315,6 +332,19 @@ export class App {
 
         // Delete all chatmessages from chatflowid
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) {
+                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                return
+            }
+            const flowData = chatflow.flowData
+            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+            const nodes = parsedFlowData.nodes
+            let chatId = await getChatId(chatflow.id)
+            if (!chatId) chatId = chatflow.id
+            clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, req.query.sessionId as string)
             const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
             return res.json(results)
         })
@@ -633,7 +663,7 @@ export class App {
                 })
             })
         } catch (err) {
-            console.error(err)
+            logger.error('[server] [mode:child]: Error:', err)
         }
     }
 
@@ -657,7 +687,7 @@ export class App {
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
             let chatId = await getChatId(chatflow.id)
-            if (!chatId) chatId = Date.now().toString()
+            if (!chatId) chatId = chatflowid
 
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
@@ -687,13 +717,13 @@ export class App {
                 }
             }
 
-            /* Don't rebuild the flow (to avoid duplicated upsert, recomputation) when all these conditions met:
+            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with nodes that depend on incomingInput.question
              ***/
-            const isRebuildNeeded = () => {
+            const isFlowReusable = () => {
                 return (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
@@ -707,11 +737,13 @@ export class App {
             }
 
             if (process.env.EXECUTION_MODE === 'child') {
-                if (isRebuildNeeded()) {
+                if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                    logger.debug(
+                        `[server] [mode:child]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
+                    )
                     try {
                         const result = await this.startChildProcess(chatflow, chatId, incomingInput, nodeToExecuteData)
-
                         return res.json(result)
                     } catch (error) {
                         return res.status(500).send(error)
@@ -731,18 +763,25 @@ export class App {
                 const nodes = parsedFlowData.nodes
                 const edges = parsedFlowData.edges
 
-                if (isRebuildNeeded()) {
+                if (isFlowReusable()) {
                     nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
                     isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
+                    logger.debug(
+                        `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
+                    )
                 } else {
                     /*** Get Ending Node with Directed Graph  ***/
                     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
                     const directedGraph = graph
                     const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
-                    if (!endingNodeId) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
 
                     const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-                    if (!endingNodeData) return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+
+                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    }
 
                     if (
                         endingNodeData.outputs &&
@@ -763,6 +802,7 @@ export class App {
                     const nonDirectedGraph = constructedObj.graph
                     const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
 
+                    logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                     /*** BFS to traverse from Starting Nodes to Ending Node ***/
                     const reactFlowNodes = await buildLangchain(
                         startingNodeIds,
@@ -791,17 +831,21 @@ export class App {
                 const nodeInstance = new nodeModule.nodeClass()
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
+                logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
                           socketIO,
-                          socketIOClientId: incomingInput.socketIOClientId
+                          socketIOClientId: incomingInput.socketIOClientId,
+                          logger
                       })
-                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
+                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
 
+                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 return res.json(result)
             }
         } catch (e: any) {
+            logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)
         }
     }
@@ -811,7 +855,7 @@ export class App {
             const removePromises: any[] = []
             await Promise.all(removePromises)
         } catch (e) {
-            console.error(`❌[server]: Flowise Server shut down error: ${e}`)
+            logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
 }
@@ -851,7 +895,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, () => {
-        console.info(`⚡️[server]: Flowise Server is listening at ${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
     })
 }
 

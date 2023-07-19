@@ -43,7 +43,7 @@ const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
                     )}
                 </div>
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column' }}>
                 <ChatMessage isDialog={true} open={dialogProps.open} chatflowid={dialogProps.chatflowid} />
             </DialogContent>
         </Dialog>

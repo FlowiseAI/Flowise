@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import moment from 'moment'
+import logger from './logger'
 import {
     IComponentNodes,
     IDepthQueue,
@@ -179,6 +180,9 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {IDepthQueue} depthQueue
  * @param {IComponentNodes} componentNodes
  * @param {string} question
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {ICommonObject} overrideConfig
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -221,13 +225,16 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
 
+            logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
                 appDataSource,
-                databaseEntities
+                databaseEntities,
+                logger
             })
+            logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
-            console.error(e)
+            logger.error(e)
             throw new Error(e)
         }
 
@@ -264,6 +271,29 @@ export const buildLangchain = async (
         }
     }
     return flowNodes
+}
+
+/**
+ * Clear memory
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IComponentNodes} componentNodes
+ * @param {string} chatId
+ * @param {string} sessionId
+ */
+export const clearSessionMemory = async (
+    reactFlowNodes: IReactFlowNode[],
+    componentNodes: IComponentNodes,
+    chatId: string,
+    sessionId?: string
+) => {
+    for (const node of reactFlowNodes) {
+        if (node.data.category !== 'Memory') continue
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newNodeInstance = new nodeModule.nodeClass()
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+        if (newNodeInstance.clearSessionMemory) await newNodeInstance?.clearSessionMemory(node.data, { chatId })
+    }
 }
 
 /**
@@ -595,7 +625,7 @@ export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void>
     try {
         await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     } catch (error) {
-        console.error(error)
+        logger.error(error)
     }
 }
 
@@ -632,21 +662,32 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
             let obj: IOverrideConfig
-            if (inputParam.type === 'password' || inputParam.type === 'options') {
-                continue
-            } else if (inputParam.type === 'file') {
+            if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
                 }
+            } else if (inputParam.type === 'options') {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.options
+                        ? inputParam.options
+                              ?.map((option) => {
+                                  return option.name
+                              })
+                              .join(', ')
+                        : 'string'
+                }
             } else {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: inputParam.name,
-                    type: inputParam.type
+                    type: inputParam.type === 'password' ? 'string' : inputParam.type
                 }
             }
             if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
@@ -680,10 +721,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         }
     }
 
-    return (
-        isChatOrLLMsExist &&
-        (endingNodeData.category === 'Chains' || endingNodeData.name === 'openAIFunctionAgent') &&
-        !isVectorStoreFaiss(endingNodeData) &&
-        process.env.EXECUTION_MODE !== 'child'
-    )
+    let isValidChainOrAgent = false
+    if (endingNodeData.category === 'Chains') {
+        // Chains that are not available to stream
+        const blacklistChains = ['openApiChain']
+        isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
+    } else if (endingNodeData.category === 'Agents') {
+        // Agent that are available to stream
+        const whitelistAgents = ['openAIFunctionAgent']
+        isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData) && process.env.EXECUTION_MODE !== 'child'
 }

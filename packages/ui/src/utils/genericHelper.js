@@ -168,8 +168,10 @@ export const isValidConnection = (connection, reactFlowInstance) => {
     //sourceHandle: "llmChain_0-output-llmChain-BaseChain"
     //targetHandle: "mrlkAgentLLM_0-input-model-BaseLanguageModel"
 
-    const sourceTypes = sourceHandle.split('-')[sourceHandle.split('-').length - 1].split('|')
-    const targetTypes = targetHandle.split('-')[targetHandle.split('-').length - 1].split('|')
+    let sourceTypes = sourceHandle.split('-')[sourceHandle.split('-').length - 1].split('|')
+    sourceTypes = sourceTypes.map((s) => s.trim())
+    let targetTypes = targetHandle.split('-')[targetHandle.split('-').length - 1].split('|')
+    targetTypes = targetTypes.map((t) => t.trim())
 
     if (targetTypes.some((t) => sourceTypes.includes(t))) {
         let targetNode = reactFlowInstance.getNode(target)
