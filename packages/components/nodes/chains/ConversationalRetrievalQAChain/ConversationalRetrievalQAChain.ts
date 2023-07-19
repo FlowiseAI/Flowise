@@ -6,27 +6,13 @@ import { AIMessage, BaseRetriever, HumanMessage } from 'langchain/schema'
 import { BaseChatMemory, BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
-
-const default_qa_template = `Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-{context}
-
-Question: {question}
-Helpful Answer:`
-
-const qa_template = `Use the following pieces of context to answer the question at the end.
-
-{context}
-
-Question: {question}
-Helpful Answer:`
-
-const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language. include it in the standalone question.
-
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone question:`
+import {
+    default_map_reduce_template,
+    default_qa_template,
+    qa_template,
+    map_reduce_template,
+    CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT
+} from './prompts'
 
 class ConversationalRetrievalQAChain_Chains implements INode {
     label: string
@@ -118,16 +104,27 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         const obj: any = {
             verbose: process.env.DEBUG === 'true' ? true : false,
-            qaChainOptions: {
-                type: 'stuff',
-                prompt: PromptTemplate.fromTemplate(systemMessagePrompt ? `${systemMessagePrompt}\n${qa_template}` : default_qa_template)
-            },
             questionGeneratorChainOptions: {
                 template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT
             }
         }
         if (returnSourceDocuments) obj.returnSourceDocuments = returnSourceDocuments
-        if (chainOption) obj.qaChainOptions = { ...obj.qaChainOptions, type: chainOption }
+        if (chainOption === 'map_reduce') {
+            obj.qaChainOptions = {
+                type: 'map_reduce',
+                combinePrompt: PromptTemplate.fromTemplate(
+                    systemMessagePrompt ? `${systemMessagePrompt}\n${map_reduce_template}` : default_map_reduce_template
+                )
+            }
+        } else if (chainOption === 'refine') {
+            // TODO: Add custom system message
+        } else {
+            obj.qaChainOptions = {
+                type: 'stuff',
+                prompt: PromptTemplate.fromTemplate(systemMessagePrompt ? `${systemMessagePrompt}\n${qa_template}` : default_qa_template)
+            }
+        }
+
         if (memory) {
             memory.inputKey = 'question'
             memory.outputKey = 'text'
