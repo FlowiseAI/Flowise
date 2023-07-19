@@ -1,10 +1,11 @@
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
-import { AIChatMessage, HumanChatMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage } from 'langchain/schema'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class OpenAIFunctionAgent_Agents implements INode {
     label: string
@@ -84,21 +85,23 @@ class OpenAIFunctionAgent_Agents implements INode {
 
             for (const message of histories) {
                 if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIChatMessage(message.message))
+                    chatHistory.push(new AIMessage(message.message))
                 } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanChatMessage(message.message))
+                    chatHistory.push(new HumanMessage(message.message))
                 }
             }
             memory.chatHistory = new ChatMessageHistory(chatHistory)
             executor.memory = memory
         }
 
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const result = await executor.run(input, [handler])
+            const result = await executor.run(input, [loggerHandler, handler])
             return result
         } else {
-            const result = await executor.run(input)
+            const result = await executor.run(input, [loggerHandler])
             return result
         }
     }

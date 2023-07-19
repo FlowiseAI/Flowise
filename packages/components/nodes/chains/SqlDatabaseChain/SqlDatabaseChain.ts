@@ -1,9 +1,10 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains/sql_db'
+import { getBaseClasses } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class SqlDatabaseChain_Chains implements INode {
     label: string
@@ -65,12 +66,14 @@ class SqlDatabaseChain_Chains implements INode {
         const dbFilePath = nodeData.inputs?.dbFilePath
 
         const chain = await getSQLDBChain(databaseType, dbFilePath, model)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.run(input, [handler])
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
+            const res = await chain.run(input, [loggerHandler, handler])
             return res
         } else {
-            const res = await chain.run(input)
+            const res = await chain.run(input, [loggerHandler])
             return res
         }
     }

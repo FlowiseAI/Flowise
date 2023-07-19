@@ -32,6 +32,16 @@ class ChatAnthropic_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
+                        label: 'claude-2',
+                        name: 'claude-2',
+                        description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
+                    },
+                    {
+                        label: 'claude-instant-1',
+                        name: 'claude-instant-1',
+                        description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
+                    },
+                    {
                         label: 'claude-v1',
                         name: 'claude-v1'
                     },
@@ -120,7 +130,7 @@ class ChatAnthropic_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: Partial<AnthropicInput> & { anthropicApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             anthropicApiKey,
             streaming: streaming ?? true

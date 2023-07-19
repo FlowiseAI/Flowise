@@ -17,7 +17,7 @@ import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
 import { useTheme } from '@mui/material/styles'
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX, IconFileExport } from '@tabler/icons'
 
 // API
 import toolsApi from 'api/tools'
@@ -53,7 +53,7 @@ try {
     return '';
 }`
 
-const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
 
@@ -73,6 +73,7 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [toolId, setToolId] = useState('')
     const [toolName, setToolName] = useState('')
     const [toolDesc, setToolDesc] = useState('')
+    const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
 
@@ -167,24 +168,86 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
+            // When tool dialog is opened from Tools dashboard
             setToolId(dialogProps.data.id)
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
+            setToolIcon(dialogProps.data.iconSrc)
             setToolSchema(formatSchema(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'EDIT' && dialogProps.toolId) {
+            // When tool dialog is opened from CustomTool node in canvas
             getSpecificToolApi.request(dialogProps.toolId)
+        } else if (dialogProps.type === 'IMPORT' && dialogProps.data) {
+            // When tool dialog is to import existing tool
+            setToolName(dialogProps.data.name)
+            setToolDesc(dialogProps.data.description)
+            setToolIcon(dialogProps.data.iconSrc)
+            setToolSchema(formatSchema(dialogProps.data.schema))
+            if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
+            else setToolFunc('')
+        } else if (dialogProps.type === 'TEMPLATE' && dialogProps.data) {
+            // When tool dialog is a template
+            setToolName(dialogProps.data.name)
+            setToolDesc(dialogProps.data.description)
+            setToolIcon(dialogProps.data.iconSrc)
+            setToolSchema(formatSchema(dialogProps.data.schema))
+            if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
+            else setToolFunc('')
         } else if (dialogProps.type === 'ADD') {
+            // When tool dialog is to add a new tool
             setToolId('')
             setToolName('')
             setToolDesc('')
+            setToolIcon('')
             setToolSchema([])
             setToolFunc('')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
+
+    const useToolTemplate = () => {
+        onUseTemplate(dialogProps.data)
+    }
+
+    const exportTool = async () => {
+        try {
+            const toolResp = await toolsApi.getSpecificTool(toolId)
+            if (toolResp.data) {
+                const toolData = toolResp.data
+                delete toolData.id
+                delete toolData.createdDate
+                delete toolData.updatedDate
+                let dataStr = JSON.stringify(toolData)
+                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
+                let exportFileDefaultName = `${toolName}-CustomTool.json`
+
+                let linkElement = document.createElement('a')
+                linkElement.setAttribute('href', dataUri)
+                linkElement.setAttribute('download', exportFileDefaultName)
+                linkElement.click()
+            }
+        } catch (error) {
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            enqueueSnackbar({
+                message: `Failed to export Tool: ${errorData}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            onCancel()
+        }
+    }
 
     const addNewTool = async () => {
         try {
@@ -193,7 +256,8 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 description: toolDesc,
                 color: generateRandomGradient(),
                 schema: JSON.stringify(toolSchema),
-                func: toolFunc
+                func: toolFunc,
+                iconSrc: toolIcon
             }
             const createResp = await toolsApi.createNewTool(obj)
             if (createResp.data) {
@@ -236,7 +300,8 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 name: toolName,
                 description: toolDesc,
                 schema: JSON.stringify(toolSchema),
-                func: toolFunc
+                func: toolFunc,
+                iconSrc: toolIcon
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -330,7 +395,15 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title}
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    {dialogProps.title}
+                    <div style={{ flex: 1 }} />
+                    {dialogProps.type === 'EDIT' && (
+                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileExport />}>
+                            Export
+                        </Button>
+                    )}
+                </div>
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ p: 2 }}>
@@ -338,12 +411,17 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <Typography variant='overline'>
                             Tool Name
                             <span style={{ color: 'red' }}>&nbsp;*</span>
+                            <TooltipWithParser
+                                style={{ marginLeft: 10 }}
+                                title={'Tool name must be small capital letter with underscore. Ex: my_tool'}
+                            />
                         </Typography>
                     </Stack>
                     <OutlinedInput
                         id='toolName'
                         type='string'
                         fullWidth
+                        disabled={dialogProps.type === 'TEMPLATE'}
                         placeholder='My New Tool'
                         value={toolName}
                         name='toolName'
@@ -355,12 +433,17 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <Typography variant='overline'>
                             Tool description
                             <span style={{ color: 'red' }}>&nbsp;*</span>
+                            <TooltipWithParser
+                                style={{ marginLeft: 10 }}
+                                title={'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'}
+                            />
                         </Typography>
                     </Stack>
                     <OutlinedInput
                         id='toolDesc'
                         type='string'
                         fullWidth
+                        disabled={dialogProps.type === 'TEMPLATE'}
                         placeholder='Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
                         multiline={true}
                         rows={3}
@@ -371,12 +454,33 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
+                        <Typography variant='overline'>Tool Icon Src</Typography>
+                    </Stack>
+                    <OutlinedInput
+                        id='toolIcon'
+                        type='string'
+                        fullWidth
+                        disabled={dialogProps.type === 'TEMPLATE'}
+                        placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
+                        value={toolIcon}
+                        name='toolIcon'
+                        onChange={(e) => setToolIcon(e.target.value)}
+                    />
+                </Box>
+                <Box sx={{ p: 2 }}>
+                    <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
                             Output Schema
                             <TooltipWithParser style={{ marginLeft: 10 }} title={'What should be the output response in JSON format?'} />
                         </Typography>
                     </Stack>
-                    <Grid columns={columns} rows={toolSchema} addNewRow={addNewRow} onRowUpdate={onRowUpdate} />
+                    <Grid
+                        columns={columns}
+                        rows={toolSchema}
+                        disabled={dialogProps.type === 'TEMPLATE'}
+                        addNewRow={addNewRow}
+                        onRowUpdate={onRowUpdate}
+                    />
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
@@ -388,12 +492,15 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             />
                         </Typography>
                     </Stack>
-                    <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
-                        See Example
-                    </Button>
+                    {dialogProps.type !== 'TEMPLATE' && (
+                        <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
+                            See Example
+                        </Button>
+                    )}
                     {customization.isDarkMode ? (
                         <DarkCodeEditor
                             value={toolFunc}
+                            disabled={dialogProps.type === 'TEMPLATE'}
                             onValueChange={(code) => setToolFunc(code)}
                             style={{
                                 fontSize: '0.875rem',
@@ -405,6 +512,7 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     ) : (
                         <LightCodeEditor
                             value={toolFunc}
+                            disabled={dialogProps.type === 'TEMPLATE'}
                             onValueChange={(code) => setToolFunc(code)}
                             style={{
                                 fontSize: '0.875rem',
@@ -423,13 +531,20 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         Delete
                     </StyledButton>
                 )}
-                <StyledButton
-                    disabled={!(toolName && toolDesc)}
-                    variant='contained'
-                    onClick={() => (dialogProps.type === 'ADD' ? addNewTool() : saveTool())}
-                >
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
+                {dialogProps.type === 'TEMPLATE' && (
+                    <StyledButton color='secondary' variant='contained' onClick={useToolTemplate}>
+                        Use Template
+                    </StyledButton>
+                )}
+                {dialogProps.type !== 'TEMPLATE' && (
+                    <StyledButton
+                        disabled={!(toolName && toolDesc)}
+                        variant='contained'
+                        onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
+                    >
+                        {dialogProps.confirmButtonName}
+                    </StyledButton>
+                )}
             </DialogActions>
             <ConfirmDialog />
         </Dialog>
@@ -441,6 +556,7 @@ const ToolDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 ToolDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
+    onUseTemplate: PropTypes.func,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
 }
