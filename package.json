@@ -52,8 +52,5 @@
     },
     "engines": {
         "node": ">=18.15.0"
-    },
-    "dependencies": {
-        "mysql2": "^3.5.1"
     }
 }
