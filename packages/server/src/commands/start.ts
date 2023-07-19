@@ -20,13 +20,20 @@ export default class Start extends Command {
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
         DEBUG: Flags.string(),
-        DATABASE_PATH: Flags.string(),
         APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         EXECUTION_MODE: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
-        TOOL_FUNCTION_EXTERNAL_DEP: Flags.string()
+        TOOL_FUNCTION_EXTERNAL_DEP: Flags.string(),
+        OVERRIDE_DATABASE: Flags.string(),
+        DATABASE_TYPE: Flags.string(),
+        DATABASE_PATH: Flags.string(),
+        DATABASE_PORT: Flags.string(),
+        DATABASE_HOST: Flags.string(),
+        DATABASE_NAME: Flags.string(),
+        DATABASE_USER: Flags.string(),
+        DATABASE_PASSWORD: Flags.string()
     }
 
     async stopProcess() {
@@ -61,7 +68,6 @@ export default class Start extends Command {
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
         if (flags.PORT) process.env.PORT = flags.PORT
-        if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
         if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
@@ -69,6 +75,16 @@ export default class Start extends Command {
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
         if (flags.TOOL_FUNCTION_BUILTIN_DEP) process.env.TOOL_FUNCTION_BUILTIN_DEP = flags.TOOL_FUNCTION_BUILTIN_DEP
         if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
+
+        // Database config
+        if (flags.OVERRIDE_DATABASE) process.env.OVERRIDE_DATABASE = flags.OVERRIDE_DATABASE
+        if (flags.DATABASE_TYPE) process.env.DATABASE_TYPE = flags.DATABASE_TYPE
+        if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
+        if (flags.DATABASE_PORT) process.env.DATABASE_PORT = flags.DATABASE_PORT
+        if (flags.DATABASE_HOST) process.env.DATABASE_HOST = flags.DATABASE_HOST
+        if (flags.DATABASE_NAME) process.env.DATABASE_NAME = flags.DATABASE_NAME
+        if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
+        if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
 
         await (async () => {
             try {

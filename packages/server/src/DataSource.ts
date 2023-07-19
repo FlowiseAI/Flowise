@@ -10,13 +10,14 @@ let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
     let homePath
+    const synchronize = process.env.OVERRIDE_DATABASE === 'false' ? false : true
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -30,7 +31,7 @@ export const init = async (): Promise<void> => {
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -43,7 +44,7 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -53,7 +54,7 @@ export const init = async (): Promise<void> => {
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })

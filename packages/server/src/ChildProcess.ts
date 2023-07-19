@@ -144,13 +144,14 @@ export class ChildProcess {
 async function initDB() {
     let childAppDataSource
     let homePath
+    const synchronize = process.env.OVERRIDE_DATABASE === 'false' ? false : true
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
             childAppDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -164,7 +165,7 @@ async function initDB() {
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -177,7 +178,7 @@ async function initDB() {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
@@ -187,7 +188,7 @@ async function initDB() {
             childAppDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
-                synchronize: process.env.OVERRIDE_DATABASE == 'true',
+                synchronize,
                 entities: [ChatFlow, ChatMessage, Tool],
                 migrations: []
             })
