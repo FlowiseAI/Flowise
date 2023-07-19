@@ -385,12 +385,9 @@ export const isVectorStoreFaiss = (flowNodeData: INodeData) => {
  * @returns {INodeData}
  */
 export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
-    let flowNodeData = cloneDeep(reactFlowNodeData)
-    if (reactFlowNodeData.instance && isVectorStoreFaiss(reactFlowNodeData)) {
-        // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
-        const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
-        flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
-    }
+    // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
+    const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
+    let flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
