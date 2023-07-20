@@ -142,14 +142,59 @@ export class ChildProcess {
  * @returns {DataSource}
  */
 async function initDB() {
-    const homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
-    const childAppDataSource = new DataSource({
-        type: 'sqlite',
-        database: path.resolve(homePath, 'database.sqlite'),
-        synchronize: true,
-        entities: [ChatFlow, ChatMessage, Tool],
-        migrations: []
-    })
+    let childAppDataSource
+    let homePath
+    const synchronize = process.env.OVERRIDE_DATABASE === 'false' ? false : true
+    switch (process.env.DATABASE_TYPE) {
+        case 'sqlite':
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            childAppDataSource = new DataSource({
+                type: 'sqlite',
+                database: path.resolve(homePath, 'database.sqlite'),
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool],
+                migrations: []
+            })
+            break
+        case 'mysql':
+            childAppDataSource = new DataSource({
+                type: 'mysql',
+                host: process.env.DATABASE_HOST,
+                port: parseInt(process.env.DATABASE_PORT || '3306'),
+                username: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASSWORD,
+                database: process.env.DATABASE_NAME,
+                charset: 'utf8mb4',
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool],
+                migrations: []
+            })
+            break
+        case 'postgres':
+            childAppDataSource = new DataSource({
+                type: 'postgres',
+                host: process.env.DATABASE_HOST,
+                port: parseInt(process.env.DATABASE_PORT || '5432'),
+                username: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASSWORD,
+                database: process.env.DATABASE_NAME,
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool],
+                migrations: []
+            })
+            break
+        default:
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            childAppDataSource = new DataSource({
+                type: 'sqlite',
+                database: path.resolve(homePath, 'database.sqlite'),
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool],
+                migrations: []
+            })
+            break
+    }
+
     return await childAppDataSource.initialize()
 }
 
