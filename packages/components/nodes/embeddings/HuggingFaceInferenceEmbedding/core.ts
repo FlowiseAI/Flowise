@@ -30,18 +30,26 @@ export class HuggingFaceInferenceEmbeddings extends Embeddings implements Huggin
     async _embed(texts: string[]): Promise<number[][]> {
         // replace newlines, which can negatively affect performance.
         const clean = texts.map((text) => text.replace(/\n/g, ' '))
+        const hf = new HfInference(this.apiKey)
         const obj: any = {
             inputs: clean
         }
-        if (!this.endpoint) obj.model = this.model
-        return this.caller.call(() => this.client.featureExtraction(obj)) as Promise<number[][]>
+        if (this.endpoint) {
+            hf.endpoint(this.endpoint)
+        } else {
+            obj.model = this.model
+        }
+
+        const res = await this.caller.callWithOptions({}, hf.featureExtraction.bind(hf), obj)
+        return res as number[][]
     }
 
-    embedQuery(document: string): Promise<number[]> {
-        return this._embed([document]).then((embeddings) => embeddings[0])
+    async embedQuery(document: string): Promise<number[]> {
+        const res = await this._embed([document])
+        return res[0]
     }
 
-    embedDocuments(documents: string[]): Promise<number[][]> {
+    async embedDocuments(documents: string[]): Promise<number[][]> {
         return this._embed(documents)
     }
 }
