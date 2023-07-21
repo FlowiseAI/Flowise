@@ -1,5 +1,5 @@
 {
-    "ignore": ["**/*.spec.ts", ".git", "node_modules"],
+    "ignore": ["**/*.spec.ts", ".git", "node_modules", "../components/nodes", "../components/src"],
     "watch": ["commands", "index.ts", "src"],
     "exec": "yarn oclif-dev",
     "ext": "ts"
