@@ -60,6 +60,7 @@ export interface INodeParams {
     warning?: string
     options?: Array<INodeOptionsValue>
     optional?: boolean | INodeDisplay
+    step?: number
     rows?: number
     list?: boolean
     acceptVariable?: boolean
