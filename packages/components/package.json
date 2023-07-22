@@ -50,6 +50,7 @@
         "pdfjs-dist": "^3.7.107",
         "playwright": "^1.35.0",
         "puppeteer": "^20.7.1",
+        "pyodide": ">=0.21.0-alpha.2",
         "redis": "^4.6.7",
         "replicate": "^0.12.3",
         "srt-parser-2": "^1.2.3",
