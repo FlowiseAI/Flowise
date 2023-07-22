@@ -728,7 +728,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent']
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
