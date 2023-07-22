@@ -1,9 +1,10 @@
-import { INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { AgentExecutor } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class CSV_Agents implements INode {
     label: string
@@ -17,7 +18,7 @@ class CSV_Agents implements INode {
 
     constructor() {
         this.label = 'CSV Agent'
-        this.name = 'csvAgentLLM'
+        this.name = 'csvAgent'
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'csvagent.png'
@@ -43,9 +44,12 @@ class CSV_Agents implements INode {
         return undefined
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const model = nodeData.inputs?.model as BaseLanguageModel
+
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
 
         let files: string[] = []
 
@@ -67,7 +71,7 @@ class CSV_Agents implements INode {
 
         // First load the csv file and get the dataframe dictionary of column types
         // For example using titanic.csv: {'PassengerId': 'int64', 'Survived': 'int64', 'Pclass': 'int64', 'Name': 'object', 'Sex': 'object', 'Age': 'float64', 'SibSp': 'int64', 'Parch': 'int64', 'Ticket': 'object', 'Fare': 'float64', 'Cabin': 'object', 'Embarked': 'object'}
-        let executionResult = ''
+        let dataframeColDict = ''
         try {
             const code = `import pandas as pd
 import base64
@@ -84,29 +88,29 @@ df = pd.read_csv(csv_data)
 my_dict = df.dtypes.astype(str).to_dict()
 print(my_dict)
 json.dumps(my_dict)`
-            executionResult = await pyodide.runPythonAsync(code)
+            dataframeColDict = await pyodide.runPythonAsync(code)
         } catch (error) {
             throw new Error(error)
         }
-        console.log('executionResult= ', executionResult)
+        options.logger.debug('[components/CSVAgent] [1] DataframeColDict =>', dataframeColDict)
 
         // Then tell GPT to come out with ONLY python code
         // For example: len(df), df[df['SibSp'] > 3]['PassengerId'].count()
         let pythonCode = ''
-        if (executionResult) {
+        if (dataframeColDict) {
             const chain = new LLMChain({
                 llm: model,
                 prompt: PromptTemplate.fromTemplate(systemPrompt),
                 verbose: process.env.DEBUG === 'true' ? true : false
             })
             const inputs = {
-                dict: executionResult,
+                dict: dataframeColDict,
                 question: input
             }
-            const res = await chain.call(inputs)
+            const res = await chain.call(inputs, [loggerHandler])
             pythonCode = res?.text
         }
-        console.log('pythonCode= ', pythonCode)
+        options.logger.debug('[components/CSVAgent] [2] Generated Python Code =>', pythonCode)
 
         // Then run the code using Pyodide
         let finalResult = ''
@@ -115,10 +119,10 @@ json.dumps(my_dict)`
                 const code = `import pandas as pd\n${pythonCode}`
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {
-                throw new Error(error)
+                throw new Error(pythonCode)
             }
         }
-        console.log('finalResult= ', finalResult)
+        options.logger.debug('[components/CSVAgent] [3] Pyodide Result =>', finalResult)
 
         // Finally, return a complete answer
         if (finalResult) {
@@ -131,11 +135,19 @@ json.dumps(my_dict)`
                 question: input,
                 answer: finalResult
             }
-            const res = await chain.call(inputs)
-            return res?.text
+
+            if (options.socketIO && options.socketIOClientId) {
+                const result = await chain.call(inputs, [loggerHandler, handler])
+                options.logger.debug('[components/CSVAgent] [4] Final Result =>', result?.text)
+                return result?.text
+            } else {
+                const result = await chain.call(inputs, [loggerHandler])
+                options.logger.debug('[components/CSVAgent] [4] Final Result =>', result?.text)
+                return result?.text
+            }
         }
 
-        return executionResult
+        return pythonCode
     }
 }
 

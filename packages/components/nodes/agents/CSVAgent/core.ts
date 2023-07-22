@@ -31,5 +31,5 @@ I will ask question, and you will output the Python code using pandas dataframe 
 Question: {question}
 Output Code:`
 
-export const finalSystemPrompt = `You are given the question: {question}. You have an answer to the question: {answer}. Rephrase the answer with more details.
-Helpful Answer:`
+export const finalSystemPrompt = `You are given the question: {question}. You have an answer to the question: {answer}. Rephrase the answer into a standalone answer.
+Standalone Answer:`
