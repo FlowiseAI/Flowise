@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -8,6 +8,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor'
 import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 import './ExpandTextDialog.css'
 
@@ -15,6 +16,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
+    const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const languageType = 'json'
 
@@ -30,6 +32,11 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setInputParam(null)
         }
     }, [dialogProps])
+
+    useEffect(() => {
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+        else dispatch({ type: HIDE_CANVAS_DIALOG })
+    }, [show, dispatch])
 
     const component = show ? (
         <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
