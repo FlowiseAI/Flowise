@@ -58,7 +58,7 @@ class ChatPromptTemplate_Prompts implements INode {
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+            promptValues = JSON.parse(promptValuesStr)
         }
         // @ts-ignore
         prompt.promptValues = promptValues
