@@ -11,6 +11,8 @@ export const SET_DARKMODE = '@customization/SET_DARKMODE'
 export const SET_DIRTY = '@canvas/SET_DIRTY'
 export const REMOVE_DIRTY = '@canvas/REMOVE_DIRTY'
 export const SET_CHATFLOW = '@canvas/SET_CHATFLOW'
+export const SHOW_CANVAS_DIALOG = '@canvas/SHOW_CANVAS_DIALOG'
+export const HIDE_CANVAS_DIALOG = '@canvas/HIDE_CANVAS_DIALOG'
 
 // action - notifier reducer
 export const ENQUEUE_SNACKBAR = 'ENQUEUE_SNACKBAR'

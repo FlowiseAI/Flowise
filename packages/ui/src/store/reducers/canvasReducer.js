@@ -3,7 +3,8 @@ import * as actionTypes from '../actions'
 
 export const initialState = {
     isDirty: false,
-    chatflow: null
+    chatflow: null,
+    canvasDialogShow: false
 }
 
 // ==============================|| CANVAS REDUCER ||============================== //
@@ -24,6 +25,16 @@ const canvasReducer = (state = initialState, action) => {
             return {
                 ...state,
                 chatflow: action.chatflow
+            }
+        case actionTypes.SHOW_CANVAS_DIALOG:
+            return {
+                ...state,
+                canvasDialogShow: true
+            }
+        case actionTypes.HIDE_CANVAS_DIALOG:
+            return {
+                ...state,
+                canvasDialogShow: false
             }
         default:
             return state
