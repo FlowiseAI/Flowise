@@ -40,7 +40,8 @@ import {
     isVectorStoreFaiss,
     databaseEntities,
     getApiKey,
-    clearSessionMemory
+    clearSessionMemory,
+    replaceInputsWithConfig
 } from './utils'
 import { cloneDeep } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -819,6 +820,8 @@ export class App {
                     const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                     if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
+                    if (incomingInput.overrideConfig)
+                        nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
                     const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
                     nodeToExecuteData = reactFlowNodeData
 

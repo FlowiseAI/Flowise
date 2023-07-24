@@ -60,70 +60,6 @@
         },
         {
             "width": 300,
-            "height": 392,
-            "id": "textFile_1",
-            "position": {
-                "x": 810.6456923854021,
-                "y": 61.45989039390216
-            },
-            "type": "customNode",
-            "data": {
-                "id": "textFile_1",
-                "label": "Text File",
-                "name": "textFile",
-                "type": "Document",
-                "baseClasses": ["Document"],
-                "category": "Document Loaders",
-                "description": "Load data from text files",
-                "inputParams": [
-                    {
-                        "label": "Txt File",
-                        "name": "txtFile",
-                        "type": "file",
-                        "fileType": ".txt",
-                        "id": "textFile_1-input-txtFile-file"
-                    },
-                    {
-                        "label": "Metadata",
-                        "name": "metadata",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "textFile_1-input-metadata-json"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Text Splitter",
-                        "name": "textSplitter",
-                        "type": "TextSplitter",
-                        "optional": true,
-                        "id": "textFile_1-input-textSplitter-TextSplitter"
-                    }
-                ],
-                "inputs": {
-                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "textFile_1-output-textFile-Document",
-                        "name": "textFile",
-                        "label": "Document",
-                        "type": "Document"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 810.6456923854021,
-                "y": 61.45989039390216
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 330,
             "id": "openAIEmbeddings_1",
             "position": {
@@ -202,118 +138,6 @@
                 "y": 586.8095386455508
             },
             "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 702,
-            "id": "pineconeUpsert_1",
-            "position": {
-                "x": 1201.3427203075867,
-                "y": 545.1800202023215
-            },
-            "type": "customNode",
-            "data": {
-                "id": "pineconeUpsert_1",
-                "label": "Pinecone Upsert Document",
-                "name": "pineconeUpsert",
-                "type": "Pinecone",
-                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Upsert documents to Pinecone",
-                "inputParams": [
-                    {
-                        "label": "Pinecone Api Key",
-                        "name": "pineconeApiKey",
-                        "type": "password",
-                        "id": "pineconeUpsert_1-input-pineconeApiKey-password"
-                    },
-                    {
-                        "label": "Pinecone Environment",
-                        "name": "pineconeEnv",
-                        "type": "string",
-                        "id": "pineconeUpsert_1-input-pineconeEnv-string"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
-                        "type": "string",
-                        "id": "pineconeUpsert_1-input-pineconeIndex-string"
-                    },
-                    {
-                        "label": "Pinecone Namespace",
-                        "name": "pineconeNamespace",
-                        "type": "string",
-                        "placeholder": "my-first-namespace",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pineconeUpsert_1-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Default to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeUpsert_1-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Document",
-                        "name": "document",
-                        "type": "Document",
-                        "list": true,
-                        "id": "pineconeUpsert_1-input-document-Document"
-                    },
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "Embeddings",
-                        "id": "pineconeUpsert_1-input-embeddings-Embeddings"
-                    }
-                ],
-                "inputs": {
-                    "document": ["{{textFile_1.data.instance}}"],
-                    "embeddings": "{{openAIEmbeddings_1.data.instance}}",
-                    "pineconeEnv": "us-west4-gcp",
-                    "pineconeIndex": "myindex",
-                    "pineconeNamespace": "mynamespace"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Pinecone Retriever",
-                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "pineconeUpsert_1-output-vectorStore-Pinecone|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Pinecone Vector Store",
-                                "type": "Pinecone | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": {
-                    "output": "retriever"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "dragging": false,
-            "positionAbsolute": {
-                "x": 1201.3427203075867,
-                "y": 545.1800202023215
-            }
         },
         {
             "width": 300,
@@ -468,7 +292,7 @@
         },
         {
             "width": 300,
-            "height": 280,
+            "height": 480,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
                 "x": 1627.1855024401737,
@@ -551,7 +375,7 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeUpsert_1.data.instance}}"
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}"
                 },
                 "outputAnchors": [
                     {
@@ -570,42 +394,186 @@
                 "y": 394.42287890442145
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 411,
+            "id": "textFile_0",
+            "position": {
+                "x": 806.1207502345,
+                "y": 98.75458062792087
+            },
+            "type": "customNode",
+            "data": {
+                "id": "textFile_0",
+                "label": "Text File",
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "textFile_0-output-textFile-Document",
+                        "name": "textFile",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 806.1207502345,
+                "y": 98.75458062792087
+            },
+            "selected": false
+        },
+        {
+            "width": 300,
+            "height": 655,
+            "id": "pineconeUpsert_0",
+            "position": {
+                "x": 1206.7979889462367,
+                "y": 526.4616330622748
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeUpsert_0",
+                "label": "Pinecone Upsert Document",
+                "name": "pineconeUpsert",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert documents to Pinecone",
+                "inputParams": [
+                    {
+                        "label": "Pinecone Api Key",
+                        "name": "pineconeApiKey",
+                        "type": "password",
+                        "id": "pineconeUpsert_0-input-pineconeApiKey-password"
+                    },
+                    {
+                        "label": "Pinecone Environment",
+                        "name": "pineconeEnv",
+                        "type": "string",
+                        "id": "pineconeUpsert_0-input-pineconeEnv-string"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "id": "pineconeUpsert_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{textFile_0.data.instance}}"],
+                    "embeddings": "{{openAIEmbeddings_1.data.instance}}",
+                    "pineconeEnv": "",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1206.7979889462367,
+                "y": 526.4616330622748
+            },
+            "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "openAIEmbeddings_1",
-            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeUpsert_1",
-            "targetHandle": "pineconeUpsert_1-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_1-pineconeUpsert_1-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "textFile_1",
-            "sourceHandle": "textFile_1-output-textFile-Document",
-            "target": "pineconeUpsert_1",
-            "targetHandle": "pineconeUpsert_1-input-document-Document",
-            "type": "buttonedge",
-            "id": "textFile_1-textFile_1-output-textFile-Document-pineconeUpsert_1-pineconeUpsert_1-input-document-Document",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "recursiveCharacterTextSplitter_1",
-            "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
-            "target": "textFile_1",
-            "targetHandle": "textFile_1-input-textSplitter-TextSplitter",
-            "type": "buttonedge",
-            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_1-textFile_1-input-textSplitter-TextSplitter",
-            "data": {
-                "label": ""
-            }
-        },
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
@@ -618,12 +586,45 @@
             }
         },
         {
-            "source": "pineconeUpsert_1",
-            "sourceHandle": "pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "source": "recursiveCharacterTextSplitter_1",
+            "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-textFile-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-textFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_1",
+            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeUpsert_0",
+            "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "pineconeUpsert_1-pineconeUpsert_1-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }
