@@ -612,7 +612,9 @@ query({
                                 )}
                             </>
                         )}
-                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && <ShareChatbot />}
+                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
+                            <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} />
+                        )}
                     </TabPanel>
                 ))}
             </DialogContent>

@@ -428,9 +428,12 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
-        for (const key in paramsObj) {
-            const paramValue: string = paramsObj[key]
-            paramsObj[key] = overrideConfig[key] ?? paramValue
+        for (const config in overrideConfig) {
+            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            // Check if boolean
+            if (paramValue === 'true') paramValue = true
+            else if (paramValue === 'false') paramValue = false
+            paramsObj[config] = paramValue
         }
     }
 
