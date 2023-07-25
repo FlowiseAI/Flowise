@@ -119,8 +119,6 @@ export interface IMessage {
 
 import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
 import { VectorStore } from 'langchain/vectorstores/base'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { Embeddings } from 'langchain/embeddings/base'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -167,12 +165,4 @@ export class VectorStoreRetriever {
         this.description = fields.description
         this.vectorStore = fields.vectorStore
     }
-}
-
-export interface HyDERetrieverInput {
-    llm: BaseLanguageModel
-    vectorStore: VectorStore
-    embeddings: Embeddings
-    promptKey: string
-    topK: number
 }
