@@ -137,8 +137,8 @@ class ChatAnthropic_ChatModels implements INode {
         }
 
         if (maxTokensToSample) obj.maxTokensToSample = parseInt(maxTokensToSample, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
-        if (topK) obj.topK = parseInt(topK, 10)
+        if (topP) obj.topP = parseFloat(topP)
+        if (topK) obj.topK = parseFloat(topK)
 
         const model = new ChatAnthropic(obj)
         return model

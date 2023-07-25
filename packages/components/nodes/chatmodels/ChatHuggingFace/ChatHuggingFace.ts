@@ -101,8 +101,8 @@ class ChatHuggingFace_ChatModels implements INode {
 
         if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
-        if (hfTopK) obj.topK = parseInt(hfTopK, 10)
+        if (topP) obj.topP = parseFloat(topP)
+        if (hfTopK) obj.topK = parseFloat(hfTopK)
         if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
         if (endpoint) obj.endpoint = endpoint
 

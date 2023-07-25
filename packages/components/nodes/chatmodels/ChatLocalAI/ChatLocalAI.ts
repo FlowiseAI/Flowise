@@ -80,7 +80,7 @@ class ChatLocalAI_ChatModels implements INode {
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
+        if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new OpenAIChat(obj, { basePath })
