@@ -16,7 +16,7 @@ import {
     IOverrideConfig
 } from '../Interface'
 import { cloneDeep, get, omit, merge } from 'lodash'
-import { ICommonObject, getInputVariables, IDatabaseEntity } from 'flowise-components'
+import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { ChatFlow } from '../entity/ChatFlow'
 import { ChatMessage } from '../entity/ChatMessage'
@@ -325,8 +325,13 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
 
+            /**
+             * Apply string transformation to convert special chars:
+             * FROM: hello i am ben\n\n\thow are you?
+             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = question
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
             }
 
             // Split by first occurrence of '.' to get just nodeId

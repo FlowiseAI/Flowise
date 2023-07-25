@@ -347,6 +347,40 @@ export const getEnvironmentVariable = (name: string): string | undefined => {
     }
 }
 
+// reference https://www.freeformatter.com/json-escape.html
+const jsonEscapeCharacters = [
+    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'FLOWISE_NEWLINE' },
+    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
+    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
+    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'FLOWISE_TAB' },
+    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
+]
+
+function handleEscapesJSONParse(input: string, reverse: Boolean): string {
+    for (const element of jsonEscapeCharacters) {
+        input = reverse ? input.replaceAll(element.value, element.escape) : input.replaceAll(element.escape, element.value)
+    }
+    return input
+}
+
+function iterateEscapesJSONParse(input: any, reverse: Boolean): any {
+    for (const element in input) {
+        const type = typeof input[element]
+        if (type === 'string') input[element] = handleEscapesJSONParse(input[element], reverse)
+        else if (type === 'object') input[element] = iterateEscapesJSONParse(input[element], reverse)
+    }
+    return input
+}
+
+export function handleEscapeCharacters(input: any, reverse: Boolean): any {
+    const type = typeof input
+    if (type === 'string') return handleEscapesJSONParse(input, reverse)
+    else if (type === 'object') return iterateEscapesJSONParse(input, reverse)
+    return input
+}
+
 /*
  * List of dependencies allowed to be import in vm2
  */

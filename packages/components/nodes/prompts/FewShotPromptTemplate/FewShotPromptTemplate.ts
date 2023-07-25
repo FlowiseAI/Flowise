@@ -86,7 +86,7 @@ class FewShotPromptTemplate_Prompts implements INode {
         const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate
 
         const inputVariables = getInputVariables(suffix)
-        const examples: Example[] = JSON.parse(examplesStr.replace(/\s/g, ''))
+        const examples: Example[] = JSON.parse(examplesStr)
 
         try {
             const obj: FewShotPromptTemplateInput = {
