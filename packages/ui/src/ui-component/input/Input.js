@@ -37,7 +37,7 @@ export const Input = ({ inputParam, value, onChange, disabled = false, showDialo
                         onChange(e.target.value)
                     }}
                     inputProps={{
-                        step: 0.1,
+                        step: inputParam.step ?? 0.1,
                         style: {
                             height: inputParam.rows ? '90px' : 'inherit'
                         }
@@ -61,7 +61,7 @@ export const Input = ({ inputParam, value, onChange, disabled = false, showDialo
 
 Input.propTypes = {
     inputParam: PropTypes.object,
-    value: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
     showDialog: PropTypes.bool,

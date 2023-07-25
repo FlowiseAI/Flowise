@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 import { SketchPicker } from 'react-color'
+import PropTypes from 'prop-types'
 
 import { Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -41,7 +42,7 @@ const defaultConfig = {
     }
 }
 
-const ShareChatbot = () => {
+const ShareChatbot = ({ isSessionMemory }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
     const chatflow = useSelector((state) => state.canvas.chatflow)
@@ -54,6 +55,7 @@ const ShareChatbot = () => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false)
+    const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false)
 
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
@@ -103,7 +105,8 @@ const ShareChatbot = () => {
             userMessage: {
                 showAvatar: false
             },
-            textInput: {}
+            textInput: {},
+            overrideConfig: {}
         }
         if (welcomeMessage) obj.welcomeMessage = welcomeMessage
         if (backgroundColor) obj.backgroundColor = backgroundColor
@@ -124,6 +127,8 @@ const ShareChatbot = () => {
         if (textInputTextColor) obj.textInput.textColor = textInputTextColor
         if (textInputPlaceholder) obj.textInput.placeholder = textInputPlaceholder
         if (textInputSendButtonColor) obj.textInput.sendButtonColor = textInputSendButtonColor
+
+        if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
 
         return obj
     }
@@ -272,6 +277,9 @@ const ShareChatbot = () => {
                 break
             case 'userMessageShowAvatar':
                 setUserMessageShowAvatar(value)
+                break
+            case 'generateNewSession':
+                setGenerateNewSession(value)
                 break
         }
     }
@@ -431,6 +439,16 @@ const ShareChatbot = () => {
             {textField(textInputPlaceholder, 'textInputPlaceholder', 'TextInput Placeholder', 'string', `Type question..`)}
             {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'TextIntput Send Button Color')}
 
+            {/*Session Memory Input*/}
+            {isSessionMemory && (
+                <>
+                    <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
+                        Session Memory
+                    </Typography>
+                    {booleanField(generateNewSession, 'generateNewSession', 'Start new session when chatbot link is opened or refreshed')}
+                </>
+            )}
+
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
                 Save Changes
             </StyledButton>
@@ -468,6 +486,10 @@ const ShareChatbot = () => {
             </Popover>
         </>
     )
+}
+
+ShareChatbot.propTypes = {
+    isSessionMemory: PropTypes.bool
 }
 
 export default ShareChatbot

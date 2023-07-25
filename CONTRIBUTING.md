@@ -114,9 +114,40 @@ Flowise has 3 different modules in a single mono repository.
 
 11. Commit code and submit Pull Request from forked branch pointing to [Flowise master](https://github.com/FlowiseAI/Flowise/tree/master).
 
+## 🌱 Env Variables
+
+Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
+
+| Variable                   | Description                                                      | Type                                             | Default                             |
+| -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
+| PORT                       | The HTTP port Flowise runs on                                    | Number                                           | 3000                                |
+| FLOWISE_USERNAME           | Username to login                                                | String                                           |                                     |
+| FLOWISE_PASSWORD           | Password to login                                                | String                                           |                                     |
+| DEBUG                      | Print logs from components                                       | Boolean                                          |                                     |
+| LOG_PATH                   | Location where log files are stored                              | String                                           | `your-path/Flowise/logs`            |
+| LOG_LEVEL                  | Different levels of logs                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
+| APIKEY_PATH                | Location where api keys are saved                                | String                                           | `your-path/Flowise/packages/server` |
+| EXECUTION_MODE             | Whether predictions run in their own process or the main process | Enum String: `child`, `main`                     | `main`                              |
+| TOOL_FUNCTION_BUILTIN_DEP  | NodeJS built-in modules to be used for Tool Function             | String                                           |                                     |
+| TOOL_FUNCTION_EXTERNAL_DEP | External modules to be used for Tool Function                    | String                                           |                                     |
+| OVERRIDE_DATABASE          | Override current database with default                           | Enum String: `true`, `false`                     | `true`                              |
+| DATABASE_TYPE              | Type of database to store the flowise data                       | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
+| DATABASE_PATH              | Location where database is saved (When DATABASE_TYPE is sqlite)  | String                                           | `your-home-dir/.flowise`            |
+| DATABASE_HOST              | Host URL or IP address (When DATABASE_TYPE is not sqlite)        | String                                           |                                     |
+| DATABASE_PORT              | Database port (When DATABASE_TYPE is not sqlite)                 | String                                           |                                     |
+| DATABASE_USERNAME          | Database username (When DATABASE_TYPE is not sqlite)             | String                                           |                                     |
+| DATABASE_PASSWORD          | Database password (When DATABASE_TYPE is not sqlite)             | String                                           |                                     |
+| DATABASE_NAME              | Database name (When DATABASE_TYPE is not sqlite)                 | String                                           |                                     |
+
+You can also specify the env variables when using `npx`. For example:
+
+```
+npx flowise start --PORT=3000 --DEBUG=true
+```
+
 ## 📖 Contribute to Docs
 
-In-Progress
+[Flowise Docs](https://github.com/FlowiseAI/FlowiseDocs)
 
 ## 🏷️ Pull Request process
 

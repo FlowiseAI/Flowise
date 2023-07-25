@@ -90,8 +90,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     }
 
     const onAPIDialogClick = () => {
+        // If file type is file, isFormDataRequired = true
         let isFormDataRequired = false
-
         try {
             const flowData = JSON.parse(chatflow.flowData)
             const nodes = flowData.nodes
@@ -105,11 +105,27 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             console.error(e)
         }
 
+        // If sessionId memory, isSessionMemory = true
+        let isSessionMemory = false
+        try {
+            const flowData = JSON.parse(chatflow.flowData)
+            const nodes = flowData.nodes
+            for (const node of nodes) {
+                if (node.data.inputParams.find((param) => param.name === 'sessionId')) {
+                    isSessionMemory = true
+                    break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
         setAPIDialogProps({
             title: 'Embed in website or use as API',
             chatflowid: chatflow.id,
             chatflowApiKeyId: chatflow.apikeyid,
-            isFormDataRequired
+            isFormDataRequired,
+            isSessionMemory
         })
         setAPIDialogOpen(true)
     }
