@@ -73,5 +73,6 @@
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
         "typescript": "^4.8.4"
+        "@babel/plugin-proposal-private-property-in-object": "*"
     }
 }
