@@ -148,7 +148,7 @@ export class ChildProcess {
 }
 
 /**
- * Initalize DB in child process
+ * Initialize DB in child process
  * @returns {DataSource}
  */
 async function initDB() {
