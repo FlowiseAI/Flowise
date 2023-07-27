@@ -72,6 +72,7 @@
         "run-script-os": "^1.1.6",
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
-        "typescript": "^4.8.4"
+        "typescript": "^4.8.4",
+        "@babel/plugin-proposal-private-property-in-object": "*"
     }
 }
