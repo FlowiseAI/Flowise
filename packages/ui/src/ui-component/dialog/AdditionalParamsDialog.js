@@ -1,12 +1,15 @@
 import { createPortal } from 'react-dom'
+import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent } from '@mui/material'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import NodeInputHandler from 'views/canvas/NodeInputHandler'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const AdditionalParamsDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
+    const dispatch = useDispatch()
 
     const [inputParams, setInputParams] = useState([])
     const [data, setData] = useState({})
@@ -20,6 +23,11 @@ const AdditionalParamsDialog = ({ show, dialogProps, onCancel }) => {
             setData({})
         }
     }, [dialogProps])
+
+    useEffect(() => {
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+        else dispatch({ type: HIDE_CANVAS_DIALOG })
+    }, [show, dispatch])
 
     const component = show ? (
         <Dialog

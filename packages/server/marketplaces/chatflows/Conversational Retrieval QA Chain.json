@@ -3,132 +3,11 @@
     "nodes": [
         {
             "width": 300,
-            "height": 376,
-            "id": "recursiveCharacterTextSplitter_1",
-            "position": {
-                "x": 422.81091375202413,
-                "y": 122.99825010325736
-            },
-            "type": "customNode",
-            "data": {
-                "id": "recursiveCharacterTextSplitter_1",
-                "label": "Recursive Character Text Splitter",
-                "name": "recursiveCharacterTextSplitter",
-                "type": "RecursiveCharacterTextSplitter",
-                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
-                "category": "Text Splitters",
-                "description": "Split documents recursively by different characters - starting with \"\n\n\", then \"\n\", then \" \"",
-                "inputParams": [
-                    {
-                        "label": "Chunk Size",
-                        "name": "chunkSize",
-                        "type": "number",
-                        "default": 1000,
-                        "optional": true,
-                        "id": "recursiveCharacterTextSplitter_1-input-chunkSize-number"
-                    },
-                    {
-                        "label": "Chunk Overlap",
-                        "name": "chunkOverlap",
-                        "type": "number",
-                        "optional": true,
-                        "id": "recursiveCharacterTextSplitter_1-input-chunkOverlap-number"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "chunkSize": 1000,
-                    "chunkOverlap": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
-                        "name": "recursiveCharacterTextSplitter",
-                        "label": "RecursiveCharacterTextSplitter",
-                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 422.81091375202413,
-                "y": 122.99825010325736
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 392,
-            "id": "textFile_1",
-            "position": {
-                "x": 788.5395420616719,
-                "y": 126.30459801017741
-            },
-            "type": "customNode",
-            "data": {
-                "id": "textFile_1",
-                "label": "Text File",
-                "name": "textFile",
-                "type": "Document",
-                "baseClasses": ["Document"],
-                "category": "Document Loaders",
-                "description": "Load data from text files",
-                "inputParams": [
-                    {
-                        "label": "Txt File",
-                        "name": "txtFile",
-                        "type": "file",
-                        "fileType": ".txt",
-                        "id": "textFile_1-input-txtFile-file"
-                    },
-                    {
-                        "label": "Metadata",
-                        "name": "metadata",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "textFile_1-input-metadata-json"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Text Splitter",
-                        "name": "textSplitter",
-                        "type": "TextSplitter",
-                        "optional": true,
-                        "id": "textFile_1-input-textSplitter-TextSplitter"
-                    }
-                ],
-                "inputs": {
-                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "textFile_1-output-textFile-Document",
-                        "name": "textFile",
-                        "label": "Document",
-                        "type": "Document"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 788.5395420616719,
-                "y": 126.30459801017741
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 523,
+            "height": 522,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1200.8283780918746,
-                "y": 12.591428916196605
+                "x": 1184.1176114500388,
+                "y": -44.15535835370571
             },
             "type": "customNode",
             "data": {
@@ -249,7 +128,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
-                    "temperature": 0.9,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -268,129 +147,20 @@
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
             "positionAbsolute": {
-                "x": 1200.8283780918746,
-                "y": 12.591428916196605
+                "x": 1184.1176114500388,
+                "y": -44.15535835370571
             },
+            "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 480,
-            "id": "conversationalRetrievalQAChain_0",
-            "position": {
-                "x": 1626.7402076624098,
-                "y": 394.29095783927113
-            },
-            "type": "customNode",
-            "data": {
-                "id": "conversationalRetrievalQAChain_0",
-                "label": "Conversational Retrieval QA Chain",
-                "name": "conversationalRetrievalQAChain",
-                "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
-                "category": "Chains",
-                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
-                "inputParams": [
-                    {
-                        "label": "Return Source Documents",
-                        "name": "returnSourceDocuments",
-                        "type": "boolean",
-                        "optional": true,
-                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
-                    },
-                    {
-                        "label": "System Message",
-                        "name": "systemMessagePrompt",
-                        "type": "string",
-                        "rows": 4,
-                        "additionalParams": true,
-                        "optional": true,
-                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
-                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
-                    },
-                    {
-                        "label": "Chain Option",
-                        "name": "chainOption",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "MapReduceDocumentsChain",
-                                "name": "map_reduce",
-                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
-                            },
-                            {
-                                "label": "RefineDocumentsChain",
-                                "name": "refine",
-                                "description": "Suitable for QA tasks over a large number of documents."
-                            },
-                            {
-                                "label": "StuffDocumentsChain",
-                                "name": "stuff",
-                                "description": "Suitable for QA tasks over a small number of documents."
-                            }
-                        ],
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Vector Store Retriever",
-                        "name": "vectorStoreRetriever",
-                        "type": "BaseRetriever",
-                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
-                        "optional": true,
-                        "description": "If no memory connected, default BufferMemory will be used",
-                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}",
-                    "memory": "",
-                    "returnSourceDocuments": "",
-                    "systemMessagePrompt": "",
-                    "chainOption": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
-                        "name": "conversationalRetrievalQAChain",
-                        "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1626.7402076624098,
-                "y": 394.29095783927113
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 329,
+            "height": 328,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 788.1802387155774,
-                "y": 579.9826205586049
+                "x": 795.6162477805387,
+                "y": 603.260214150876
             },
             "type": "customNode",
             "data": {
@@ -462,18 +232,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 788.1802387155774,
-                "y": 579.9826205586049
+                "x": 795.6162477805387,
+                "y": 603.260214150876
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 555,
+            "height": 554,
             "id": "pineconeUpsert_0",
             "position": {
-                "x": 1200.8283780918746,
-                "y": 588.825080688097
+                "x": 1191.1792786926865,
+                "y": 514.2126330994578
             },
             "type": "customNode",
             "data": {
@@ -534,7 +304,7 @@
                     }
                 ],
                 "inputs": {
-                    "document": ["{{textFile_1.data.instance}}"],
+                    "document": ["{{textFile_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
@@ -569,20 +339,272 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1200.8283780918746,
-                "y": 588.825080688097
+                "x": 1191.1792786926865,
+                "y": 514.2126330994578
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "recursiveCharacterTextSplitter_0",
+            "position": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
+            },
+            "type": "customNode",
+            "data": {
+                "id": "recursiveCharacterTextSplitter_0",
+                "label": "Recursive Character Text Splitter",
+                "name": "recursiveCharacterTextSplitter",
+                "type": "RecursiveCharacterTextSplitter",
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
+                "category": "Text Splitters",
+                "description": "Split documents recursively by different characters - starting with \"\\n\\n\", then \"\\n\", then \" \"",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkOverlap-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": 1000,
+                    "chunkOverlap": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+                        "name": "recursiveCharacterTextSplitter",
+                        "label": "RecursiveCharacterTextSplitter",
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 410,
+            "id": "textFile_0",
+            "position": {
+                "x": 786.5497697231324,
+                "y": 140.09563157584407
+            },
+            "type": "customNode",
+            "data": {
+                "id": "textFile_0",
+                "label": "Text File",
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_0.data.instance}}",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "textFile_0-output-textFile-Document",
+                        "name": "textFile",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 786.5497697231324,
+                "y": 140.09563157584407
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 479,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1558.6564094656787,
+                "y": 386.60217819991124
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Chain Option",
+                        "name": "chainOption",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "MapReduceDocumentsChain",
+                                "name": "map_reduce",
+                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
+                            },
+                            {
+                                "label": "RefineDocumentsChain",
+                                "name": "refine",
+                                "description": "Suitable for QA tasks over a large number of documents."
+                            },
+                            {
+                                "label": "StuffDocumentsChain",
+                                "name": "stuff",
+                                "description": "Suitable for QA tasks over a small number of documents."
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "optional": true,
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}",
+                    "memory": "",
+                    "returnSourceDocuments": "",
+                    "systemMessagePrompt": "",
+                    "chainOption": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1558.6564094656787,
+                "y": 386.60217819991124
+            },
+            "selected": false
         }
     ],
     "edges": [
         {
-            "source": "recursiveCharacterTextSplitter_1",
-            "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
-            "target": "textFile_1",
-            "targetHandle": "textFile_1-input-textSplitter-TextSplitter",
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_1-textFile_1-input-textSplitter-TextSplitter",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "recursiveCharacterTextSplitter_0",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-textFile-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-textFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -594,28 +616,6 @@
             "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "textFile_1",
-            "sourceHandle": "textFile_1-output-textFile-Document",
-            "target": "pineconeUpsert_0",
-            "targetHandle": "pineconeUpsert_0-input-document-Document",
-            "type": "buttonedge",
-            "id": "textFile_1-textFile_1-output-textFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeUpsert_0",
-            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }

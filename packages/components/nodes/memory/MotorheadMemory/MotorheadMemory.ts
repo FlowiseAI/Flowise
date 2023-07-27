@@ -58,37 +58,46 @@ class MotorMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const memoryKey = nodeData.inputs?.memoryKey as string
-        const baseURL = nodeData.inputs?.baseURL as string
-        const sessionId = nodeData.inputs?.sessionId as string
-
-        const chatId = options?.chatId as string
-
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
-        const clientId = getCredentialParam('clientId', credentialData, nodeData)
-
-        let obj: MotorheadMemoryInput = {
-            returnMessages: true,
-            sessionId: sessionId ? sessionId : chatId,
-            memoryKey
-        }
-
-        if (baseURL) {
-            obj = {
-                ...obj,
-                url: baseURL
-            }
-        } else {
-            obj = {
-                ...obj,
-                apiKey,
-                clientId
-            }
-        }
-
-        return new MotorheadMemory(obj)
+        return initalizeMotorhead(nodeData, options)
     }
+
+    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        const motorhead = await initalizeMotorhead(nodeData, options)
+        await motorhead.clear()
+    }
+}
+
+const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): Promise<MotorheadMemory> => {
+    const memoryKey = nodeData.inputs?.memoryKey as string
+    const baseURL = nodeData.inputs?.baseURL as string
+    const sessionId = nodeData.inputs?.sessionId as string
+
+    const chatId = options?.chatId as string
+
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+    const clientId = getCredentialParam('clientId', credentialData, nodeData)
+
+    let obj: MotorheadMemoryInput = {
+        returnMessages: true,
+        sessionId: sessionId ? sessionId : chatId,
+        memoryKey
+    }
+
+    if (baseURL) {
+        obj = {
+            ...obj,
+            url: baseURL
+        }
+    } else {
+        obj = {
+            ...obj,
+            apiKey,
+            clientId
+        }
+    }
+
+    return new MotorheadMemory(obj)
 }
 
 module.exports = { nodeClass: MotorMemory_Memory }

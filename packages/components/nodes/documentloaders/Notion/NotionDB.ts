@@ -39,8 +39,7 @@ class NotionDB_DocumentLoaders implements INode {
                 label: 'Notion Database Id',
                 name: 'databaseId',
                 type: 'string',
-                description:
-                    'If your URL looks like - https://www.notion.so/<long_hash_1>?v=<long_hash_2>, then <long_hash_1> is the database ID'
+                description: 'If your URL looks like - https://www.notion.so/abcdefh?v=long_hash_2, then abcdefh is the database ID'
             },
             {
                 label: 'Metadata',

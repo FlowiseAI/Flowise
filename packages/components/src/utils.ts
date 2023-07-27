@@ -323,7 +323,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
         }
 
         const contentType: string | null = resp.headers.get('content-type')
-        if ((contentType && !contentType.includes('application/xml')) || !contentType) {
+        if ((contentType && !contentType.includes('application/xml') && !contentType.includes('text/xml')) || !contentType) {
             if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
             return urls
         }
@@ -339,7 +339,6 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
 /*
  * Get env variables
  * @param {string} url
- * @param {number} limit
  * @returns {string[]}
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
@@ -418,7 +417,7 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
             id: selectedCredentialId
         })
 
-        if (!credential) throw new Error(`Credential ${selectedCredentialId} not found`)
+        if (!credential) return {}
 
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
@@ -430,36 +429,52 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
 }
 
 export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
-    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName]
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
 }
 
-/*
- * List of dependencies allowed to be import in vm2
- */
-export const availableDependencies = [
-    '@dqbd/tiktoken',
-    '@getzep/zep-js',
-    '@huggingface/inference',
-    '@pinecone-database/pinecone',
-    '@supabase/supabase-js',
-    'axios',
-    'cheerio',
-    'chromadb',
-    'cohere-ai',
-    'd3-dsv',
-    'form-data',
-    'graphql',
-    'html-to-text',
-    'langchain',
-    'linkifyjs',
-    'mammoth',
-    'moment',
-    'node-fetch',
-    'pdf-parse',
-    'pdfjs-dist',
-    'playwright',
-    'puppeteer',
-    'srt-parser-2',
-    'typeorm',
-    'weaviate-ts-client'
+// reference https://www.freeformatter.com/json-escape.html
+const jsonEscapeCharacters = [
+    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'FLOWISE_NEWLINE' },
+    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
+    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
+    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'FLOWISE_TAB' },
+    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
 ]
+
+function handleEscapesJSONParse(input: string, reverse: Boolean): string {
+    for (const element of jsonEscapeCharacters) {
+        input = reverse ? input.replaceAll(element.value, element.escape) : input.replaceAll(element.escape, element.value)
+    }
+    return input
+}
+
+function iterateEscapesJSONParse(input: any, reverse: Boolean): any {
+    for (const element in input) {
+        const type = typeof input[element]
+        if (type === 'string') input[element] = handleEscapesJSONParse(input[element], reverse)
+        else if (type === 'object') input[element] = iterateEscapesJSONParse(input[element], reverse)
+    }
+    return input
+}
+
+export function handleEscapeCharacters(input: any, reverse: Boolean): any {
+    const type = typeof input
+    if (type === 'string') return handleEscapesJSONParse(input, reverse)
+    else if (type === 'object') return iterateEscapesJSONParse(input, reverse)
+    return input
+}
+
+export const getUserHome = (): string => {
+    let variableName = 'HOME'
+    if (process.platform === 'win32') {
+        variableName = 'USERPROFILE'
+    }
+
+    if (process.env[variableName] === undefined) {
+        // If for some reason the variable does not exist, fall back to current folder
+        return process.cwd()
+    }
+    return process.env[variableName] as string
+}

@@ -1,32 +1,21 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { ConversationalRetrievalQAChain } from 'langchain/chains'
-import { AIMessage, BaseRetriever, HumanMessage } from 'langchain/schema'
-import { BaseChatMemory, BufferMemory, ChatMessageHistory } from 'langchain/memory'
+import { ConversationalRetrievalQAChain, QAChainParams } from 'langchain/chains'
+import { AIMessage, HumanMessage } from 'langchain/schema'
+import { BaseRetriever } from 'langchain/schema/retriever'
+import { BaseChatMemory, BufferMemory, ChatMessageHistory, BufferMemoryInput } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
-
-const default_qa_template = `Use the following pieces of context to answer the question at the end, in its original language. If you don't know the answer, just say that you don't know in its original language, don't try to make up an answer.
-
-{context}
-
-Question: {question}
-Helpful Answer:`
-
-const qa_template = `Use the following pieces of context to answer the question at the end, in its original language.
-
-{context}
-
-Question: {question}
-Helpful Answer:`
-
-const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language. include it in the standalone question.
-
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone question:`
+import {
+    default_map_reduce_template,
+    default_qa_template,
+    qa_template,
+    map_reduce_template,
+    CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
+    refine_question_template,
+    refine_template
+} from './prompts'
 
 class ConversationalRetrievalQAChain_Chains implements INode {
     label: string
@@ -60,9 +49,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             {
                 label: 'Memory',
                 name: 'memory',
-                type: 'DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory',
+                type: 'BaseMemory',
                 optional: true,
-                description: 'If no memory connected, default BufferMemory will be used'
+                description: 'If left empty, a default BufferMemory will be used'
             },
             {
                 label: 'Return Source Documents',
@@ -118,28 +107,54 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         const obj: any = {
             verbose: process.env.DEBUG === 'true' ? true : false,
-            qaChainOptions: {
-                type: 'stuff',
-                prompt: PromptTemplate.fromTemplate(systemMessagePrompt ? `${systemMessagePrompt}\n${qa_template}` : default_qa_template)
-            },
             questionGeneratorChainOptions: {
                 template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT
             }
         }
         if (returnSourceDocuments) obj.returnSourceDocuments = returnSourceDocuments
-        if (chainOption) obj.qaChainOptions = { ...obj.qaChainOptions, type: chainOption }
+        if (chainOption === 'map_reduce') {
+            obj.qaChainOptions = {
+                type: 'map_reduce',
+                combinePrompt: PromptTemplate.fromTemplate(
+                    systemMessagePrompt ? `${systemMessagePrompt}\n${map_reduce_template}` : default_map_reduce_template
+                )
+            } as QAChainParams
+        } else if (chainOption === 'refine') {
+            const qprompt = new PromptTemplate({
+                inputVariables: ['context', 'question'],
+                template: refine_question_template(systemMessagePrompt)
+            })
+            const rprompt = new PromptTemplate({
+                inputVariables: ['context', 'question', 'existing_answer'],
+                template: refine_template
+            })
+            obj.qaChainOptions = {
+                type: 'refine',
+                questionPrompt: qprompt,
+                refinePrompt: rprompt
+            } as QAChainParams
+        } else {
+            obj.qaChainOptions = {
+                type: 'stuff',
+                prompt: PromptTemplate.fromTemplate(systemMessagePrompt ? `${systemMessagePrompt}\n${qa_template}` : default_qa_template)
+            } as QAChainParams
+        }
+
         if (memory) {
             memory.inputKey = 'question'
-            memory.outputKey = 'text'
             memory.memoryKey = 'chat_history'
+            if (chainOption === 'refine') memory.outputKey = 'output_text'
+            else memory.outputKey = 'text'
             obj.memory = memory
         } else {
-            obj.memory = new BufferMemory({
+            const fields: BufferMemoryInput = {
                 memoryKey: 'chat_history',
                 inputKey: 'question',
-                outputKey: 'text',
                 returnMessages: true
-            })
+            }
+            if (chainOption === 'refine') fields.outputKey = 'output_text'
+            else fields.outputKey = 'text'
+            obj.memory = new BufferMemory(fields)
         }
 
         const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever, obj)
@@ -150,6 +165,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const chain = nodeData.instance as ConversationalRetrievalQAChain
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
         const memory = nodeData.inputs?.memory
+        const chainOption = nodeData.inputs?.chainOption as string
 
         let model = nodeData.inputs?.model
 
@@ -179,8 +195,22 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, undefined, returnSourceDocuments)
+            const handler = new CustomChainHandler(
+                options.socketIO,
+                options.socketIOClientId,
+                chainOption === 'refine' ? 4 : undefined,
+                returnSourceDocuments
+            )
             const res = await chain.call(obj, [loggerHandler, handler])
+            if (chainOption === 'refine') {
+                if (res.output_text && res.sourceDocuments) {
+                    return {
+                        text: res.output_text,
+                        sourceDocuments: res.sourceDocuments
+                    }
+                }
+                return res?.output_text
+            }
             if (res.text && res.sourceDocuments) return res
             return res?.text
         } else {

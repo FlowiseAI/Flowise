@@ -1,6 +1,14 @@
 import path from 'path'
 import { IChildProcessMessage, IReactFlowNode, IReactFlowObject, IRunChatflowMessageValue, INodeData } from './Interface'
-import { buildLangchain, constructGraphs, getEndingNode, getStartingNodes, getUserHome, resolveVariables } from './utils'
+import {
+    buildLangchain,
+    constructGraphs,
+    getEndingNode,
+    getStartingNodes,
+    getUserHome,
+    replaceInputsWithConfig,
+    resolveVariables
+} from './utils'
 import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
@@ -110,6 +118,8 @@ export class ChildProcess {
                     return
                 }
 
+                if (incomingInput.overrideConfig)
+                    nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
                 const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
                 nodeToExecuteData = reactFlowNodeData
 
@@ -143,14 +153,59 @@ export class ChildProcess {
  * @returns {DataSource}
  */
 async function initDB() {
-    const homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
-    const childAppDataSource = new DataSource({
-        type: 'sqlite',
-        database: path.resolve(homePath, 'database.sqlite'),
-        synchronize: true,
-        entities: [ChatFlow, ChatMessage, Tool, Credential],
-        migrations: []
-    })
+    let childAppDataSource
+    let homePath
+    const synchronize = process.env.OVERRIDE_DATABASE === 'false' ? false : true
+    switch (process.env.DATABASE_TYPE) {
+        case 'sqlite':
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            childAppDataSource = new DataSource({
+                type: 'sqlite',
+                database: path.resolve(homePath, 'database.sqlite'),
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                migrations: []
+            })
+            break
+        case 'mysql':
+            childAppDataSource = new DataSource({
+                type: 'mysql',
+                host: process.env.DATABASE_HOST,
+                port: parseInt(process.env.DATABASE_PORT || '3306'),
+                username: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASSWORD,
+                database: process.env.DATABASE_NAME,
+                charset: 'utf8mb4',
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                migrations: []
+            })
+            break
+        case 'postgres':
+            childAppDataSource = new DataSource({
+                type: 'postgres',
+                host: process.env.DATABASE_HOST,
+                port: parseInt(process.env.DATABASE_PORT || '5432'),
+                username: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASSWORD,
+                database: process.env.DATABASE_NAME,
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                migrations: []
+            })
+            break
+        default:
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            childAppDataSource = new DataSource({
+                type: 'sqlite',
+                database: path.resolve(homePath, 'database.sqlite'),
+                synchronize,
+                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                migrations: []
+            })
+            break
+    }
+
     return await childAppDataSource.initialize()
 }
 

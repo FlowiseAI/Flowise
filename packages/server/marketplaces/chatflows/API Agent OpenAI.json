@@ -1,5 +1,5 @@
 {
-    "description": "Use OpenAI Function Agent to automatically decide which API to call, generating url and body request from conversation",
+    "description": "Use OpenAI Function Agent and Chain to automatically decide which API to call, generating url and body request from conversation",
     "nodes": [
         {
             "width": 300,

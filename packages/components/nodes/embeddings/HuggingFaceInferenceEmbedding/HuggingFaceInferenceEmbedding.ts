@@ -32,6 +32,8 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
                 label: 'Model',
                 name: 'modelName',
                 type: 'string',
+                description: 'If using own inference endpoint, leave this blank',
+                placeholder: 'sentence-transformers/distilbert-base-nli-mean-tokens',
                 optional: true
             },
             {

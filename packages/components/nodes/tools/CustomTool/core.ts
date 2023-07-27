@@ -2,7 +2,37 @@ import { z } from 'zod'
 import { CallbackManagerForToolRun } from 'langchain/callbacks'
 import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
-import { availableDependencies } from '../../../src/utils'
+
+/*
+ * List of dependencies allowed to be import in vm2
+ */
+const availableDependencies = [
+    '@dqbd/tiktoken',
+    '@getzep/zep-js',
+    '@huggingface/inference',
+    '@pinecone-database/pinecone',
+    '@supabase/supabase-js',
+    'axios',
+    'cheerio',
+    'chromadb',
+    'cohere-ai',
+    'd3-dsv',
+    'form-data',
+    'graphql',
+    'html-to-text',
+    'langchain',
+    'linkifyjs',
+    'mammoth',
+    'moment',
+    'node-fetch',
+    'pdf-parse',
+    'pdfjs-dist',
+    'playwright',
+    'puppeteer',
+    'srt-parser-2',
+    'typeorm',
+    'weaviate-ts-client'
+]
 
 export interface BaseDynamicToolInput extends ToolParams {
     name: string
@@ -51,24 +81,36 @@ export class DynamicStructuredTool<
             }
         }
 
+        const defaultAllowBuiltInDep = [
+            'assert',
+            'buffer',
+            'crypto',
+            'events',
+            'http',
+            'https',
+            'net',
+            'path',
+            'querystring',
+            'timers',
+            'tls',
+            'url',
+            'zlib'
+        ]
+
+        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
+            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
+            : defaultAllowBuiltInDep
+        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
+        const deps = availableDependencies.concat(externalDeps)
+
         const options = {
             console: 'inherit',
             sandbox,
             require: {
-                external: false as boolean | { modules: string[] },
-                builtin: ['*']
+                external: { modules: deps },
+                builtin: builtinDeps
             }
         } as any
-
-        const external = JSON.stringify(availableDependencies)
-        if (external) {
-            const deps = JSON.parse(external)
-            if (deps && deps.length) {
-                options.require.external = {
-                    modules: deps
-                }
-            }
-        }
 
         const vm = new NodeVM(options)
         const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)

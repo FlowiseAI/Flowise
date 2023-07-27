@@ -19,7 +19,7 @@ import {
     ICredentialReqBody
 } from '../Interface'
 import { cloneDeep, get, omit, merge } from 'lodash'
-import { ICommonObject, getInputVariables, IDatabaseEntity } from 'flowise-components'
+import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { lib, PBKDF2, AES, enc } from 'crypto-js'
 
@@ -282,6 +282,29 @@ export const buildLangchain = async (
 }
 
 /**
+ * Clear memory
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IComponentNodes} componentNodes
+ * @param {string} chatId
+ * @param {string} sessionId
+ */
+export const clearSessionMemory = async (
+    reactFlowNodes: IReactFlowNode[],
+    componentNodes: IComponentNodes,
+    chatId: string,
+    sessionId?: string
+) => {
+    for (const node of reactFlowNodes) {
+        if (node.data.category !== 'Memory') continue
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newNodeInstance = new nodeModule.nodeClass()
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+        if (newNodeInstance.clearSessionMemory) await newNodeInstance?.clearSessionMemory(node.data, { chatId })
+    }
+}
+
+/**
  * Get variable value from outputResponses.output
  * @param {string} paramValue
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -310,8 +333,13 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
 
+            /**
+             * Apply string transformation to convert special chars:
+             * FROM: hello i am ben\n\n\thow are you?
+             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = question
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -414,7 +442,11 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
 
     const getParamValues = (paramsObj: ICommonObject) => {
         for (const config in overrideConfig) {
-            paramsObj[config] = overrideConfig[config]
+            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            // Check if boolean
+            if (paramValue === 'true') paramValue = true
+            else if (paramValue === 'false') paramValue = false
+            paramsObj[config] = paramValue
         }
     }
 
@@ -730,7 +762,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent']
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 

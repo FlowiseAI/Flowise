@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { RetrievalQAChain } from 'langchain/chains'
-import { BaseRetriever } from 'langchain/schema'
+import { BaseRetriever } from 'langchain/schema/retriever'
 import { getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'

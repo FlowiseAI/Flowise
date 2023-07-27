@@ -78,10 +78,10 @@
                     {
                         "label": "Memory",
                         "name": "memory",
-                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+                        "type": "BaseMemory",
                         "optional": true,
-                        "description": "If no memory connected, default BufferMemory will be used",
-                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
                     }
                 ],
                 "inputs": {
@@ -631,9 +631,9 @@
             "source": "ZepMemory_0",
             "sourceHandle": "ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory",
             "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
             "type": "buttonedge",
-            "id": "ZepMemory_0-ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+            "id": "ZepMemory_0-ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
             "data": {
                 "label": ""
             }

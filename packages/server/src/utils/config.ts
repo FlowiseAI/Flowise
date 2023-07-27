@@ -7,7 +7,7 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true }
 
 // default config
 const loggingConfig = {
-    dir: process.env.LOG_PATH ?? path.join(__dirname, '..', '..', '..', '..', 'logs'),
+    dir: process.env.LOG_PATH ?? path.join(__dirname, '..', '..', 'logs'),
     server: {
         level: process.env.LOG_LEVEL ?? 'info',
         filename: 'server.log',

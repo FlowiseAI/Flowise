@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
@@ -73,7 +73,12 @@ class LLMChain_Chains implements INode {
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
             console.log(res)
-            return res
+            /**
+             * Apply string transformation to convert special chars:
+             * FROM: hello i am ben\n\n\thow are you?
+             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             */
+            return handleEscapeCharacters(res, false)
         }
     }
 
@@ -81,7 +86,6 @@ class LLMChain_Chains implements INode {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
         const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
-
         const res = await runPrediction(inputVariables, chain, input, promptValues, options)
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
@@ -95,13 +99,20 @@ const runPrediction = async (
     inputVariables: string[],
     chain: LLMChain,
     input: string,
-    promptValues: ICommonObject,
+    promptValuesRaw: ICommonObject,
     options: ICommonObject
 ) => {
     const loggerHandler = new ConsoleCallbackHandler(options.logger)
     const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
+
+    /**
+     * Apply string transformation to reverse converted special chars:
+     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
+     * TO: { "value": "hello i am ben\n\n\thow are you?" }
+     */
+    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
 
     if (inputVariables.length === 1) {
         if (isStreaming) {

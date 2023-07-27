@@ -135,15 +135,16 @@
                     {
                         "label": "Memory",
                         "name": "memory",
-                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+                        "type": "BaseMemory",
                         "optional": true,
-                        "description": "If no memory connected, default BufferMemory will be used",
-                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
                     }
                 ],
                 "inputs": {
                     "model": "{{chatLocalAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{faissUpsert_0.data.instance}}"
+                    "vectorStoreRetriever": "{{faissUpsert_0.data.instance}}",
+                    "memory": ""
                 },
                 "outputAnchors": [
                     {
