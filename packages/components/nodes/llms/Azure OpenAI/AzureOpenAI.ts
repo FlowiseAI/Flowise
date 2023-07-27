@@ -181,7 +181,7 @@ class AzureOpenAI_LLMs implements INode {
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
+        if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
         if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)

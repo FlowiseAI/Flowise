@@ -79,7 +79,7 @@ class OpenSearchUpsert_VectorStores implements INode {
         const indexName = nodeData.inputs?.indexName as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseInt(topK, 10) : 4
+        const k = topK ? parseFloat(topK) : 4
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
