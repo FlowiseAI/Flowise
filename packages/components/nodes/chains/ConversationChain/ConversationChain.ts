@@ -77,6 +77,9 @@ class ConversationChain_Chains implements INode {
             finalText += finalDocs[i].pageContent
         }
 
+        const replaceChar: string[] = ['{', '}']
+        for (const char of replaceChar) finalText = finalText.replaceAll(char, '')
+
         if (finalText) systemMessage = `${systemMessage}\nThe AI has the following context:\n${finalText}`
 
         const obj: any = {
