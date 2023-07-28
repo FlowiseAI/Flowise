@@ -41,7 +41,7 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 ### Docker Compose
 
 1. Go to `docker` folder at the root of the project
-2. Create `.env` file and specify the `PORT` (refer to `.env.example`)
+2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
 3. `docker-compose up -d`
 4. Open [http://localhost:3000](http://localhost:3000)
 5. You can bring the containers down by `docker-compose stop`
