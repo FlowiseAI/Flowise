@@ -135,7 +135,7 @@ Flowise support different environment variables to configure your instance. You 
 | DATABASE_PATH              | Location where database is saved (When DATABASE_TYPE is sqlite)              | String                                           | `your-home-dir/.flowise`            |
 | DATABASE_HOST              | Host URL or IP address (When DATABASE_TYPE is not sqlite)                    | String                                           |                                     |
 | DATABASE_PORT              | Database port (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
-| DATABASE_USERNAME          | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
+| DATABASE_USER              | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
 | DATABASE_PASSWORD          | Database password (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
 | DATABASE_NAME              | Database name (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
 | PASSPHRASE                 | Passphrase used to create encryption key                                     | String                                           | `MYPASSPHRASE`                      |
