@@ -8,6 +8,7 @@ import { flatten } from 'lodash'
 class InMemoryVectorStore_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class InMemoryVectorStore_VectorStores implements INode {
     constructor() {
         this.label = 'In-Memory Vector Store'
         this.name = 'memoryVectorStore'
+        this.version = 1.0
         this.type = 'Memory'
         this.icon = 'memory.svg'
         this.category = 'Vector Stores'

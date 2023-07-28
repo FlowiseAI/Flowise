@@ -14,6 +14,7 @@
                 "id": "recursiveCharacterTextSplitter_1",
                 "label": "Recursive Character Text Splitter",
                 "name": "recursiveCharacterTextSplitter",
+                "version": 1,
                 "type": "RecursiveCharacterTextSplitter",
                 "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
                 "category": "Text Splitters",
@@ -71,6 +72,7 @@
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
+                "version": 1,
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
@@ -135,15 +137,16 @@
                     {
                         "label": "Memory",
                         "name": "memory",
-                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+                        "type": "BaseMemory",
                         "optional": true,
-                        "description": "If no memory connected, default BufferMemory will be used",
-                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
                     }
                 ],
                 "inputs": {
                     "model": "{{chatLocalAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{faissUpsert_0.data.instance}}"
+                    "vectorStoreRetriever": "{{faissUpsert_0.data.instance}}",
+                    "memory": ""
                 },
                 "outputAnchors": [
                     {
@@ -176,6 +179,7 @@
                 "id": "faissUpsert_0",
                 "label": "Faiss Upsert Document",
                 "name": "faissUpsert",
+                "version": 1,
                 "type": "Faiss",
                 "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
@@ -268,6 +272,7 @@
                 "id": "chatLocalAI_0",
                 "label": "ChatLocalAI",
                 "name": "chatLocalAI",
+                "version": 1,
                 "type": "ChatLocalAI",
                 "baseClasses": ["ChatLocalAI", "BaseChatModel", "LLM", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
                 "category": "Chat Models",
@@ -360,6 +365,7 @@
                 "id": "textFile_0",
                 "label": "Text File",
                 "name": "textFile",
+                "version": 1,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -425,6 +431,7 @@
                 "id": "localAIEmbeddings_0",
                 "label": "LocalAI Embeddings",
                 "name": "localAIEmbeddings",
+                "version": 1,
                 "type": "LocalAI Embeddings",
                 "baseClasses": ["LocalAI Embeddings", "Embeddings"],
                 "category": "Embeddings",

@@ -5,6 +5,7 @@ import { SRTLoader } from 'langchain/document_loaders/fs/srt'
 class Subtitles_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Subtitles_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Subtitles File'
         this.name = 'subtitlesFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'subtitlesFile.svg'
         this.category = 'Document Loaders'

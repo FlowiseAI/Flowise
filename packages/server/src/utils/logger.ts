@@ -85,7 +85,8 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                 GET: '⬇️',
                 POST: '⬆️',
                 PUT: '🖊',
-                DELETE: '❌'
+                DELETE: '❌',
+                OPTION: '🔗'
             }
 
             return requetsEmojis[method] || '?'

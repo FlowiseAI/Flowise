@@ -14,6 +14,7 @@ let systemMessage = `The following is a friendly conversation between a human an
 class ConversationChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -24,6 +25,7 @@ class ConversationChain_Chains implements INode {
     constructor() {
         this.label = 'Conversation Chain'
         this.name = 'conversationChain'
+        this.version = 1.0
         this.type = 'ConversationChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'

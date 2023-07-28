@@ -9,6 +9,7 @@ import { getBaseClasses } from '../../../src/utils'
 class OpenSearchUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -20,6 +21,7 @@ class OpenSearchUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'OpenSearch Upsert Document'
         this.name = 'openSearchUpsertDocument'
+        this.version = 1.0
         this.type = 'OpenSearch'
         this.icon = 'opensearch.png'
         this.category = 'Vector Stores'

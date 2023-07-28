@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
 // material-ui
@@ -38,12 +38,14 @@ import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons'
 
 // const
 import { baseURL } from 'store/constant'
+import { SET_COMPONENT_NODES } from 'store/actions'
 
 // ==============================|| ADD NODES||============================== //
 
 const AddNodes = ({ nodesData, node }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const dispatch = useDispatch()
 
     const [searchValue, setSearchValue] = useState('')
     const [nodes, setNodes] = useState({})
@@ -131,8 +133,11 @@ const AddNodes = ({ nodesData, node }) => {
     }, [node])
 
     useEffect(() => {
-        if (nodesData) groupByCategory(nodesData)
-    }, [nodesData])
+        if (nodesData) {
+            groupByCategory(nodesData)
+            dispatch({ type: SET_COMPONENT_NODES, componentNodes: nodesData })
+        }
+    }, [nodesData, dispatch])
 
     return (
         <>

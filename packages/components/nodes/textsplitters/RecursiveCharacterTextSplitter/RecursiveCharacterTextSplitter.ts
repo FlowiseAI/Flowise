@@ -5,6 +5,7 @@ import { RecursiveCharacterTextSplitter, RecursiveCharacterTextSplitterParams } 
 class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'Recursive Character Text Splitter'
         this.name = 'recursiveCharacterTextSplitter'
+        this.version = 1.0
         this.type = 'RecursiveCharacterTextSplitter'
         this.icon = 'textsplitter.svg'
         this.category = 'Text Splitters'

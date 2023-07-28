@@ -5,6 +5,7 @@ import { Calculator } from 'langchain/tools/calculator'
 class Calculator_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -14,6 +15,7 @@ class Calculator_Tools implements INode {
     constructor() {
         this.label = 'Calculator'
         this.name = 'calculator'
+        this.version = 1.0
         this.type = 'Calculator'
         this.icon = 'calculator.svg'
         this.category = 'Tools'

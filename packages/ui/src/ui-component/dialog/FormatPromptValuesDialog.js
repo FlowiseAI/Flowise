@@ -15,6 +15,7 @@ const FormatPromptValuesDialog = ({ show, dialogProps, onChange, onCancel }) => 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
         else dispatch({ type: HIDE_CANVAS_DIALOG })
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
     const component = show ? (

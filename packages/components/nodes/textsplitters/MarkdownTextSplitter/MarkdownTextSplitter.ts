@@ -5,6 +5,7 @@ import { MarkdownTextSplitter, MarkdownTextSplitterParams } from 'langchain/text
 class MarkdownTextSplitter_TextSplitters implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class MarkdownTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'Markdown Text Splitter'
         this.name = 'markdownTextSplitter'
+        this.version = 1.0
         this.type = 'MarkdownTextSplitter'
         this.icon = 'markdownTextSplitter.svg'
         this.category = 'Text Splitters'

@@ -1,13 +1,17 @@
 import { useState, useEffect, Fragment } from 'react'
 import { useSelector } from 'react-redux'
-
 import PropTypes from 'prop-types'
 import axios from 'axios'
 
+// Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
+// API
+import credentialsApi from 'api/credentials'
+
+// const
 import { baseURL } from 'store/constant'
 
 const StyledPopper = styled(Popper)({
@@ -49,6 +53,7 @@ export const AsyncDropdown = ({
     onSelect,
     isCreateNewOption,
     onCreateNew,
+    credentialNames = [],
     disabled = false,
     disableClearable = false
 }) => {
@@ -62,11 +67,36 @@ export const AsyncDropdown = ({
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
 
+    const fetchCredentialList = async () => {
+        try {
+            let names = ''
+            if (credentialNames.length > 1) {
+                names = credentialNames.join('&credentialName=')
+            } else {
+                names = credentialNames[0]
+            }
+            const resp = await credentialsApi.getCredentialsByName(names)
+            if (resp.data) {
+                const returnList = []
+                for (let i = 0; i < resp.data.length; i += 1) {
+                    const data = {
+                        label: resp.data[i].name,
+                        name: resp.data[i].id
+                    }
+                    returnList.push(data)
+                }
+                return returnList
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     useEffect(() => {
         setLoading(true)
         ;(async () => {
             const fetchData = async () => {
-                let response = await fetchList({ name, nodeData })
+                let response = credentialNames.length ? await fetchCredentialList() : await fetchList({ name, nodeData })
                 if (isCreateNewOption) setOptions([...response, ...addNewOption])
                 else setOptions([...response])
                 setLoading(false)
@@ -142,6 +172,7 @@ AsyncDropdown.propTypes = {
     onSelect: PropTypes.func,
     onCreateNew: PropTypes.func,
     disabled: PropTypes.bool,
+    credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
     isCreateNewOption: PropTypes.bool
 }

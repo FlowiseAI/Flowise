@@ -1,31 +1,35 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { CohereEmbeddings, CohereEmbeddingsParams } from 'langchain/embeddings/cohere'
 
 class CohereEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Cohere Embeddings'
         this.name = 'cohereEmbeddings'
+        this.version = 1.0
         this.type = 'CohereEmbeddings'
         this.icon = 'cohere.png'
         this.category = 'Embeddings'
         this.description = 'Cohere API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(CohereEmbeddings)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['cohereApi']
+        }
         this.inputs = [
-            {
-                label: 'Cohere API Key',
-                name: 'cohereApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -50,12 +54,14 @@ class CohereEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const apiKey = nodeData.inputs?.cohereApiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
 
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
+
         const obj: Partial<CohereEmbeddingsParams> & { apiKey?: string } = {
-            apiKey
+            apiKey: cohereApiKey
         }
 
         if (modelName) obj.modelName = modelName

@@ -9,6 +9,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class SqlDatabaseChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -19,6 +20,7 @@ class SqlDatabaseChain_Chains implements INode {
     constructor() {
         this.label = 'Sql Database Chain'
         this.name = 'sqlDatabaseChain'
+        this.version = 1.0
         this.type = 'SqlDatabaseChain'
         this.icon = 'sqlchain.svg'
         this.category = 'Chains'

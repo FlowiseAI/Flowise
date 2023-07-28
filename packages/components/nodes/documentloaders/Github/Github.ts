@@ -1,25 +1,37 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { GithubRepoLoader, GithubRepoLoaderParams } from 'langchain/document_loaders/web/github'
+import { getCredentialData, getCredentialParam } from '../../../src'
 
 class Github_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Github'
         this.name = 'github'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'github.png'
         this.category = 'Document Loaders'
         this.description = `Load data from a GitHub repository`
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Only needed when accessing private repo',
+            optional: true,
+            credentialNames: ['githubApi']
+        }
         this.inputs = [
             {
                 label: 'Repo Link',
@@ -32,13 +44,6 @@ class Github_DocumentLoaders implements INode {
                 name: 'branch',
                 type: 'string',
                 default: 'main'
-            },
-            {
-                label: 'Access Token',
-                name: 'accessToken',
-                type: 'password',
-                placeholder: '<GITHUB_ACCESS_TOKEN>',
-                optional: true
             },
             {
                 label: 'Recursive',
@@ -62,23 +67,25 @@ class Github_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const repoLink = nodeData.inputs?.repoLink as string
         const branch = nodeData.inputs?.branch as string
         const recursive = nodeData.inputs?.recursive as boolean
-        const accessToken = nodeData.inputs?.accessToken as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
 
-        const options: GithubRepoLoaderParams = {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+
+        const githubOptions: GithubRepoLoaderParams = {
             branch,
             recursive,
             unknown: 'warn'
         }
 
-        if (accessToken) options.accessToken = accessToken
+        if (accessToken) githubOptions.accessToken = accessToken
 
-        const loader = new GithubRepoLoader(repoLink, options)
+        const loader = new GithubRepoLoader(repoLink, githubOptions)
         const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
 
         if (metadata) {

@@ -1,43 +1,42 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { PineconeClient } from '@pinecone-database/pinecone'
 import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Pinecone Load Existing Index'
         this.name = 'pineconeExistingIndex'
+        this.version = 1.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['pineconeApi']
+        }
         this.inputs = [
             {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
-            },
-            {
-                label: 'Pinecone Api Key',
-                name: 'pineconeApiKey',
-                type: 'password'
-            },
-            {
-                label: 'Pinecone Environment',
-                name: 'pineconeEnv',
-                type: 'string'
             },
             {
                 label: 'Pinecone Index',
@@ -83,9 +82,7 @@ class Pinecone_Existing_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const pineconeApiKey = nodeData.inputs?.pineconeApiKey as string
-        const pineconeEnv = nodeData.inputs?.pineconeEnv as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const index = nodeData.inputs?.pineconeIndex as string
         const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
@@ -93,6 +90,10 @@ class Pinecone_Existing_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
+        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new PineconeClient()
         await client.init({

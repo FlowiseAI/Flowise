@@ -6,6 +6,7 @@ import { NodeHtmlMarkdown } from 'node-html-markdown'
 class HtmlToMarkdownTextSplitter_TextSplitters implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class HtmlToMarkdownTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'HtmlToMarkdown Text Splitter'
         this.name = 'htmlToMarkdownTextSplitter'
+        this.version = 1.0
         this.type = 'HtmlToMarkdownTextSplitter'
         this.icon = 'htmlToMarkdownTextSplitter.svg'
         this.category = 'Text Splitters'

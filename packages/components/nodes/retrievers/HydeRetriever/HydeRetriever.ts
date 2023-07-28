@@ -7,6 +7,7 @@ import { PromptTemplate } from 'langchain/prompts'
 class HydeRetriever_Retrievers implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class HydeRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Hyde Retriever'
         this.name = 'HydeRetriever'
+        this.version = 1.0
         this.type = 'HydeRetriever'
         this.icon = 'hyderetriever.svg'
         this.category = 'Retrievers'

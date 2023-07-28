@@ -7,9 +7,18 @@ import { AIMessage, HumanMessage } from 'langchain/schema'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 
+const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
+
+Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
+
+Assistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.
+
+Overall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.`
+
 class ConversationalAgent_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -20,6 +29,7 @@ class ConversationalAgent_Agents implements INode {
     constructor() {
         this.label = 'Conversational Agent'
         this.name = 'conversationalAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -47,14 +57,7 @@ class ConversationalAgent_Agents implements INode {
                 name: 'systemMessage',
                 type: 'string',
                 rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Human Message',
-                name: 'humanMessage',
-                type: 'string',
-                rows: 4,
+                default: DEFAULT_PREFIX,
                 optional: true,
                 additionalParams: true
             }
@@ -66,7 +69,6 @@ class ConversationalAgent_Agents implements INode {
         let tools = nodeData.inputs?.tools as Tool[]
         tools = flatten(tools)
         const memory = nodeData.inputs?.memory as BaseChatMemory
-        const humanMessage = nodeData.inputs?.humanMessage as string
         const systemMessage = nodeData.inputs?.systemMessage as string
 
         const obj: InitializeAgentExecutorOptions = {
@@ -75,9 +77,6 @@ class ConversationalAgent_Agents implements INode {
         }
 
         const agentArgs: any = {}
-        if (humanMessage) {
-            agentArgs.humanMessage = humanMessage
-        }
         if (systemMessage) {
             agentArgs.systemMessage = systemMessage
         }

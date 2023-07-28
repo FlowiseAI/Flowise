@@ -1,7 +1,7 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { flatten } from 'lodash'
@@ -9,22 +9,31 @@ import { flatten } from 'lodash'
 class SupabaseUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Supabase Upsert Document'
         this.name = 'supabaseUpsert'
+        this.version = 1.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Supabase'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['supabaseApi']
+        }
         this.inputs = [
             {
                 label: 'Document',
@@ -36,11 +45,6 @@ class SupabaseUpsert_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
-            },
-            {
-                label: 'Supabase API Key',
-                name: 'supabaseApiKey',
-                type: 'password'
             },
             {
                 label: 'Supabase Project URL',
@@ -81,8 +85,7 @@ class SupabaseUpsert_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const supabaseApiKey = nodeData.inputs?.supabaseApiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
         const tableName = nodeData.inputs?.tableName as string
         const queryName = nodeData.inputs?.queryName as string
@@ -91,6 +94,9 @@ class SupabaseUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 

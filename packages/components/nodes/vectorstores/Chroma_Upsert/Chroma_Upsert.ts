@@ -8,6 +8,7 @@ import { flatten } from 'lodash'
 class ChromaUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class ChromaUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Chroma Upsert Document'
         this.name = 'chromaUpsert'
+        this.version = 1.0
         this.type = 'Chroma'
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'

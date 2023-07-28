@@ -3,6 +3,9 @@ import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
+import { DataSource } from 'typeorm'
+import { ICommonObject, IDatabaseEntity, INodeData } from './Interface'
+import { AES, enc } from 'crypto-js'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -336,7 +339,6 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
 /*
  * Get env variables
  * @param {string} url
- * @param {number} limit
  * @returns {string[]}
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
@@ -345,6 +347,89 @@ export const getEnvironmentVariable = (name: string): string | undefined => {
     } catch (e) {
         return undefined
     }
+}
+
+/**
+ * Returns the path of encryption key
+ * @returns {string}
+ */
+const getEncryptionKeyFilePath = (): string => {
+    const checkPaths = [
+        path.join(__dirname, '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
+    ]
+    for (const checkPath of checkPaths) {
+        if (fs.existsSync(checkPath)) {
+            return checkPath
+        }
+    }
+    return ''
+}
+
+const getEncryptionKeyPath = (): string => {
+    return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
+}
+
+/**
+ * Returns the encryption key
+ * @returns {Promise<string>}
+ */
+const getEncryptionKey = async (): Promise<string> => {
+    try {
+        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
+/**
+ * Decrypt credential data
+ * @param {string} encryptedData
+ * @param {string} componentCredentialName
+ * @param {IComponentCredentials} componentCredentials
+ * @returns {Promise<ICommonObject>}
+ */
+const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
+    const encryptKey = await getEncryptionKey()
+    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    try {
+        return JSON.parse(decryptedData.toString(enc.Utf8))
+    } catch (e) {
+        console.error(e)
+        throw new Error('Credentials could not be decrypted.')
+    }
+}
+
+/**
+ * Get credential data
+ * @param {string} selectedCredentialId
+ * @param {ICommonObject} options
+ * @returns {Promise<ICommonObject>}
+ */
+export const getCredentialData = async (selectedCredentialId: string, options: ICommonObject): Promise<ICommonObject> => {
+    const appDataSource = options.appDataSource as DataSource
+    const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+    try {
+        const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
+            id: selectedCredentialId
+        })
+
+        if (!credential) return {}
+
+        // Decrpyt credentialData
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+
+        return decryptedCredentialData
+    } catch (e) {
+        throw new Error(e)
+    }
+}
+
+export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
 }
 
 // reference https://www.freeformatter.com/json-escape.html
@@ -381,37 +466,6 @@ export function handleEscapeCharacters(input: any, reverse: Boolean): any {
     return input
 }
 
-/*
- * List of dependencies allowed to be import in vm2
- */
-export const availableDependencies = [
-    '@dqbd/tiktoken',
-    '@getzep/zep-js',
-    '@huggingface/inference',
-    '@pinecone-database/pinecone',
-    '@supabase/supabase-js',
-    'axios',
-    'cheerio',
-    'chromadb',
-    'cohere-ai',
-    'd3-dsv',
-    'form-data',
-    'graphql',
-    'html-to-text',
-    'langchain',
-    'linkifyjs',
-    'mammoth',
-    'moment',
-    'node-fetch',
-    'pdf-parse',
-    'pdfjs-dist',
-    'playwright',
-    'puppeteer',
-    'srt-parser-2',
-    'typeorm',
-    'weaviate-ts-client'
-]
-
 export const getUserHome = (): string => {
     let variableName = 'HOME'
     if (process.platform === 'win32') {
@@ -419,8 +473,7 @@ export const getUserHome = (): string => {
     }
 
     if (process.env[variableName] === undefined) {
-        // If for some reason the variable does not exist
-        // fall back to current folder
+        // If for some reason the variable does not exist, fall back to current folder
         return process.cwd()
     }
     return process.env[variableName] as string

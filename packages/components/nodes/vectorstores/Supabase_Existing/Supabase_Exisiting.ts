@@ -1,38 +1,42 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { SupabaseLibArgs, SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
 
 class Supabase_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Supabase Load Existing Index'
         this.name = 'supabaseExistingIndex'
+        this.version = 1.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Supabase (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['supabaseApi']
+        }
         this.inputs = [
             {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
-            },
-            {
-                label: 'Supabase API Key',
-                name: 'supabaseApiKey',
-                type: 'password'
             },
             {
                 label: 'Supabase Project URL',
@@ -80,8 +84,7 @@ class Supabase_Existing_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const supabaseApiKey = nodeData.inputs?.supabaseApiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
         const tableName = nodeData.inputs?.tableName as string
         const queryName = nodeData.inputs?.queryName as string
@@ -90,6 +93,9 @@ class Supabase_Existing_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
 
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 

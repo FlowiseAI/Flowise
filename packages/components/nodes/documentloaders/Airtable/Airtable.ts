@@ -3,38 +3,41 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { Document } from 'langchain/document'
 import axios from 'axios'
+import { getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class Airtable_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs?: INodeParams[]
 
     constructor() {
         this.label = 'Airtable'
         this.name = 'airtable'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'airtable.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from Airtable table`
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['airtableApi']
+        }
         this.inputs = [
             {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
-            },
-            {
-                label: 'Personal Access Token',
-                name: 'accessToken',
-                type: 'password',
-                description:
-                    'Get personal access token from <a target="_blank" href="https://airtable.com/developers/web/guides/personal-access-tokens">official guide</a>'
             },
             {
                 label: 'Base Id',
@@ -65,7 +68,6 @@ class Airtable_DocumentLoaders implements INode {
                 name: 'limit',
                 type: 'number',
                 default: 100,
-                step: 1,
                 additionalParams: true,
                 description: 'Number of results to return'
             },
@@ -78,8 +80,7 @@ class Airtable_DocumentLoaders implements INode {
             }
         ]
     }
-    async init(nodeData: INodeData): Promise<any> {
-        const accessToken = nodeData.inputs?.accessToken as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const baseId = nodeData.inputs?.baseId as string
         const tableId = nodeData.inputs?.tableId as string
         const returnAll = nodeData.inputs?.returnAll as boolean
@@ -87,7 +88,10 @@ class Airtable_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
 
-        const options: AirtableLoaderParams = {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+
+        const airtableOptions: AirtableLoaderParams = {
             baseId,
             tableId,
             returnAll,
@@ -95,7 +99,7 @@ class Airtable_DocumentLoaders implements INode {
             limit: limit ? parseInt(limit, 10) : 100
         }
 
-        const loader = new AirtableLoader(options)
+        const loader = new AirtableLoader(airtableOptions)
 
         let docs = []
 

@@ -1,27 +1,38 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
 
 class SingleStoreExisting_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'SingleStore Load Existing Table'
         this.name = 'singlestoreExisting'
+        this.version = 1.0
         this.type = 'SingleStore'
         this.icon = 'singlestore.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing document from SingleStore'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Needed when using SingleStore cloud hosted',
+            optional: true,
+            credentialNames: ['singleStoreApi']
+        }
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -32,16 +43,6 @@ class SingleStoreExisting_VectorStores implements INode {
                 label: 'Host',
                 name: 'host',
                 type: 'string'
-            },
-            {
-                label: 'User',
-                name: 'user',
-                type: 'string'
-            },
-            {
-                label: 'Password',
-                name: 'password',
-                type: 'password'
             },
             {
                 label: 'Database',
@@ -103,13 +104,17 @@ class SingleStoreExisting_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const user = getCredentialParam('user', credentialData, nodeData)
+        const password = getCredentialParam('password', credentialData, nodeData)
+
         const singleStoreConnectionConfig = {
             connectionOptions: {
                 host: nodeData.inputs?.host as string,
                 port: 3306,
-                user: nodeData.inputs?.user as string,
-                password: nodeData.inputs?.password as string,
+                user,
+                password,
                 database: nodeData.inputs?.database as string
             },
             ...(nodeData.inputs?.tableName ? { tableName: nodeData.inputs.tableName as string } : {}),

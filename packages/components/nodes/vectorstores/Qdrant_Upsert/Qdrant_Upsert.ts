@@ -1,30 +1,41 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
 
 class QdrantUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Qdrant Upsert Document'
         this.name = 'qdrantUpsert'
+        this.version = 1.0
         this.type = 'Qdrant'
-        this.icon = 'qdrant_logo.svg'
+        this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Qdrant'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Only needed when using Qdrant cloud hosted',
+            optional: true,
+            credentialNames: ['qdrantApi']
+        }
         this.inputs = [
             {
                 label: 'Document',
@@ -47,12 +58,6 @@ class QdrantUpsert_VectorStores implements INode {
                 label: 'Qdrant Collection Name',
                 name: 'qdrantCollection',
                 type: 'string'
-            },
-            {
-                label: 'Qdrant API Key',
-                name: 'qdrantApiKey',
-                type: 'password',
-                optional: true
             },
             {
                 label: 'Top K',
@@ -78,17 +83,18 @@ class QdrantUpsert_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
         const collectionName = nodeData.inputs?.qdrantCollection as string
-        const qdrantApiKey = nodeData.inputs?.qdrantApiKey as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
-        // connect to Qdrant Cloud
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
+
         const client = new QdrantClient({
             url: qdrantServerUrl,
             apiKey: qdrantApiKey

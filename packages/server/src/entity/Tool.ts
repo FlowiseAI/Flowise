@@ -10,7 +10,7 @@ export class Tool implements ITool {
     @Column()
     name: string
 
-    @Column({ type: "text" })
+    @Column({ type: 'text' })
     description: string
 
     @Column()

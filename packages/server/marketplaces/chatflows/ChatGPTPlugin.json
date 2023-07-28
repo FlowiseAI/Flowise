@@ -14,6 +14,7 @@
                 "id": "aiPlugin_0",
                 "label": "AI Plugin",
                 "name": "aiPlugin",
+                "version": 1,
                 "type": "AIPlugin",
                 "baseClasses": ["AIPlugin", "Tool"],
                 "category": "Tools",
@@ -60,6 +61,7 @@
                 "id": "requestsGet_0",
                 "label": "Requests Get",
                 "name": "requestsGet",
+                "version": 1,
                 "type": "RequestsGet",
                 "baseClasses": ["RequestsGet", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -131,6 +133,7 @@
                 "id": "requestsPost_0",
                 "label": "Requests Post",
                 "name": "requestsPost",
+                "version": 1,
                 "type": "RequestsPost",
                 "baseClasses": ["RequestsPost", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -201,82 +204,29 @@
         },
         {
             "width": 300,
-            "height": 280,
-            "id": "mrklAgentChat_0",
-            "position": {
-                "x": 1416.2054860029416,
-                "y": 451.43299014109715
-            },
-            "type": "customNode",
-            "data": {
-                "id": "mrklAgentChat_0",
-                "label": "MRKL Agent for Chat Models",
-                "name": "mrklAgentChat",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
-                "category": "Agents",
-                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with Chat Models",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "mrklAgentChat_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "mrklAgentChat_0-input-model-BaseLanguageModel"
-                    }
-                ],
-                "inputs": {
-                    "tools": ["{{requestsGet_0.data.instance}}", "{{requestsPost_0.data.instance}}", "{{aiPlugin_0.data.instance}}"],
-                    "model": "{{chatOpenAI_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "mrklAgentChat_0-output-mrklAgentChat-AgentExecutor|BaseChain|BaseLangChain",
-                        "name": "mrklAgentChat",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1416.2054860029416,
-                "y": 451.43299014109715
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 797.0574814814245,
-                "y": 578.7641992971934
+                "x": 802.0103755177098,
+                "y": 576.0760341170851
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
+                "version": 1,
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
                     {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "chatOpenAI_0-input-openAIApiKey-password"
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
                         "label": "Model Name",
@@ -385,14 +335,15 @@
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
-                    "timeout": ""
+                    "timeout": "",
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
                         "name": "chatOpenAI",
                         "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
                     }
                 ],
                 "outputs": {},
@@ -400,24 +351,69 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 797.0574814814245,
-                "y": 578.7641992971934
+                "x": 802.0103755177098,
+                "y": 576.0760341170851
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentChat_0",
+            "position": {
+                "x": 1425.5853300862047,
+                "y": 441.06218012993924
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentChat_0",
+                "label": "MRKL Agent for Chat Models",
+                "name": "mrklAgentChat",
+                "version": 1,
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with Chat Models",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentChat_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentChat_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{requestsGet_0.data.instance}}", "{{requestsPost_0.data.instance}}", "{{aiPlugin_0.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentChat_0-output-mrklAgentChat-AgentExecutor|BaseChain",
+                        "name": "mrklAgentChat",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1425.5853300862047,
+                "y": 441.06218012993924
             },
             "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "requestsGet_0",
-            "sourceHandle": "requestsGet_0-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "requestsGet_0-requestsGet_0-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
-        },
         {
             "source": "aiPlugin_0",
             "sourceHandle": "aiPlugin_0-output-aiPlugin-AIPlugin|Tool",
@@ -425,6 +421,17 @@
             "targetHandle": "mrklAgentChat_0-input-tools-Tool",
             "type": "buttonedge",
             "id": "aiPlugin_0-aiPlugin_0-output-aiPlugin-AIPlugin|Tool-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "requestsGet_0",
+            "sourceHandle": "requestsGet_0-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentChat_0",
+            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "requestsGet_0-requestsGet_0-output-requestsGet-RequestsGet|Tool|StructuredTool|BaseLangChain-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
             "data": {
                 "label": ""
             }
@@ -442,11 +449,11 @@
         },
         {
             "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "mrklAgentChat_0",
             "targetHandle": "mrklAgentChat_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-mrklAgentChat_0-mrklAgentChat_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-mrklAgentChat_0-mrklAgentChat_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }

@@ -6,6 +6,7 @@ import { getBaseClasses } from '../../../src/utils'
 class Faiss_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class Faiss_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Faiss Load Existing Index'
         this.name = 'faissExistingIndex'
+        this.version = 1.0
         this.type = 'Faiss'
         this.icon = 'faiss.svg'
         this.category = 'Vector Stores'

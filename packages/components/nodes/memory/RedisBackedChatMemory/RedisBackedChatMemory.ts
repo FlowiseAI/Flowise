@@ -8,6 +8,7 @@ import { createClient } from 'redis'
 class RedisBackedChatMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class RedisBackedChatMemory_Memory implements INode {
     constructor() {
         this.label = 'Redis-Backed Chat Memory'
         this.name = 'RedisBackedChatMemory'
+        this.version = 1.0
         this.type = 'RedisBackedChatMemory'
         this.icon = 'redis.svg'
         this.category = 'Memory'
@@ -44,13 +46,15 @@ class RedisBackedChatMemory_Memory implements INode {
                 name: 'sessionTTL',
                 type: 'number',
                 description: 'Omit this parameter to make sessions never expire',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Memory Key',
                 name: 'memoryKey',
                 type: 'string',
-                default: 'chat_history'
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }

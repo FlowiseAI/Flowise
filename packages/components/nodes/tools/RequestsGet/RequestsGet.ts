@@ -5,6 +5,7 @@ import { desc, RequestParameters, RequestsGetTool } from './core'
 class RequestsGet_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class RequestsGet_Tools implements INode {
     constructor() {
         this.label = 'Requests Get'
         this.name = 'requestsGet'
+        this.version = 1.0
         this.type = 'RequestsGet'
         this.icon = 'requestsget.svg'
         this.category = 'Tools'

@@ -19,8 +19,10 @@ export default class Start extends Command {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
+        PASSPHRASE: Flags.string(),
         DEBUG: Flags.string(),
         APIKEY_PATH: Flags.string(),
+        SECRETKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         EXECUTION_MODE: Flags.string(),
@@ -65,14 +67,25 @@ export default class Start extends Command {
         })
 
         const { flags } = await this.parse(Start)
-        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
-        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+
         if (flags.PORT) process.env.PORT = flags.PORT
-        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
-        if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
-        if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
         if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
+
+        // Authorization
+        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
+        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
+
+        // Credentials
+        if (flags.PASSPHRASE) process.env.PASSPHRASE = flags.PASSPHRASE
+        if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
+
+        // Logs
+        if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
+        if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
+
+        // Tool functions
         if (flags.TOOL_FUNCTION_BUILTIN_DEP) process.env.TOOL_FUNCTION_BUILTIN_DEP = flags.TOOL_FUNCTION_BUILTIN_DEP
         if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
 
