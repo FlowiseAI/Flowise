@@ -7,6 +7,7 @@ import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
 class Weaviate_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class Weaviate_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Weaviate Load Existing Index'
         this.name = 'weaviateExistingIndex'
+        this.version = 1.0
         this.type = 'Weaviate'
         this.icon = 'weaviate.png'
         this.category = 'Vector Stores'

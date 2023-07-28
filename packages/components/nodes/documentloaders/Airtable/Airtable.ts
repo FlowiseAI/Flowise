@@ -8,6 +8,7 @@ import { getCredentialData, getCredentialParam } from '../../../src/utils'
 class Airtable_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class Airtable_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Airtable'
         this.name = 'airtable'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'airtable.svg'
         this.category = 'Document Loaders'
@@ -66,7 +68,6 @@ class Airtable_DocumentLoaders implements INode {
                 name: 'limit',
                 type: 'number',
                 default: 100,
-                step: 1,
                 additionalParams: true,
                 description: 'Number of results to return'
             },

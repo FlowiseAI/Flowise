@@ -6,6 +6,7 @@ import { getBaseClasses } from '../../../src/utils'
 class Chroma_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class Chroma_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Chroma Load Existing Index'
         this.name = 'chromaExistingIndex'
+        this.version = 1.0
         this.type = 'Chroma'
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'

@@ -5,6 +5,7 @@ import { Serper } from 'langchain/tools'
 class Serper_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class Serper_Tools implements INode {
     constructor() {
         this.label = 'Serper'
         this.name = 'serper'
+        this.version = 1.0
         this.type = 'Serper'
         this.icon = 'serper.png'
         this.category = 'Tools'

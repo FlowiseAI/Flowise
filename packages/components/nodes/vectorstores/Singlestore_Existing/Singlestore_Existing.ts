@@ -6,6 +6,7 @@ import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/
 class SingleStoreExisting_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class SingleStoreExisting_VectorStores implements INode {
     constructor() {
         this.label = 'SingleStore Load Existing Table'
         this.name = 'singlestoreExisting'
+        this.version = 1.0
         this.type = 'SingleStore'
         this.icon = 'singlestore.svg'
         this.category = 'Vector Stores'

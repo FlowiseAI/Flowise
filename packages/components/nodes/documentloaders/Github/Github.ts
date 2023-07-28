@@ -6,6 +6,7 @@ import { getCredentialData, getCredentialParam } from '../../../src'
 class Github_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class Github_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Github'
         this.name = 'github'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'github.png'
         this.category = 'Document Loaders'

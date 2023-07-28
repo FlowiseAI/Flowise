@@ -5,6 +5,7 @@ import { Cohere, CohereInput } from './core'
 class Cohere_LLMs implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class Cohere_LLMs implements INode {
     constructor() {
         this.label = 'Cohere'
         this.name = 'cohere'
+        this.version = 1.0
         this.type = 'Cohere'
         this.icon = 'cohere.png'
         this.category = 'LLMs'
@@ -65,6 +67,7 @@ class Cohere_LLMs implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 default: 0.7,
                 optional: true
             },
@@ -72,6 +75,7 @@ class Cohere_LLMs implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
+                step: 1,
                 optional: true
             }
         ]

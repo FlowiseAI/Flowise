@@ -5,6 +5,7 @@ import { BraveSearch } from 'langchain/tools'
 class BraveSearchAPI_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class BraveSearchAPI_Tools implements INode {
     constructor() {
         this.label = 'BraveSearch API'
         this.name = 'braveSearchAPI'
+        this.version = 1.0
         this.type = 'BraveSearchAPI'
         this.icon = 'brave.svg'
         this.category = 'Tools'

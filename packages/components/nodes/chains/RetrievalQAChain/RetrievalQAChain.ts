@@ -8,6 +8,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class RetrievalQAChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -18,6 +19,7 @@ class RetrievalQAChain_Chains implements INode {
     constructor() {
         this.label = 'Retrieval QA Chain'
         this.name = 'retrievalQAChain'
+        this.version = 1.0
         this.type = 'RetrievalQAChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'

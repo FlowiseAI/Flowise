@@ -6,6 +6,7 @@ import { MotorheadMemory, MotorheadMemoryInput } from 'langchain/memory'
 class MotorMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class MotorMemory_Memory implements INode {
     constructor() {
         this.label = 'Motorhead Memory'
         this.name = 'motorheadMemory'
+        this.version = 1.0
         this.type = 'MotorheadMemory'
         this.icon = 'motorhead.png'
         this.category = 'Memory'

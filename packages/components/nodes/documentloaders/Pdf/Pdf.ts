@@ -5,6 +5,7 @@ import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
 class Pdf_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Pdf_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Pdf File'
         this.name = 'pdfFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'pdf.svg'
         this.category = 'Document Loaders'

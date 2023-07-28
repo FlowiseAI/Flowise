@@ -6,6 +6,7 @@ import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/o
 class AzureOpenAIEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -17,6 +18,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Azure OpenAI Embeddings'
         this.name = 'azureOpenAIEmbeddings'
+        this.version = 1.0
         this.type = 'AzureOpenAIEmbeddings'
         this.icon = 'Azure.svg'
         this.category = 'Embeddings'

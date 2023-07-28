@@ -8,6 +8,7 @@ import { flatten } from 'lodash'
 class MRKLAgentLLM_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class MRKLAgentLLM_Agents implements INode {
     constructor() {
         this.label = 'MRKL Agent for LLMs'
         this.name = 'mrklAgentLLM'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'

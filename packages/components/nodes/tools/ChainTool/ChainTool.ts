@@ -6,6 +6,7 @@ import { ChainTool } from './core'
 class ChainTool_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class ChainTool_Tools implements INode {
     constructor() {
         this.label = 'Chain Tool'
         this.name = 'chainTool'
+        this.version = 1.0
         this.type = 'ChainTool'
         this.icon = 'chaintool.svg'
         this.category = 'Tools'

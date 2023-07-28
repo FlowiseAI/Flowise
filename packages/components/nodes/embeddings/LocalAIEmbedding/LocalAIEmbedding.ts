@@ -4,6 +4,7 @@ import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/o
 class LocalAIEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -14,6 +15,7 @@ class LocalAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'LocalAI Embeddings'
         this.name = 'localAIEmbeddings'
+        this.version = 1.0
         this.type = 'LocalAI Embeddings'
         this.icon = 'localai.png'
         this.category = 'Embeddings'

@@ -30,6 +30,7 @@ import CredentialEmptySVG from 'assets/images/credential_empty.svg'
 
 // const
 import { baseURL } from 'store/constant'
+import { SET_COMPONENT_CREDENTIALS } from 'store/actions'
 
 // ==============================|| Credentials ||============================== //
 
@@ -159,8 +160,9 @@ const Credentials = () => {
     useEffect(() => {
         if (getAllComponentsCredentialsApi.data) {
             setComponentsCredentials(getAllComponentsCredentialsApi.data)
+            dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data })
         }
-    }, [getAllComponentsCredentialsApi.data])
+    }, [getAllComponentsCredentialsApi.data, dispatch])
 
     return (
         <>

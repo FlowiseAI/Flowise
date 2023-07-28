@@ -9,6 +9,7 @@ import { flatten } from 'lodash'
 class SupabaseUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -21,6 +22,7 @@ class SupabaseUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase Upsert Document'
         this.name = 'supabaseUpsert'
+        this.version = 1.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'

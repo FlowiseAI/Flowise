@@ -7,6 +7,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 class Qdrant_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class Qdrant_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Load Existing Index'
         this.name = 'qdrantExistingIndex'
+        this.version = 1.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'

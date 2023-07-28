@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 class Supabase_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class Supabase_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase Load Existing Index'
         this.name = 'supabaseExistingIndex'
+        this.version = 1.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'

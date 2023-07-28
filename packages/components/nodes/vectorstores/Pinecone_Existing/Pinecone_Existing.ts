@@ -7,6 +7,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 class Pinecone_Existing_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class Pinecone_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Pinecone Load Existing Index'
         this.name = 'pineconeExistingIndex'
+        this.version = 1.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'

@@ -5,6 +5,7 @@ import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 class ChatOpenAI_ChatModels implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
+        this.version = 1.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.png'
         this.category = 'Chat Models'
@@ -73,6 +75,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 default: 0.9,
                 optional: true
             },
@@ -80,6 +83,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -87,6 +91,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Top Probability',
                 name: 'topP',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -94,6 +99,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Frequency Penalty',
                 name: 'frequencyPenalty',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -101,6 +107,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Presence Penalty',
                 name: 'presencePenalty',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -108,6 +115,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -144,8 +152,8 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
-        if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new ChatOpenAI(obj, {

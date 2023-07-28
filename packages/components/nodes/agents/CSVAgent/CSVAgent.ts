@@ -9,6 +9,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class CSV_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class CSV_Agents implements INode {
     constructor() {
         this.label = 'CSV Agent'
         this.name = 'csvAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'csvagent.png'

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import {
     List,
@@ -20,11 +20,12 @@ import { IconSearch, IconX } from '@tabler/icons'
 
 // const
 import { baseURL } from 'store/constant'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
-
+    const dispatch = useDispatch()
     const theme = useTheme()
     const [searchValue, setSearchValue] = useState('')
     const [componentsCredentials, setComponentsCredentials] = useState([])
@@ -43,10 +44,16 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
     }
 
     useEffect(() => {
-        if (show && dialogProps.componentsCredentials) {
+        if (dialogProps.componentsCredentials) {
             setComponentsCredentials(dialogProps.componentsCredentials)
         }
-    }, [show, dialogProps])
+    }, [dialogProps])
+
+    useEffect(() => {
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+        else dispatch({ type: HIDE_CANVAS_DIALOG })
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+    }, [show, dispatch])
 
     const component = show ? (
         <Dialog

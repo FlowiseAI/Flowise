@@ -268,6 +268,7 @@ export const generateExportFlowData = (flowData) => {
         const newNodeData = {
             id: node.data.id,
             label: node.data.label,
+            version: node.data.version,
             name: node.data.name,
             type: node.data.type,
             baseClasses: node.data.baseClasses,

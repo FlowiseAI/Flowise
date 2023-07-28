@@ -20,6 +20,7 @@ import {
 class ConversationalRetrievalQAChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -30,6 +31,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     constructor() {
         this.label = 'Conversational Retrieval QA Chain'
         this.name = 'conversationalRetrievalQAChain'
+        this.version = 1.0
         this.type = 'ConversationalRetrievalQAChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'

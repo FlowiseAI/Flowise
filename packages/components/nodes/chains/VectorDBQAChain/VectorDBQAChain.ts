@@ -8,6 +8,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class VectorDBQAChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -18,6 +19,7 @@ class VectorDBQAChain_Chains implements INode {
     constructor() {
         this.label = 'VectorDB QA Chain'
         this.name = 'vectorDBQAChain'
+        this.version = 1.0
         this.type = 'VectorDBQAChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'

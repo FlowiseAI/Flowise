@@ -6,6 +6,7 @@ import { BaseLanguageModel } from 'langchain/base_language'
 class ConversationSummaryMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class ConversationSummaryMemory_Memory implements INode {
     constructor() {
         this.label = 'Conversation Summary Memory'
         this.name = 'conversationSummaryMemory'
+        this.version = 1.0
         this.type = 'ConversationSummaryMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'

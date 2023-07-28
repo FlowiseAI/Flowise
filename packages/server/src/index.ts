@@ -564,6 +564,12 @@ export class App {
             return res.json(availableConfigs)
         })
 
+        this.app.post('/api/v1/node-config', async (req: Request, res: Response) => {
+            const nodes = [{ data: req.body }] as IReactFlowNode[]
+            const availableConfigs = findAvailableConfigs(nodes, this.nodesPool.componentCredentials)
+            return res.json(availableConfigs)
+        })
+
         // ----------------------------------------
         // Export Load Chatflow & ChatMessage & Apikeys
         // ----------------------------------------

@@ -84,6 +84,7 @@ export interface INodeProperties {
     name: string
     type: string
     icon: string
+    version: number
     category: string
     baseClasses: string[]
     description?: string

@@ -5,6 +5,7 @@ import { HuggingFaceInferenceEmbeddings, HuggingFaceInferenceEmbeddingsParams } 
 class HuggingFaceInferenceEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'HuggingFace Inference Embeddings'
         this.name = 'huggingFaceInferenceEmbeddings'
+        this.version = 1.0
         this.type = 'HuggingFaceInferenceEmbeddings'
         this.icon = 'huggingface.png'
         this.category = 'Embeddings'

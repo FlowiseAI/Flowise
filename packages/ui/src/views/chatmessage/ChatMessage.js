@@ -28,6 +28,9 @@ import useApi from 'hooks/useApi'
 // Const
 import { baseURL, maxScroll } from 'store/constant'
 
+import robotPNG from 'assets/images/robot.png'
+import userPNG from 'assets/images/account.png'
+
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -281,21 +284,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                     >
                                         {/* Display the correct icon depending on the message type */}
                                         {message.type === 'apiMessage' ? (
-                                            <img
-                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                                                alt='AI'
-                                                width='30'
-                                                height='30'
-                                                className='boticon'
-                                            />
+                                            <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
                                         ) : (
-                                            <img
-                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                                alt='Me'
-                                                width='30'
-                                                height='30'
-                                                className='usericon'
-                                            />
+                                            <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
                                         )}
                                         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                                             <div className='markdownanswer'>

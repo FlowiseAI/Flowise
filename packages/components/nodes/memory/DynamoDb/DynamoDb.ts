@@ -5,6 +5,7 @@ import { BufferMemory } from 'langchain/memory'
 class DynamoDb_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class DynamoDb_Memory implements INode {
     constructor() {
         this.label = 'DynamoDB Chat Memory'
         this.name = 'DynamoDBChatMemory'
+        this.version = 1.0
         this.type = 'DynamoDBChatMemory'
         this.icon = 'dynamodb.svg'
         this.category = 'Memory'

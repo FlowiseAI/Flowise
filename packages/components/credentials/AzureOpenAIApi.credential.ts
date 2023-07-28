@@ -3,12 +3,14 @@ import { INodeParams, INodeCredential } from '../src/Interface'
 class AzureOpenAIApi implements INodeCredential {
     label: string
     name: string
+    version: number
     description: string
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Azure OpenAI API'
         this.name = 'azureOpenAIApi'
+        this.version = 1.0
         this.description =
             'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service'
         this.inputs = [

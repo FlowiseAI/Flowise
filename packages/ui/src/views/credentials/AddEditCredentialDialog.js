@@ -27,6 +27,7 @@ import useNotifier from 'utils/useNotifier'
 
 // const
 import { baseURL } from 'store/constant'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -86,6 +87,12 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
+
+    useEffect(() => {
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+        else dispatch({ type: HIDE_CANVAS_DIALOG })
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+    }, [show, dispatch])
 
     const addNewCredential = async () => {
         try {

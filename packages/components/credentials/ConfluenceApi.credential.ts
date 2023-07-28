@@ -3,12 +3,14 @@ import { INodeParams, INodeCredential } from '../src/Interface'
 class ConfluenceApi implements INodeCredential {
     label: string
     name: string
+    version: number
     description: string
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Confluence API'
         this.name = 'confluenceApi'
+        this.version = 1.0
         this.description =
             'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get accessToken on Confluence'
         this.inputs = [

@@ -7,6 +7,7 @@ import { ICommonObject } from '../../../src'
 class ZepMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class ZepMemory_Memory implements INode {
     constructor() {
         this.label = 'Zep Memory'
         this.name = 'ZepMemory'
+        this.version = 1.0
         this.type = 'ZepMemory'
         this.icon = 'zep.png'
         this.category = 'Memory'
@@ -58,7 +60,6 @@ class ZepMemory_Memory implements INode {
                 name: 'k',
                 type: 'number',
                 default: '10',
-                step: 1,
                 description: 'Window of size k to surface the last k back-and-forths to use as memory.'
             },
             {

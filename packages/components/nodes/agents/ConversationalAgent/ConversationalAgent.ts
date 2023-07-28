@@ -18,6 +18,7 @@ Overall, Assistant is a powerful system that can help with a wide range of tasks
 class ConversationalAgent_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -28,6 +29,7 @@ class ConversationalAgent_Agents implements INode {
     constructor() {
         this.label = 'Conversational Agent'
         this.name = 'conversationalAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'

@@ -5,6 +5,7 @@ import { AnthropicInput, ChatAnthropic } from 'langchain/chat_models/anthropic'
 class ChatAnthropic_ChatModels implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
+        this.version = 1.0
         this.type = 'ChatAnthropic'
         this.icon = 'chatAnthropic.png'
         this.category = 'Chat Models'
@@ -95,6 +97,7 @@ class ChatAnthropic_ChatModels implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 default: 0.9,
                 optional: true
             },
@@ -102,6 +105,7 @@ class ChatAnthropic_ChatModels implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokensToSample',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -109,6 +113,7 @@ class ChatAnthropic_ChatModels implements INode {
                 label: 'Top P',
                 name: 'topP',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -116,6 +121,7 @@ class ChatAnthropic_ChatModels implements INode {
                 label: 'Top K',
                 name: 'topK',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             }

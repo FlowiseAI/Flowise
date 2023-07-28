@@ -6,6 +6,7 @@ import { getCredentialData, getCredentialParam } from '../../../src'
 class ZapierNLA_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class ZapierNLA_Tools implements INode {
     constructor() {
         this.label = 'Zapier NLA'
         this.name = 'zapierNLA'
+        this.version = 1.0
         this.type = 'ZapierNLA'
         this.icon = 'zapier.svg'
         this.category = 'Tools'

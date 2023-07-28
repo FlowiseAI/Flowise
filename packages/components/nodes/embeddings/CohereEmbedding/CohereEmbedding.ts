@@ -5,6 +5,7 @@ import { CohereEmbeddings, CohereEmbeddingsParams } from 'langchain/embeddings/c
 class CohereEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class CohereEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Cohere Embeddings'
         this.name = 'cohereEmbeddings'
+        this.version = 1.0
         this.type = 'CohereEmbeddings'
         this.icon = 'cohere.png'
         this.category = 'Embeddings'

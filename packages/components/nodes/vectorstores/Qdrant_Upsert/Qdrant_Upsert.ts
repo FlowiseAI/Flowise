@@ -9,6 +9,7 @@ import { flatten } from 'lodash'
 class QdrantUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -21,6 +22,7 @@ class QdrantUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Upsert Document'
         this.name = 'qdrantUpsert'
+        this.version = 1.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'

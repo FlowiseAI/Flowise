@@ -7,6 +7,7 @@ import { Embeddings } from 'langchain/embeddings/base'
 class WebBrowser_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class WebBrowser_Tools implements INode {
     constructor() {
         this.label = 'Web Browser'
         this.name = 'webBrowser'
+        this.version = 1.0
         this.type = 'WebBrowser'
         this.icon = 'webBrowser.svg'
         this.category = 'Tools'

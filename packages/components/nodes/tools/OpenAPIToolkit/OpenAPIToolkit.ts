@@ -8,6 +8,7 @@ import { getCredentialData, getCredentialParam } from '../../../src'
 class OpenAPIToolkit_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class OpenAPIToolkit_Tools implements INode {
     constructor() {
         this.label = 'OpenAPI Toolkit'
         this.name = 'openAPIToolkit'
+        this.version = 1.0
         this.type = 'OpenAPIToolkit'
         this.icon = 'openapi.png'
         this.category = 'Tools'

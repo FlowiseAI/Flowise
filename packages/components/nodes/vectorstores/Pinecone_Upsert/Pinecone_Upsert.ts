@@ -9,6 +9,7 @@ import { flatten } from 'lodash'
 class PineconeUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -21,6 +22,7 @@ class PineconeUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Pinecone Upsert Document'
         this.name = 'pineconeUpsert'
+        this.version = 1.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'

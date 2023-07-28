@@ -5,6 +5,7 @@ import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
 class OpenAI_LLMs implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
+        this.version = 1.0
         this.type = 'OpenAI'
         this.icon = 'openai.png'
         this.category = 'LLMs'
@@ -57,6 +59,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 default: 0.7,
                 optional: true
             },
@@ -64,6 +67,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -71,6 +75,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Top Probability',
                 name: 'topP',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -78,6 +83,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Best Of',
                 name: 'bestOf',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -85,6 +91,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Frequency Penalty',
                 name: 'frequencyPenalty',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -92,6 +99,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Presence Penalty',
                 name: 'presencePenalty',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -99,6 +107,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Batch Size',
                 name: 'batchSize',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -106,6 +115,7 @@ class OpenAI_LLMs implements INode {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -144,8 +154,8 @@ class OpenAI_LLMs implements INode {
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
-        if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
