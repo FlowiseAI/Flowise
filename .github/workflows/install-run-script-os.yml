@@ -1,0 +1,30 @@
+name: Install run-script-os
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18.x'
+
+    - name: Install run-script-os
+      run: yarn add run-script-os
+
+    - name: Commit and push if changed
+      run: |
+        git diff
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git commit -am "Install run-script-os" || exit 0
+        git push
