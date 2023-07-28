@@ -36,3 +36,10 @@ jobs:
             - run: yarn lint
 
             - run: yarn build
+
+            - name: Deploy to Azure
+              uses: azure/webapps-deploy@v2
+              with:
+                  app-name: 'Flowise1'
+                  publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+                  package: .
