@@ -29,7 +29,6 @@
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
     },
-
     "keywords": [],
     "homepage": "https://flowiseai.com",
     "author": {
