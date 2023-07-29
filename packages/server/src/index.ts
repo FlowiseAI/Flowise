@@ -44,7 +44,8 @@ import {
     transformToCredentialEntity,
     decryptCredentialData,
     clearSessionMemory,
-    replaceInputsWithConfig
+    replaceInputsWithConfig,
+    getEncryptionKey
 } from './utils'
 import { cloneDeep, omit } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -82,6 +83,9 @@ export class App {
 
                 // Initialize API keys
                 await getAPIKeys()
+
+                // Initialize encryption key
+                await getEncryptionKey()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
