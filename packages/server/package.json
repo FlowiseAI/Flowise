@@ -2,7 +2,7 @@
     "name": "flowise",
     "version": "1.2.16",
     "description": "Flowiseai Server",
-    "main": "dist/index",
+    "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
         "flowise": "./bin/run"
@@ -21,11 +21,11 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "node Flowise1.js",
-        "dev": "concurrently \"yarn watch\" \"nodemon\"",
+        "start": "node dist/index.js",
+        "dev": "concurrently \"yarn watch\" \"nodemon dist/index.js\"",
         "postpack": "shx rm -f oclif.manifest.json",
         "prepack": "yarn build && oclif manifest && oclif readme",
-        "typeorm": "typeorm-ts-node-commonjs",
+        "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
     },
@@ -67,6 +67,7 @@
         "run-script-os": "^1.1.6",
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
-        "typescript": "^4.8.4"
+        "typescript": "^4.8.4",
+        "tsconfig-paths": "^3.12.0"
     }
 }
