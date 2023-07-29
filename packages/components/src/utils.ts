@@ -355,9 +355,13 @@ export const getEnvironmentVariable = (name: string): string | undefined => {
  */
 const getEncryptionKeyFilePath = (): string => {
     const checkPaths = [
+        path.join(__dirname, '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
     ]
     for (const checkPath of checkPaths) {
