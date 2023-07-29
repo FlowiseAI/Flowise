@@ -5,6 +5,7 @@ import { TextLoader } from 'langchain/document_loaders/fs/text'
 class Text_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Text_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Text File'
         this.name = 'textFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'textFile.svg'
         this.category = 'Document Loaders'

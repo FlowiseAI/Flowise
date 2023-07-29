@@ -25,10 +25,11 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/f
 
 ## 🌱 Env Variables
 
-If you like to persist your data (flows, logs, apikeys), set these variables in the `.env` file inside `docker` folder:
+If you like to persist your data (flows, logs, apikeys, credentials), set these variables in the `.env` file inside `docker` folder:
 
 -   DATABASE_PATH=/root/.flowise
 -   APIKEY_PATH=/root/.flowise
 -   LOG_PATH=/root/.flowise/logs
+-   SECRETKEY_PATH=/root/.flowise
 
 Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/environment-variables)

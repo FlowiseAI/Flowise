@@ -7,6 +7,7 @@ import { TemplateFormat } from 'langchain/dist/prompts/template'
 class FewShotPromptTemplate_Prompts implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class FewShotPromptTemplate_Prompts implements INode {
     constructor() {
         this.label = 'Few Shot Prompt Template'
         this.name = 'fewShotPromptTemplate'
+        this.version = 1.0
         this.type = 'FewShotPromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'

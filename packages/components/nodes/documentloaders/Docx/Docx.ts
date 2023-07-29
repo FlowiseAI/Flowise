@@ -5,6 +5,7 @@ import { DocxLoader } from 'langchain/document_loaders/fs/docx'
 class Docx_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Docx_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Docx File'
         this.name = 'docxFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'Docx.png'
         this.category = 'Document Loaders'

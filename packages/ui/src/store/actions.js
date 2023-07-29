@@ -13,6 +13,8 @@ export const REMOVE_DIRTY = '@canvas/REMOVE_DIRTY'
 export const SET_CHATFLOW = '@canvas/SET_CHATFLOW'
 export const SHOW_CANVAS_DIALOG = '@canvas/SHOW_CANVAS_DIALOG'
 export const HIDE_CANVAS_DIALOG = '@canvas/HIDE_CANVAS_DIALOG'
+export const SET_COMPONENT_NODES = '@canvas/SET_COMPONENT_NODES'
+export const SET_COMPONENT_CREDENTIALS = '@canvas/SET_COMPONENT_CREDENTIALS'
 
 // action - notifier reducer
 export const ENQUEUE_SNACKBAR = 'ENQUEUE_SNACKBAR'

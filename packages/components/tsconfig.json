@@ -16,5 +16,5 @@
         "declaration": true,
         "module": "commonjs"
     },
-    "include": ["src", "nodes"]
+    "include": ["src", "nodes", "credentials"]
 }

@@ -7,6 +7,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class OpenApiChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -17,10 +18,11 @@ class OpenApiChain_Chains implements INode {
     constructor() {
         this.label = 'OpenAPI Chain'
         this.name = 'openApiChain'
-        this.type = 'openApiChain'
+        this.version = 1.0
+        this.type = 'OpenAPIChain'
         this.icon = 'openapi.png'
         this.category = 'Chains'
-        this.description = 'Chain to run queries against OpenAPI'
+        this.description = 'Chain that automatically select and call APIs based only on an OpenAPI spec'
         this.baseClasses = [this.type, ...getBaseClasses(APIChain)]
         this.inputs = [
             {

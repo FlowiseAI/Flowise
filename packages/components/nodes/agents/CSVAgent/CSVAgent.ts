@@ -9,6 +9,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class CSV_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class CSV_Agents implements INode {
     constructor() {
         this.label = 'CSV Agent'
         this.name = 'csvAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'csvagent.png'
@@ -92,7 +94,6 @@ json.dumps(my_dict)`
         } catch (error) {
             throw new Error(error)
         }
-        options.logger.debug('[components/CSVAgent] [1] DataframeColDict =>', dataframeColDict)
 
         // Then tell GPT to come out with ONLY python code
         // For example: len(df), df[df['SibSp'] > 3]['PassengerId'].count()
@@ -110,7 +111,6 @@ json.dumps(my_dict)`
             const res = await chain.call(inputs, [loggerHandler])
             pythonCode = res?.text
         }
-        options.logger.debug('[components/CSVAgent] [2] Generated Python Code =>', pythonCode)
 
         // Then run the code using Pyodide
         let finalResult = ''
@@ -122,7 +122,6 @@ json.dumps(my_dict)`
                 throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`)
             }
         }
-        options.logger.debug('[components/CSVAgent] [3] Pyodide Result =>', finalResult)
 
         // Finally, return a complete answer
         if (finalResult) {
@@ -138,11 +137,9 @@ json.dumps(my_dict)`
 
             if (options.socketIO && options.socketIOClientId) {
                 const result = await chain.call(inputs, [loggerHandler, handler])
-                options.logger.debug('[components/CSVAgent] [4] Final Result =>', result?.text)
                 return result?.text
             } else {
                 const result = await chain.call(inputs, [loggerHandler])
-                options.logger.debug('[components/CSVAgent] [4] Final Result =>', result?.text)
                 return result?.text
             }
         }

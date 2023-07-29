@@ -10,6 +10,7 @@ import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler
 class OpenAIFunctionAgent_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -20,6 +21,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Function Agent'
         this.name = 'openAIFunctionAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'openai.png'

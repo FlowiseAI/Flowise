@@ -1,26 +1,37 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput } from 'langchain/memory'
 
 class MotorMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Motorhead Memory'
         this.name = 'motorheadMemory'
+        this.version = 1.0
         this.type = 'MotorheadMemory'
         this.icon = 'motorhead.png'
         this.category = 'Memory'
-        this.description = 'Remembers previous conversational back and forths directly'
+        this.description = 'Use Motorhead Memory to store chat conversations'
         this.baseClasses = [this.type, ...getBaseClasses(MotorheadMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            optional: true,
+            description: 'Only needed when using hosted solution - https://getmetal.io',
+            credentialNames: ['motorheadMemoryApi']
+        }
         this.inputs = [
             {
                 label: 'Base URL',
@@ -28,12 +39,6 @@ class MotorMemory_Memory implements INode {
                 type: 'string',
                 optional: true,
                 description: 'To use the online version, leave the URL blank. More details at https://getmetal.io.'
-            },
-            {
-                label: 'Memory Key',
-                name: 'memoryKey',
-                type: 'string',
-                default: 'chat_history'
             },
             {
                 label: 'Session Id',
@@ -45,20 +50,11 @@ class MotorMemory_Memory implements INode {
                 optional: true
             },
             {
-                label: 'API Key',
-                name: 'apiKey',
-                type: 'password',
-                description: 'Only needed when using hosted solution - https://getmetal.io',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Client ID',
-                name: 'clientId',
+                label: 'Memory Key',
+                name: 'memoryKey',
                 type: 'string',
-                description: 'Only needed when using hosted solution - https://getmetal.io',
-                additionalParams: true,
-                optional: true
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
@@ -68,19 +64,21 @@ class MotorMemory_Memory implements INode {
     }
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const motorhead = initalizeMotorhead(nodeData, options)
-        motorhead.clear()
+        const motorhead = await initalizeMotorhead(nodeData, options)
+        await motorhead.clear()
     }
 }
 
-const initalizeMotorhead = (nodeData: INodeData, options: ICommonObject): MotorheadMemory => {
+const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): Promise<MotorheadMemory> => {
     const memoryKey = nodeData.inputs?.memoryKey as string
     const baseURL = nodeData.inputs?.baseURL as string
     const sessionId = nodeData.inputs?.sessionId as string
-    const apiKey = nodeData.inputs?.apiKey as string
-    const clientId = nodeData.inputs?.clientId as string
 
     const chatId = options?.chatId as string
+
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+    const clientId = getCredentialParam('clientId', credentialData, nodeData)
 
     let obj: MotorheadMemoryInput = {
         returnMessages: true,

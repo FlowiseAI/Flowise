@@ -5,6 +5,7 @@ import { BufferWindowMemory, BufferWindowMemoryInput } from 'langchain/memory'
 class BufferWindowMemory_Memory implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class BufferWindowMemory_Memory implements INode {
     constructor() {
         this.label = 'Buffer Window Memory'
         this.name = 'bufferWindowMemory'
+        this.version = 1.0
         this.type = 'BufferWindowMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'

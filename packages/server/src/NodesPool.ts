@@ -1,17 +1,27 @@
-import { IComponentNodes } from './Interface'
-
+import { IComponentNodes, IComponentCredentials } from './Interface'
 import path from 'path'
 import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
+import { ICommonObject } from 'flowise-components'
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
+    componentCredentials: IComponentCredentials = {}
+    private credentialIconPath: ICommonObject = {}
 
     /**
-     * Initialize to get all nodes
+     * Initialize to get all nodes & credentials
      */
     async initialize() {
+        await this.initializeNodes()
+        await this.initializeCrdentials()
+    }
+
+    /**
+     * Initialize nodes
+     */
+    private async initializeNodes() {
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
         const nodeFiles = await this.getFiles(nodesPath)
@@ -37,7 +47,35 @@ export class NodesPool {
                             filePath.pop()
                             const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
                             this.componentNodes[newNodeInstance.name].icon = nodeIconAbsolutePath
+
+                            // Store icon path for componentCredentials
+                            if (newNodeInstance.credential) {
+                                for (const credName of newNodeInstance.credential.credentialNames) {
+                                    this.credentialIconPath[credName] = nodeIconAbsolutePath
+                                }
+                            }
                         }
+                    }
+                }
+            })
+        )
+    }
+
+    /**
+     * Initialize credentials
+     */
+    private async initializeCrdentials() {
+        const packagePath = getNodeModulesPackagePath('flowise-components')
+        const nodesPath = path.join(packagePath, 'dist', 'credentials')
+        const nodeFiles = await this.getFiles(nodesPath)
+        return Promise.all(
+            nodeFiles.map(async (file) => {
+                if (file.endsWith('.credential.js')) {
+                    const credentialModule = await require(file)
+                    if (credentialModule.credClass) {
+                        const newCredInstance = new credentialModule.credClass()
+                        newCredInstance.icon = this.credentialIconPath[newCredInstance.name] ?? ''
+                        this.componentCredentials[newCredInstance.name] = newCredInstance
                     }
                 }
             })
@@ -49,7 +87,7 @@ export class NodesPool {
      * @param {string} dir
      * @returns {string[]}
      */
-    async getFiles(dir: string): Promise<string[]> {
+    private async getFiles(dir: string): Promise<string[]> {
         const dirents = await promises.readdir(dir, { withFileTypes: true })
         const files = await Promise.all(
             dirents.map((dirent: Dirent) => {

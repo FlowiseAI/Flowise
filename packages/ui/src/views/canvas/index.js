@@ -12,6 +12,7 @@ import {
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
 } from 'store/actions'
+import { omit, cloneDeep } from 'lodash'
 
 // material-ui
 import { Toolbar, Box, AppBar, Button } from '@mui/material'
@@ -40,6 +41,9 @@ import { IconX } from '@tabler/icons'
 // utils
 import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
+
+// const
+import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
 
 const nodeTypes = { customNode: CanvasNode }
 const edgeTypes = { buttonedge: ButtonEdge }
@@ -185,17 +189,21 @@ const Canvas = () => {
 
     const handleSaveFlow = (chatflowName) => {
         if (reactFlowInstance) {
-            setNodes((nds) =>
-                nds.map((node) => {
-                    node.data = {
-                        ...node.data,
-                        selected: false
-                    }
-                    return node
-                })
-            )
+            const nodes = reactFlowInstance.getNodes().map((node) => {
+                const nodeData = cloneDeep(node.data)
+                if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
+                    nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
+                    nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
+                }
+                node.data = {
+                    ...nodeData,
+                    selected: false
+                }
+                return node
+            })
 
             const rfInstanceObject = reactFlowInstance.toObject()
+            rfInstanceObject.nodes = nodes
             const flowData = JSON.stringify(rfInstanceObject)
 
             if (!chatflow.id) {

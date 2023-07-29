@@ -7,6 +7,7 @@ import { webCrawl, xmlScrape } from '../../../src'
 class Puppeteer_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class Puppeteer_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Puppeteer Web Scraper'
         this.name = 'puppeteerWebScraper'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'puppeteer.svg'
         this.category = 'Document Loaders'

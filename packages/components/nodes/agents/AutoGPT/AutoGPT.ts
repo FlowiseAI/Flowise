@@ -8,6 +8,7 @@ import { flatten } from 'lodash'
 class AutoGPT_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class AutoGPT_Agents implements INode {
     constructor() {
         this.label = 'AutoGPT'
         this.name = 'autoGPT'
+        this.version = 1.0
         this.type = 'AutoGPT'
         this.category = 'Agents'
         this.icon = 'autogpt.png'

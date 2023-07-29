@@ -1,31 +1,35 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Replicate, ReplicateInput } from 'langchain/llms/replicate'
 
 class Replicate_LLMs implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Replicate'
         this.name = 'replicate'
+        this.version = 1.0
         this.type = 'Replicate'
         this.icon = 'replicate.svg'
         this.category = 'LLMs'
         this.description = 'Use Replicate to run open source models on cloud'
         this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(Replicate)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['replicateApi']
+        }
         this.inputs = [
-            {
-                label: 'Replicate Api Key',
-                name: 'replicateApiKey',
-                type: 'password'
-            },
             {
                 label: 'Model',
                 name: 'model',
@@ -37,6 +41,7 @@ class Replicate_LLMs implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 description:
                     'Adjusts randomness of outputs, greater than 1 is random and 0 is deterministic, 0.75 is a good starting value.',
                 default: 0.7,
@@ -46,6 +51,7 @@ class Replicate_LLMs implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
+                step: 1,
                 description: 'Maximum number of tokens to generate. A word is generally 2-3 tokens',
                 optional: true,
                 additionalParams: true
@@ -54,6 +60,7 @@ class Replicate_LLMs implements INode {
                 label: 'Top Probability',
                 name: 'topP',
                 type: 'number',
+                step: 0.1,
                 description:
                     'When decoding text, samples from the top p percentage of most likely tokens; lower to ignore less likely tokens',
                 optional: true,
@@ -63,6 +70,7 @@ class Replicate_LLMs implements INode {
                 label: 'Repetition Penalty',
                 name: 'repetitionPenalty',
                 type: 'number',
+                step: 0.1,
                 description:
                     'Penalty for repeated words in generated text; 1 is no penalty, values greater than 1 discourage repetition, less than 1 encourage it. (minimum: 0.01; maximum: 5)',
                 optional: true,
@@ -80,14 +88,16 @@ class Replicate_LLMs implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.model as string
-        const apiKey = nodeData.inputs?.replicateApiKey as string
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const repetitionPenalty = nodeData.inputs?.repetitionPenalty as string
         const additionalInputs = nodeData.inputs?.additionalInputs as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
         const version = modelName.split(':').pop()
         const name = modelName.split(':')[0].split('/').pop()

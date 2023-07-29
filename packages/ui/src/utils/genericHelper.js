@@ -41,6 +41,7 @@ export const initNode = (nodeData, newNodeId) => {
 
     const whitelistTypes = ['asyncOptions', 'options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
 
+    // Inputs
     for (let i = 0; i < incoming; i += 1) {
         const newInput = {
             ...nodeData.inputs[i],
@@ -53,6 +54,16 @@ export const initNode = (nodeData, newNodeId) => {
         }
     }
 
+    // Credential
+    if (nodeData.credential) {
+        const newInput = {
+            ...nodeData.credential,
+            id: `${newNodeId}-input-${nodeData.credential.name}-${nodeData.credential.type}`
+        }
+        inputParams.unshift(newInput)
+    }
+
+    // Outputs
     const outputAnchors = []
     for (let i = 0; i < outgoing; i += 1) {
         if (nodeData.outputs && nodeData.outputs.length) {
@@ -129,6 +140,8 @@ export const initNode = (nodeData, newNodeId) => {
             }
         ]
     */
+
+    // Inputs
     if (nodeData.inputs) {
         nodeData.inputAnchors = inputAnchors
         nodeData.inputParams = inputParams
@@ -139,13 +152,17 @@ export const initNode = (nodeData, newNodeId) => {
         nodeData.inputs = {}
     }
 
+    // Outputs
     if (nodeData.outputs) {
         nodeData.outputs = initializeDefaultNodeData(outputAnchors)
     } else {
         nodeData.outputs = {}
     }
-
     nodeData.outputAnchors = outputAnchors
+
+    // Credential
+    if (nodeData.credential) nodeData.credential = ''
+
     nodeData.id = newNodeId
 
     return nodeData
@@ -251,6 +268,7 @@ export const generateExportFlowData = (flowData) => {
         const newNodeData = {
             id: node.data.id,
             label: node.data.label,
+            version: node.data.version,
             name: node.data.name,
             type: node.data.type,
             baseClasses: node.data.baseClasses,

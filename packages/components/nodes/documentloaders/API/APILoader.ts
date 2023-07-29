@@ -7,6 +7,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 class API_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class API_DocumentLoaders implements INode {
     constructor() {
         this.label = 'API Loader'
         this.name = 'apiLoader'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'api-loader.png'
         this.category = 'Document Loaders'

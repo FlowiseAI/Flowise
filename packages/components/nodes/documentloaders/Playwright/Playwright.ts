@@ -7,6 +7,7 @@ import { webCrawl, xmlScrape } from '../../../src'
 class Playwright_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class Playwright_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Playwright Web Scraper'
         this.name = 'playwrightWebScraper'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'playwright.svg'
         this.category = 'Document Loaders'

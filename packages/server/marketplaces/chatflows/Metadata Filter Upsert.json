@@ -14,6 +14,7 @@
                 "id": "recursiveCharacterTextSplitter_1",
                 "label": "Recursive Character Text Splitter",
                 "name": "recursiveCharacterTextSplitter",
+                "version": 1,
                 "type": "RecursiveCharacterTextSplitter",
                 "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
                 "category": "Text Splitters",
@@ -60,240 +61,6 @@
         },
         {
             "width": 300,
-            "height": 524,
-            "id": "openAI_1",
-            "position": {
-                "x": 1159.184721109528,
-                "y": -38.76565405456694
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAI_1",
-                "label": "OpenAI",
-                "name": "openAI",
-                "type": "OpenAI",
-                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel", "BaseLangChain"],
-                "category": "LLMs",
-                "description": "Wrapper around OpenAI large language models",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "openAI_1-input-openAIApiKey-password"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
-                            },
-                            {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
-                            },
-                            {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
-                            }
-                        ],
-                        "default": "text-davinci-003",
-                        "optional": true,
-                        "id": "openAI_1-input-modelName-options"
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.7,
-                        "optional": true,
-                        "id": "openAI_1-input-temperature-number"
-                    },
-                    {
-                        "label": "Max Tokens",
-                        "name": "maxTokens",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-maxTokens-number"
-                    },
-                    {
-                        "label": "Top Probability",
-                        "name": "topP",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-topP-number"
-                    },
-                    {
-                        "label": "Best Of",
-                        "name": "bestOf",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-bestOf-number"
-                    },
-                    {
-                        "label": "Frequency Penalty",
-                        "name": "frequencyPenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-frequencyPenalty-number"
-                    },
-                    {
-                        "label": "Presence Penalty",
-                        "name": "presencePenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-presencePenalty-number"
-                    },
-                    {
-                        "label": "Batch Size",
-                        "name": "batchSize",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-batchSize-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAI_1-input-basepath-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "text-davinci-003",
-                    "temperature": "0",
-                    "maxTokens": "",
-                    "topP": "",
-                    "bestOf": "",
-                    "frequencyPenalty": "",
-                    "presencePenalty": "",
-                    "batchSize": "",
-                    "timeout": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
-                        "name": "openAI",
-                        "label": "OpenAI",
-                        "type": "OpenAI | BaseLLM | BaseLanguageModel | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 1159.184721109528,
-                "y": -38.76565405456694
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 330,
-            "id": "openAIEmbeddings_1",
-            "position": {
-                "x": 749.4044250705479,
-                "y": 858.4858399327618
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIEmbeddings_1",
-                "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
-                "type": "OpenAIEmbeddings",
-                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
-                "category": "Embeddings",
-                "description": "OpenAI API to generate embeddings for a given text",
-                "inputParams": [
-                    {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "openAIEmbeddings_1-input-openAIApiKey-password"
-                    },
-                    {
-                        "label": "Strip New Lines",
-                        "name": "stripNewLines",
-                        "type": "boolean",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_1-input-stripNewLines-boolean"
-                    },
-                    {
-                        "label": "Batch Size",
-                        "name": "batchSize",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_1-input-batchSize-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_1-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_1-input-basepath-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "stripNewLines": "",
-                    "batchSize": "",
-                    "timeout": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-                        "name": "openAIEmbeddings",
-                        "label": "OpenAIEmbeddings",
-                        "type": "OpenAIEmbeddings | Embeddings"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 749.4044250705479,
-                "y": 858.4858399327618
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 392,
             "id": "textFile_0",
             "position": {
@@ -305,6 +72,7 @@
                 "id": "textFile_0",
                 "label": "Text File",
                 "name": "textFile",
+                "version": 1,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -370,6 +138,7 @@
                 "id": "pdfFile_0",
                 "label": "Pdf File",
                 "name": "pdfFile",
+                "version": 1,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -442,119 +211,7 @@
         },
         {
             "width": 300,
-            "height": 702,
-            "id": "pineconeUpsert_0",
-            "position": {
-                "x": 1161.8813042660154,
-                "y": 537.0216614326227
-            },
-            "type": "customNode",
-            "data": {
-                "id": "pineconeUpsert_0",
-                "label": "Pinecone Upsert Document",
-                "name": "pineconeUpsert",
-                "type": "Pinecone",
-                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Upsert documents to Pinecone",
-                "inputParams": [
-                    {
-                        "label": "Pinecone Api Key",
-                        "name": "pineconeApiKey",
-                        "type": "password",
-                        "id": "pineconeUpsert_0-input-pineconeApiKey-password"
-                    },
-                    {
-                        "label": "Pinecone Environment",
-                        "name": "pineconeEnv",
-                        "type": "string",
-                        "id": "pineconeUpsert_0-input-pineconeEnv-string"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
-                        "type": "string",
-                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
-                    },
-                    {
-                        "label": "Pinecone Namespace",
-                        "name": "pineconeNamespace",
-                        "type": "string",
-                        "placeholder": "my-first-namespace",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Default to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeUpsert_0-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Document",
-                        "name": "document",
-                        "type": "Document",
-                        "list": true,
-                        "id": "pineconeUpsert_0-input-document-Document"
-                    },
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "Embeddings",
-                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
-                    }
-                ],
-                "inputs": {
-                    "document": ["{{pdfFile_0.data.instance}}", "{{textFile_0.data.instance}}"],
-                    "embeddings": "{{openAIEmbeddings_1.data.instance}}",
-                    "pineconeEnv": "northamerica-northeast1-gcp",
-                    "pineconeIndex": "myindex",
-                    "pineconeNamespace": "my-namespace"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Pinecone Retriever",
-                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Pinecone Vector Store",
-                                "type": "Pinecone | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": {
-                    "output": "retriever"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1161.8813042660154,
-                "y": 537.0216614326227
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 280,
+            "height": 480,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
                 "x": 1570.3859788160953,
@@ -565,6 +222,7 @@
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
+                "version": 1,
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
@@ -629,14 +287,14 @@
                     {
                         "label": "Memory",
                         "name": "memory",
-                        "type": "DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory",
+                        "type": "BaseMemory",
                         "optional": true,
-                        "description": "If no memory connected, default BufferMemory will be used",
-                        "id": "conversationalRetrievalQAChain_0-input-memory-DynamoDBChatMemory | RedisBackedChatMemory | ZepMemory"
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
                     }
                 ],
                 "inputs": {
-                    "model": "{{openAI_1.data.instance}}",
+                    "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}"
                 },
                 "outputAnchors": [
@@ -654,6 +312,352 @@
             "positionAbsolute": {
                 "x": 1570.3859788160953,
                 "y": 423.6687850109136
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 555,
+            "id": "pineconeUpsert_0",
+            "position": {
+                "x": 1161.2426252201622,
+                "y": 549.7917156049002
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeUpsert_0",
+                "label": "Pinecone Upsert Document",
+                "name": "pineconeUpsert",
+                "type": "Pinecone",
+                "version": 1,
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert documents to Pinecone",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeUpsert_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "id": "pineconeUpsert_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{textFile_0.data.instance}}", "{{pdfFile_0.data.instance}}"],
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1161.2426252201622,
+                "y": 549.7917156049002
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1164.9667590264419,
+                "y": -44.2076264967032
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "version": 1,
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1164.9667590264419,
+                "y": -44.2076264967032
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 772.0706424639393,
+                "y": 862.6189553323906
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "version": 1,
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 772.0706424639393,
+                "y": 862.6189553323906
             },
             "dragging": false
         }
@@ -682,23 +686,12 @@
             }
         },
         {
-            "source": "openAIEmbeddings_1",
-            "sourceHandle": "openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
             "target": "pineconeUpsert_0",
             "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_1-openAIEmbeddings_1-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "pdfFile_0",
-            "sourceHandle": "pdfFile_0-output-pdfFile-Document",
-            "target": "pineconeUpsert_0",
-            "targetHandle": "pineconeUpsert_0-input-document-Document",
-            "type": "buttonedge",
-            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }
@@ -715,12 +708,23 @@
             }
         },
         {
-            "source": "openAI_1",
-            "sourceHandle": "openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain",
+            "source": "pdfFile_0",
+            "sourceHandle": "pdfFile_0-output-pdfFile-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "openAI_1-openAI_1-output-openAI-OpenAI|BaseLLM|BaseLanguageModel|BaseLangChain-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
