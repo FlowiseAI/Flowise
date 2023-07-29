@@ -3,7 +3,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { GoogleCustomSearch } from 'langchain/tools'
 
 
-class GoogleSearchAPI_Tools implements INode {
+class GoogleCustomSearchAPI_Tools implements INode {
     label: string
     name: string
     version: number
@@ -17,9 +17,9 @@ class GoogleSearchAPI_Tools implements INode {
 
     constructor() {
         this.label = 'Google Custom Search'
-        this.name = 'googleSearchAPI'
+        this.name = 'googleCustomSearch'
         this.version = 1.0
-        this.type = 'GoogleSearchAPI'
+        this.type = 'GoogleCustomSearchAPI'
         this.icon = 'google.png'
         this.category = 'Tools'
         this.description = 'Wrapper around Google Custom Search API - a real-time API to access Google search results'
@@ -28,16 +28,17 @@ class GoogleSearchAPI_Tools implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['googleSearchApi']
+            credentialNames: ['googleCustomSearchApi']
         }
         this.baseClasses = [this.type, ...getBaseClasses(GoogleCustomSearch)]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const googleApiKey = getCredentialParam('googleApiKey', credentialData, nodeData)
-        return new GoogleCustomSearch({ apiKey: googleApiKey })
+        const googleApiKey = getCredentialParam('googleCustomSearchApiKey', credentialData, nodeData)
+        const googleCseId = getCredentialParam('googleCustomSearchApiId', credentialData, nodeData)
+        return new GoogleCustomSearch({ apiKey: googleApiKey, googleCSEId: googleCseId })
     }
 }
 
-module.exports = { nodeClass: GoogleSearchAPI_Tools }
+module.exports = { nodeClass: GoogleCustomSearchAPI_Tools }
