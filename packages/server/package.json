@@ -21,19 +21,15 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "run-script-os",
-        "start:windows": "cd bin && run start",
-        "start:default": "cd bin && ./run start",
+        "start": "cd bin && ./run start",
         "dev": "concurrently \"yarn watch\" \"nodemon\"",
-        "oclif-dev": "run-script-os",
-        "oclif-dev:windows": "cd bin && dev start",
-        "oclif-dev:default": "cd bin && ./dev start",
         "postpack": "shx rm -f oclif.manifest.json",
         "prepack": "yarn build && oclif manifest && oclif readme",
         "typeorm": "typeorm-ts-node-commonjs",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
     },
+
     "keywords": [],
     "homepage": "https://flowiseai.com",
     "author": {
