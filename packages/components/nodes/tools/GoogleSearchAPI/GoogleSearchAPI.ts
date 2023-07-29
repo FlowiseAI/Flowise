@@ -2,7 +2,6 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { GoogleCustomSearch } from 'langchain/tools'
 
-
 class GoogleCustomSearchAPI_Tools implements INode {
     label: string
     name: string
