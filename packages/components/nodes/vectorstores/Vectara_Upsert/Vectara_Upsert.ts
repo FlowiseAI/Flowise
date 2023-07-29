@@ -1,6 +1,6 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { VectaraStore, VectaraLibArgs, VectaraFilter } from 'langchain/vectorstores/vectara'
 import { Document } from 'langchain/document'
 import { flatten } from 'lodash'
@@ -8,38 +8,32 @@ import { flatten } from 'lodash'
 class VectaraExisting_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Vectara Upsert Document'
         this.name = 'vectaraExisting'
+        this.version = 1.0
         this.type = 'Vectara'
         this.icon = 'vectara.png'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Vectara'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['vectaraApi']
+        }
         this.inputs = [
-            {
-                label: 'Vectara Customer ID',
-                name: 'customerID',
-                type: 'string'
-            },
-            {
-                label: 'Vectara Corpus ID',
-                name: 'corpusID',
-                type: 'string'
-            },
-            {
-                label: 'Vectara API Key',
-                name: 'apiKey',
-                type: 'password'
-            },
             {
                 label: 'Document',
                 name: 'document',
@@ -83,10 +77,12 @@ class VectaraExisting_VectorStores implements INode {
             }
         ]
     }
-    async init(nodeData: INodeData): Promise<any> {
-        const customerId = nodeData.inputs?.customerID as number
-        const corpusId = nodeData.inputs?.corpusID as number
-        const apiKey = nodeData.inputs?.apiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        const customerId = getCredentialParam('customerID', credentialData, nodeData)
+        const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
+
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = {} as Embeddings
         const vectaraMetadatafilter = nodeData.inputs?.filter as VectaraFilter
