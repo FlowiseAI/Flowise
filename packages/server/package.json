@@ -21,7 +21,7 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "cd bin && ./run start",
+        "start": "node dist/index.js",
         "dev": "concurrently \"yarn watch\" \"nodemon\"",
         "postpack": "shx rm -f oclif.manifest.json",
         "prepack": "yarn build && oclif manifest && oclif readme",
