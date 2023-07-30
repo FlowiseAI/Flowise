@@ -116,7 +116,7 @@ const runPrediction = async (
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
 
-    if (inputVariables.length > 0) {
+    if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []
 
         for (const variable of inputVariables) {
