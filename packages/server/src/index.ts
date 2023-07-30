@@ -993,9 +993,14 @@ export class App {
                           chatHistory: incomingInput.history,
                           socketIO,
                           socketIOClientId: incomingInput.socketIOClientId,
-                          logger
+                          logger,
+                          isInternal
                       })
-                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
+                    : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                          chatHistory: incomingInput.history,
+                          logger,
+                          isInternal
+                      })
 
                 logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 return res.json(result)

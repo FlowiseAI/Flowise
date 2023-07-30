@@ -758,7 +758,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
     let isValidChainOrAgent = false
     if (endingNodeData.category === 'Chains') {
         // Chains that are not available to stream
-        const blacklistChains = ['openApiChain']
+        const blacklistChains = ['openApiChain', 'structuredOutputLLMChain']
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
