@@ -97,7 +97,7 @@ const getConfigExamplesForPython = (configData, bodyType) => {
         if (config.type === 'string') exampleVal = `"example"`
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`
-        else if (config.name === 'files') exampleVal = `('example${config.type}', open('example${config.type}', 'rb'))`
+        else if (config.name === 'files') continue
         finalStr += bodyType === 'json' ? `\n        "${config.name}": ${exampleVal},` : `\n    "${config.name}": ${exampleVal},`
         if (i === loop - 1 && bodyType !== 'json') finalStr += `\n    "question": "Hey, how are you?"\n`
     }
@@ -289,15 +289,20 @@ query({"question": "Hey, how are you?"}).then((response) => {
 
     const getConfigCodeWithFormData = (codeLang, configData) => {
         if (codeLang === 'Python') {
+            configData = unshiftFiles(configData)
+            const fileType = configData[0].type
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
 
 # use form data to upload files
-form_data = {${getConfigExamplesForPython(configData, 'formData')}}
+form_data = {
+    "files": ${`('example${fileType}', open('example${fileType}', 'rb'))`}
+}
+body_data = {${getConfigExamplesForPython(configData, 'formData')}}
 
 def query(form_data):
-    response = requests.post(API_URL, files=form_data)
+    response = requests.post(API_URL, files=form_data, data=body_data)
     return response.json()
 
 output = query(form_data)
@@ -334,16 +339,21 @@ query(formData).then((response) => {
 
     const getConfigCodeWithFormDataWithAuth = (codeLang, configData) => {
         if (codeLang === 'Python') {
+            configData = unshiftFiles(configData)
+            const fileType = configData[0].type
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
 headers = {"Authorization": "Bearer ${selectedApiKey?.apiKey}"}
 
 # use form data to upload files
-form_data = {${getConfigExamplesForPython(configData, 'formData')}}
+form_data = {
+    "files": ${`('example${fileType}', open('example${fileType}', 'rb'))`}
+}
+body_data = {${getConfigExamplesForPython(configData, 'formData')}}
 
 def query(form_data):
-    response = requests.post(API_URL, headers=headers, files=form_data)
+    response = requests.post(API_URL, headers=headers, files=form_data, data=body_data)
     return response.json()
 
 output = query(form_data)
