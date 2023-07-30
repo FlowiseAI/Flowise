@@ -34,6 +34,7 @@ export interface ITool {
     iconSrc?: string
     schema?: string
     func?: string
+    language?: string
     updatedDate: Date
     createdDate: Date
 }

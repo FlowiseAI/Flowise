@@ -76,7 +76,8 @@ class CustomTool_Tools implements INode {
                 name: tool.name,
                 description: tool.description,
                 schema: z.object(convertSchemaToZod(tool.schema)),
-                code: tool.func
+                code: tool.func,
+                language: tool.language
             }
             return new DynamicStructuredTool(obj)
         } catch (e) {

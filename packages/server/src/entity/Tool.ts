@@ -25,6 +25,9 @@ export class Tool implements ITool {
     @Column({ nullable: true })
     func?: string
 
+    @Column({ nullable: true })
+    language?: string
+
     @CreateDateColumn()
     createdDate: Date
 
