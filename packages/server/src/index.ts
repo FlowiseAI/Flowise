@@ -405,7 +405,7 @@ export class App {
             const nodes = parsedFlowData.nodes
             let chatId = await getChatId(chatflow.id)
             if (!chatId) chatId = chatflow.id
-            clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, req.query.sessionId as string)
+            clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, req.query.sessionId as string)
             const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
             return res.json(results)
         })

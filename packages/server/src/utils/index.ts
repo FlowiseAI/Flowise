@@ -18,7 +18,7 @@ import {
     IComponentCredentials,
     ICredentialReqBody
 } from '../Interface'
-import { cloneDeep, get, omit, merge } from 'lodash'
+import { cloneDeep, get, omit, merge, isEqual } from 'lodash'
 import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { lib, PBKDF2, AES, enc } from 'crypto-js'
@@ -182,7 +182,7 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
 
 /**
  * Build langchain from start to end
- * @param {string} startingNodeId
+ * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {INodeDirectedGraph} graph
  * @param {IDepthQueue} depthQueue
@@ -286,12 +286,14 @@ export const buildLangchain = async (
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {IComponentNodes} componentNodes
  * @param {string} chatId
+ * @param {DataSource} appDataSource
  * @param {string} sessionId
  */
 export const clearSessionMemory = async (
     reactFlowNodes: IReactFlowNode[],
     componentNodes: IComponentNodes,
     chatId: string,
+    appDataSource: DataSource,
     sessionId?: string
 ) => {
     for (const node of reactFlowNodes) {
@@ -300,7 +302,8 @@ export const clearSessionMemory = async (
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
         if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
-        if (newNodeInstance.clearSessionMemory) await newNodeInstance?.clearSessionMemory(node.data, { chatId })
+        if (newNodeInstance.clearSessionMemory)
+            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
     }
 }
 
@@ -495,7 +498,7 @@ export const isSameOverrideConfig = (
         Object.keys(existingOverrideConfig).length &&
         newOverrideConfig &&
         Object.keys(newOverrideConfig).length &&
-        JSON.stringify(existingOverrideConfig) === JSON.stringify(newOverrideConfig)
+        isEqual(existingOverrideConfig, newOverrideConfig)
     ) {
         return true
     }
@@ -660,8 +663,18 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
             return 'jsonFile'
         case 'text/csv':
             return 'csvFile'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonlinesFile'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docxFile'
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yamlFile'
         default:
             return ''
     }

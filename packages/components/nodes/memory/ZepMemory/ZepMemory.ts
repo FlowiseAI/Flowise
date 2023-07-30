@@ -141,7 +141,11 @@ class ZepMemory_Memory implements INode {
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
         const zep = await initalizeZep(nodeData, options)
+        const sessionId = nodeData.inputs?.sessionId as string
+        const chatId = options?.chatId as string
+        options.logger.info(`Clearing Zep memory session ${sessionId ? sessionId : chatId}`)
         await zep.clear()
+        options.logger.info(`Successfully cleared Zep memory session ${sessionId ? sessionId : chatId}`)
     }
 }
 
