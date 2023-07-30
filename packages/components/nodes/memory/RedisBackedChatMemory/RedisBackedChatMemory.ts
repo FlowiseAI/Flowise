@@ -65,7 +65,11 @@ class RedisBackedChatMemory_Memory implements INode {
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
         const redis = initalizeRedis(nodeData, options)
-        redis.clear()
+        const sessionId = nodeData.inputs?.sessionId as string
+        const chatId = options?.chatId as string
+        options.logger.info(`Clearing Redis memory session ${sessionId ? sessionId : chatId}`)
+        await redis.clear()
+        options.logger.info(`Successfully cleared Redis memory session ${sessionId ? sessionId : chatId}`)
     }
 }
 

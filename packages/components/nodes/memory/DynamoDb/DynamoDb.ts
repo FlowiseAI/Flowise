@@ -72,7 +72,11 @@ class DynamoDb_Memory implements INode {
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
         const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
+        const sessionId = nodeData.inputs?.sessionId as string
+        const chatId = options?.chatId as string
+        options.logger.info(`Clearing DynamoDb memory session ${sessionId ? sessionId : chatId}`)
         await dynamodbMemory.clear()
+        options.logger.info(`Successfully cleared DynamoDb memory session ${sessionId ? sessionId : chatId}`)
     }
 }
 

@@ -65,7 +65,11 @@ class MotorMemory_Memory implements INode {
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
         const motorhead = await initalizeMotorhead(nodeData, options)
+        const sessionId = nodeData.inputs?.sessionId as string
+        const chatId = options?.chatId as string
+        options.logger.info(`Clearing Motorhead memory session ${sessionId ? sessionId : chatId}`)
         await motorhead.clear()
+        options.logger.info(`Successfully cleared Motorhead memory session ${sessionId ? sessionId : chatId}`)
     }
 }
 
