@@ -4,8 +4,20 @@ import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { Tabs, Tab, Dialog, DialogContent, DialogTitle, Box } from '@mui/material'
+import {
+    Tabs,
+    Tab,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    Box,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Typography
+} from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // Project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
@@ -32,6 +44,8 @@ import configApi from 'api/config'
 import useApi from 'hooks/useApi'
 import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
 import { TableViewOnly } from 'ui-component/table/Table'
+
+import { IconBulb } from '@tabler/icons'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -82,7 +96,7 @@ const getConfigExamplesForJS = (configData, bodyType) => {
         else if (config.type === 'number') exampleVal = `1`
         else if (config.name === 'files') exampleVal = `input.files[0]`
         finalStr += bodyType === 'json' ? `\n      "${config.name}": ${exampleVal},` : `formData.append("${config.name}", ${exampleVal})\n`
-        if (i === loop - 1 && bodyType !== 'json') `formData.append("question", "Hey, how are you?")\n`
+        if (i === loop - 1 && bodyType !== 'json') finalStr += `formData.append("question", "Hey, how are you?")\n`
     }
     return finalStr
 }
@@ -134,6 +148,8 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
     const [checkboxVal, setCheckbox] = useState(false)
+    const [nodeConfig, setNodeConfig] = useState({})
+    const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -160,11 +176,35 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         updateChatflowApi.request(dialogProps.chatflowid, updateBody)
     }
 
+    const groupByNodeLabel = (nodes, isFilter = false) => {
+        const accordianNodes = {}
+        const result = nodes.reduce(function (r, a) {
+            r[a.node] = r[a.node] || []
+            r[a.node].push(a)
+            accordianNodes[a.node] = isFilter ? true : false
+            return r
+        }, Object.create(null))
+        setNodeConfig(result)
+        setNodeConfigExpanded(accordianNodes)
+    }
+
+    const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
+        const accordianNodes = { ...nodeConfigExpanded }
+        accordianNodes[nodeLabel] = isExpanded
+        setNodeConfigExpanded(accordianNodes)
+    }
+
     useEffect(() => {
         if (updateChatflowApi.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
         }
     }, [updateChatflowApi.data, dispatch])
+
+    useEffect(() => {
+        if (getConfigApi.data) {
+            groupByNodeLabel(getConfigApi.data)
+        }
+    }, [getConfigApi.data])
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
@@ -493,6 +533,32 @@ query({
         return ''
     }
 
+    const getMultiConfigCodeWithFormData = (codeLang) => {
+        if (codeLang === 'Python') {
+            return `body_data = {
+    "openAIApiKey[chatOpenAI_0]": "sk-my-openai-1st-key",
+    "openAIApiKey[openAIEmbeddings_0]": "sk-my-openai-2nd-key"
+}`
+        } else if (codeLang === 'JavaScript') {
+            return `formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
+formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
+        } else if (codeLang === 'cURL') {
+            return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
+-F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`
+        }
+    }
+
+    const getMultiConfigCode = () => {
+        return `{
+    "overrideConfig": {
+        "openAIApiKey": {
+            "chatOpenAI_0": "sk-my-openai-1st-key",
+            "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+        }
+    }
+}`
+    }
+
     useEffect(() => {
         if (getAllAPIKeysApi.data) {
             const options = [
@@ -593,7 +659,49 @@ query({
                                 <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
                                 {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                                     <>
-                                        <TableViewOnly rows={getConfigApi.data} columns={Object.keys(getConfigApi.data[0])} />
+                                        {Object.keys(nodeConfig)
+                                            .sort()
+                                            .map((nodeLabel) => (
+                                                <Accordion
+                                                    expanded={nodeConfigExpanded[nodeLabel] || false}
+                                                    onChange={handleAccordionChange(nodeLabel)}
+                                                    key={nodeLabel}
+                                                    disableGutters
+                                                >
+                                                    <AccordionSummary
+                                                        expandIcon={<ExpandMoreIcon />}
+                                                        aria-controls={`nodes-accordian-${nodeLabel}`}
+                                                        id={`nodes-accordian-header-${nodeLabel}`}
+                                                    >
+                                                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                                            <Typography variant='h5'>{nodeLabel}</Typography>
+                                                            <div
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'row',
+                                                                    width: 'max-content',
+                                                                    borderRadius: 15,
+                                                                    background: 'rgb(254,252,191)',
+                                                                    padding: 5,
+                                                                    paddingLeft: 10,
+                                                                    paddingRight: 10,
+                                                                    marginLeft: 10
+                                                                }}
+                                                            >
+                                                                <span style={{ color: 'rgb(116,66,16)', fontSize: '0.825rem' }}>
+                                                                    {nodeConfig[nodeLabel][0].nodeId}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <TableViewOnly
+                                                            rows={nodeConfig[nodeLabel]}
+                                                            columns={Object.keys(nodeConfig[nodeLabel][0]).slice(-3)}
+                                                        />
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                            ))}
                                         <CopyBlock
                                             theme={atomOneDark}
                                             text={
@@ -609,6 +717,43 @@ query({
                                             showLineNumbers={false}
                                             wrapLines
                                         />
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                borderRadius: 10,
+                                                background: '#d8f3dc',
+                                                padding: 10,
+                                                marginTop: 10,
+                                                marginBottom: 10
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <IconBulb size={30} color='#2d6a4f' />
+                                                <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
+                                                    You can also specify multiple values for a config parameter by specifying the node id
+                                                </span>
+                                            </div>
+                                            <div style={{ padding: 10 }}>
+                                                <CopyBlock
+                                                    theme={atomOneDark}
+                                                    text={
+                                                        dialogProps.isFormDataRequired
+                                                            ? getMultiConfigCodeWithFormData(codeLang)
+                                                            : getMultiConfigCode()
+                                                    }
+                                                    language={getLang(codeLang)}
+                                                    showLineNumbers={false}
+                                                    wrapLines
+                                                />
+                                            </div>
+                                        </div>
                                     </>
                                 )}
                                 {getIsChatflowStreamingApi.data?.isStreaming && (
