@@ -6,6 +6,7 @@ import { NodeFileStore } from 'langchain/stores/file/node'
 class ReadFile_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class ReadFile_Tools implements INode {
     constructor() {
         this.label = 'Read File'
         this.name = 'readFile'
+        this.version = 1.0
         this.type = 'ReadFile'
         this.icon = 'readfile.svg'
         this.category = 'Tools'

@@ -2,9 +2,10 @@ import axios from 'axios'
 import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
-import { BaseCallbackHandler } from 'langchain/callbacks'
-import { Server } from 'socket.io'
-import { ChainValues } from 'langchain/dist/schema'
+import { JSDOM } from 'jsdom'
+import { DataSource } from 'typeorm'
+import { ICommonObject, IDatabaseEntity, INodeData } from './Interface'
+import { AES, enc } from 'crypto-js'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -202,114 +203,282 @@ export const getAvailableURLs = async (url: string, limit: number) => {
 }
 
 /**
- * Custom chain handler class
+ * Search for href through htmlBody string
  */
-export class CustomChainHandler extends BaseCallbackHandler {
-    name = 'custom_chain_handler'
-    isLLMStarted = false
-    socketIO: Server
-    socketIOClientId = ''
-    skipK = 0 // Skip streaming for first K numbers of handleLLMStart
-    returnSourceDocuments = false
-
-    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
-        super()
-        this.socketIO = socketIO
-        this.socketIOClientId = socketIOClientId
-        this.skipK = skipK ?? this.skipK
-        this.returnSourceDocuments = returnSourceDocuments ?? this.returnSourceDocuments
-    }
-
-    handleLLMStart() {
-        if (this.skipK > 0) this.skipK -= 1
-    }
-
-    handleLLMNewToken(token: string) {
-        if (this.skipK === 0) {
-            if (!this.isLLMStarted) {
-                this.isLLMStarted = true
-                this.socketIO.to(this.socketIOClientId).emit('start', token)
+function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
+    const dom = new JSDOM(htmlBody)
+    const linkElements = dom.window.document.querySelectorAll('a')
+    const urls: string[] = []
+    for (const linkElement of linkElements) {
+        if (linkElement.href.slice(0, 1) === '/') {
+            try {
+                const urlObj = new URL(baseURL + linkElement.href)
+                urls.push(urlObj.href) //relative
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
+                continue
             }
-            this.socketIO.to(this.socketIOClientId).emit('token', token)
-        }
-    }
-
-    handleLLMEnd() {
-        this.socketIO.to(this.socketIOClientId).emit('end')
-    }
-
-    handleChainEnd(outputs: ChainValues): void | Promise<void> {
-        if (this.returnSourceDocuments) {
-            this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
-        }
-    }
-}
-
-export const returnJSONStr = (jsonStr: string): string => {
-    let jsonStrArray = jsonStr.split(':')
-
-    let wholeString = ''
-    for (let i = 0; i < jsonStrArray.length; i++) {
-        if (jsonStrArray[i].includes(',') && jsonStrArray[i + 1] !== undefined) {
-            const splitValueAndTitle = jsonStrArray[i].split(',')
-            const value = splitValueAndTitle[0]
-            const newTitle = splitValueAndTitle[1]
-            wholeString += handleEscapeDoubleQuote(value) + ',' + newTitle + ':'
         } else {
-            wholeString += wholeString === '' ? jsonStrArray[i] + ':' : handleEscapeDoubleQuote(jsonStrArray[i])
-        }
-    }
-    return wholeString
-}
-
-const handleEscapeDoubleQuote = (value: string): string => {
-    let newValue = ''
-    if (value.includes('"')) {
-        const valueArray = value.split('"')
-        for (let i = 0; i < valueArray.length; i++) {
-            if ((i + 1) % 2 !== 0) {
-                switch (valueArray[i]) {
-                    case '':
-                        newValue += '"'
-                        break
-                    case '}':
-                        newValue += '"}'
-                        break
-                    default:
-                        newValue += '\\"' + valueArray[i] + '\\"'
-                }
-            } else {
-                newValue += valueArray[i]
+            try {
+                const urlObj = new URL(linkElement.href)
+                urls.push(urlObj.href) //absolute
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
+                continue
             }
         }
     }
-    return newValue === '' ? value : newValue
+    return urls
 }
 
-export const availableDependencies = [
-    '@dqbd/tiktoken',
-    '@getzep/zep-js',
-    '@huggingface/inference',
-    '@pinecone-database/pinecone',
-    '@supabase/supabase-js',
-    'axios',
-    'cheerio',
-    'chromadb',
-    'cohere-ai',
-    'd3-dsv',
-    'form-data',
-    'graphql',
-    'html-to-text',
-    'langchain',
-    'linkifyjs',
-    'mammoth',
-    'moment',
-    'node-fetch',
-    'pdf-parse',
-    'pdfjs-dist',
-    'playwright',
-    'puppeteer',
-    'srt-parser-2',
-    'typeorm',
-    'weaviate-ts-client'
+/**
+ * Normalize URL to prevent crawling the same page
+ */
+function normalizeURL(urlString: string): string {
+    const urlObj = new URL(urlString)
+    const hostPath = urlObj.hostname + urlObj.pathname
+    if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
+        // handling trailing slash
+        return hostPath.slice(0, -1)
+    }
+    return hostPath
+}
+
+/**
+ * Recursive crawl using normalizeURL and getURLsFromHTML
+ */
+async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
+    const baseURLObj = new URL(baseURL)
+    const currentURLObj = new URL(currentURL)
+
+    if (limit !== 0 && pages.length === limit) return pages
+
+    if (baseURLObj.hostname !== currentURLObj.hostname) return pages
+
+    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+    if (pages.includes(normalizeCurrentURL)) {
+        return pages
+    }
+
+    pages.push(normalizeCurrentURL)
+
+    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+
+        if (resp.status > 399) {
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            return pages
+        }
+
+        const contentType: string | null = resp.headers.get('content-type')
+        if ((contentType && !contentType.includes('text/html')) || !contentType) {
+            if (process.env.DEBUG === 'true') console.error(`non html response, content type: ${contentType}, on page: ${currentURL}`)
+            return pages
+        }
+
+        const htmlBody = await resp.text()
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
+        for (const nextURL of nextURLs) {
+            pages = await crawl(baseURL, nextURL, pages, limit)
+        }
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+    }
+    return pages
+}
+
+/**
+ * Prep URL before passing into recursive carwl function
+ */
+export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+    const URLObj = new URL(stringURL)
+    const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
+    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
+}
+
+export function getURLsFromXML(xmlBody: string, limit: number): string[] {
+    const dom = new JSDOM(xmlBody, { contentType: 'text/xml' })
+    const linkElements = dom.window.document.querySelectorAll('url')
+    const urls: string[] = []
+    for (const linkElement of linkElements) {
+        const locElement = linkElement.querySelector('loc')
+        if (limit !== 0 && urls.length === limit) break
+        if (locElement?.textContent) {
+            urls.push(locElement.textContent)
+        }
+    }
+    return urls
+}
+
+export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
+    let urls: string[] = []
+    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+
+        if (resp.status > 399) {
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const contentType: string | null = resp.headers.get('content-type')
+        if ((contentType && !contentType.includes('application/xml') && !contentType.includes('text/xml')) || !contentType) {
+            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
+            return urls
+        }
+
+        const xmlBody = await resp.text()
+        urls = getURLsFromXML(xmlBody, limit)
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+    }
+    return urls
+}
+
+/*
+ * Get env variables
+ * @param {string} url
+ * @returns {string[]}
+ */
+export const getEnvironmentVariable = (name: string): string | undefined => {
+    try {
+        return typeof process !== 'undefined' ? process.env?.[name] : undefined
+    } catch (e) {
+        return undefined
+    }
+}
+
+/**
+ * Returns the path of encryption key
+ * @returns {string}
+ */
+const getEncryptionKeyFilePath = (): string => {
+    const checkPaths = [
+        path.join(__dirname, '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
+    ]
+    for (const checkPath of checkPaths) {
+        if (fs.existsSync(checkPath)) {
+            return checkPath
+        }
+    }
+    return ''
+}
+
+const getEncryptionKeyPath = (): string => {
+    return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
+}
+
+/**
+ * Returns the encryption key
+ * @returns {Promise<string>}
+ */
+const getEncryptionKey = async (): Promise<string> => {
+    try {
+        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
+/**
+ * Decrypt credential data
+ * @param {string} encryptedData
+ * @param {string} componentCredentialName
+ * @param {IComponentCredentials} componentCredentials
+ * @returns {Promise<ICommonObject>}
+ */
+const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
+    const encryptKey = await getEncryptionKey()
+    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    try {
+        return JSON.parse(decryptedData.toString(enc.Utf8))
+    } catch (e) {
+        console.error(e)
+        throw new Error('Credentials could not be decrypted.')
+    }
+}
+
+/**
+ * Get credential data
+ * @param {string} selectedCredentialId
+ * @param {ICommonObject} options
+ * @returns {Promise<ICommonObject>}
+ */
+export const getCredentialData = async (selectedCredentialId: string, options: ICommonObject): Promise<ICommonObject> => {
+    const appDataSource = options.appDataSource as DataSource
+    const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+    try {
+        const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
+            id: selectedCredentialId
+        })
+
+        if (!credential) return {}
+
+        // Decrpyt credentialData
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+
+        return decryptedCredentialData
+    } catch (e) {
+        throw new Error(e)
+    }
+}
+
+export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
+}
+
+// reference https://www.freeformatter.com/json-escape.html
+const jsonEscapeCharacters = [
+    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'FLOWISE_NEWLINE' },
+    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
+    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
+    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'FLOWISE_TAB' },
+    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
 ]
+
+function handleEscapesJSONParse(input: string, reverse: Boolean): string {
+    for (const element of jsonEscapeCharacters) {
+        input = reverse ? input.replaceAll(element.value, element.escape) : input.replaceAll(element.escape, element.value)
+    }
+    return input
+}
+
+function iterateEscapesJSONParse(input: any, reverse: Boolean): any {
+    for (const element in input) {
+        const type = typeof input[element]
+        if (type === 'string') input[element] = handleEscapesJSONParse(input[element], reverse)
+        else if (type === 'object') input[element] = iterateEscapesJSONParse(input[element], reverse)
+    }
+    return input
+}
+
+export function handleEscapeCharacters(input: any, reverse: Boolean): any {
+    const type = typeof input
+    if (type === 'string') return handleEscapesJSONParse(input, reverse)
+    else if (type === 'object') return iterateEscapesJSONParse(input, reverse)
+    return input
+}
+
+export const getUserHome = (): string => {
+    let variableName = 'HOME'
+    if (process.platform === 'win32') {
+        variableName = 'USERPROFILE'
+    }
+
+    if (process.env[variableName] === undefined) {
+        // If for some reason the variable does not exist, fall back to current folder
+        return process.cwd()
+    }
+    return process.env[variableName] as string
+}

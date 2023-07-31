@@ -1,0 +1,8 @@
+{
+    "name": "add_airtable",
+    "description": "Add column1, column2 to Airtable",
+    "color": "linear-gradient(rgb(125,71,222), rgb(128,102,23))",
+    "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg",
+    "schema": "[{\"id\":0,\"property\":\"column1\",\"description\":\"this is column1\",\"type\":\"string\",\"required\":true},{\"id\":1,\"property\":\"column2\",\"description\":\"this is column2\",\"type\":\"string\",\"required\":true}]",
+    "func": "const fetch = require('node-fetch');\nconst baseId = 'YOUR-BASE-ID';\nconst tableId = 'YOUR-TABLE-ID';\nconst token = 'YOUR-TOKEN';\n\nconst body = {\n\t\"records\": [\n\t\t{\n\t\t\t\"fields\": {\n\t\t\t\t\"column1\": $column1,\n\t\t\t\t\"column2\": $column2,\n\t\t\t}\n\t\t}\n\t]\n};\n\nconst options = {\n\tmethod: 'POST',\n\theaders: {\n\t\t'Authorization': `Bearer ${token}`,\n\t\t'Content-Type': 'application/json'\n\t},\n\tbody: JSON.stringify(body)\n};\n\nconst url = `https://api.airtable.com/v0/${baseId}/${tableId}`\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst text = await response.text();\n\treturn text;\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}"
+}

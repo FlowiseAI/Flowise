@@ -1,0 +1,286 @@
+{
+    "description": "An agent that uses Zapier NLA to accesss apps and actions on Zapier's platform",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 278,
+            "id": "zapierNLA_0",
+            "position": {
+                "x": 546.0561178227484,
+                "y": 83.03303671691799
+            },
+            "type": "customNode",
+            "data": {
+                "id": "zapierNLA_0",
+                "label": "Zapier NLA",
+                "name": "zapierNLA",
+                "version": 1,
+                "type": "ZapierNLA",
+                "baseClasses": ["ZapierNLA", "Tool"],
+                "category": "Tools",
+                "description": "Access to apps and actions on Zapier's platform through a natural language API interface",
+                "inputParams": [
+                    {
+                        "label": "Zapier NLA Api Key",
+                        "name": "apiKey",
+                        "type": "password",
+                        "id": "zapierNLA_0-input-apiKey-password"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "zapierNLA_0-output-zapierNLA-ZapierNLA|Tool",
+                        "name": "zapierNLA",
+                        "label": "ZapierNLA",
+                        "type": "ZapierNLA | Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 546.0561178227484,
+                "y": 83.03303671691799
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentLLM_0",
+            "position": {
+                "x": 1002.5779315680477,
+                "y": 329.9701389591812
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_0",
+                "label": "MRKL Agent for LLMs",
+                "name": "mrklAgentLLM",
+                "version": 1,
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentLLM_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{zapierNLA_0.data.instance}}"],
+                    "model": "{{openAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
+                        "name": "mrklAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1002.5779315680477,
+                "y": 329.9701389591812
+            },
+            "selected": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "openAI_0",
+            "position": {
+                "x": 550.5957793208096,
+                "y": 378.30370661617934
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAI_0",
+                "label": "OpenAI",
+                "name": "openAI",
+                "version": 1,
+                "type": "OpenAI",
+                "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
+                "category": "LLMs",
+                "description": "Wrapper around OpenAI large language models",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-davinci-003",
+                                "name": "text-davinci-003"
+                            },
+                            {
+                                "label": "text-davinci-002",
+                                "name": "text-davinci-002"
+                            },
+                            {
+                                "label": "text-curie-001",
+                                "name": "text-curie-001"
+                            },
+                            {
+                                "label": "text-babbage-001",
+                                "name": "text-babbage-001"
+                            }
+                        ],
+                        "default": "text-davinci-003",
+                        "optional": true,
+                        "id": "openAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.7,
+                        "optional": true,
+                        "id": "openAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Best Of",
+                        "name": "bestOf",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-bestOf-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-davinci-003",
+                    "temperature": 0.7,
+                    "maxTokens": "",
+                    "topP": "",
+                    "bestOf": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+                        "name": "openAI",
+                        "label": "OpenAI",
+                        "type": "OpenAI | BaseLLM | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 550.5957793208096,
+                "y": 378.30370661617934
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "zapierNLA_0",
+            "sourceHandle": "zapierNLA_0-output-zapierNLA-ZapierNLA|Tool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "zapierNLA_0-zapierNLA_0-output-zapierNLA-ZapierNLA|Tool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAI_0",
+            "sourceHandle": "openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "openAI_0-openAI_0-output-openAI-OpenAI|BaseLLM|BaseLanguageModel-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

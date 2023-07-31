@@ -6,6 +6,7 @@ import { TiktokenEncoding } from '@dqbd/tiktoken'
 class TokenTextSplitter_TextSplitters implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class TokenTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'Token Text Splitter'
         this.name = 'tokenTextSplitter'
+        this.version = 1.0
         this.type = 'TokenTextSplitter'
         this.icon = 'tiktoken.svg'
         this.category = 'Text Splitters'

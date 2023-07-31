@@ -6,6 +6,7 @@ import { OpenAIChatInput } from 'langchain/chat_models/openai'
 class ChatLocalAI_ChatModels implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +17,7 @@ class ChatLocalAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatLocalAI'
         this.name = 'chatLocalAI'
+        this.version = 1.0
         this.type = 'ChatLocalAI'
         this.icon = 'localai.png'
         this.category = 'Chat Models'
@@ -38,6 +40,7 @@ class ChatLocalAI_ChatModels implements INode {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
+                step: 0.1,
                 default: 0.9,
                 optional: true
             },
@@ -45,6 +48,7 @@ class ChatLocalAI_ChatModels implements INode {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -52,6 +56,7 @@ class ChatLocalAI_ChatModels implements INode {
                 label: 'Top Probability',
                 name: 'topP',
                 type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -59,6 +64,7 @@ class ChatLocalAI_ChatModels implements INode {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             }
@@ -74,13 +80,13 @@ class ChatLocalAI_ChatModels implements INode {
         const basePath = nodeData.inputs?.basePath as string
 
         const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseInt(topP, 10)
+        if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new OpenAIChat(obj, { basePath })

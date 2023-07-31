@@ -27,7 +27,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
-const ItemCard = ({ isLoading, data, images, color, onClick }) => {
+const ItemCard = ({ isLoading, data, images, onClick }) => {
     return (
         <>
             {isLoading ? (
@@ -43,21 +43,35 @@ const ItemCard = ({ isLoading, data, images, color, onClick }) => {
                                     alignItems: 'center'
                                 }}
                             >
-                                {color && (
+                                {data.iconSrc && (
                                     <div
                                         style={{
                                             width: 35,
                                             height: 35,
                                             marginRight: 10,
                                             borderRadius: '50%',
-                                            background: color
+                                            background: `url(${data.iconSrc})`,
+                                            backgroundSize: 'contain',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center center'
+                                        }}
+                                    ></div>
+                                )}
+                                {!data.iconSrc && data.color && (
+                                    <div
+                                        style={{
+                                            width: 35,
+                                            height: 35,
+                                            marginRight: 10,
+                                            borderRadius: '50%',
+                                            background: data.color
                                         }}
                                     ></div>
                                 )}
                                 <Typography
                                     sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                 >
-                                    {data.name}
+                                    {data.templateName || data.name}
                                 </Typography>
                             </div>
                             {data.description && (
@@ -107,7 +121,6 @@ ItemCard.propTypes = {
     isLoading: PropTypes.bool,
     data: PropTypes.object,
     images: PropTypes.array,
-    color: PropTypes.string,
     onClick: PropTypes.func
 }
 

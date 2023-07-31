@@ -1,10 +1,11 @@
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
-import { getBaseClasses, getInputVariables, returnJSONStr } from '../../../src/utils'
+import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { PromptTemplateInput } from 'langchain/prompts'
 
 class PromptTemplate_Prompts implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class PromptTemplate_Prompts implements INode {
     constructor() {
         this.label = 'Prompt Template'
         this.name = 'promptTemplate'
+        this.version = 1.0
         this.type = 'PromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
@@ -31,12 +33,7 @@ class PromptTemplate_Prompts implements INode {
             {
                 label: 'Format Prompt Values',
                 name: 'promptValues',
-                type: 'string',
-                rows: 4,
-                placeholder: `{
-  "input_language": "English",
-  "output_language": "French"
-}`,
+                type: 'json',
                 optional: true,
                 acceptVariable: true,
                 list: true
@@ -46,12 +43,11 @@ class PromptTemplate_Prompts implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const template = nodeData.inputs?.template as string
-        let promptValuesStr = nodeData.inputs?.promptValues as string
+        const promptValuesStr = nodeData.inputs?.promptValues as string
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValuesStr = promptValuesStr.replace(/\s/g, '')
-            promptValues = JSON.parse(returnJSONStr(promptValuesStr))
+            promptValues = JSON.parse(promptValuesStr)
         }
 
         const inputVariables = getInputVariables(template)

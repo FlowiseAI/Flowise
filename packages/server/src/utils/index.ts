@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import moment from 'moment'
+import logger from './logger'
 import {
     IComponentNodes,
     IDepthQueue,
@@ -12,18 +13,26 @@ import {
     IReactFlowNode,
     IVariableDict,
     INodeData,
-    IOverrideConfig
+    IOverrideConfig,
+    ICredentialDataDecrypted,
+    IComponentCredentials,
+    ICredentialReqBody
 } from '../Interface'
-import { cloneDeep, get, omit, merge } from 'lodash'
-import { ICommonObject, getInputVariables, IDatabaseEntity } from 'flowise-components'
+import { cloneDeep, get, omit, merge, isEqual } from 'lodash'
+import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
+import { lib, PBKDF2, AES, enc } from 'crypto-js'
+
 import { ChatFlow } from '../entity/ChatFlow'
 import { ChatMessage } from '../entity/ChatMessage'
+import { Credential } from '../entity/Credential'
 import { Tool } from '../entity/Tool'
 import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'
-export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool }
+const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
+
+export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
 
 /**
  * Returns the home folder path of the user if
@@ -173,12 +182,15 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
 
 /**
  * Build langchain from start to end
- * @param {string} startingNodeId
+ * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {INodeDirectedGraph} graph
  * @param {IDepthQueue} depthQueue
  * @param {IComponentNodes} componentNodes
  * @param {string} question
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {ICommonObject} overrideConfig
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -221,13 +233,16 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
 
+            logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
                 appDataSource,
-                databaseEntities
+                databaseEntities,
+                logger
             })
+            logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
-            console.error(e)
+            logger.error(e)
             throw new Error(e)
         }
 
@@ -267,6 +282,32 @@ export const buildLangchain = async (
 }
 
 /**
+ * Clear memory
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IComponentNodes} componentNodes
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {string} sessionId
+ */
+export const clearSessionMemory = async (
+    reactFlowNodes: IReactFlowNode[],
+    componentNodes: IComponentNodes,
+    chatId: string,
+    appDataSource: DataSource,
+    sessionId?: string
+) => {
+    for (const node of reactFlowNodes) {
+        if (node.data.category !== 'Memory') continue
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newNodeInstance = new nodeModule.nodeClass()
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+        if (newNodeInstance.clearSessionMemory)
+            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+    }
+}
+
+/**
  * Get variable value from outputResponses.output
  * @param {string} paramValue
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -295,8 +336,13 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
 
+            /**
+             * Apply string transformation to convert special chars:
+             * FROM: hello i am ben\n\n\thow are you?
+             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = question
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -398,9 +444,12 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
-        for (const key in paramsObj) {
-            const paramValue: string = paramsObj[key]
-            paramsObj[key] = overrideConfig[key] ?? paramValue
+        for (const config in overrideConfig) {
+            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            // Check if boolean
+            if (paramValue === 'true') paramValue = true
+            else if (paramValue === 'false') paramValue = false
+            paramsObj[config] = paramValue
         }
     }
 
@@ -449,7 +498,7 @@ export const isSameOverrideConfig = (
         Object.keys(existingOverrideConfig).length &&
         newOverrideConfig &&
         Object.keys(newOverrideConfig).length &&
-        JSON.stringify(existingOverrideConfig) === JSON.stringify(newOverrideConfig)
+        isEqual(existingOverrideConfig, newOverrideConfig)
     ) {
         return true
     }
@@ -463,7 +512,7 @@ export const isSameOverrideConfig = (
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return path.join(__dirname, '..', '..', 'api.json')
+    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
 }
 
 /**
@@ -548,6 +597,18 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
 }
 
 /**
+ * Get API Key details
+ * @param {string} apiKey
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const getApiKey = async (apiKey: string) => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
+    if (keyIndex < 0) return undefined
+    return existingAPIKeys[keyIndex]
+}
+
+/**
  * Update existing API key
  * @param {string} keyIdToUpdate
  * @param {string} newKeyName
@@ -583,7 +644,7 @@ export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void>
     try {
         await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     } catch (error) {
-        console.error(error)
+        logger.error(error)
     }
 }
 
@@ -602,39 +663,78 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
             return 'jsonFile'
         case 'text/csv':
             return 'csvFile'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonlinesFile'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docxFile'
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yamlFile'
         default:
             return ''
     }
 }
 
 /**
- * Find all available inpur params config
+ * Find all available input params config
  * @param {IReactFlowNode[]} reactFlowNodes
- * @returns {Promise<IOverrideConfig[]>}
+ * @param {IComponentCredentials} componentCredentials
+ * @returns {IOverrideConfig[]}
  */
-export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[]) => {
+export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], componentCredentials: IComponentCredentials) => {
     const configs: IOverrideConfig[] = []
 
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
             let obj: IOverrideConfig
-            if (inputParam.type === 'password' || inputParam.type === 'options') {
-                continue
-            } else if (inputParam.type === 'file') {
+            if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
                 }
+            } else if (inputParam.type === 'options') {
+                obj = {
+                    node: flowNode.data.label,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.options
+                        ? inputParam.options
+                              ?.map((option) => {
+                                  return option.name
+                              })
+                              .join(', ')
+                        : 'string'
+                }
+            } else if (inputParam.type === 'credential') {
+                // get component credential inputs
+                for (const name of inputParam.credentialNames ?? []) {
+                    if (Object.prototype.hasOwnProperty.call(componentCredentials, name)) {
+                        const inputs = componentCredentials[name]?.inputs ?? []
+                        for (const input of inputs) {
+                            obj = {
+                                node: flowNode.data.label,
+                                label: input.label,
+                                name: input.name,
+                                type: input.type === 'password' ? 'string' : input.type
+                            }
+                            configs.push(obj)
+                        }
+                    }
+                }
+                continue
             } else {
                 obj = {
                     node: flowNode.data.label,
                     label: inputParam.label,
                     name: inputParam.name,
-                    type: inputParam.type
+                    type: inputParam.type === 'password' ? 'string' : inputParam.type
                 }
             }
             if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
@@ -668,10 +768,131 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         }
     }
 
-    return (
-        isChatOrLLMsExist &&
-        (endingNodeData.category === 'Chains' || endingNodeData.name === 'openAIFunctionAgent') &&
-        !isVectorStoreFaiss(endingNodeData) &&
-        process.env.EXECUTION_MODE !== 'child'
-    )
+    let isValidChainOrAgent = false
+    if (endingNodeData.category === 'Chains') {
+        // Chains that are not available to stream
+        const blacklistChains = ['openApiChain']
+        isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
+    } else if (endingNodeData.category === 'Agents') {
+        // Agent that are available to stream
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent']
+        isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData) && process.env.EXECUTION_MODE !== 'child'
+}
+
+/**
+ * Returns the path of encryption key
+ * @returns {string}
+ */
+export const getEncryptionKeyPath = (): string => {
+    return process.env.SECRETKEY_PATH
+        ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
+        : path.join(__dirname, '..', '..', 'encryption.key')
+}
+
+/**
+ * Generate an encryption key
+ * @returns {string}
+ */
+export const generateEncryptKey = (): string => {
+    const salt = lib.WordArray.random(128 / 8)
+    const key256Bits = PBKDF2(process.env.PASSPHRASE || 'MYPASSPHRASE', salt, {
+        keySize: 256 / 32,
+        iterations: 1000
+    })
+    return key256Bits.toString()
+}
+
+/**
+ * Returns the encryption key
+ * @returns {Promise<string>}
+ */
+export const getEncryptionKey = async (): Promise<string> => {
+    try {
+        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+    } catch (error) {
+        const encryptKey = generateEncryptKey()
+        await fs.promises.writeFile(getEncryptionKeyPath(), encryptKey)
+        return encryptKey
+    }
+}
+
+/**
+ * Encrypt credential data
+ * @param {ICredentialDataDecrypted} plainDataObj
+ * @returns {Promise<string>}
+ */
+export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
+    const encryptKey = await getEncryptionKey()
+    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
+}
+
+/**
+ * Decrypt credential data
+ * @param {string} encryptedData
+ * @param {string} componentCredentialName
+ * @param {IComponentCredentials} componentCredentials
+ * @returns {Promise<ICredentialDataDecrypted>}
+ */
+export const decryptCredentialData = async (
+    encryptedData: string,
+    componentCredentialName?: string,
+    componentCredentials?: IComponentCredentials
+): Promise<ICredentialDataDecrypted> => {
+    const encryptKey = await getEncryptionKey()
+    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    try {
+        if (componentCredentialName && componentCredentials) {
+            const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))
+            return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials)
+        }
+        return JSON.parse(decryptedData.toString(enc.Utf8))
+    } catch (e) {
+        console.error(e)
+        throw new Error('Credentials could not be decrypted.')
+    }
+}
+
+/**
+ * Transform ICredentialBody from req to Credential entity
+ * @param {ICredentialReqBody} body
+ * @returns {Credential}
+ */
+export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
+    const encryptedData = await encryptCredentialData(body.plainDataObj)
+
+    const credentialBody = {
+        name: body.name,
+        credentialName: body.credentialName,
+        encryptedData
+    }
+
+    const newCredential = new Credential()
+    Object.assign(newCredential, credentialBody)
+
+    return newCredential
+}
+
+/**
+ * Redact values that are of password type to avoid sending back to client
+ * @param {string} componentCredentialName
+ * @param {ICredentialDataDecrypted} decryptedCredentialObj
+ * @param {IComponentCredentials} componentCredentials
+ * @returns {ICredentialDataDecrypted}
+ */
+export const redactCredentialWithPasswordType = (
+    componentCredentialName: string,
+    decryptedCredentialObj: ICredentialDataDecrypted,
+    componentCredentials: IComponentCredentials
+): ICredentialDataDecrypted => {
+    const plainDataObj = cloneDeep(decryptedCredentialObj)
+    for (const cred in plainDataObj) {
+        const inputParam = componentCredentials[componentCredentialName].inputs?.find((inp) => inp.type === 'password' && inp.name === cred)
+        if (inputParam) {
+            plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE
+        }
+    }
+    return plainDataObj
 }

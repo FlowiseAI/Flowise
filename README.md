@@ -1,11 +1,18 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - LangchainJS UI
+<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
 
+# Flowise - Build LLM Apps Easily
+
+[![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
+[![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
+[![Twitter Follow](https://img.shields.io/twitter/follow/FlowiseAI?style=social)](https://twitter.com/FlowiseAI)
+[![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
+[![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
+
+<h3>Drag & drop UI to build your customized LLM flow</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
-
-Drag & drop UI to build your customized LLM flow using [LangchainJS](https://github.com/hwchase17/langchainjs)
 
 ## ⚡Quick Start
 
@@ -34,7 +41,7 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 ### Docker Compose
 
 1. Go to `docker` folder at the root of the project
-2. Create `.env` file and specify the `PORT` (refer to `.env.example`)
+2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
 3. `docker-compose up -d`
 4. Open [http://localhost:3000](http://localhost:3000)
 5. You can bring the containers down by `docker-compose stop`
@@ -126,6 +133,10 @@ FLOWISE_USERNAME=user
 FLOWISE_PASSWORD=1234
 ```
 
+## 🌱 Env Variables
+
+Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+
 ## 📖 Documentation
 
 [Flowise Docs](https://docs.flowiseai.com/)
@@ -134,7 +145,7 @@ FLOWISE_PASSWORD=1234
 
 ### [Railway](https://docs.flowiseai.com/deployment/railway)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/YK7J0v)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
 ### [Render](https://docs.flowiseai.com/deployment/render)
 
@@ -157,6 +168,12 @@ Coming soon
 Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/FlowiseAI/Flowise/discussions)
 
 ## 🙌 Contributing
+
+Thanks go to these awesome contributors
+
+<a href="https://github.com/FlowiseAI/Flowise/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
+</a>
 
 See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)

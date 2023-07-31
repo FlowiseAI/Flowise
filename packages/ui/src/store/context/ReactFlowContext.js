@@ -1,7 +1,9 @@
 import { createContext, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { getUniqueNodeId } from 'utils/genericHelper'
 import { cloneDeep } from 'lodash'
+import { SET_DIRTY } from 'store/actions'
 
 const initialValue = {
     reactFlowInstance: null,
@@ -14,17 +16,20 @@ const initialValue = {
 export const flowContext = createContext(initialValue)
 
 export const ReactFlowContext = ({ children }) => {
+    const dispatch = useDispatch()
     const [reactFlowInstance, setReactFlowInstance] = useState(null)
 
     const deleteNode = (nodeid) => {
         deleteConnectedInput(nodeid, 'node')
         reactFlowInstance.setNodes(reactFlowInstance.getNodes().filter((n) => n.id !== nodeid))
         reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((ns) => ns.source !== nodeid && ns.target !== nodeid))
+        dispatch({ type: SET_DIRTY })
     }
 
     const deleteEdge = (edgeid) => {
         deleteConnectedInput(edgeid, 'edge')
         reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid))
+        dispatch({ type: SET_DIRTY })
     }
 
     const deleteConnectedInput = (id, type) => {
@@ -103,6 +108,7 @@ export const ReactFlowContext = ({ children }) => {
             }
 
             reactFlowInstance.setNodes([...nodes, duplicatedNode])
+            dispatch({ type: SET_DIRTY })
         }
     }
 
