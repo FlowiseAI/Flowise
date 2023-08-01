@@ -2,6 +2,8 @@
 
 # Contributing to Flowise
 
+English | [中文](<./CONTRIBUTING-ZH.md>)
+
 We appreciate any form of contributions.
 
 ## ⭐ Star
