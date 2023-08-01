@@ -401,3 +401,11 @@ export const getInputVariables = (paramValue) => {
     }
     return inputVariables
 }
+
+export const isValidURL = (url) => {
+    try {
+        return new URL(url)
+    } catch (err) {
+        return undefined
+    }
+}

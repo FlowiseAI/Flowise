@@ -30,6 +30,7 @@ import { baseURL, maxScroll } from 'store/constant'
 
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
+import { isValidURL } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -57,6 +58,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const onSourceDialogClick = (data) => {
         setSourceDialogProps({ data })
         setSourceDialogOpen(true)
+    }
+
+    const onURLClick = (data) => {
+        window.open(data, '_blank')
     }
 
     const scrollToBottom = () => {
@@ -320,16 +325,23 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                     {message.sourceDocuments.map((source, index) => {
+                                                        const URL = isValidURL(source.metadata.source)
                                                         return (
                                                             <Chip
                                                                 size='small'
                                                                 key={index}
-                                                                label={`${source.pageContent.substring(0, 15)}...`}
+                                                                label={
+                                                                    URL
+                                                                        ? `${(URL.hostname + URL.pathname).substring(0, 15)}...`
+                                                                        : `${source.pageContent.substring(0, 15)}...`
+                                                                }
                                                                 component='a'
                                                                 sx={{ mr: 1, mb: 1 }}
                                                                 variant='outlined'
                                                                 clickable
-                                                                onClick={() => onSourceDialogClick(source)}
+                                                                onClick={() =>
+                                                                    URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
+                                                                }
                                                             />
                                                         )
                                                     })}
