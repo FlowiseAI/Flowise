@@ -57,6 +57,8 @@ import { Tool } from './entity/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { fork } from 'child_process'
+import { ChainLog } from './entity/ChainLog'
+import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 
 export class App {
     app: express.Application
@@ -723,6 +725,21 @@ export class App {
             }
         })
 
+        // Get all chain logs
+        this.app.get('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const { query } = req
+                const repository = this.AppDataSource.getRepository(ChainLog)
+
+                const queryParameters = prepareQueryParametersForLists(query)
+                const data = await getDataByQueries({ repository, ...queryParameters })
+
+                return res.status(200).json(data)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
@@ -998,6 +1015,18 @@ export class App {
                     : await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, logger })
 
                 logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+
+                // save logs to database
+                this.AppDataSource.getRepository(ChainLog).save({
+                    question: incomingInput.question,
+                    text: result?.text ? result.text : result,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    result: typeof result === 'string' ? { text: result } : result
+                })
+
                 return res.json(result)
             }
         } catch (e: any) {

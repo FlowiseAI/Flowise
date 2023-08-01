@@ -5,6 +5,7 @@ import { ChatFlow } from './entity/ChatFlow'
 import { ChatMessage } from './entity/ChatMessage'
 import { Credential } from './entity/Credential'
 import { Tool } from './entity/Tool'
+import { ChainLog } from './entity/ChainLog'
 import { getUserHome } from './utils'
 
 let appDataSource: DataSource
@@ -19,7 +20,7 @@ export const init = async (): Promise<void> => {
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                entities: [ChatFlow, ChatMessage, Tool, Credential, ChainLog],
                 migrations: []
             })
             break
@@ -33,7 +34,7 @@ export const init = async (): Promise<void> => {
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                entities: [ChatFlow, ChatMessage, Tool, Credential, ChainLog],
                 migrations: []
             })
             break
@@ -46,7 +47,7 @@ export const init = async (): Promise<void> => {
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                entities: [ChatFlow, ChatMessage, Tool, Credential, ChainLog],
                 migrations: []
             })
             break
@@ -56,7 +57,7 @@ export const init = async (): Promise<void> => {
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
                 synchronize,
-                entities: [ChatFlow, ChatMessage, Tool, Credential],
+                entities: [ChatFlow, ChatMessage, Tool, Credential, ChainLog],
                 migrations: []
             })
             break
