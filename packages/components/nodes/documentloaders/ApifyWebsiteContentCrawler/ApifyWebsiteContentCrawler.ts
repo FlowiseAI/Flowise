@@ -27,13 +27,60 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Input',
-                name: 'input',
+                label: 'Start URLs',
+                name: 'urls',
+                type: 'string',
+                description: 'One or more URLs of pages where the crawler will start, separated by commas.',
+                placeholder: 'https://js.langchain.com/docs/'
+            },
+            {
+                label: 'Crawler type',
+                type: 'options',
+                name: 'crawlerType',
+                options: [
+                    {
+                        label: 'Headless web browser (Chrome+Playwright)',
+                        name: 'playwright:chrome'
+                    },
+                    {
+                        label: 'Stealthy web browser (Firefox+Playwright)',
+                        name: 'playwright:firefox'
+                    },
+                    {
+                        label: 'Raw HTTP client (Cheerio)',
+                        name: 'cheerio'
+                    },
+                    {
+                        label: 'Raw HTTP client with JavaScript execution (JSDOM) [experimental]',
+                        name: 'jsdom'
+                    }
+                ],
+                description:
+                    'Select the crawling engine, see <a target="_blank" href="https://apify.com/apify/website-content-crawler#crawling">documentation</a> for additional information.',
+                default: 'playwright:firefox'
+            },
+            {
+                label: 'Max crawling depth',
+                name: 'maxCrawlDepth',
+                type: 'number',
+                optional: true,
+                default: 1
+            },
+            {
+                label: 'Max crawl pages',
+                name: 'maxCrawlPages',
+                type: 'number',
+                optional: true,
+                default: 3
+            },
+            {
+                label: 'Additional input',
+                name: 'additionalInput',
                 type: 'json',
-                default: JSON.stringify({
-                    startUrls: [{ url: 'https://js.langchain.com/docs/' }],
-                    maxCrawlPages: 1
-                })
+                default: JSON.stringify({}),
+                description:
+                    'For additional input options for the crawler see <a target="_blank" href="https://apify.com/apify/website-content-crawler/input-schema">documentation</a>.',
+                optional: true
             },
             {
                 label: 'Text Splitter',
@@ -52,7 +99,23 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const input = typeof nodeData.inputs?.input === 'object' ? nodeData.inputs?.input : JSON.parse(nodeData.inputs?.input as string)
+
+        // Get input options and merge with additional input
+        const urls = nodeData.inputs?.urls as string
+        const crawlerType = nodeData.inputs?.crawlerType as string
+        const maxCrawlDepth = nodeData.inputs?.maxCrawlDepth as number
+        const maxCrawlPages = nodeData.inputs?.maxCrawlPages as number
+        const additionalInput =
+            typeof nodeData.inputs?.additionalInput === 'object'
+                ? nodeData.inputs?.additionalInput
+                : JSON.parse(nodeData.inputs?.additionalInput as string)
+        const input = {
+            startUrls: urls.split(',').map((url) => ({ url: url.trim() })),
+            crawlerType,
+            maxCrawlDepth,
+            maxCrawlPages,
+            ...additionalInput
+        }
 
         // Get Apify API token from credential data
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
