@@ -51,7 +51,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Step by step
 
-1. Fork the official [Flowise Github 仓库](https://github.com/FlowiseAI/Flowise).
+1. Fork the official [Flowise Github Repository](https://github.com/FlowiseAI/Flowise).
 
 2. Clone your forked repository.
 
