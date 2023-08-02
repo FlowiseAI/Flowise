@@ -86,7 +86,7 @@ class GoogleVertexAI_LLMs implements INode {
     async init(nodeData: INodeData, _: string): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const model = nodeData.inputs?.modelName as string
-        const maxOutputTokens = nodeData.inputs?.maxTokens as string
+        const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
 
         const obj: Partial<GoogleVertexAITextInput> = {
