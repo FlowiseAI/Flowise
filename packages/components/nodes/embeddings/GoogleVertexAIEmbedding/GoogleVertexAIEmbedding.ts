@@ -32,6 +32,10 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                     {
                         label: 'textembedding-gecko',
                         name: 'textembedding-gecko'
+                    },
+                    {
+                        label: 'textembedding-gecko@001',
+                        name: 'textembedding-gecko@001'
                     }
                 ],
                 default: 'textembedding-gecko'
