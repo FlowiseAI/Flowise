@@ -1,6 +1,6 @@
-import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams} from "langchain/embeddings/googlevertexai";
+import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses} from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -13,7 +13,6 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
-
 
     constructor() {
         this.label = 'GoogleVertexAI Embeddings'
@@ -35,20 +34,18 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                         name: 'textembedding-gecko'
                     }
                 ],
-                default: 'textembedding-gecko',
+                default: 'textembedding-gecko'
             }
         ]
     }
 
-
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-
         const model = nodeData.inputs?.modelName as string
         const obj: GoogleVertexAIEmbeddingsParams = {
             model
         }
 
-        const embedding = new GoogleVertexAIEmbeddings(obj);
+        const embedding = new GoogleVertexAIEmbeddings(obj)
         return embedding
     }
 }
