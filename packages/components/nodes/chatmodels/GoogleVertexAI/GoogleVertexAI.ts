@@ -44,7 +44,7 @@ class GoogleVertexAI_ChatModels implements INode {
                     {
                         label: 'codechat-bison@001',
                         name: 'codechat-bison@001'
-                    },
+                    }
                 ],
                 default: 'chat-bison',
                 optional: true
@@ -72,11 +72,11 @@ class GoogleVertexAI_ChatModels implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
-            },
+            }
         ]
     }
 
-    async init(nodeData: INodeData, _: string,): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const model = nodeData.inputs?.modelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
@@ -84,13 +84,11 @@ class GoogleVertexAI_ChatModels implements INode {
 
         const obj: Partial<GoogleVertexAIChatInput> = {
             temperature: parseFloat(temperature),
-            model,
+            model
         }
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
-
-
 
         const chat_model = new ChatGoogleVertexAI(obj)
         return chat_model
