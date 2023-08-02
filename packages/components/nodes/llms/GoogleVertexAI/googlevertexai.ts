@@ -52,9 +52,9 @@ class GoogleVertexAI_LLMs implements INode {
                     {
                         label: 'code-gecko@001',
                         name: 'code-gecko@001'
-                    },
+                    }
                 ],
-                default: 'text-bison',
+                default: 'text-bison'
             },
             {
                 label: 'Temperature',
@@ -79,7 +79,7 @@ class GoogleVertexAI_LLMs implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
-            },
+            }
         ]
     }
 
@@ -91,13 +91,13 @@ class GoogleVertexAI_LLMs implements INode {
 
         const obj: Partial<GoogleVertexAITextInput> = {
             temperature: parseFloat(temperature),
-            model,
+            model
         }
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
 
-        const llm_model = new GoogleVertexAI(obj,)
+        const llm_model = new GoogleVertexAI(obj)
         return llm_model
     }
 }
