@@ -1,5 +1,5 @@
 import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
@@ -39,7 +39,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const model = nodeData.inputs?.modelName as string
         const obj: GoogleVertexAIEmbeddingsParams = {
             model
