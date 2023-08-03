@@ -346,7 +346,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                                 key={index}
                                                                 label={
                                                                     URL
-                                                                        ? `${(URL.hostname + URL.pathname).substring(0, 15)}...`
+                                                                        ? `${URL.pathname.substring(0, 15)}...`
                                                                         : `${source.pageContent.substring(0, 15)}...`
                                                                 }
                                                                 component='a'
