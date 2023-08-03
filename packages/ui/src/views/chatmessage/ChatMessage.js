@@ -64,6 +64,20 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         window.open(data, '_blank')
     }
 
+    const removeDuplicateURL = (message) => {
+        const visitedURLs = []
+        const newSourceDocuments = []
+        message.sourceDocuments.forEach((source) => {
+            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+                visitedURLs.push(source.metadata.source)
+                newSourceDocuments.push(source)
+            } else if (!isValidURL(source.metadata.source)) {
+                newSourceDocuments.push(source)
+            }
+        })
+        return newSourceDocuments
+    }
+
     const scrollToBottom = () => {
         if (ps.current) {
             ps.current.scrollTo({ top: maxScroll })
@@ -324,7 +338,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             </div>
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.sourceDocuments.map((source, index) => {
+                                                    {removeDuplicateURL(message).map((source, index) => {
                                                         const URL = isValidURL(source.metadata.source)
                                                         return (
                                                             <Chip
