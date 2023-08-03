@@ -740,6 +740,18 @@ export class App {
             }
         })
 
+        // Batch delete hcain logs
+        this.app.delete('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const ids = req.body.ids
+                const userRepository = this.AppDataSource.getRepository(ChainLog)
+                await userRepository.delete(ids)
+                return res.status(200).send('The log records have been deleted successfully.')
+            } catch (error: any) {
+                return res.status(500).send(error?.message)
+            }
+        })
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
