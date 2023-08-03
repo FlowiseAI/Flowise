@@ -1,9 +1,10 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Chroma } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
+import { ChromaExtended } from './core'
 
 class ChromaUpsert_VectorStores implements INode {
     label: string
@@ -15,6 +16,7 @@ class ChromaUpsert_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
@@ -26,6 +28,14 @@ class ChromaUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Chroma'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Only needed if you have chroma on cloud services with X-Api-key',
+            optional: true,
+            credentialNames: ['chromaApi']
+        }
         this.inputs = [
             {
                 label: 'Document',
@@ -73,7 +83,7 @@ class ChromaUpsert_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const collectionName = nodeData.inputs?.collectionName as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
@@ -81,6 +91,9 @@ class ChromaUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const chromaApiKey = getCredentialParam('chromaApiKey', credentialData, nodeData)
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
@@ -91,10 +104,12 @@ class ChromaUpsert_VectorStores implements INode {
         const obj: {
             collectionName: string
             url?: string
+            chromaApiKey?: string
         } = { collectionName }
         if (chromaURL) obj.url = chromaURL
+        if (chromaApiKey) obj.chromaApiKey = chromaApiKey
 
-        const vectorStore = await Chroma.fromDocuments(finalDocs, embeddings, obj)
+        const vectorStore = await ChromaExtended.fromDocuments(finalDocs, embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)

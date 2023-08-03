@@ -1,7 +1,8 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Chroma } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ChromaExtended } from './core'
 
 class Chroma_Existing_VectorStores implements INode {
     label: string
@@ -13,6 +14,7 @@ class Chroma_Existing_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
@@ -24,6 +26,14 @@ class Chroma_Existing_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Chroma (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Only needed if you have chroma on cloud services with X-Api-key',
+            optional: true,
+            credentialNames: ['chromaApi']
+        }
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -65,7 +75,7 @@ class Chroma_Existing_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const collectionName = nodeData.inputs?.collectionName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const chromaURL = nodeData.inputs?.chromaURL as string
@@ -73,13 +83,18 @@ class Chroma_Existing_VectorStores implements INode {
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const chromaApiKey = getCredentialParam('chromaApiKey', credentialData, nodeData)
+
         const obj: {
             collectionName: string
             url?: string
+            chromaApiKey?: string
         } = { collectionName }
         if (chromaURL) obj.url = chromaURL
+        if (chromaApiKey) obj.chromaApiKey = chromaApiKey
 
-        const vectorStore = await Chroma.fromExistingCollection(embeddings, obj)
+        const vectorStore = await ChromaExtended.fromExistingCollection(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
