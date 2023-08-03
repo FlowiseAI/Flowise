@@ -75,6 +75,7 @@
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.15.8",
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
         "@craco/craco": "^7.1.0",
         "@testing-library/jest-dom": "^5.11.10",
         "@testing-library/react": "^14.0.0",
