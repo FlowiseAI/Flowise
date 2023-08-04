@@ -29,28 +29,10 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             type: 'credential',
             credentialNames: ['googleVertexAuth']
         }
-        this.inputs = [
-            {
-                label: 'Model Name',
-                name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'textembedding-gecko',
-                        name: 'textembedding-gecko'
-                    },
-                    {
-                        label: 'textembedding-gecko@001',
-                        name: 'textembedding-gecko@001'
-                    }
-                ],
-                default: 'textembedding-gecko'
-            }
-        ]
+        this.inputs = []
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const model = nodeData.inputs?.modelName as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
 
@@ -58,7 +40,6 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             keyFile: googleApplicationCredentialFilePath,
         };
         const obj: GoogleVertexAIEmbeddingsParams = {
-            model:model,
             authOptions,
 
         }
