@@ -1,6 +1,7 @@
 import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { GoogleAuthOptions } from 'google-auth-library'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -29,20 +30,42 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             type: 'credential',
             credentialNames: ['googleVertexAuth']
         }
-        this.inputs = []
+        this.inputs = [
+            {
+                label: 'Project ID',
+                name: 'projectID',
+                description: 'project id of GCP',
+                type: 'string',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'location',
+                name: 'location',
+                description: 'location of API',
+                type: 'string',
+                additionalParams: true,
+                optional: true
+            },
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const projectID = nodeData.inputs?.projectID as string
+        const location = nodeData.inputs?.location as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
 
-        const authOptions = {
+        const authOptions:GoogleAuthOptions = {
             keyFile: googleApplicationCredentialFilePath,
         };
+
+        if (projectID) authOptions.projectId = projectID
+
         const obj: GoogleVertexAIEmbeddingsParams = {
             authOptions,
-
         }
+        if (location) obj.location = location
 
         const embedding = new GoogleVertexAIEmbeddings(obj)
         return embedding
