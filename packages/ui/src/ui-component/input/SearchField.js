@@ -4,7 +4,7 @@ import { Paper, InputAdornment, TextField } from '@mui/material'
 
 export function SearchingField({ ...props }) {
     return (
-        <Paper component='form' sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}>
+        <Paper sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}>
             <TextField
                 {...props}
                 InputProps={{

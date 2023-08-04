@@ -1,23 +1,88 @@
 import { useState } from 'react'
-import { Box, Table, TableBody, Checkbox, Paper, TableCell, TableRow, TableContainer, IconButton } from '@mui/material'
+import { Box, Table, TableBody, Paper, TableCell, TableRow, TableContainer, Button } from '@mui/material'
 import { ChainLogsTableHead } from './ChainLogsTableHead'
 import { ChainLogsTableToolbar } from './ChainLogsTableToolbar'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { ChainLogsDetails } from '../ChainLogsDetails'
 import { useChainLogs } from './useChainLogs'
-import moment from 'moment'
 import { CustomPagination } from 'ui-component/pagination'
+import ChainLogsTableRow from './ChainLogsTableRow'
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import useConfirm from 'hooks/useConfirm'
+import { batchDeleteChainLogs } from 'api/chainlogs'
+import useApi from 'hooks/useApi'
+import { useDispatch } from 'react-redux'
+import useNotifier from 'utils/useNotifier'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { IconX } from '@tabler/icons'
 
 const PAGE_SIZES = [15, 25, 50]
 
 export default function ChainLogsTable() {
-    const { sort, sortBy, page, pageSize, data, meta, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize } = useChainLogs({
-        pageSizes: PAGE_SIZES
-    })
+    const { sort, sortBy, page, pageSize, data, meta, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize, refetch } =
+        useChainLogs({
+            pageSizes: PAGE_SIZES
+        })
+
+    const dispatch = useDispatch()
+    useNotifier()
+
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [selected, setSelected] = useState([])
-
     const [logDetails, setLogDetails] = useState(null)
+
+    const { request } = useApi(batchDeleteChainLogs)
+    const { confirm, onConfirm, onCancel } = useConfirm()
+
+    const handleDelete = async () => {
+        const isMultipleSelected = selected.length > 1
+
+        const confirmPayload = {
+            title: isMultipleSelected ? 'Delete log records' : 'Delete log record',
+            description: `Are you sure you want to delete ${isMultipleSelected ? 'these items' : 'this item'}?`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        }
+
+        try {
+            const result = await confirm(confirmPayload)
+            const data = { ids: selected }
+            if (result) {
+                await request({ data })
+                enqueueSnackbar({
+                    message: isMultipleSelected ? 'Log records deleted' : 'Log record deleted',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                refetch()
+                setSelected([])
+                onConfirm()
+            }
+        } catch (error) {
+            enqueueSnackbar({
+                message: 'Failed to delete log records',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            onCancel()
+        }
+    }
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -63,7 +128,7 @@ export default function ChainLogsTable() {
         <>
             <Box sx={{ width: '100%' }}>
                 <Paper sx={{ width: '100%', mb: 2 }}>
-                    <ChainLogsTableToolbar numSelected={selected.length} onChangeTerm={onChangeTerm} />
+                    <ChainLogsTableToolbar numSelected={selected.length} onChangeTerm={onChangeTerm} handleDelete={handleDelete} />
                     <TableContainer>
                         <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
                             <ChainLogsTableHead
@@ -84,41 +149,16 @@ export default function ChainLogsTable() {
                                 )}
                                 {data.map((row, index) => {
                                     const isItemSelected = isSelected(row.id)
-                                    const labelId = `enhanced-table-checkbox-${index}`
                                     return (
-                                        <TableRow
-                                            hover
-                                            onClick={(event) => onClickRow(event, row)}
-                                            role='checkbox'
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
+                                        <ChainLogsTableRow
+                                            index={index}
                                             key={row.id}
+                                            onClickRow={onClickRow}
+                                            handleClick={handleClick}
+                                            onHanleClickActions={onHanleClickActions}
                                             selected={isItemSelected}
-                                            sx={{ cursor: 'pointer' }}
-                                        >
-                                            <TableCell padding='checkbox'>
-                                                <Checkbox
-                                                    onClick={(event) => handleClick(event, row.id)}
-                                                    color='primary'
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell component='th' id={labelId} scope='row'>
-                                                {row?.chatflowName}
-                                            </TableCell>
-                                            <TableCell>{row?.question}</TableCell>
-                                            <TableCell>{row?.text}</TableCell>
-                                            <TableCell>{row?.chatId}</TableCell>
-                                            <TableCell>{moment(row?.createdDate).format('DD.MM.YYYY HH:MM')}</TableCell>
-                                            <TableCell>
-                                                <IconButton onClick={onHanleClickActions}>
-                                                    <MoreHorizIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
+                                            row={row}
+                                        />
                                     )
                                 })}
                             </TableBody>
@@ -138,6 +178,8 @@ export default function ChainLogsTable() {
             </Box>
 
             <ChainLogsDetails details={logDetails} onClose={onCloseDetailsWindow} />
+
+            <ConfirmDialog />
         </>
     )
 }

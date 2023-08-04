@@ -11,10 +11,24 @@ export function useChainLogs({ pageSizes }) {
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(pageSizes[0])
 
+    const getParams = ({ searchFields, term, page, pageSize, sort, sortBy }) => ({
+        searchFields: searchFields || 'question,text',
+        search: term,
+        page,
+        pageSize,
+        sortOrders: sort,
+        sortFields: sortBy
+    })
+
     useEffect(() => {
-        const params = { searchFields: 'question,text', search: term, page, pageSize, sortOrders: sort, sortFields: sortBy }
+        const params = getParams({ term, sort, page, pageSize, sortBy })
         request({ params })
     }, [term, sort, page, pageSize, sortBy]) // eslint-disable-line
+
+    const refetch = () => {
+        const params = getParams({ term, sort, page, pageSize, sortBy })
+        request({ params })
+    }
 
     function onChangeTerm(term) {
         setTerm(term)
@@ -60,6 +74,7 @@ export function useChainLogs({ pageSizes }) {
         onChangeTerm,
         onChangePage,
         onChangePaeSize,
-        handleRequestSort
+        handleRequestSort,
+        refetch
     }
 }
