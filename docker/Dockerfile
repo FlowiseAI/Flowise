@@ -1,25 +1,36 @@
 FROM node:18-alpine
-
 USER root
 
-RUN apk add --no-cache git
-RUN apk add --no-cache python3 py3-pip make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
+# Arguments that can be passed at build time
+ARG FLOWISE_PATH=/usr/local/lib/node_modules/flowise
+ARG PORT=7860
+ARG PASSPHRASE=
+ARG DATABASE_PATH=/root/.flowise
+ARG APIKEY_PATH=/root/.flowise
+ARG SECRETKEY_PATH=/root/.flowise
+ARG LOG_PATH=/root/.flowise/logs
 
-# Install Chromium
-RUN apk add --no-cache chromium
+# Install dependencies
+RUN apk add --no-cache git python3 py3-pip make g++ build-base cairo-dev pango-dev chromium
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# You can install a specific version like: flowise@1.0.0
+# Set environment variables using the arguments
+ENV PORT=$PORT
+ENV PASSPHRASE=$PASSPHRASE
+ENV DATABASE_PATH=$DATABASE_PATH
+ENV APIKEY_PATH=$APIKEY_PATH
+ENV SECRETKEY_PATH=$SECRETKEY_PATH
+ENV LOG_PATH=$LOG_PATH
+
+# Install Flowise globally
 RUN npm install -g flowise
 
-RUN mkdir -p /usr/local/lib/node_modules/flowise/uploads 	 && chmod -R 777 /usr/local/lib/node_modules/flowise/uploads
-RUN mkdir -p /usr/local/lib/node_modules/flowise/logs    	 && chmod -R 777 /usr/local/lib/node_modules/flowise/logs
-RUN touch /usr/local/lib/node_modules/flowise/api.json       && chmod 777 /usr/local/lib/node_modules/flowise/api.json
-RUN touch /usr/local/lib/node_modules/flowise/encryption.key && chmod 777 /usr/local/lib/node_modules/flowise/encryption.key
+# Configure Flowise directories using the ARG
+RUN mkdir -p $FLOWISE_PATH 			    && chmod -R 777 $FLOWISE_PATH
+RUN mkdir -p $LOG_PATH 	            && chmod -R 777 $LOG_PATH
+RUN mkdir -p $FLOWISE_PATH/uploads  && chmod -R 777 $FLOWISE_PATH/uploads
 
 WORKDIR /data
 
