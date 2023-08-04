@@ -46,7 +46,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                 type: 'string',
                 additionalParams: true,
                 optional: true
-            },
+            }
         ]
     }
 
@@ -56,14 +56,14 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
 
-        const authOptions:GoogleAuthOptions = {
-            keyFile: googleApplicationCredentialFilePath,
-        };
+        const authOptions: GoogleAuthOptions = {
+            keyFile: googleApplicationCredentialFilePath
+        }
 
         if (projectID) authOptions.projectId = projectID
 
         const obj: GoogleVertexAIEmbeddingsParams = {
-            authOptions,
+            authOptions
         }
         if (location) obj.location = location
 
