@@ -55,6 +55,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         const location = nodeData.inputs?.location as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
+        if (!googleApplicationCredentialFilePath) throw new Error('Please specify your Google Application Credential file path')
 
         const authOptions: GoogleAuthOptions = {
             keyFile: googleApplicationCredentialFilePath
