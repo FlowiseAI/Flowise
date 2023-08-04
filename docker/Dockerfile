@@ -28,7 +28,7 @@ ENV LOG_PATH=$LOG_PATH
 RUN npm install -g flowise
 
 # Configure Flowise directories using the ARG
-RUN mkdir -p $FLOWISE_PATH 			    && chmod -R 777 $FLOWISE_PATH
+RUN mkdir -p $FLOWISE_PATH          && chmod -R 777 $FLOWISE_PATH
 RUN mkdir -p $LOG_PATH 	            && chmod -R 777 $LOG_PATH
 RUN mkdir -p $FLOWISE_PATH/uploads  && chmod -R 777 $FLOWISE_PATH/uploads
 
