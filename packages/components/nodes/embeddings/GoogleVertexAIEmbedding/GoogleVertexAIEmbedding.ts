@@ -1,6 +1,6 @@
 import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -23,6 +23,12 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         this.category = 'Embeddings'
         this.description = 'Google vertexAI API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(GoogleVertexAIEmbeddings)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['googleVertexAuth']
+        }
         this.inputs = [
             {
                 label: 'Model Name',
@@ -43,10 +49,18 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const model = nodeData.inputs?.modelName as string
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
+
+        const authOptions = {
+            keyFile: googleApplicationCredentialFilePath,
+        };
         const obj: GoogleVertexAIEmbeddingsParams = {
-            model
+            model:model,
+            authOptions,
+
         }
 
         const embedding = new GoogleVertexAIEmbeddings(obj)
