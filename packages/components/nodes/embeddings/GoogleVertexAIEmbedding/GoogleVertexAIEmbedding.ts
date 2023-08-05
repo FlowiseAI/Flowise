@@ -68,8 +68,8 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         }
         if (location) obj.location = location
 
-        const embedding = new GoogleVertexAIEmbeddings(obj)
-        return embedding
+        const model = new GoogleVertexAIEmbeddings(obj)
+        return model
     }
 }
 
