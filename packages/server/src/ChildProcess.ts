@@ -8,7 +8,8 @@ import {
     getStartingNodes,
     getUserHome,
     replaceInputsWithConfig,
-    resolveVariables
+    resolveVariables,
+    databaseEntities
 } from './utils'
 import { DataSource } from 'typeorm'
 import { ChatFlow } from './entity/ChatFlow'
@@ -141,7 +142,12 @@ export class ChildProcess {
 
             if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
 
-            const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, chatId })
+            const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                chatHistory: incomingInput.history,
+                appDataSource: childAppDataSource,
+                databaseEntities
+            })
+
             logger.debug(`[server] [mode:child]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             await sendToParentProcess('finish', { result, addToChatFlowPool })
