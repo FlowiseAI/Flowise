@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
-import { BufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/redis'
 import { createClient } from 'redis'
 
@@ -36,7 +36,7 @@ class RedisBackedChatMemory_Memory implements INode {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                description: 'if empty, chatId will be used automatically',
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -78,8 +78,10 @@ const initalizeRedis = (nodeData: INodeData, options: ICommonObject): BufferMemo
     const sessionId = nodeData.inputs?.sessionId as string
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
-
     const chatId = options?.chatId as string
+
+    let isSessionIdUsingChatMessageId = false
+    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const redisClient = createClient({ url: baseURL })
     let obj: RedisChatMessageHistoryInput = {
@@ -94,10 +96,28 @@ const initalizeRedis = (nodeData: INodeData, options: ICommonObject): BufferMemo
         }
     }
 
-    let redisChatMessageHistory = new RedisChatMessageHistory(obj)
-    let redis = new BufferMemory({ memoryKey, chatHistory: redisChatMessageHistory, returnMessages: true })
+    const redisChatMessageHistory = new RedisChatMessageHistory(obj)
 
-    return redis
+    const memory = new BufferMemoryExtended({
+        memoryKey,
+        chatHistory: redisChatMessageHistory,
+        returnMessages: true,
+        isSessionIdUsingChatMessageId
+    })
+    return memory
+}
+
+interface BufferMemoryExtendedInput {
+    isSessionIdUsingChatMessageId: boolean
+}
+
+class BufferMemoryExtended extends BufferMemory {
+    isSessionIdUsingChatMessageId? = false
+
+    constructor(fields: BufferMemoryInput & Partial<BufferMemoryExtendedInput>) {
+        super(fields)
+        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+    }
 }
 
 module.exports = { nodeClass: RedisBackedChatMemory_Memory }

@@ -50,7 +50,7 @@ class ZepMemory_Memory implements INode {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                description: 'if empty, chatId will be used automatically',
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -156,13 +156,15 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
     const memoryKey = nodeData.inputs?.memoryKey as string
     const inputKey = nodeData.inputs?.inputKey as string
     const sessionId = nodeData.inputs?.sessionId as string
-
     const chatId = options?.chatId as string
+
+    let isSessionIdUsingChatMessageId = false
+    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
-    const obj: ZepMemoryInput = {
+    const obj: ZepMemoryInput & Partial<ZepMemoryExtendedInput> = {
         baseURL,
         sessionId: sessionId ? sessionId : chatId,
         aiPrefix,
@@ -172,8 +174,39 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
         inputKey
     }
     if (apiKey) obj.apiKey = apiKey
+    if (isSessionIdUsingChatMessageId) obj.isSessionIdUsingChatMessageId = true
 
-    return new ZepMemory(obj)
+    return new ZepMemoryExtended(obj)
+}
+
+interface ZepMemoryExtendedInput {
+    isSessionIdUsingChatMessageId: boolean
+}
+
+class ZepMemoryExtended extends ZepMemory {
+    isSessionIdUsingChatMessageId? = false
+
+    constructor(fields: ZepMemoryInput & Partial<ZepMemoryExtendedInput>) {
+        super(fields)
+        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+    }
+
+    async clear(): Promise<void> {
+        // Only clear when sessionId is using chatId
+        // If sessionId is specified, clearing and inserting again will error because the sessionId has been soft deleted
+        // If using chatId, it will not be a problem because the sessionId will always be the new chatId
+        if (this.isSessionIdUsingChatMessageId) {
+            try {
+                await this.zepClient.deleteMemory(this.sessionId)
+            } catch (error) {
+                console.error('Error deleting session: ', error)
+            }
+
+            // Clear the superclass's chat history
+            await super.clear()
+        }
+        await this.chatHistory.clear()
+    }
 }
 
 module.exports = { nodeClass: ZepMemory_Memory }

@@ -1,10 +1,9 @@
-import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
-import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
+import { BufferMemory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
-import { AIMessage, HumanMessage } from 'langchain/schema'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 import { flatten } from 'lodash'
 import { Document } from 'langchain/document'
@@ -106,17 +105,7 @@ class ConversationChain_Chains implements INode {
         const memory = nodeData.inputs?.memory as BufferMemory
 
         if (options && options.chatHistory) {
-            const chatHistory = []
-            const histories: IMessage[] = options.chatHistory
-
-            for (const message of histories) {
-                if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIMessage(message.message))
-                } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanMessage(message.message))
-                }
-            }
-            memory.chatHistory = new ChatMessageHistory(chatHistory)
+            memory.chatHistory = mapChatHistory(options)
             chain.memory = memory
         }
 

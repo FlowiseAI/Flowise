@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
-import { BufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 
 class DynamoDb_Memory implements INode {
     label: string
@@ -51,7 +51,7 @@ class DynamoDb_Memory implements INode {
                 label: 'Session ID',
                 name: 'sessionId',
                 type: 'string',
-                description: 'if empty, chatId will be used automatically',
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -86,8 +86,10 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     const sessionId = nodeData.inputs?.sessionId as string
     const region = nodeData.inputs?.region as string
     const memoryKey = nodeData.inputs?.memoryKey as string
-
     const chatId = options.chatId
+
+    let isSessionIdUsingChatMessageId = false
+    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
@@ -106,12 +108,26 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
         }
     })
 
-    const memory = new BufferMemory({
+    const memory = new BufferMemoryExtended({
         memoryKey,
         chatHistory: dynamoDb,
-        returnMessages: true
+        returnMessages: true,
+        isSessionIdUsingChatMessageId
     })
     return memory
+}
+
+interface BufferMemoryExtendedInput {
+    isSessionIdUsingChatMessageId: boolean
+}
+
+class BufferMemoryExtended extends BufferMemory {
+    isSessionIdUsingChatMessageId? = false
+
+    constructor(fields: BufferMemoryInput & Partial<BufferMemoryExtendedInput>) {
+        super(fields)
+        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+    }
 }
 
 module.exports = { nodeClass: DynamoDb_Memory }

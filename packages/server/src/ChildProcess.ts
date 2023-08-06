@@ -2,6 +2,7 @@ import path from 'path'
 import { IChildProcessMessage, IReactFlowNode, IReactFlowObject, IRunChatflowMessageValue, INodeData } from './Interface'
 import {
     buildLangchain,
+    checkMemorySessionId,
     constructGraphs,
     getEndingNode,
     getStartingNodes,
@@ -137,7 +138,10 @@ export class ChildProcess {
             const nodeInstance = new nodeModule.nodeClass()
 
             logger.debug(`[server] [mode:child]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-            const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history })
+
+            if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
+
+            const result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, { chatHistory: incomingInput.history, chatId })
             logger.debug(`[server] [mode:child]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             await sendToParentProcess('finish', { result, addToChatFlowPool })
