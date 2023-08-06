@@ -76,12 +76,10 @@ class ConversationalRetrievalAgent_Agents implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
 
-        if (options && options.chatHistory) {
-            if (executor.memory) {
-                ;(executor.memory as any).memoryKey = 'chat_history'
-                ;(executor.memory as any).outputKey = 'output'
-                ;(executor.memory as any).chatHistory = mapChatHistory(options)
-            }
+        if (executor.memory) {
+            ;(executor.memory as any).memoryKey = 'chat_history'
+            ;(executor.memory as any).outputKey = 'output'
+            ;(executor.memory as any).chatHistory = mapChatHistory(options)
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)

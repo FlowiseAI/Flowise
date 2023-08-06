@@ -509,7 +509,7 @@ export const getUserHome = (): string => {
  */
 export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
     const chatHistory = []
-    const histories: IMessage[] = options.chatHistory
+    const histories: IMessage[] = options.chatHistory ?? []
 
     for (const message of histories) {
         if (message.type === 'apiMessage') {
