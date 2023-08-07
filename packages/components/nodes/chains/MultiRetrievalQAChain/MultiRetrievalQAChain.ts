@@ -1,11 +1,13 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, INode, INodeData, INodeParams, VectorStoreRetriever } from '../../../src/Interface'
-import { CustomChainHandler, getBaseClasses } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { MultiRetrievalQAChain } from 'langchain/chains'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class MultiRetrievalQAChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -16,6 +18,7 @@ class MultiRetrievalQAChain_Chains implements INode {
     constructor() {
         this.label = 'Multi Retrieval QA Chain'
         this.name = 'multiRetrievalQAChain'
+        this.version = 1.0
         this.type = 'MultiRetrievalQAChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
@@ -71,14 +74,15 @@ class MultiRetrievalQAChain_Chains implements INode {
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
         const obj = { input }
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2, returnSourceDocuments)
-            const res = await chain.call(obj, [handler])
+            const res = await chain.call(obj, [loggerHandler, handler])
             if (res.text && res.sourceDocuments) return res
             return res?.text
         } else {
-            const res = await chain.call(obj)
+            const res = await chain.call(obj, [loggerHandler])
             if (res.text && res.sourceDocuments) return res
             return res?.text
         }

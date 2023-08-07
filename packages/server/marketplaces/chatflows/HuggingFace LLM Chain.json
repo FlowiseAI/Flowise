@@ -1,0 +1,288 @@
+{
+    "description": "Simple LLM Chain using HuggingFace Inference API on falcon-7b-instruct model",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 405,
+            "id": "llmChain_1",
+            "position": {
+                "x": 970.9254258940236,
+                "y": 320.56761595884564
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "version": 1,
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{huggingFaceInference_LLMs_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "chainName": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|BaseLangChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | BaseLangChain"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 970.9254258940236,
+                "y": 320.56761595884564
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 475,
+            "id": "promptTemplate_0",
+            "position": {
+                "x": 506.50436294210306,
+                "y": 504.50766458127396
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_0",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "version": 1,
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "What is a good name for a company that makes {product}?",
+                        "id": "promptTemplate_0-input-template-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "promptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Question: {question}\n\nAnswer: Let's think step by step.",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 506.50436294210306,
+                "y": 504.50766458127396
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 526,
+            "id": "huggingFaceInference_LLMs_0",
+            "position": {
+                "x": 498.8594464193537,
+                "y": -44.91050256311678
+            },
+            "type": "customNode",
+            "data": {
+                "id": "huggingFaceInference_LLMs_0",
+                "label": "HuggingFace Inference",
+                "name": "huggingFaceInference_LLMs",
+                "version": 1,
+                "type": "HuggingFaceInference",
+                "baseClasses": ["HuggingFaceInference", "LLM", "BaseLLM", "BaseLanguageModel"],
+                "category": "LLMs",
+                "description": "Wrapper around HuggingFace large language models",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["huggingFaceApi"],
+                        "id": "huggingFaceInference_LLMs_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model",
+                        "name": "model",
+                        "type": "string",
+                        "description": "If using own inference endpoint, leave this blank",
+                        "placeholder": "gpt2",
+                        "optional": true,
+                        "id": "huggingFaceInference_LLMs_0-input-model-string"
+                    },
+                    {
+                        "label": "Endpoint",
+                        "name": "endpoint",
+                        "type": "string",
+                        "placeholder": "https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2",
+                        "description": "Using your own inference endpoint",
+                        "optional": true,
+                        "id": "huggingFaceInference_LLMs_0-input-endpoint-string"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "description": "Temperature parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "description": "Max Tokens parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "description": "Top Probability parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-topP-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "hfTopK",
+                        "type": "number",
+                        "description": "Top K parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-hfTopK-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "description": "Frequency Penalty parameter may not apply to certain model. Please check available model parameters",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "huggingFaceInference_LLMs_0-input-frequencyPenalty-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "model": "tiiuae/falcon-7b-instruct",
+                    "endpoint": "",
+                    "temperature": "",
+                    "maxTokens": "",
+                    "topP": "",
+                    "hfTopK": "",
+                    "frequencyPenalty": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel",
+                        "name": "huggingFaceInference_LLMs",
+                        "label": "HuggingFaceInference",
+                        "type": "HuggingFaceInference | LLM | BaseLLM | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 498.8594464193537,
+                "y": -44.91050256311678
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "huggingFaceInference_LLMs_0",
+            "sourceHandle": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "huggingFaceInference_LLMs_0-huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

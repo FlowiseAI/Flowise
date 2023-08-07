@@ -28,6 +28,10 @@ import useApi from 'hooks/useApi'
 // Const
 import { baseURL, maxScroll } from 'store/constant'
 
+import robotPNG from 'assets/images/robot.png'
+import userPNG from 'assets/images/account.png'
+import { isValidURL } from 'utils/genericHelper'
+
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -54,6 +58,24 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const onSourceDialogClick = (data) => {
         setSourceDialogProps({ data })
         setSourceDialogOpen(true)
+    }
+
+    const onURLClick = (data) => {
+        window.open(data, '_blank')
+    }
+
+    const removeDuplicateURL = (message) => {
+        const visitedURLs = []
+        const newSourceDocuments = []
+        message.sourceDocuments.forEach((source) => {
+            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+                visitedURLs.push(source.metadata.source)
+                newSourceDocuments.push(source)
+            } else if (!isValidURL(source.metadata.source)) {
+                newSourceDocuments.push(source)
+            }
+        })
+        return newSourceDocuments
     }
 
     const scrollToBottom = () => {
@@ -163,7 +185,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     // Prevent blank submissions and allow for multiline input
     const handleEnter = (e) => {
-        if (e.key === 'Enter' && userInput) {
+        // Check if IME composition is in progress
+        const isIMEComposition = e.isComposing || e.keyCode === 229
+        if (e.key === 'Enter' && userInput && !isIMEComposition) {
             if (!e.shiftKey && userInput) {
                 handleSubmit(e)
             }
@@ -279,21 +303,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                     >
                                         {/* Display the correct icon depending on the message type */}
                                         {message.type === 'apiMessage' ? (
-                                            <img
-                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                                                alt='AI'
-                                                width='30'
-                                                height='30'
-                                                className='boticon'
-                                            />
+                                            <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
                                         ) : (
-                                            <img
-                                                src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                                alt='Me'
-                                                width='30'
-                                                height='30'
-                                                className='usericon'
-                                            />
+                                            <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
                                         )}
                                         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                                             <div className='markdownanswer'>
@@ -326,17 +338,24 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             </div>
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.sourceDocuments.map((source, index) => {
+                                                    {removeDuplicateURL(message).map((source, index) => {
+                                                        const URL = isValidURL(source.metadata.source)
                                                         return (
                                                             <Chip
                                                                 size='small'
                                                                 key={index}
-                                                                label={`${source.pageContent.substring(0, 15)}...`}
+                                                                label={
+                                                                    URL
+                                                                        ? `${URL.pathname.substring(0, 15)}...`
+                                                                        : `${source.pageContent.substring(0, 15)}...`
+                                                                }
                                                                 component='a'
                                                                 sx={{ mr: 1, mb: 1 }}
                                                                 variant='outlined'
                                                                 clickable
-                                                                onClick={() => onSourceDialogClick(source)}
+                                                                onClick={() =>
+                                                                    URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
+                                                                }
                                                             />
                                                         )
                                                     })}
@@ -366,6 +385,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             value={userInput}
                             onChange={onChange}
                             multiline={true}
+                            maxRows={isDialog ? 7 : 2}
                             endAdornment={
                                 <InputAdornment position='end' sx={{ padding: '15px' }}>
                                     <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>

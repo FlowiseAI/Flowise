@@ -5,6 +5,7 @@ import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemp
 class ChatPromptTemplate_Prompts implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class ChatPromptTemplate_Prompts implements INode {
     constructor() {
         this.label = 'Chat Prompt Template'
         this.name = 'chatPromptTemplate'
+        this.version = 1.0
         this.type = 'ChatPromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
@@ -38,12 +40,7 @@ class ChatPromptTemplate_Prompts implements INode {
             {
                 label: 'Format Prompt Values',
                 name: 'promptValues',
-                type: 'string',
-                rows: 4,
-                placeholder: `{
-  "input_language": "English",
-  "output_language": "French"
-}`,
+                type: 'json',
                 optional: true,
                 acceptVariable: true,
                 list: true
@@ -63,7 +60,7 @@ class ChatPromptTemplate_Prompts implements INode {
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+            promptValues = JSON.parse(promptValuesStr)
         }
         // @ts-ignore
         prompt.promptValues = promptValues

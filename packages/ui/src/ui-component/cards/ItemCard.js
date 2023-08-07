@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 
 // material-ui
-import { styled, useTheme } from '@mui/material/styles'
-import { Box, Grid, Chip, Typography } from '@mui/material'
+import { styled } from '@mui/material/styles'
+import { Box, Grid, Typography } from '@mui/material'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
@@ -28,19 +28,6 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| CONTRACT CARD ||=========================== //
 
 const ItemCard = ({ isLoading, data, images, onClick }) => {
-    const theme = useTheme()
-
-    const chipSX = {
-        height: 24,
-        padding: '0 6px'
-    }
-
-    const activeChatflowSX = {
-        ...chipSX,
-        color: 'white',
-        backgroundColor: theme.palette.success.dark
-    }
-
     return (
         <>
             {isLoading ? (
@@ -49,11 +36,42 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 <CardWrapper border={false} content={false} onClick={onClick}>
                     <Box sx={{ p: 2.25 }}>
                         <Grid container direction='column'>
-                            <div>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                {data.iconSrc && (
+                                    <div
+                                        style={{
+                                            width: 35,
+                                            height: 35,
+                                            marginRight: 10,
+                                            borderRadius: '50%',
+                                            background: `url(${data.iconSrc})`,
+                                            backgroundSize: 'contain',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center center'
+                                        }}
+                                    ></div>
+                                )}
+                                {!data.iconSrc && data.color && (
+                                    <div
+                                        style={{
+                                            width: 35,
+                                            height: 35,
+                                            marginRight: 10,
+                                            borderRadius: '50%',
+                                            background: data.color
+                                        }}
+                                    ></div>
+                                )}
                                 <Typography
                                     sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                 >
-                                    {data.name}
+                                    {data.templateName || data.name}
                                 </Typography>
                             </div>
                             {data.description && (
@@ -61,13 +79,6 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                     {data.description}
                                 </span>
                             )}
-                            <Grid sx={{ mt: 1, mb: 1 }} container direction='row'>
-                                {data.deployed && (
-                                    <Grid item>
-                                        <Chip label='Deployed' sx={activeChatflowSX} />
-                                    </Grid>
-                                )}
-                            </Grid>
                             {images && (
                                 <div
                                     style={{

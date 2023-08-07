@@ -5,6 +5,7 @@ import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 class Csv_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Csv_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Csv File'
         this.name = 'csvFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'Csv.png'
         this.category = 'Document Loaders'

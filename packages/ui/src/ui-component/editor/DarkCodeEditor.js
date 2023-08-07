@@ -21,6 +21,7 @@ export const DarkCodeEditor = ({ value, placeholder, disabled = false, type, sty
             onValueChange={onValueChange}
             onMouseUp={onMouseUp}
             onBlur={onBlur}
+            tabSize={4}
             style={{
                 ...style,
                 background: theme.palette.codeEditor.main

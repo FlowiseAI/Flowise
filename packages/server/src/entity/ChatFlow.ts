@@ -10,14 +10,20 @@ export class ChatFlow implements IChatFlow {
     @Column()
     name: string
 
-    @Column()
+    @Column({ type: 'text' })
     flowData: string
 
     @Column({ nullable: true })
-    apikeyid: string
+    deployed?: boolean
 
-    @Column()
-    deployed: boolean
+    @Column({ nullable: true })
+    isPublic?: boolean
+
+    @Column({ nullable: true })
+    apikeyid?: string
+
+    @Column({ nullable: true })
+    chatbotConfig?: string
 
     @CreateDateColumn()
     createdDate: Date

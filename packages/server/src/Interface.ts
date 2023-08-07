@@ -9,10 +9,12 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
-    apikeyid: string
-    deployed: boolean
     updatedDate: Date
     createdDate: Date
+    deployed?: boolean
+    isPublic?: boolean
+    apikeyid?: string
+    chatbotConfig?: string
 }
 
 export interface IChatMessage {
@@ -21,10 +23,35 @@ export interface IChatMessage {
     content: string
     chatflowid: string
     createdDate: Date
-    sourceDocuments: string
+    sourceDocuments?: string
+}
+
+export interface ITool {
+    id: string
+    name: string
+    description: string
+    color: string
+    iconSrc?: string
+    schema?: string
+    func?: string
+    updatedDate: Date
+    createdDate: Date
+}
+
+export interface ICredential {
+    id: string
+    name: string
+    credentialName: string
+    encryptedData: string
+    updatedDate: Date
+    createdDate: Date
 }
 
 export interface IComponentNodes {
+    [key: string]: INode
+}
+
+export interface IComponentCredentials {
     [key: string]: INode
 }
 
@@ -130,6 +157,7 @@ export interface IActiveChatflows {
 
 export interface IOverrideConfig {
     node: string
+    nodeId: string
     label: string
     name: string
     type: string
@@ -152,4 +180,18 @@ export interface IRunChatflowMessageValue {
 export interface IChildProcessMessage {
     key: string
     value?: any
+}
+
+export type ICredentialDataDecrypted = ICommonObject
+
+// Plain credential object sent to server
+export interface ICredentialReqBody {
+    name: string
+    credentialName: string
+    plainDataObj: ICredentialDataDecrypted
+}
+
+// Decrypted credential object sent back to client
+export interface ICredentialReturnResponse extends ICredential {
+    plainDataObj: ICredentialDataDecrypted
 }
