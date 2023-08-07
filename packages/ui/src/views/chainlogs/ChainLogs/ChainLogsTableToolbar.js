@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Toolbar, IconButton, Typography } from '@mui/material'
+import { Toolbar, IconButton, Typography, Chip } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PropTypes from 'prop-types'
 import { SearchingField } from 'ui-component/input/SearchField'
@@ -8,7 +8,7 @@ import { useDebounce } from 'hooks/useDebounce'
 import useDeleteChainLogs from './useDeleteChainLogs'
 
 export function ChainLogsTableToolbar(props) {
-    const { numSelected, onChangeTerm, refetch, selected, setSelected } = props
+    const { numSelected, onChangeTerm, refetch, selected, setSelected, filters, handleFilter } = props
 
     const { handleDelete } = useDeleteChainLogs({ refetch, selected, setSelected })
 
@@ -34,12 +34,29 @@ export function ChainLogsTableToolbar(props) {
         setLoading(false)
     }, [debouncedValue])
 
+    const parsedFilters = Object.entries(JSON.parse(filters || '{}'))
+
     return (
         <>
             <Toolbar>
                 <Grid container xs={12}>
-                    <Grid container xs={12} sm={12}>
+                    <Grid container xs={12} sm={12} gap={3}>
                         <SearchingField onChange={handleChange} onKeyDown={onKeyDown} />
+
+                        {filters && (
+                            <Grid display='flex' alignItems='center' gap={1}>
+                                <Typography>Filtered: </Typography>
+                                {parsedFilters.map(([key, value]) => (
+                                    <Chip
+                                        key={key}
+                                        color='primary'
+                                        variant='outlined'
+                                        onDelete={() => handleFilter('')}
+                                        label={`${key}: ${value}`}
+                                    />
+                                ))}
+                            </Grid>
+                        )}
                     </Grid>
 
                     <Grid
@@ -71,5 +88,7 @@ ChainLogsTableToolbar.propTypes = {
     onChangeTerm: PropTypes.func,
     setSelected: PropTypes.func,
     refetch: PropTypes.func,
-    selected: PropTypes.arrayOf(PropTypes.string)
+    selected: PropTypes.arrayOf(PropTypes.string),
+    filters: PropTypes.string,
+    handleFilter: PropTypes.func
 }

@@ -24,7 +24,8 @@ export default function ChainLogsTable() {
         onChangePaeSize,
         refetch,
         handleFilter,
-        loading
+        loading,
+        filters
     } = useChainLogs({
         pageSizes: PAGE_SIZES
     })
@@ -82,6 +83,8 @@ export default function ChainLogsTable() {
                         selected={selected}
                         setSelected={setSelected}
                         refetch={refetch}
+                        filters={filters}
+                        handleFilter={handleFilter}
                     />
                     <TableContainer>
                         {loading && <LinearProgress />}
