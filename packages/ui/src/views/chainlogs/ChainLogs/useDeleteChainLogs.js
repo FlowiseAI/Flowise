@@ -7,7 +7,7 @@ import useNotifier from 'utils/useNotifier'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
 import { IconX } from '@tabler/icons'
 
-export default function useDeleteChainLogs({ refetch }) {
+export default function useDeleteChainLogs({ refetch, selected, setSelected }) {
     const dispatch = useDispatch()
     useNotifier()
 
@@ -22,7 +22,7 @@ export default function useDeleteChainLogs({ refetch }) {
 
         const confirmPayload = {
             title: isMultipleSelected ? 'Delete log records' : 'Delete log record',
-            description: `Are you sure you want to delete ${isMultipleSelected ? 'these items' : 'this item'}?`,
+            description: `Are you sure you want to delete ${isMultipleSelected ? 'these records' : 'this record'}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }

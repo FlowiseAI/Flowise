@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Table, TableBody, Paper, TableCell, TableRow, TableContainer } from '@mui/material'
+import { Box, Table, TableBody, Paper, TableCell, TableRow, TableContainer, LinearProgress } from '@mui/material'
 import { ChainLogsTableHead } from './ChainLogsTableHead'
 import { ChainLogsTableToolbar } from './ChainLogsTableToolbar'
 import { ChainLogsDetails } from '../ChainLogsDetails'
@@ -7,20 +7,29 @@ import { useChainLogs } from './useChainLogs'
 import { CustomPagination } from 'ui-component/pagination'
 import ChainLogsTableRow from './ChainLogsTableRow'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import useDeleteChainLogs from './useDeleteChainLogs'
 
 const PAGE_SIZES = [15, 25, 50]
 
 export default function ChainLogsTable() {
-    const { sort, sortBy, page, pageSize, data, meta, handleRequestSort, onChangeTerm, onChangePage, onChangePaeSize, refetch } =
-        useChainLogs({
-            pageSizes: PAGE_SIZES
-        })
-
-    const { handleDelete } = useDeleteChainLogs({ refetch })
+    const {
+        sort,
+        sortBy,
+        page,
+        pageSize,
+        data,
+        meta,
+        handleRequestSort,
+        onChangeTerm,
+        onChangePage,
+        onChangePaeSize,
+        refetch,
+        handleFilter,
+        loading
+    } = useChainLogs({
+        pageSizes: PAGE_SIZES
+    })
 
     const [logDetails, setLogDetails] = useState(null)
-
     const [selected, setSelected] = useState([])
 
     const handleSelectAllClick = (event) => {
@@ -55,20 +64,27 @@ export default function ChainLogsTable() {
         setLogDetails(log)
     }
 
-    const onHanleClickActions = (event) => event.stopPropagation()
-
     const onCloseDetailsWindow = () => setLogDetails(null)
 
     const isSelected = (id) => selected.indexOf(id) !== -1
 
     if (!data) return 'Loading...'
 
+    const rowCount = meta.itemsPerPage > meta.totalItems ? meta.totalItems : meta.itemsPerPage
+
     return (
         <>
             <Box sx={{ width: '100%' }}>
                 <Paper sx={{ width: '100%', mb: 2 }}>
-                    <ChainLogsTableToolbar numSelected={selected.length} onChangeTerm={onChangeTerm} handleDelete={handleDelete} />
+                    <ChainLogsTableToolbar
+                        numSelected={selected.length}
+                        onChangeTerm={onChangeTerm}
+                        selected={selected}
+                        setSelected={setSelected}
+                        refetch={refetch}
+                    />
                     <TableContainer>
+                        {loading && <LinearProgress />}
                         <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
                             <ChainLogsTableHead
                                 numSelected={selected.length}
@@ -76,7 +92,7 @@ export default function ChainLogsTable() {
                                 orderBy={sortBy}
                                 onSelectAllClick={handleSelectAllClick}
                                 onRequestSort={handleRequestSort}
-                                rowCount={meta.totalItems}
+                                rowCount={rowCount}
                             />
                             <TableBody>
                                 {!data.length && (
@@ -87,16 +103,17 @@ export default function ChainLogsTable() {
                                     </TableRow>
                                 )}
                                 {data.map((row, index) => {
-                                    const isItemSelected = isSelected(row.id)
+                                    const isSelectedCurrent = isSelected(row.id)
                                     return (
                                         <ChainLogsTableRow
-                                            index={index}
                                             key={row.id}
+                                            row={row}
+                                            index={index}
                                             onClickRow={onClickRow}
                                             handleClick={handleClick}
-                                            onHanleClickActions={onHanleClickActions}
-                                            selected={isItemSelected}
-                                            row={row}
+                                            isSelected={isSelectedCurrent}
+                                            refetch={refetch}
+                                            handleFilter={handleFilter}
                                         />
                                     )
                                 })}

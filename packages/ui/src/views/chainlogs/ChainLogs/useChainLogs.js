@@ -3,34 +3,37 @@ import { getAllChainLogs } from 'api/chainlogs'
 import useApi from 'hooks/useApi'
 
 export function useChainLogs({ pageSizes }) {
-    const { data, isLoading, request } = useApi(getAllChainLogs)
+    const { data, loading, request } = useApi(getAllChainLogs)
     const [term, setTerm] = useState('')
     const [sort, setSort] = useState('DESC')
     const [sortBy, setSortBy] = useState('createdDate')
 
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(pageSizes[0])
+    const [filters, setFilters] = useState('')
 
-    const getParams = ({ searchFields, term, page, pageSize, sort, sortBy }) => ({
-        searchFields: searchFields || 'question,text',
-        search: term,
+    const getParams = ({ searchFields, term, page, pageSize, sort, sortBy, filters }) => ({
         page,
         pageSize,
         sortOrders: sort,
-        sortFields: sortBy
+        sortFields: sortBy,
+        search: term,
+        searchFields: searchFields || 'question,text',
+        filters
     })
 
     useEffect(() => {
-        const params = getParams({ term, sort, page, pageSize, sortBy })
+        const params = getParams({ term, sort, page, pageSize, sortBy, filters })
         request({ params })
-    }, [term, sort, page, pageSize, sortBy]) // eslint-disable-line
+    }, [term, sort, page, pageSize, sortBy, filters]) // eslint-disable-line
 
     const refetch = () => {
-        const params = getParams({ term, sort, page, pageSize, sortBy })
+        const params = getParams({ term, sort, page, pageSize, sortBy, filters })
         request({ params })
     }
 
     function onChangeTerm(term) {
+        // if (term && filters) setFilters('')
         setTerm(term)
     }
 
@@ -40,6 +43,10 @@ export function useChainLogs({ pageSizes }) {
 
     function onChangePaeSize(size) {
         setPageSize(size)
+    }
+
+    function handleFilter(payload) {
+        setFilters(payload)
     }
 
     function handleRequestSort(property) {
@@ -57,9 +64,11 @@ export function useChainLogs({ pageSizes }) {
     }
 
     return {
-        isLoading,
+        loading,
         data: data?.data,
         meta: data?.meta,
+
+        filters,
 
         sort,
         setSort,
@@ -75,6 +84,7 @@ export function useChainLogs({ pageSizes }) {
         onChangePage,
         onChangePaeSize,
         handleRequestSort,
+        handleFilter,
         refetch
     }
 }

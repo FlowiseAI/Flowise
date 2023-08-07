@@ -6,6 +6,7 @@ type tGetDataByQueries<T extends ObjectLiteral> = {
     searchTerm?: string
     searchColumns?: (keyof T)[]
     sortColumns?: Record<keyof T, 'ASC' | 'DESC'>
+    filters?: Record<keyof T, any>
     page?: number
     pageSize?: number
 }
@@ -31,6 +32,8 @@ type tGetDataByQueries<T extends ObjectLiteral> = {
  *    1,
  *    10
  *    );
+ *
+ *      filters={"column1":"value1","column2":"value2"}
  */
 
 async function getDataByQueries<T extends ObjectLiteral>({
@@ -39,21 +42,36 @@ async function getDataByQueries<T extends ObjectLiteral>({
     searchColumns = [],
     sortColumns,
     page = 1,
-    pageSize = 15
+    pageSize = 15,
+    filters = {} as Record<keyof T, any>
 }: tGetDataByQueries<T>): Promise<{ data: T[]; meta: any }> {
     let options: FindManyOptions<T> = {
         skip: (page - 1) * pageSize,
         take: pageSize
     }
 
-    const searchConditions = searchColumns.map((column) => ({ [column]: ILike(`%${searchTerm}%`) }))
+    const filterConditions: any = Object.entries(filters).reduce((conditions, [key, value]) => {
+        // @ts-ignore
+        conditions[key] = value
+        return conditions
+    }, {})
+
+    const combinedConditions = searchColumns.map((column) => {
+        return { [column]: ILike(`%${searchTerm}%`), ...filterConditions }
+    })
+
+    if (combinedConditions.length > 0) {
+        options.where = combinedConditions
+    } else if (!isEmpty(filterConditions)) {
+        options.where = filterConditions
+    }
 
     if (!isEmpty(sortColumns)) {
         options.order = Object.entries(sortColumns).reduce((result, [column, direction]) => ({ ...result, [column]: direction }), {})
     }
 
-    if (!isEmpty(searchColumns)) {
-        options = Object.assign(options, { where: searchConditions })
+    if (combinedConditions.length > 0) {
+        options.where = combinedConditions
     }
 
     const [result, total] = await repository.findAndCount(options)
@@ -81,13 +99,14 @@ function prepareQueryParametersForLists(query: any) {
     const searchColumns: any = (query.searchFields as string)?.split(',')
     const sortFields = query?.sortFields ? query.sortFields?.split(',') : []
     const sortOrders = (query.sortOrders as string)?.split(',') || []
+    const filters: any = query.filters ? JSON.parse(query.filters) : {} // Assuming filters are provided as JSON strings
 
     const sortColumns: Record<string, 'ASC' | 'DESC'> = sortFields.reduce((result: Record<string, any>, field: any, index: number) => {
         result[field] = sortOrders[index] as 'ASC' | 'DESC'
         return result
     }, {})
 
-    return { searchTerm, page, pageSize, searchColumns, sortColumns }
+    return { searchTerm, page, pageSize, searchColumns, sortColumns, filters }
 }
 
 export { getDataByQueries, prepareQueryParametersForLists }

@@ -27,13 +27,12 @@ const headCells = [
     },
     {
         id: 'Actions',
-        label: 'Actions'
+        label: ''
     }
 ]
 
 export function ChainLogsTableHead(props) {
     const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props
-
     return (
         <TableHead>
             <TableRow>

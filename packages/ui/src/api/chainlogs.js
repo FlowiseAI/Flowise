@@ -1,5 +1,9 @@
 import client from './client'
 
+/*
+  @params {filters: {"chatId": "a9djd2dj"}}
+  @return []
+*/
 const getAllChainLogs = (params) => client.get('/chain-logs', params)
 
 /**

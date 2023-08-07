@@ -5,9 +5,14 @@ import PropTypes from 'prop-types'
 import { SearchingField } from 'ui-component/input/SearchField'
 import Grid from '@mui/material/Unstable_Grid2'
 import { useDebounce } from 'hooks/useDebounce'
+import useDeleteChainLogs from './useDeleteChainLogs'
 
 export function ChainLogsTableToolbar(props) {
-    const { numSelected, onChangeTerm, handleDelete } = props
+    const { numSelected, onChangeTerm, refetch, selected, setSelected } = props
+
+    const { handleDelete } = useDeleteChainLogs({ refetch, selected, setSelected })
+
+    const [loading, setLoading] = useState(false)
 
     const [value, setValue] = useState('')
     const debouncedValue = useDebounce(value, 500)
@@ -15,6 +20,7 @@ export function ChainLogsTableToolbar(props) {
     const handleChange = (event) => {
         event.stopPropagation()
         setValue(event.target.value)
+        if (!loading) setLoading(true)
     }
 
     const onKeyDown = (event) => {
@@ -25,6 +31,7 @@ export function ChainLogsTableToolbar(props) {
 
     useEffect(() => {
         onChangeTerm(value)
+        setLoading(false)
     }, [debouncedValue])
 
     return (
@@ -62,5 +69,7 @@ export function ChainLogsTableToolbar(props) {
 ChainLogsTableToolbar.propTypes = {
     numSelected: PropTypes.number.isRequired,
     onChangeTerm: PropTypes.func,
-    handleDelete: PropTypes.func
+    setSelected: PropTypes.func,
+    refetch: PropTypes.func,
+    selected: PropTypes.arrayOf(PropTypes.string)
 }
