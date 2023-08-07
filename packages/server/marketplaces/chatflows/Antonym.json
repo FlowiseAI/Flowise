@@ -1,0 +1,437 @@
+{
+    "description": "Output antonym of given user input using few-shot prompt template built with examples",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 955,
+            "id": "fewShotPromptTemplate_1",
+            "position": {
+                "x": 886.3229032369354,
+                "y": -32.18537399495787
+            },
+            "type": "customNode",
+            "data": {
+                "id": "fewShotPromptTemplate_1",
+                "label": "Few Shot Prompt Template",
+                "name": "fewShotPromptTemplate",
+                "version": 1,
+                "type": "FewShotPromptTemplate",
+                "baseClasses": ["FewShotPromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Prompt template you can build with examples",
+                "inputParams": [
+                    {
+                        "label": "Examples",
+                        "name": "examples",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" },\n]",
+                        "id": "fewShotPromptTemplate_1-input-examples-string"
+                    },
+                    {
+                        "label": "Prefix",
+                        "name": "prefix",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Give the antonym of every input",
+                        "id": "fewShotPromptTemplate_1-input-prefix-string"
+                    },
+                    {
+                        "label": "Suffix",
+                        "name": "suffix",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Word: {input}\nAntonym:",
+                        "id": "fewShotPromptTemplate_1-input-suffix-string"
+                    },
+                    {
+                        "label": "Example Seperator",
+                        "name": "exampleSeparator",
+                        "type": "string",
+                        "placeholder": "\n\n",
+                        "id": "fewShotPromptTemplate_1-input-exampleSeparator-string"
+                    },
+                    {
+                        "label": "Template Format",
+                        "name": "templateFormat",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "f-string",
+                                "name": "f-string"
+                            },
+                            {
+                                "label": "jinja-2",
+                                "name": "jinja-2"
+                            }
+                        ],
+                        "default": "f-string",
+                        "id": "fewShotPromptTemplate_1-input-templateFormat-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Example Prompt",
+                        "name": "examplePrompt",
+                        "type": "PromptTemplate",
+                        "id": "fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "examples": "[\n  { \"word\": \"happy\", \"antonym\": \"sad\" },\n  { \"word\": \"tall\", \"antonym\": \"short\" }\n]",
+                    "examplePrompt": "{{promptTemplate_0.data.instance}}",
+                    "prefix": "Give the antonym of every input",
+                    "suffix": "Word: {input}\\nAntonym:",
+                    "exampleSeparator": "\\n\\n",
+                    "templateFormat": "f-string"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "fewShotPromptTemplate",
+                        "label": "FewShotPromptTemplate",
+                        "type": "FewShotPromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 886.3229032369354,
+                "y": -32.18537399495787
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 475,
+            "id": "promptTemplate_0",
+            "position": {
+                "x": 540.0140796251119,
+                "y": -33.31673494170347
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_0",
+                "label": "Prompt Template",
+                "name": "promptTemplate",
+                "version": 1,
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "What is a good name for a company that makes {product}?",
+                        "id": "promptTemplate_0-input-template-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "promptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Word: {word}\\nAntonym: {antonym}\\n",
+                    "promptValues": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 540.0140796251119,
+                "y": -33.31673494170347
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1226.7977900193628,
+                "y": 48.01100655894436
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "version": 1,
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1226.7977900193628,
+                "y": 48.01100655894436
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 405,
+            "id": "llmChain_0",
+            "position": {
+                "x": 1573.7490072386481,
+                "y": 429.1905949837192
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "name": "llmChain",
+                "version": 1,
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{fewShotPromptTemplate_1.data.instance}}",
+                    "chainName": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1573.7490072386481,
+                "y": 429.1905949837192
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "fewShotPromptTemplate_1",
+            "targetHandle": "fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-fewShotPromptTemplate_1-fewShotPromptTemplate_1-input-examplePrompt-PromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "fewShotPromptTemplate_1",
+            "sourceHandle": "fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "fewShotPromptTemplate_1-fewShotPromptTemplate_1-output-fewShotPromptTemplate-FewShotPromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

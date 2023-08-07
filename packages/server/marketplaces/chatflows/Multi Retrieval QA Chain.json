@@ -1,0 +1,936 @@
+{
+    "description": "A chain that automatically picks an appropriate retriever from multiple different vector databases",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 505,
+            "id": "vectorStoreRetriever_0",
+            "position": {
+                "x": 712.9322670298264,
+                "y": 860.5462810572917
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectorStoreRetriever_0",
+                "label": "Vector Store Retriever",
+                "name": "vectorStoreRetriever",
+                "version": 1,
+                "type": "VectorStoreRetriever",
+                "baseClasses": ["VectorStoreRetriever"],
+                "category": "Retrievers",
+                "description": "Store vector store as retriever. Used with MultiRetrievalQAChain",
+                "inputParams": [
+                    {
+                        "label": "Retriever Name",
+                        "name": "name",
+                        "type": "string",
+                        "placeholder": "netflix movies",
+                        "id": "vectorStoreRetriever_0-input-name-string"
+                    },
+                    {
+                        "label": "Retriever Description",
+                        "name": "description",
+                        "type": "string",
+                        "rows": 3,
+                        "description": "Description of when to use the vector store retriever",
+                        "placeholder": "Good for answering questions about netflix movies",
+                        "id": "vectorStoreRetriever_0-input-description-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorStoreRetriever_0-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "vectorStore": "{{supabaseExistingIndex_0.data.instance}}",
+                    "name": "aqua teen",
+                    "description": "Good for answering questions about Aqua Teen Hunger Force theme song"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "vectorStoreRetriever_0-output-vectorStoreRetriever-VectorStoreRetriever",
+                        "name": "vectorStoreRetriever",
+                        "label": "VectorStoreRetriever",
+                        "type": "VectorStoreRetriever"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 712.9322670298264,
+                "y": 860.5462810572917
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 377,
+            "id": "multiRetrievalQAChain_0",
+            "position": {
+                "x": 1563.0150452201099,
+                "y": 460.78375893303934
+            },
+            "type": "customNode",
+            "data": {
+                "id": "multiRetrievalQAChain_0",
+                "label": "Multi Retrieval QA Chain",
+                "name": "multiRetrievalQAChain",
+                "version": 1,
+                "type": "MultiRetrievalQAChain",
+                "baseClasses": ["MultiRetrievalQAChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "QA Chain that automatically picks an appropriate vector store from multiple retrievers",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "multiRetrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorStoreRetriever",
+                        "list": true,
+                        "id": "multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "vectorStoreRetriever": [
+                        "{{vectorStoreRetriever_0.data.instance}}",
+                        "{{vectorStoreRetriever_1.data.instance}}",
+                        "{{vectorStoreRetriever_2.data.instance}}"
+                    ]
+                },
+                "outputAnchors": [
+                    {
+                        "id": "multiRetrievalQAChain_0-output-multiRetrievalQAChain-MultiRetrievalQAChain|MultiRouteChain|BaseChain|BaseLangChain",
+                        "name": "multiRetrievalQAChain",
+                        "label": "MultiRetrievalQAChain",
+                        "type": "MultiRetrievalQAChain | MultiRouteChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1563.0150452201099,
+                "y": 460.78375893303934
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 505,
+            "id": "vectorStoreRetriever_1",
+            "position": {
+                "x": 711.4902931206071,
+                "y": 315.2414600651632
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectorStoreRetriever_1",
+                "label": "Vector Store Retriever",
+                "name": "vectorStoreRetriever",
+                "version": 1,
+                "type": "VectorStoreRetriever",
+                "baseClasses": ["VectorStoreRetriever"],
+                "category": "Retrievers",
+                "description": "Store vector store as retriever. Used with MultiRetrievalQAChain",
+                "inputParams": [
+                    {
+                        "label": "Retriever Name",
+                        "name": "name",
+                        "type": "string",
+                        "placeholder": "netflix movies",
+                        "id": "vectorStoreRetriever_1-input-name-string"
+                    },
+                    {
+                        "label": "Retriever Description",
+                        "name": "description",
+                        "type": "string",
+                        "rows": 3,
+                        "description": "Description of when to use the vector store retriever",
+                        "placeholder": "Good for answering questions about netflix movies",
+                        "id": "vectorStoreRetriever_1-input-description-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorStoreRetriever_1-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "vectorStore": "{{chromaExistingIndex_0.data.instance}}",
+                    "name": "mst3k",
+                    "description": "Good for answering questions about Mystery Science Theater 3000 theme song"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "vectorStoreRetriever_1-output-vectorStoreRetriever-VectorStoreRetriever",
+                        "name": "vectorStoreRetriever",
+                        "label": "VectorStoreRetriever",
+                        "type": "VectorStoreRetriever"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 711.4902931206071,
+                "y": 315.2414600651632
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 505,
+            "id": "vectorStoreRetriever_2",
+            "position": {
+                "x": 706.0716220151372,
+                "y": -217.51566869136752
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectorStoreRetriever_2",
+                "label": "Vector Store Retriever",
+                "name": "vectorStoreRetriever",
+                "version": 1,
+                "type": "VectorStoreRetriever",
+                "baseClasses": ["VectorStoreRetriever"],
+                "category": "Retrievers",
+                "description": "Store vector store as retriever. Used with MultiRetrievalQAChain",
+                "inputParams": [
+                    {
+                        "label": "Retriever Name",
+                        "name": "name",
+                        "type": "string",
+                        "placeholder": "netflix movies",
+                        "id": "vectorStoreRetriever_2-input-name-string"
+                    },
+                    {
+                        "label": "Retriever Description",
+                        "name": "description",
+                        "type": "string",
+                        "rows": 3,
+                        "description": "Description of when to use the vector store retriever",
+                        "placeholder": "Good for answering questions about netflix movies",
+                        "id": "vectorStoreRetriever_2-input-description-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorStoreRetriever_2-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
+                    "name": "animaniacs",
+                    "description": "Good for answering questions about Animaniacs theme song"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "vectorStoreRetriever_2-output-vectorStoreRetriever-VectorStoreRetriever",
+                        "name": "vectorStoreRetriever",
+                        "label": "VectorStoreRetriever",
+                        "type": "VectorStoreRetriever"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 706.0716220151372,
+                "y": -217.51566869136752
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 505,
+            "id": "pineconeExistingIndex_0",
+            "position": {
+                "x": 267.45589163840236,
+                "y": -300.13817634747346
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeExistingIndex_0",
+                "label": "Pinecone Load Existing Index",
+                "name": "pineconeExistingIndex",
+                "version": 1,
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "pineconeMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 267.45589163840236,
+                "y": -300.13817634747346
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 506,
+            "id": "chromaExistingIndex_0",
+            "position": {
+                "x": 264.5271545331116,
+                "y": 246.32716342844174
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chromaExistingIndex_0",
+                "label": "Chroma Load Existing Index",
+                "name": "chromaExistingIndex",
+                "version": 1,
+                "type": "Chroma",
+                "baseClasses": ["Chroma", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Chroma (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Collection Name",
+                        "name": "collectionName",
+                        "type": "string",
+                        "id": "chromaExistingIndex_0-input-collectionName-string"
+                    },
+                    {
+                        "label": "Chroma URL",
+                        "name": "chromaURL",
+                        "type": "string",
+                        "optional": true,
+                        "id": "chromaExistingIndex_0-input-chromaURL-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "chromaExistingIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "chromaExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "collectionName": "",
+                    "chromaURL": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "chromaExistingIndex_0-output-retriever-Chroma|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Chroma Retriever",
+                                "type": "Chroma | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Chroma Vector Store",
+                                "type": "Chroma | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 264.5271545331116,
+                "y": 246.32716342844174
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": -212.46977797044045,
+                "y": 252.45726960585722
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "version": 1,
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -212.46977797044045,
+                "y": 252.45726960585722
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 702,
+            "id": "supabaseExistingIndex_0",
+            "position": {
+                "x": 270.90499551102573,
+                "y": 783.5053782099461
+            },
+            "type": "customNode",
+            "data": {
+                "id": "supabaseExistingIndex_0",
+                "label": "Supabase Load Existing Index",
+                "name": "supabaseExistingIndex",
+                "version": 1,
+                "type": "Supabase",
+                "baseClasses": ["Supabase", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Supabase (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["supabaseApi"],
+                        "id": "supabaseExistingIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Supabase Project URL",
+                        "name": "supabaseProjUrl",
+                        "type": "string",
+                        "id": "supabaseExistingIndex_0-input-supabaseProjUrl-string"
+                    },
+                    {
+                        "label": "Table Name",
+                        "name": "tableName",
+                        "type": "string",
+                        "id": "supabaseExistingIndex_0-input-tableName-string"
+                    },
+                    {
+                        "label": "Query Name",
+                        "name": "queryName",
+                        "type": "string",
+                        "id": "supabaseExistingIndex_0-input-queryName-string"
+                    },
+                    {
+                        "label": "Supabase Metadata Filter",
+                        "name": "supabaseMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "supabaseExistingIndex_0-input-supabaseMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "supabaseExistingIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "supabaseExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "supabaseProjUrl": "",
+                    "tableName": "",
+                    "queryName": "",
+                    "supabaseMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "supabaseExistingIndex_0-output-retriever-Supabase|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Supabase Retriever",
+                                "type": "Supabase | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "supabaseExistingIndex_0-output-vectorStore-Supabase|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Supabase Vector Store",
+                                "type": "Supabase | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 270.90499551102573,
+                "y": 783.5053782099461
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1154.0989175770958,
+                "y": -255.77769163789395
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "version": 1,
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1154.0989175770958,
+                "y": -255.77769163789395
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "vectorStoreRetriever_0",
+            "sourceHandle": "vectorStoreRetriever_0-output-vectorStoreRetriever-VectorStoreRetriever",
+            "target": "multiRetrievalQAChain_0",
+            "targetHandle": "multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "type": "buttonedge",
+            "id": "vectorStoreRetriever_0-vectorStoreRetriever_0-output-vectorStoreRetriever-VectorStoreRetriever-multiRetrievalQAChain_0-multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "vectorStoreRetriever_1",
+            "sourceHandle": "vectorStoreRetriever_1-output-vectorStoreRetriever-VectorStoreRetriever",
+            "target": "multiRetrievalQAChain_0",
+            "targetHandle": "multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "type": "buttonedge",
+            "id": "vectorStoreRetriever_1-vectorStoreRetriever_1-output-vectorStoreRetriever-VectorStoreRetriever-multiRetrievalQAChain_0-multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "vectorStoreRetriever_2",
+            "sourceHandle": "vectorStoreRetriever_2-output-vectorStoreRetriever-VectorStoreRetriever",
+            "target": "multiRetrievalQAChain_0",
+            "targetHandle": "multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "type": "buttonedge",
+            "id": "vectorStoreRetriever_2-vectorStoreRetriever_2-output-vectorStoreRetriever-VectorStoreRetriever-multiRetrievalQAChain_0-multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeExistingIndex_0",
+            "sourceHandle": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+            "target": "vectorStoreRetriever_2",
+            "targetHandle": "vectorStoreRetriever_2-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore-vectorStoreRetriever_2-vectorStoreRetriever_2-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chromaExistingIndex_0",
+            "sourceHandle": "chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore",
+            "target": "vectorStoreRetriever_1",
+            "targetHandle": "vectorStoreRetriever_1-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "chromaExistingIndex_0-chromaExistingIndex_0-output-vectorStore-Chroma|VectorStore-vectorStoreRetriever_1-vectorStoreRetriever_1-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeExistingIndex_0",
+            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "chromaExistingIndex_0",
+            "targetHandle": "chromaExistingIndex_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-chromaExistingIndex_0-chromaExistingIndex_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "supabaseExistingIndex_0",
+            "targetHandle": "supabaseExistingIndex_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-supabaseExistingIndex_0-supabaseExistingIndex_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "supabaseExistingIndex_0",
+            "sourceHandle": "supabaseExistingIndex_0-output-vectorStore-Supabase|VectorStore",
+            "target": "vectorStoreRetriever_0",
+            "targetHandle": "vectorStoreRetriever_0-input-vectorStore-VectorStore",
+            "type": "buttonedge",
+            "id": "supabaseExistingIndex_0-supabaseExistingIndex_0-output-vectorStore-Supabase|VectorStore-vectorStoreRetriever_0-vectorStoreRetriever_0-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "multiRetrievalQAChain_0",
+            "targetHandle": "multiRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-multiRetrievalQAChain_0-multiRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

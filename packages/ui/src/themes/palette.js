@@ -90,6 +90,10 @@ export default function themePalette(theme) {
         },
         codeEditor: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primaryLight
+        },
+        nodeToolTip: {
+            background: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.paper,
+            color: theme.customization.isDarkMode ? theme.colors?.paper : 'rgba(0, 0, 0, 0.87)'
         }
     }
 }

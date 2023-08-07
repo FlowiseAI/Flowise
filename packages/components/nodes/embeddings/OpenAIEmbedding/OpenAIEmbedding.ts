@@ -1,31 +1,35 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/openai'
 
 class OpenAIEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'OpenAI Embeddings'
         this.name = 'openAIEmbeddings'
+        this.version = 1.0
         this.type = 'OpenAIEmbeddings'
         this.icon = 'openai.png'
         this.category = 'Embeddings'
         this.description = 'OpenAI API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAIEmbeddings)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['openAIApi']
+        }
         this.inputs = [
-            {
-                label: 'OpenAI Api Key',
-                name: 'openAIApiKey',
-                type: 'password'
-            },
             {
                 label: 'Strip New Lines',
                 name: 'stripNewLines',
@@ -57,12 +61,14 @@ class OpenAIEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const openAIApiKey = nodeData.inputs?.openAIApiKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const stripNewLines = nodeData.inputs?.stripNewLines as boolean
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basepath as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
             openAIApiKey

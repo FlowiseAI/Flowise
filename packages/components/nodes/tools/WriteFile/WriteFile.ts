@@ -6,6 +6,7 @@ import { NodeFileStore } from 'langchain/stores/file/node'
 class WriteFile_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class WriteFile_Tools implements INode {
     constructor() {
         this.label = 'Write File'
         this.name = 'writeFile'
+        this.version = 1.0
         this.type = 'WriteFile'
         this.icon = 'writefile.svg'
         this.category = 'Tools'

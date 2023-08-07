@@ -1,0 +1,416 @@
+{
+    "description": "Use Anthropic Claude with 100k context window to ingest whole document for QnA",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 376,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 451.4449437285705,
+                "y": 118.30026803362762
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "name": "bufferMemory",
+                "version": 1,
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Remembers previous conversational back and forths directly",
+                "inputParams": [
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Input Key",
+                        "name": "inputKey",
+                        "type": "string",
+                        "default": "input",
+                        "id": "bufferMemory_0-input-inputKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "memoryKey": "chat_history",
+                    "inputKey": "input"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 451.4449437285705,
+                "y": 118.30026803362762
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 383,
+            "id": "conversationChain_0",
+            "position": {
+                "x": 1176.1569322079652,
+                "y": 303.56879146735974
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationChain_0",
+                "label": "Conversation Chain",
+                "name": "conversationChain",
+                "version": 1,
+                "type": "ConversationChain",
+                "baseClasses": ["ConversationChain", "LLMChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Chat models specific conversational chain with memory",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "You are a helpful assistant that write codes",
+                        "id": "conversationChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "id": "conversationChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "description": "Include whole document into the context window",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationChain_0-input-document-Document"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatAnthropic_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "document": ["{{pdfFile_0.data.instance}}"],
+                    "systemMessagePrompt": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain",
+                        "name": "conversationChain",
+                        "label": "ConversationChain",
+                        "type": "ConversationChain | LLMChain | BaseChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1176.1569322079652,
+                "y": 303.56879146735974
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatAnthropic_0",
+            "position": {
+                "x": 800.5525382783799,
+                "y": -76.7988221837009
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatAnthropic_0",
+                "label": "ChatAnthropic",
+                "name": "chatAnthropic",
+                "version": 1,
+                "type": "ChatAnthropic",
+                "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around ChatAnthropic large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["anthropicApi"],
+                        "id": "chatAnthropic_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "claude-2",
+                                "name": "claude-2",
+                                "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
+                            },
+                            {
+                                "label": "claude-instant-1",
+                                "name": "claude-instant-1",
+                                "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
+                            },
+                            {
+                                "label": "claude-v1",
+                                "name": "claude-v1"
+                            },
+                            {
+                                "label": "claude-v1-100k",
+                                "name": "claude-v1-100k"
+                            },
+                            {
+                                "label": "claude-v1.0",
+                                "name": "claude-v1.0"
+                            },
+                            {
+                                "label": "claude-v1.2",
+                                "name": "claude-v1.2"
+                            },
+                            {
+                                "label": "claude-v1.3",
+                                "name": "claude-v1.3"
+                            },
+                            {
+                                "label": "claude-v1.3-100k",
+                                "name": "claude-v1.3-100k"
+                            },
+                            {
+                                "label": "claude-instant-v1",
+                                "name": "claude-instant-v1"
+                            },
+                            {
+                                "label": "claude-instant-v1-100k",
+                                "name": "claude-instant-v1-100k"
+                            },
+                            {
+                                "label": "claude-instant-v1.0",
+                                "name": "claude-instant-v1.0"
+                            },
+                            {
+                                "label": "claude-instant-v1.1",
+                                "name": "claude-instant-v1.1"
+                            },
+                            {
+                                "label": "claude-instant-v1.1-100k",
+                                "name": "claude-instant-v1.1-100k"
+                            }
+                        ],
+                        "default": "claude-v1",
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokensToSample",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-maxTokensToSample-number"
+                    },
+                    {
+                        "label": "Top P",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topP-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "claude-2",
+                    "temperature": 0.9,
+                    "maxTokensToSample": "",
+                    "topP": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel",
+                        "name": "chatAnthropic",
+                        "label": "ChatAnthropic",
+                        "type": "ChatAnthropic | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 800.5525382783799,
+                "y": -76.7988221837009
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 507,
+            "id": "pdfFile_0",
+            "position": {
+                "x": 94.16886576108482,
+                "y": 37.12056504707391
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pdfFile_0",
+                "label": "Pdf File",
+                "name": "pdfFile",
+                "version": 1,
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from PDF files",
+                "inputParams": [
+                    {
+                        "label": "Pdf File",
+                        "name": "pdfFile",
+                        "type": "file",
+                        "fileType": ".pdf",
+                        "id": "pdfFile_0-input-pdfFile-file"
+                    },
+                    {
+                        "label": "Usage",
+                        "name": "usage",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "One document per page",
+                                "name": "perPage"
+                            },
+                            {
+                                "label": "One document per file",
+                                "name": "perFile"
+                            }
+                        ],
+                        "default": "perPage",
+                        "id": "pdfFile_0-input-usage-options"
+                    },
+                    {
+                        "label": "Use Legacy Build",
+                        "name": "legacyBuild",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pdfFile_0-input-legacyBuild-boolean"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pdfFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "pdfFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "",
+                    "usage": "perPage",
+                    "legacyBuild": "",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "pdfFile_0-output-pdfFile-Document",
+                        "name": "pdfFile",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 94.16886576108482,
+                "y": 37.12056504707391
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatAnthropic_0",
+            "sourceHandle": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatAnthropic_0-chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel-conversationChain_0-conversationChain_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pdfFile_0",
+            "sourceHandle": "pdfFile_0-output-pdfFile-Document",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-conversationChain_0-conversationChain_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

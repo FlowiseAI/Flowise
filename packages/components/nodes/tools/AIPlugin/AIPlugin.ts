@@ -5,6 +5,7 @@ import { getBaseClasses } from '../../../src/utils'
 class AIPlugin implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class AIPlugin implements INode {
     constructor() {
         this.label = 'AI Plugin'
         this.name = 'aiPlugin'
+        this.version = 1.0
         this.type = 'AIPlugin'
         this.icon = 'aiplugin.svg'
         this.category = 'Tools'

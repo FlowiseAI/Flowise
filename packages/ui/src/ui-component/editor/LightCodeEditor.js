@@ -21,6 +21,7 @@ export const LightCodeEditor = ({ value, placeholder, disabled = false, type, st
             onValueChange={onValueChange}
             onMouseUp={onMouseUp}
             onBlur={onBlur}
+            tabSize={4}
             style={{
                 ...style,
                 background: theme.palette.card.main

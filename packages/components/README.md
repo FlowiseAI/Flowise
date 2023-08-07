@@ -2,6 +2,8 @@
 
 # Flowise Components
 
+English | [中文](<./README-ZH.md>)
+
 Apps integration for Flowise. Contain Nodes and Credentials.
 
 ![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
@@ -10,14 +12,6 @@ Install:
 
 ```bash
 npm i flowise-components
-```
-
-## Debug
-
-To view all the logs, create an `.env` file and add:
-
-```
-DEBUG=true
 ```
 
 ## License

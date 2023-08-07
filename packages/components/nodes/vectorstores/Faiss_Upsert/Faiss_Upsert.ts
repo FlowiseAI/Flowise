@@ -8,6 +8,7 @@ import { flatten } from 'lodash'
 class FaissUpsert_VectorStores implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -19,6 +20,7 @@ class FaissUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Faiss Upsert Document'
         this.name = 'faissUpsert'
+        this.version = 1.0
         this.type = 'Faiss'
         this.icon = 'faiss.svg'
         this.category = 'Vector Stores'
@@ -73,7 +75,7 @@ class FaissUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const basePath = nodeData.inputs?.basePath as string
         const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseInt(topK, 10) : 4
+        const k = topK ? parseFloat(topK) : 4
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []

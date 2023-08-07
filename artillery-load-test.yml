@@ -1,0 +1,36 @@
+# npm install -g artillery@latest
+# artillery run artillery-load-test.yml
+# Refer https://www.artillery.io/docs
+
+config:
+    target: http://128.128.128.128:3000 # replace with your url
+    phases:
+        - duration: 1
+          arrivalRate: 1
+          rampTo: 2
+          name: Warm up phase
+        - duration: 1
+          arrivalRate: 2
+          rampTo: 3
+          name: Ramp up load
+        - duration: 1
+          arrivalRate: 3
+          name: Sustained peak load
+scenarios:
+    - flow:
+          - loop:
+                - post:
+                      url: '/api/v1/prediction/chatflow-id' # replace with your chatflowid
+                      json:
+                          question: 'hello' # replace with your question
+            count: 1 # how many request each user make
+
+# User  __
+# 3    /
+# 2   /
+# 1 _/
+#     1 2 3
+#     Seconds
+# Total Users = 2 + 3 + 3 = 8
+# Each making 1 HTTP call
+# Over a duration of 3 seconds

@@ -1,0 +1,647 @@
+{
+    "description": "Use long term memory Zep to differentiate conversations between users with sessionId",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 480,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1999.7302950816731,
+                "y": 365.33064907894243
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "name": "conversationalRetrievalQAChain",
+                "version": 1,
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Chain Option",
+                        "name": "chainOption",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "MapReduceDocumentsChain",
+                                "name": "map_reduce",
+                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
+                            },
+                            {
+                                "label": "RefineDocumentsChain",
+                                "name": "refine",
+                                "description": "Suitable for QA tasks over a large number of documents."
+                            },
+                            {
+                                "label": "StuffDocumentsChain",
+                                "name": "stuff",
+                                "description": "Suitable for QA tasks over a small number of documents."
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "optional": true,
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeExistingIndex_0.data.instance}}",
+                    "memory": "{{ZepMemory_0.data.instance}}",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1999.7302950816731,
+                "y": 365.33064907894243
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1554.3875781165111,
+                "y": -14.792508259787212
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "version": 1,
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1554.3875781165111,
+                "y": -14.792508259787212
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 789.6839176356616,
+                "y": 167.70165941305987
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "name": "openAIEmbeddings",
+                "version": 1,
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 789.6839176356616,
+                "y": 167.70165941305987
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 505,
+            "id": "pineconeExistingIndex_0",
+            "position": {
+                "x": 1167.128201355349,
+                "y": 71.89355115516406
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeExistingIndex_0",
+                "label": "Pinecone Load Existing Index",
+                "name": "pineconeExistingIndex",
+                "version": 1,
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "pineconeMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1167.128201355349,
+                "y": 71.89355115516406
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 623,
+            "id": "ZepMemory_0",
+            "position": {
+                "x": 1552.2067611642792,
+                "y": 560.8352147865392
+            },
+            "type": "customNode",
+            "data": {
+                "id": "ZepMemory_0",
+                "label": "Zep Memory",
+                "name": "ZepMemory",
+                "version": 1,
+                "type": "ZepMemory",
+                "baseClasses": ["ZepMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in zep server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "description": "Configure JWT authentication on your Zep instance (Optional)",
+                        "credentialNames": ["zepMemoryApi"],
+                        "id": "ZepMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Base URL",
+                        "name": "baseURL",
+                        "type": "string",
+                        "default": "http://127.0.0.1:8000",
+                        "id": "ZepMemory_0-input-baseURL-string"
+                    },
+                    {
+                        "label": "Auto Summary",
+                        "name": "autoSummary",
+                        "type": "boolean",
+                        "default": true,
+                        "id": "ZepMemory_0-input-autoSummary-boolean"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "if empty, chatId will be used automatically",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "ZepMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Size",
+                        "name": "k",
+                        "type": "number",
+                        "default": "10",
+                        "step": 1,
+                        "description": "Window of size k to surface the last k back-and-forths to use as memory.",
+                        "id": "ZepMemory_0-input-k-number"
+                    },
+                    {
+                        "label": "Auto Summary Template",
+                        "name": "autoSummaryTemplate",
+                        "type": "string",
+                        "default": "This is the summary of the following conversation:\n{summary}",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-autoSummaryTemplate-string"
+                    },
+                    {
+                        "label": "AI Prefix",
+                        "name": "aiPrefix",
+                        "type": "string",
+                        "default": "ai",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-aiPrefix-string"
+                    },
+                    {
+                        "label": "Human Prefix",
+                        "name": "humanPrefix",
+                        "type": "string",
+                        "default": "human",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-humanPrefix-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Input Key",
+                        "name": "inputKey",
+                        "type": "string",
+                        "default": "input",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-inputKey-string"
+                    },
+                    {
+                        "label": "Output Key",
+                        "name": "outputKey",
+                        "type": "string",
+                        "default": "text",
+                        "additionalParams": true,
+                        "id": "ZepMemory_0-input-outputKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "baseURL": "http://127.0.0.1:8000",
+                    "autoSummary": true,
+                    "sessionId": "",
+                    "k": "10",
+                    "autoSummaryTemplate": "This is the summary of the following conversation:\n{summary}",
+                    "aiPrefix": "ai",
+                    "humanPrefix": "human",
+                    "memoryKey": "chat_history",
+                    "inputKey": "input",
+                    "outputKey": "text"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory",
+                        "name": "ZepMemory",
+                        "label": "ZepMemory",
+                        "type": "ZepMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1552.2067611642792,
+                "y": 560.8352147865392
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeExistingIndex_0",
+            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeExistingIndex_0",
+            "sourceHandle": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "ZepMemory_0",
+            "sourceHandle": "ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "ZepMemory_0-ZepMemory_0-output-ZepMemory-ZepMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

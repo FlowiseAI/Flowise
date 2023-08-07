@@ -3,6 +3,7 @@ import { INode, INodeData, INodeParams, PromptRetriever, PromptRetrieverInput } 
 class PromptRetriever_Retrievers implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -13,6 +14,7 @@ class PromptRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Prompt Retriever'
         this.name = 'promptRetriever'
+        this.version = 1.0
         this.type = 'PromptRetriever'
         this.icon = 'promptretriever.svg'
         this.category = 'Retrievers'
