@@ -1,6 +1,7 @@
-import { GoogleVertexAIEmbeddings } from 'langchain/embeddings/googlevertexai'
+import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { GoogleAuthOptions } from 'google-auth-library'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -34,13 +35,30 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
+        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
 
-        if (!googleApplicationCredentialFilePath) throw new Error('Please specify your Google Application Credential file path')
-        process.env.GOOGLE_APPLICATION_CREDENTIALS = googleApplicationCredentialFilePath
+        if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+            throw new Error('Please specify your Google Application Credential')
+        if (googleApplicationCredentialFilePath && googleApplicationCredential)
+            throw new Error('Please use either Google Application Credential File Path or Google Credential JSON Object')
 
-        const embedding = new GoogleVertexAIEmbeddings()
-        return embedding
+        const authOptions: GoogleAuthOptions = {}
+
+        if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
+        else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
+            authOptions.credentials = JSON.parse(googleApplicationCredential)
+
+        const projectID = getCredentialParam('projectID', credentialData, nodeData)
+        if (projectID) authOptions.projectId = projectID
+
+        const obj: GoogleVertexAIEmbeddingsParams = {
+            authOptions
+        }
+
+        const model = new GoogleVertexAIEmbeddings(obj)
+        return model
     }
 }
 

@@ -1,6 +1,6 @@
 import { INodeParams, INodeCredential } from '../src/Interface'
 
-class GoogleAuth implements INodeCredential {
+class GoogleVertexAuth implements INodeCredential {
     label: string
     name: string
     version: number
@@ -14,12 +14,41 @@ class GoogleAuth implements INodeCredential {
             {
                 label: 'Google Application Credential File Path',
                 name: 'googleApplicationCredentialFilePath',
-                description: 'Path to your google application credential json file',
+                description:
+                    'Path to your google application credential json file. You can also use the credential JSON object (either one)',
                 placeholder: 'your-path/application_default_credentials.json',
-                type: 'string'
+                type: 'string',
+                optional: true
+            },
+            {
+                label: 'Google Credential JSON Object',
+                name: 'googleApplicationCredential',
+                description: 'JSON object of your google application credential. You can also use the file path (either one)',
+                placeholder: `{
+    "type": ...,
+    "project_id": ...,
+    "private_key_id": ...,
+    "private_key": ...,
+    "client_email": ...,
+    "client_id": ...,
+    "auth_uri": ...,
+    "token_uri": ...,
+    "auth_provider_x509_cert_url": ...,
+    "client_x509_cert_url": ...
+}`,
+                type: 'string',
+                rows: 4,
+                optional: true
+            },
+            {
+                label: 'Project ID',
+                name: 'projectID',
+                description: 'Project ID of GCP. If not provided, it will be read from the credential',
+                type: 'string',
+                optional: true
             }
         ]
     }
 }
 
-module.exports = { credClass: GoogleAuth }
+module.exports = { credClass: GoogleVertexAuth }
