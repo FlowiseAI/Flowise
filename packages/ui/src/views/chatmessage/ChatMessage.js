@@ -50,7 +50,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
-
+    let chatLinkId = localStorage.getItem(chatflowid + '_internal')
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
@@ -90,11 +90,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         try {
             const newChatMessageBody = {
                 role: type,
+                chatType: 'internal',
                 content: message,
-                chatflowid: chatflowid
+                chatflowid: chatflowid,
+                chatLinkId: chatLinkId
             }
             if (sourceDocuments) newChatMessageBody.sourceDocuments = JSON.stringify(sourceDocuments)
-            await chatmessageApi.createNewChatmessage(chatflowid, newChatMessageBody)
+            const resp = await chatmessageApi.createNewChatmessage(chatflowid, newChatMessageBody)
+            if (!chatLinkId) {
+                localStorage.setItem(chatflowid + '_internal', resp.data.id)
+                chatLinkId = resp.data.id
+            }
         } catch (error) {
             console.error(error)
         }

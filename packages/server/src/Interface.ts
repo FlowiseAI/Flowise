@@ -2,6 +2,8 @@ import { ICommonObject, INode, INodeData as INodeDataFromComponent, INodeParams 
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
+export type ChatType = 'internal' | 'external'
+
 /**
  * Databases
  */
@@ -19,11 +21,13 @@ export interface IChatFlow {
 
 export interface IChatMessage {
     id: string
+    chatType: ChatType
     role: MessageType
     content: string
     chatflowid: string
     createdDate: Date
     sourceDocuments?: string
+    chatLinkId?: string
 }
 
 export interface ITool {

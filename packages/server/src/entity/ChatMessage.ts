@@ -1,11 +1,14 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IChatMessage, MessageType } from '../Interface'
+import { ChatType, IChatMessage, MessageType } from '../Interface'
 
 @Entity()
 export class ChatMessage implements IChatMessage {
     @PrimaryGeneratedColumn('uuid')
     id: string
+
+    @Column()
+    chatType: ChatType
 
     @Column()
     role: MessageType
@@ -19,6 +22,9 @@ export class ChatMessage implements IChatMessage {
 
     @Column({ nullable: true })
     sourceDocuments?: string
+
+    @Column({ nullable: true })
+    chatLinkId?: string
 
     @CreateDateColumn()
     createdDate: Date
