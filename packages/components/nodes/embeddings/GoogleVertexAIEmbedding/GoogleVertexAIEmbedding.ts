@@ -30,32 +30,14 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             type: 'credential',
             credentialNames: ['googleVertexAuth']
         }
-        this.inputs = [
-            {
-                label: 'Project ID',
-                name: 'projectID',
-                description: 'project id of GCP',
-                type: 'string',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'location',
-                name: 'location',
-                description: 'location of API',
-                type: 'string',
-                additionalParams: true,
-                optional: true
-            }
-        ]
+        this.inputs = []
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const projectID = nodeData.inputs?.projectID as string
-        const location = nodeData.inputs?.location as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         if (!googleApplicationCredentialFilePath) throw new Error('Please specify your Google Application Credential file path')
+        const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
         const authOptions: GoogleAuthOptions = {
             keyFile: googleApplicationCredentialFilePath
@@ -66,7 +48,6 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         const obj: GoogleVertexAIEmbeddingsParams = {
             authOptions
         }
-        if (location) obj.location = location
 
         const model = new GoogleVertexAIEmbeddings(obj)
         return model

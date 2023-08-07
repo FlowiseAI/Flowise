@@ -17,6 +17,14 @@ class GoogleVertexAuth implements INodeCredential {
                 description: 'Path to your google application credential json file',
                 placeholder: 'your-path/application_default_credentials.json',
                 type: 'string'
+            },
+            {
+                label: 'Project ID',
+                name: 'projectID',
+                description: 'Project ID of GCP. If not provided, it will be read from the credential file',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
