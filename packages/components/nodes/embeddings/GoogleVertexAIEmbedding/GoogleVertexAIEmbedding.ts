@@ -36,12 +36,18 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
-        if (!googleApplicationCredentialFilePath) throw new Error('Please specify your Google Application Credential file path')
+        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        const authOptions: GoogleAuthOptions = {
-            keyFile: googleApplicationCredentialFilePath
-        }
+        if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+            throw new Error('Please specify your Google Application Credential')
+        if (googleApplicationCredentialFilePath && googleApplicationCredential)
+            throw new Error('Please use either Google Application Credential File Path or Google Credential JSON Object')
+
+        const authOptions: GoogleAuthOptions = {}
+        if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
+        else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
+            authOptions.credentials = JSON.parse(googleApplicationCredential)
 
         if (projectID) authOptions.projectId = projectID
 
