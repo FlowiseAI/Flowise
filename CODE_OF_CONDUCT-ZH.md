@@ -44,6 +44,6 @@
 
 ## 归属
 
-本行为准则改编自[贡献者公约][主页]，版本1.4，可在[http://contributor-covenant.org/version/1/4][版本]上获取。
+该行为准则的内容来自于[贡献者公约](http://contributor-covenant.org/)1.4版，可在[http://contributor-covenant.org/version/1/4](http://contributor-covenant.org/version/1/4)上获取。
 
 [主页]: http://contributor-covenant.org
