@@ -40,18 +40,6 @@ class GoogleVertexAI_LLMs implements INode {
                     {
                         label: 'code-gecko',
                         name: 'code-gecko'
-                    },
-                    {
-                        label: 'text-bison@001',
-                        name: 'text-bison@001'
-                    },
-                    {
-                        label: 'code-bison@001',
-                        name: 'code-bison@001'
-                    },
-                    {
-                        label: 'code-gecko@001',
-                        name: 'code-gecko@001'
                     }
                 ],
                 default: 'text-bison'
