@@ -45,7 +45,8 @@ import {
     decryptCredentialData,
     clearSessionMemory,
     replaceInputsWithConfig,
-    getEncryptionKey
+    getEncryptionKey,
+    checkMemorySessionId
 } from './utils'
 import { cloneDeep, omit } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -661,7 +662,11 @@ export class App {
                 templates.push(template)
             })
             const FlowiseDocsQnA = templates.find((tmp) => tmp.name === 'Flowise Docs QnA')
-            if (FlowiseDocsQnA) templates.unshift(FlowiseDocsQnA)
+            const FlowiseDocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'Flowise Docs QnA')
+            if (FlowiseDocsQnA && FlowiseDocsQnAIndex > 0) {
+                templates.splice(FlowiseDocsQnAIndex, 1)
+                templates.unshift(FlowiseDocsQnA)
+            }
             return res.json(templates)
         })
 
@@ -988,6 +993,9 @@ export class App {
 
                 isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
                 logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+
+                if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
+
                 const result = isStreamValid
                     ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                           chatHistory: incomingInput.history,
@@ -1003,6 +1011,7 @@ export class App {
                           appDataSource: this.AppDataSource,
                           databaseEntities
                       })
+
                 logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
                 return res.json(result)
             }

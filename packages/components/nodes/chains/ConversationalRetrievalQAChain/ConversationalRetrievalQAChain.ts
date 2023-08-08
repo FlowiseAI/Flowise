@@ -1,10 +1,9 @@
 import { BaseLanguageModel } from 'langchain/base_language'
-import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { ConversationalRetrievalQAChain, QAChainParams } from 'langchain/chains'
-import { AIMessage, HumanMessage } from 'langchain/schema'
 import { BaseRetriever } from 'langchain/schema/retriever'
-import { BaseChatMemory, BufferMemory, ChatMessageHistory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 import {
@@ -105,7 +104,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
         const chainOption = nodeData.inputs?.chainOption as string
-        const memory = nodeData.inputs?.memory
+        const externalMemory = nodeData.inputs?.memory
 
         const obj: any = {
             verbose: process.env.DEBUG === 'true' ? true : false,
@@ -113,7 +112,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT
             }
         }
+
         if (returnSourceDocuments) obj.returnSourceDocuments = returnSourceDocuments
+
         if (chainOption === 'map_reduce') {
             obj.qaChainOptions = {
                 type: 'map_reduce',
@@ -142,20 +143,21 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             } as QAChainParams
         }
 
-        if (memory) {
-            memory.inputKey = 'question'
-            memory.memoryKey = 'chat_history'
-            if (chainOption === 'refine') memory.outputKey = 'output_text'
-            else memory.outputKey = 'text'
-            obj.memory = memory
+        if (externalMemory) {
+            externalMemory.memoryKey = 'chat_history'
+            externalMemory.inputKey = 'question'
+            externalMemory.outputKey = 'text'
+            externalMemory.returnMessages = true
+            if (chainOption === 'refine') externalMemory.outputKey = 'output_text'
+            obj.memory = externalMemory
         } else {
             const fields: BufferMemoryInput = {
                 memoryKey: 'chat_history',
                 inputKey: 'question',
+                outputKey: 'text',
                 returnMessages: true
             }
             if (chainOption === 'refine') fields.outputKey = 'output_text'
-            else fields.outputKey = 'text'
             obj.memory = new BufferMemory(fields)
         }
 
@@ -166,7 +168,6 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const chain = nodeData.instance as ConversationalRetrievalQAChain
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
-        const memory = nodeData.inputs?.memory
         const chainOption = nodeData.inputs?.chainOption as string
 
         let model = nodeData.inputs?.model
@@ -177,21 +178,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         const obj = { question: input }
 
-        // If external memory like Zep, Redis is being used, ignore below
-        if (!memory && chain.memory && options && options.chatHistory) {
-            const chatHistory = []
-            const histories: IMessage[] = options.chatHistory
-            const memory = chain.memory as BaseChatMemory
-
-            for (const message of histories) {
-                if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIMessage(message.message))
-                } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanMessage(message.message))
-                }
-            }
-            memory.chatHistory = new ChatMessageHistory(chatHistory)
-            chain.memory = memory
+        if (options && options.chatHistory && chain.memory) {
+            ;(chain.memory as any).chatHistory = mapChatHistory(options)
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
