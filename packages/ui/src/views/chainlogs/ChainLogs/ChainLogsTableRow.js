@@ -1,20 +1,30 @@
 import PropTypes from 'prop-types'
-import { ButtonBase, Checkbox, IconButton, TableCell, TableRow } from '@mui/material'
+import { ButtonBase, Checkbox, IconButton, TableCell, TableRow, Typography } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import moment from 'moment'
 import { useState } from 'react'
 import useDeleteChainLogs from './useDeleteChainLogs'
 
 import { styled } from '@mui/material/styles'
+import ExpendableTextLine from 'ui-component/ExpendableTextLine'
 
 export const StyledFilterButton = styled(ButtonBase)(({ theme }) => ({
     color: theme.palette.primary.main,
     textDecoration: 'dotted',
-    padding: '3px 5px',
+    padding: '3px 5px 3px 0',
+    textAlign: 'left',
     '&:hover': {
         color: theme.palette.primary.dark,
         textDecoration: 'underline'
     }
+}))
+
+export const StyledTruncatedTypography = styled(Typography)(({ theme }) => ({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    WebkitLineClamp: '2',
+    WebkitBoxOrient: 'vertical'
 }))
 
 const ChainLogsTableRow = ({ row, index, onClickRow, handleClick, isSelected, refetch, handleFilter }) => {
@@ -59,14 +69,20 @@ const ChainLogsTableRow = ({ row, index, onClickRow, handleClick, isSelected, re
                     {row?.chatflowName}
                 </StyledFilterButton>
             </TableCell>
-            <TableCell>{row?.question}</TableCell>
-            <TableCell>{row?.text}</TableCell>
+            <TableCell sx={{ minWidth: '225px' }}>
+                <ExpendableTextLine max={1} html={row?.question} />
+            </TableCell>
+            <TableCell>
+                <ExpendableTextLine max={1} html={row?.text} />
+            </TableCell>
             <TableCell>
                 <StyledFilterButton name='chatId' onClick={onFilter} disableRipple={true} disableTouchRipple={false}>
                     {row?.chatId}
                 </StyledFilterButton>
             </TableCell>
-            <TableCell>{moment(row?.createdDate).format('DD.MM.YYYY HH:MM')}</TableCell>
+            <TableCell>
+                <Typography style={{ whiteSpace: 'nowrap' }}>{moment(row?.createdDate).format('DD.MM.YYYY HH:MM')}</Typography>
+            </TableCell>
             <TableCell>
                 <IconButton onClick={onDelete}>
                     <Delete />
