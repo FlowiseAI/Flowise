@@ -367,10 +367,12 @@ export class App {
         // ----------------------------------------
 
         // Get all chatmessages from chatflowid
-        this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+        this.app.get('/api/v1/chatmessage/:id/:chatLinkId', async (req: Request, res: Response) => {
+            console.log(`chatLinkId: ${req.params.chatLinkId}`)
             const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
                 where: {
-                    chatflowid: req.params.id
+                    chatflowid: req.params.id,
+                    chatLinkId: req.params.chatLinkId
                 },
                 order: {
                     createdDate: 'ASC'

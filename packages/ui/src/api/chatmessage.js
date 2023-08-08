@@ -1,6 +1,6 @@
 import client from './client'
 
-const getChatmessageFromChatflow = (id) => client.get(`/chatmessage/${id}`)
+const getChatmessageFromChatflow = (id, body) => client.get(`/chatmessage/${id}/${body}`)
 
 const createNewChatmessage = (id, body) => client.post(`/chatmessage/${id}`, body)
 
