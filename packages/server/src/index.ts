@@ -368,16 +368,17 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id/:chatLinkId', async (req: Request, res: Response) => {
-            console.log(`chatLinkId: ${req.params.chatLinkId}`)
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
-                where: {
-                    chatflowid: req.params.id,
-                    chatLinkId: req.params.chatLinkId
-                },
-                order: {
-                    createdDate: 'ASC'
-                }
-            })
+            const chatflowid = req.params.id
+            const chatLinkId = req.params.chatLinkId
+
+            const chatmessages = await getDataSource()
+                .getRepository(ChatMessage)
+                .createQueryBuilder('cm')
+                .where('chatflowid = :chatflowid', { chatflowid })
+                .andWhere('chatLinkId = :chatLinkId OR cm.id = :chatLinkId', { chatLinkId })
+                .orderBy('cm.createdDate', 'ASC')
+                .getMany()
+
             return res.json(chatmessages)
         })
 

@@ -245,7 +245,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     useEffect(() => {
         let socket
         if (open && chatflowid) {
-            console.log(`chatLinkId: ${chatLinkId}`)
             getChatmessageApi.request(chatflowid + '/' + chatLinkId)
             getIsChatflowStreamingApi.request(chatflowid)
             scrollToBottom()
