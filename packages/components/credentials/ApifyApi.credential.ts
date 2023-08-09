@@ -1,6 +1,6 @@
 import { INodeParams, INodeCredential } from '../src/Interface'
 
-class ApifyApi implements INodeCredential {
+class ApifyApiCredential implements INodeCredential {
     label: string
     name: string
     version: number
@@ -23,4 +23,4 @@ class ApifyApi implements INodeCredential {
     }
 }
 
-module.exports = { credClass: ApifyApi }
+module.exports = { credClass: ApifyApiCredential }

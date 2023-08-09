@@ -103,8 +103,8 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         // Get input options and merge with additional input
         const urls = nodeData.inputs?.urls as string
         const crawlerType = nodeData.inputs?.crawlerType as string
-        const maxCrawlDepth = nodeData.inputs?.maxCrawlDepth as number
-        const maxCrawlPages = nodeData.inputs?.maxCrawlPages as number
+        const maxCrawlDepth = nodeData.inputs?.maxCrawlDepth as string
+        const maxCrawlPages = nodeData.inputs?.maxCrawlPages as string
         const additionalInput =
             typeof nodeData.inputs?.additionalInput === 'object'
                 ? nodeData.inputs?.additionalInput
@@ -112,8 +112,8 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         const input = {
             startUrls: urls.split(',').map((url) => ({ url: url.trim() })),
             crawlerType,
-            maxCrawlDepth,
-            maxCrawlPages,
+            maxCrawlDepth: parseInt(maxCrawlDepth, 10),
+            maxCrawlPages: parseInt(maxCrawlPages, 10),
             ...additionalInput
         }
 
