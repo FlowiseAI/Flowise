@@ -26,6 +26,7 @@
         "@qdrant/js-client-rest": "^1.2.2",
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",
+        "apify-client": "^2.7.1",
         "@types/jsdom": "^21.1.1",
         "axios": "^0.27.2",
         "cheerio": "^1.0.0-rc.12",
