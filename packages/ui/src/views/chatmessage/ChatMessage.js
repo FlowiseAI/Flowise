@@ -50,7 +50,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
-    let chatLinkId = localStorage.getItem(chatflowid + '_internal')
+    let chatId = localStorage.getItem(chatflowid + '_internal')
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
@@ -93,13 +93,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 chatType: 'internal',
                 content: message,
                 chatflowid: chatflowid,
-                chatLinkId: chatLinkId
+                chatId: chatId
             }
             if (sourceDocuments) newChatMessageBody.sourceDocuments = JSON.stringify(sourceDocuments)
             const resp = await chatmessageApi.createNewChatmessage(chatflowid, newChatMessageBody)
-            if (!chatLinkId) {
+            if (!chatId) {
                 localStorage.setItem(chatflowid + '_internal', resp.data.id)
-                chatLinkId = resp.data.id
+                chatId = resp.data.id
             }
         } catch (error) {
             console.error(error)
@@ -149,10 +149,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         // waiting for first chatmessage saved, the first chatmessage will be used in sendMessageAndGetPrediction
         await addChatMessage(userInput, 'userMessage')
 
+        console.log(`\nchatId ui: ${chatId}`)
         // Send user question and history to API
         try {
             const params = {
                 question: userInput,
+                chatId: chatId,
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
             }
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
@@ -245,7 +247,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     useEffect(() => {
         let socket
         if (open && chatflowid) {
-            getChatmessageApi.request(chatflowid + '/' + chatLinkId)
+            getChatmessageApi.request(chatflowid + '/' + chatId)
             getIsChatflowStreamingApi.request(chatflowid)
             scrollToBottom()
 

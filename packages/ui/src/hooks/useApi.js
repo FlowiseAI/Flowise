@@ -7,7 +7,6 @@ export default (apiFunc) => {
 
     const request = async (...args) => {
         setLoading(true)
-        console.info(`...args: ${JSON.stringify(...args)}`)
         try {
             const result = await apiFunc(...args)
             setData(result.data)

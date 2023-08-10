@@ -27,7 +27,7 @@ export interface IChatMessage {
     chatflowid: string
     createdDate: Date
     sourceDocuments?: string
-    chatLinkId?: string
+    chatId?: string
 }
 
 export interface ITool {
@@ -148,6 +148,7 @@ export interface IncomingInput {
     history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
+    chatId?: string
 }
 
 export interface IActiveChatflows {

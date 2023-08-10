@@ -367,15 +367,15 @@ export class App {
         // ----------------------------------------
 
         // Get all chatmessages from chatflowid
-        this.app.get('/api/v1/chatmessage/:id/:chatLinkId', async (req: Request, res: Response) => {
+        this.app.get('/api/v1/chatmessage/:id/:chatId', async (req: Request, res: Response) => {
             const chatflowid = req.params.id
-            const chatLinkId = req.params.chatLinkId
+            const chatId = req.params.chatId
 
             const chatmessages = await getDataSource()
                 .getRepository(ChatMessage)
                 .createQueryBuilder('cm')
                 .where('chatflowid = :chatflowid', { chatflowid })
-                .andWhere('chatLinkId = :chatLinkId OR cm.id = :chatLinkId', { chatLinkId })
+                .andWhere('chatId = :chatId OR cm.id = :chatId', { chatId })
                 .orderBy('cm.createdDate', 'ASC')
                 .getMany()
 
@@ -395,7 +395,7 @@ export class App {
         })
 
         // Delete all chatmessages from chatflowid
-        this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+        this.app.delete('/api/v1/chatmessage/:id/:chatId', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
@@ -406,7 +406,7 @@ export class App {
             const flowData = chatflow.flowData
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
-            let chatId = await getChatId(chatflow.id)
+            let chatId = req.params.chatId
             if (!chatId) chatId = chatflow.id
             clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, req.query.sessionId as string)
             const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
@@ -843,9 +843,9 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-            let chatId = await getChatId(chatflow.id)
+            let chatId = incomingInput.chatId
             if (!chatId) chatId = chatflowid
-
+            console.log(`\nchatId: ${chatId}`)
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
             }
@@ -870,7 +870,8 @@ export class App {
                 incomingInput = {
                     question: req.body.question ?? 'hello',
                     overrideConfig,
-                    history: []
+                    history: [],
+                    chatId: chatId ?? chatflowid
                 }
             }
 
@@ -1023,23 +1024,6 @@ export class App {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
-}
-
-/**
- * Get first chat message id
- * @param {string} chatflowid
- * @returns {string}
- */
-export async function getChatId(chatflowid: string) {
-    // first chatmessage id as the unique chat id
-    const firstChatMessage = await getDataSource()
-        .getRepository(ChatMessage)
-        .createQueryBuilder('cm')
-        .select('cm.id')
-        .where('chatflowid = :chatflowid', { chatflowid })
-        .orderBy('cm.createdDate', 'ASC')
-        .getOne()
-    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined
