@@ -407,9 +407,16 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
             let chatId = req.params.chatId
+            const chatflowId = chatflow.id
             if (!chatId) chatId = chatflow.id
             clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, req.query.sessionId as string)
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
+            const results = await this.AppDataSource.getRepository(ChatMessage)
+                .createQueryBuilder()
+                .delete()
+                .from(ChatMessage)
+                .where('chatflowId = :chatflowId', { chatflowId })
+                .andWhere('chatId = :chatId OR id = :chatId', { chatId })
+                .execute()
             return res.json(results)
         })
 
@@ -845,7 +852,7 @@ export class App {
 
             let chatId = incomingInput.chatId
             if (!chatId) chatId = chatflowid
-            console.log(`\nchatId: ${chatId}`)
+
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
             }

@@ -85,8 +85,9 @@ export const ChatPopUp = ({ chatflowid }) => {
 
         if (isConfirmed) {
             try {
+                const chatId = localStorage.getItem(chatflowid + '_internal')
+                await chatmessageApi.deleteChatmessage(chatflowid + '/' + chatId)
                 localStorage.removeItem(chatflowid + '_internal')
-                await chatmessageApi.deleteChatmessage(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
                     message: 'Succesfully cleared all chat history',

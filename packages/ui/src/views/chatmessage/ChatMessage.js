@@ -149,7 +149,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         // waiting for first chatmessage saved, the first chatmessage will be used in sendMessageAndGetPrediction
         await addChatMessage(userInput, 'userMessage')
 
-        console.log(`\nchatId ui: ${chatId}`)
         // Send user question and history to API
         try {
             const params = {
