@@ -791,7 +791,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData) && process.env.EXECUTION_MODE !== 'child'
+    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData)
 }
 
 /**
