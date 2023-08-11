@@ -25,7 +25,6 @@ export default class Start extends Command {
         SECRETKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
-        EXECUTION_MODE: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
         TOOL_FUNCTION_EXTERNAL_DEP: Flags.string(),
         OVERRIDE_DATABASE: Flags.string(),
@@ -73,7 +72,6 @@ export default class Start extends Command {
         const { flags } = await this.parse(Start)
 
         if (flags.PORT) process.env.PORT = flags.PORT
-        if (flags.EXECUTION_MODE) process.env.EXECUTION_MODE = flags.EXECUTION_MODE
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
 
         // Authorization

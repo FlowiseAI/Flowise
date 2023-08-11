@@ -15,7 +15,6 @@ services:
             - SECRETKEY_PATH=${SECRETKEY_PATH}
             - LOG_LEVEL=${LOG_LEVEL}
             - LOG_PATH=${LOG_PATH}
-            - EXECUTION_MODE=${EXECUTION_MODE}
         ports:
             - '${PORT}:${PORT}'
         volumes:

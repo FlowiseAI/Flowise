@@ -169,19 +169,6 @@ export interface IDatabaseExport {
     apikeys: ICommonObject[]
 }
 
-export interface IRunChatflowMessageValue {
-    chatflow: IChatFlow
-    chatId: string
-    incomingInput: IncomingInput
-    componentNodes: IComponentNodes
-    endingNodeData?: INodeData
-}
-
-export interface IChildProcessMessage {
-    key: string
-    value?: any
-}
-
 export type ICredentialDataDecrypted = ICommonObject
 
 // Plain credential object sent to server
