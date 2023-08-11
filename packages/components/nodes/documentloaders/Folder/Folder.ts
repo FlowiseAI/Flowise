@@ -46,6 +46,13 @@ class Folder_DocumentLoaders implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Additional File Loaders',
+                name: 'additionalLoaders',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -54,6 +61,8 @@ class Folder_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const folderPath = nodeData.inputs?.folderPath as string
         const metadata = nodeData.inputs?.metadata
+        const additionalLoaders = nodeData.inputs?.additionalLoaders
+        const parsedLoaders = additionalLoaders ? ( typeof metadata === 'object' ? additionalLoaders: JSON.parse( additionalLoaders ) ) : []
 
         const loader = new DirectoryLoader(folderPath, {
             '.json': (path) => new JSONLoader(path),
@@ -61,7 +70,8 @@ class Folder_DocumentLoaders implements INode {
             '.csv': (path) => new CSVLoader(path),
             '.docx': (path) => new DocxLoader(path),
             // @ts-ignore
-            '.pdf': (path) => new PDFLoader(path, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
+            '.pdf': (path) => new PDFLoader(path, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') }),
+            ...parsedLoaders
         })
         let docs = []
 
