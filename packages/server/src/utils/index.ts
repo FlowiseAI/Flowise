@@ -787,7 +787,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent']
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
@@ -907,4 +907,16 @@ export const redactCredentialWithPasswordType = (
         }
     }
     return plainDataObj
+}
+
+/**
+ * Replace sessionId with new chatId
+ * Ex: after clear chat history, use the new chatId as sessionId
+ * @param {any} instance
+ * @param {string} chatId
+ */
+export const checkMemorySessionId = (instance: any, chatId: string) => {
+    if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
+        instance.memory.sessionId = chatId
+    }
 }

@@ -2,6 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput } from 'langchain/memory'
+import fetch from 'node-fetch'
 
 class MotorMemory_Memory implements INode {
     label: string
@@ -44,7 +45,7 @@ class MotorMemory_Memory implements INode {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                description: 'if empty, chatId will be used automatically',
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -77,14 +78,16 @@ const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): 
     const memoryKey = nodeData.inputs?.memoryKey as string
     const baseURL = nodeData.inputs?.baseURL as string
     const sessionId = nodeData.inputs?.sessionId as string
-
     const chatId = options?.chatId as string
+
+    let isSessionIdUsingChatMessageId = false
+    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
     const clientId = getCredentialParam('clientId', credentialData, nodeData)
 
-    let obj: MotorheadMemoryInput = {
+    let obj: MotorheadMemoryInput & Partial<MotorheadMemoryExtendedInput> = {
         returnMessages: true,
         sessionId: sessionId ? sessionId : chatId,
         memoryKey
@@ -103,7 +106,44 @@ const initalizeMotorhead = async (nodeData: INodeData, options: ICommonObject): 
         }
     }
 
-    return new MotorheadMemory(obj)
+    if (isSessionIdUsingChatMessageId) obj.isSessionIdUsingChatMessageId = true
+
+    const motorheadMemory = new MotorheadMemoryExtended(obj)
+
+    // Get messages from sessionId
+    await motorheadMemory.init()
+
+    return motorheadMemory
+}
+
+interface MotorheadMemoryExtendedInput {
+    isSessionIdUsingChatMessageId: boolean
+}
+
+class MotorheadMemoryExtended extends MotorheadMemory {
+    isSessionIdUsingChatMessageId? = false
+
+    constructor(fields: MotorheadMemoryInput & Partial<MotorheadMemoryExtendedInput>) {
+        super(fields)
+        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+    }
+
+    async clear(): Promise<void> {
+        try {
+            await this.caller.call(fetch, `${this.url}/sessions/${this.sessionId}/memory`, {
+                //@ts-ignore
+                signal: this.timeout ? AbortSignal.timeout(this.timeout) : undefined,
+                headers: this._getHeaders() as ICommonObject,
+                method: 'DELETE'
+            })
+        } catch (error) {
+            console.error('Error deleting session: ', error)
+        }
+
+        // Clear the superclass's chat history
+        await this.chatHistory.clear()
+        await super.clear()
+    }
 }
 
 module.exports = { nodeClass: MotorMemory_Memory }

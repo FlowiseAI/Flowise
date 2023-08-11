@@ -1,9 +1,8 @@
-import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor, InitializeAgentExecutorOptions } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
-import { BaseChatMemory, ChatMessageHistory } from 'langchain/memory'
-import { getBaseClasses } from '../../../src/utils'
-import { AIMessage, HumanMessage } from 'langchain/schema'
+import { BaseChatMemory } from 'langchain/memory'
+import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 
@@ -93,19 +92,10 @@ class ConversationalAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as BaseChatMemory
 
         if (options && options.chatHistory) {
-            const chatHistory = []
-            const histories: IMessage[] = options.chatHistory
-
-            for (const message of histories) {
-                if (message.type === 'apiMessage') {
-                    chatHistory.push(new AIMessage(message.message))
-                } else if (message.type === 'userMessage') {
-                    chatHistory.push(new HumanMessage(message.message))
-                }
-            }
-            memory.chatHistory = new ChatMessageHistory(chatHistory)
+            memory.chatHistory = mapChatHistory(options)
             executor.memory = memory
         }
+
         const result = await executor.call({ input })
 
         return result?.output
