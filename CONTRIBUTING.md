@@ -2,7 +2,7 @@
 
 # Contributing to Flowise
 
-English | [中文](<./CONTRIBUTING-ZH.md>)
+English | [中文](./CONTRIBUTING-ZH.md)
 
 We appreciate any form of contributions.
 
@@ -129,7 +129,6 @@ Flowise support different environment variables to configure your instance. You 
 | LOG_PATH                   | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                  | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | APIKEY_PATH                | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |
-| EXECUTION_MODE             | Whether predictions run in their own process or the main process             | Enum String: `child`, `main`                     | `main`                              |
 | TOOL_FUNCTION_BUILTIN_DEP  | NodeJS built-in modules to be used for Tool Function                         | String                                           |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP | External modules to be used for Tool Function                                | String                                           |                                     |
 | OVERRIDE_DATABASE          | Override current database with default                                       | Enum String: `true`, `false`                     | `true`                              |
