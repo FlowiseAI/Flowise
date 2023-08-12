@@ -1,5 +1,5 @@
 {
-    "description": "A simple LLM chain that uses Vectara to enable conversations with documents",
+    "description": "A simple LLM chain that uses Vectara to enable conversations with uploaded documents",
     "nodes": [
         {
             "width": 300,
