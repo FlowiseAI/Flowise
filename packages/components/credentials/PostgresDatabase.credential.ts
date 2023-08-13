@@ -41,4 +41,4 @@ class PostgresDatabase implements INodeCredential {
     }
 }
 
-module.exports = { credClass: SingleStoreApi }
+module.exports = { credClass: PostgresDatabase }
