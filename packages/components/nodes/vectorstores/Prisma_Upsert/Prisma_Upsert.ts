@@ -112,9 +112,13 @@ class PrismaUpsert_VectorStores implements INode {
         }
 
         const vectorStore = await PrismaVectorStore.fromDocuments(finalDocs, embeddings, {
-            client,
+            prisma: client,
             tableName: tableName,
-            vectorColumnName: vectorColumnName
+            vectorColumnName: vectorColumnName,
+            columns: {
+                id: PrismaVectorStore.IdColumn,
+                content: PrismaVectorStore.ContentColumn,
+            }
         })
         
 
