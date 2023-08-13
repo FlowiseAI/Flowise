@@ -3,7 +3,7 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { PrismaVectorStore } from "langchain/vectorstores/prisma";
-import { PrismaClient, Prisma, Document } from "@prisma/client";
+import { PrismaClient, Prisma} from "@prisma/client";
 import { flatten } from 'lodash'
 
 class PrismaUpsert_VectorStores implements INode {
@@ -112,7 +112,8 @@ class PrismaUpsert_VectorStores implements INode {
         }
 
         const vectorStore = await PrismaVectorStore.fromDocuments(finalDocs, embeddings, {
-            prisma: client,
+            db: client,
+            prisma: Prisma,
             tableName: tableName,
             vectorColumnName: vectorColumnName,
             columns: {
