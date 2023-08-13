@@ -32,7 +32,7 @@ class PrismaUpsert_VectorStores implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['supabaseApi']
+            credentialNames: ['postgresDatabase']
         }
         this.inputs = [
             {
@@ -47,8 +47,8 @@ class PrismaUpsert_VectorStores implements INode {
                 type: 'Embeddings'
             },
             {
-                label: 'Database Host',
-                name: 'dbHost',
+                label: 'Database Name',
+                name: 'dbName',
                 type: 'string'
             },
             {
@@ -86,7 +86,7 @@ class PrismaUpsert_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
+        const databaseName = nodeData.inputs?.dbName as string
         const tableName = nodeData.inputs?.tableName as string
         const vectorColumnName = nodeData.inputs?.vectorColumnName as string
         const docs = nodeData.inputs?.document as Document[]
@@ -97,7 +97,13 @@ class PrismaUpsert_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
-        const client = new PrismaClient();
+        const client = new PrismaClient({
+            datasources: {
+                db: {
+                    url: `postgresql://${credentialData.user}:${credentialData.password}@${credentialData.host}:${credentialData.port}/${databaseName}`
+                }
+            }
+        });
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
