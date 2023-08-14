@@ -41,9 +41,11 @@ class VectaraUpsert_VectorStores implements INode {
                 list: true
             },
             {
-                label: 'Filter',
+                label: 'Vectara Metadata Filter',
                 name: 'filter',
-                type: 'json',
+                description:
+                    'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
+                type: 'string',
                 additionalParams: true,
                 optional: true
             },
@@ -85,7 +87,7 @@ class VectaraUpsert_VectorStores implements INode {
 
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = {} as Embeddings
-        const vectaraMetadatafilter = nodeData.inputs?.filter as VectaraFilter
+        const vectaraMetadataFilter = nodeData.inputs?.filter as string
         const lambda = nodeData.inputs?.lambda as number
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
@@ -98,12 +100,7 @@ class VectaraUpsert_VectorStores implements INode {
         }
 
         const vectaraFilter: VectaraFilter = {}
-
-        if (vectaraMetadatafilter) {
-            const metadatafilter = typeof vectaraMetadatafilter === 'object' ? vectaraMetadatafilter : JSON.parse(vectaraMetadatafilter)
-            vectaraFilter.filter = metadatafilter
-        }
-
+        if (vectaraMetadataFilter) vectaraFilter.filter = vectaraMetadataFilter
         if (lambda) vectaraFilter.lambda = lambda
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
