@@ -7,7 +7,7 @@ import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 import { DataSourceOptions } from 'typeorm/data-source'
 
-type DatabaseType = 'sqlite' | 'postgres' | 'cockroachdb' | 'mssql' | 'mysql' | 'mariadb' | 'mongodb' | 'oracle'
+type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
 
 class SqlDatabaseChain_Chains implements INode {
     label: string
@@ -49,28 +49,12 @@ class SqlDatabaseChain_Chains implements INode {
                         name: 'postgres'
                     },
                     {
-                        label: 'CockroachDB',
-                        name: 'cockroachdb'
-                    },
-                    {
                         label: 'MSSQL',
                         name: 'mssql'
                     },
                     {
                         label: 'MySQL',
                         name: 'mysql'
-                    },
-                    {
-                        label: 'MariaDB',
-                        name: 'mariadb'
-                    },
-                    {
-                        label: 'MongoDB',
-                        name: 'mongodb'
-                    },
-                    {
-                        label: 'Oracle',
-                        name: 'oracle'
                     }
                 ],
                 default: 'sqlite'
