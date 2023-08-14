@@ -5,7 +5,7 @@ import { VectaraStore, VectaraLibArgs, VectaraFilter } from 'langchain/vectorsto
 import { Document } from 'langchain/document'
 import { flatten } from 'lodash'
 
-class VectaraExisting_VectorStores implements INode {
+class VectaraUpsert_VectorStores implements INode {
     label: string
     name: string
     version: number
@@ -20,7 +20,7 @@ class VectaraExisting_VectorStores implements INode {
 
     constructor() {
         this.label = 'Vectara Upsert Document'
-        this.name = 'vectaraExisting'
+        this.name = 'vectaraUpsert'
         this.version = 1.0
         this.type = 'Vectara'
         this.icon = 'vectara.png'
@@ -125,4 +125,4 @@ class VectaraExisting_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: VectaraExisting_VectorStores }
+module.exports = { nodeClass: VectaraUpsert_VectorStores }
