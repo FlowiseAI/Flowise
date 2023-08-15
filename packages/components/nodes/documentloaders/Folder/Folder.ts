@@ -46,7 +46,7 @@ class Folder_DocumentLoaders implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
-            },
+            }
         ]
     }
 
@@ -84,9 +84,9 @@ class Folder_DocumentLoaders implements INode {
             '.rs': (path) => new TextLoader(path), // Rust
             '.scala': (path) => new TextLoader(path), // Scala
             '.sc': (path) => new TextLoader(path), // Scala
-            '.scss': (path) => new TextLoader(path),// Sass
+            '.scss': (path) => new TextLoader(path), // Sass
             '.sol': (path) => new TextLoader(path), // Solidity
-            '.sql': (path) => new TextLoader(path),//SQL
+            '.sql': (path) => new TextLoader(path), //SQL
             '.swift': (path) => new TextLoader(path), // Swift
             '.markdown': (path) => new TextLoader(path), // Markdown
             '.md': (path) => new TextLoader(path), // Markdown
@@ -94,7 +94,7 @@ class Folder_DocumentLoaders implements INode {
             '.ltx': (path) => new TextLoader(path), // LaTeX
             '.html': (path) => new TextLoader(path), // HTML
             '.vb': (path) => new TextLoader(path), // Visual Basic
-            '.xml': (path) => new TextLoader(path)// XML
+            '.xml': (path) => new TextLoader(path) // XML
         })
         let docs = []
 
