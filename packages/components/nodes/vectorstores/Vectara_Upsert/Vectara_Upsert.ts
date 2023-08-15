@@ -52,6 +52,7 @@ class VectaraUpsert_VectorStores implements INode {
             {
                 label: 'Sentences Before',
                 name: 'sentencesBefore',
+                description: 'Number of sentences to fetch before the matched sentence. Defaults to 2.',
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -59,6 +60,7 @@ class VectaraUpsert_VectorStores implements INode {
             {
                 label: 'Sentences After',
                 name: 'sentencesAfter',
+                description: 'Number of sentences to fetch after the matched sentence. Defaults to 2.',
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -66,6 +68,8 @@ class VectaraUpsert_VectorStores implements INode {
             {
                 label: 'Lambda',
                 name: 'lambda',
+                description:
+                    'Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.',
                 type: 'number',
                 additionalParams: true,
                 optional: true
