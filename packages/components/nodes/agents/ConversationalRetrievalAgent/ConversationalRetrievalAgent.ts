@@ -5,6 +5,8 @@ import { flatten } from 'lodash'
 import { BaseChatMemory } from 'langchain/memory'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
+const defaultMessage = `Do your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary.`
+
 class ConversationalRetrievalAgent_Agents implements INode {
     label: string
     name: string
@@ -46,6 +48,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
+                default: defaultMessage,
                 rows: 4,
                 optional: true,
                 additionalParams: true
@@ -65,7 +68,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
             agentType: 'openai-functions',
             verbose: process.env.DEBUG === 'true' ? true : false,
             agentArgs: {
-                prefix: systemMessage ?? `You are a helpful AI assistant.`
+                prefix: systemMessage ?? defaultMessage
             },
             returnIntermediateSteps: true
         })
