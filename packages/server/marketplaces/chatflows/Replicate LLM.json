@@ -13,8 +13,8 @@
             "data": {
                 "id": "llmChain_1",
                 "label": "LLM Chain",
-                "name": "llmChain",
                 "version": 1,
+                "name": "llmChain",
                 "type": "LLMChain",
                 "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
@@ -84,7 +84,7 @@
         },
         {
             "width": 300,
-            "height": 475,
+            "height": 474,
             "id": "promptTemplate_0",
             "position": {
                 "x": 269.2203229225663,
@@ -94,8 +94,8 @@
             "data": {
                 "id": "promptTemplate_0",
                 "label": "Prompt Template",
-                "name": "promptTemplate",
                 "version": 1,
+                "name": "promptTemplate",
                 "type": "PromptTemplate",
                 "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
@@ -144,28 +144,29 @@
         },
         {
             "width": 300,
-            "height": 527,
+            "height": 526,
             "id": "replicate_0",
             "position": {
-                "x": 607.4915400488668,
-                "y": -60.643337207007804
+                "x": 623.313978186024,
+                "y": -72.92788335022428
             },
             "type": "customNode",
             "data": {
                 "id": "replicate_0",
                 "label": "Replicate",
-                "name": "replicate",
                 "version": 1,
+                "name": "replicate",
                 "type": "Replicate",
-                "baseClasses": ["Replicate", "LLM", "BaseLLM", "BaseLanguageModel"],
+                "baseClasses": ["Replicate", "BaseChatModel", "LLM", "BaseLLM", "BaseLanguageModel", "Runnable"],
                 "category": "LLMs",
                 "description": "Use Replicate to run open source models on cloud",
                 "inputParams": [
                     {
-                        "label": "Replicate Api Key",
-                        "name": "replicateApiKey",
-                        "type": "password",
-                        "id": "replicate_0-input-replicateApiKey-password"
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["replicateApi"],
+                        "id": "replicate_0-input-credential-credential"
                     },
                     {
                         "label": "Model",
@@ -179,6 +180,7 @@
                         "label": "Temperature",
                         "name": "temperature",
                         "type": "number",
+                        "step": 0.1,
                         "description": "Adjusts randomness of outputs, greater than 1 is random and 0 is deterministic, 0.75 is a good starting value.",
                         "default": 0.7,
                         "optional": true,
@@ -188,6 +190,7 @@
                         "label": "Max Tokens",
                         "name": "maxTokens",
                         "type": "number",
+                        "step": 1,
                         "description": "Maximum number of tokens to generate. A word is generally 2-3 tokens",
                         "optional": true,
                         "additionalParams": true,
@@ -197,6 +200,7 @@
                         "label": "Top Probability",
                         "name": "topP",
                         "type": "number",
+                        "step": 0.1,
                         "description": "When decoding text, samples from the top p percentage of most likely tokens; lower to ignore less likely tokens",
                         "optional": true,
                         "additionalParams": true,
@@ -206,6 +210,7 @@
                         "label": "Repetition Penalty",
                         "name": "repetitionPenalty",
                         "type": "number",
+                        "step": 0.1,
                         "description": "Penalty for repeated words in generated text; 1 is no penalty, values greater than 1 discourage repetition, less than 1 encourage it. (minimum: 0.01; maximum: 5)",
                         "optional": true,
                         "additionalParams": true,
@@ -232,10 +237,10 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "replicate_0-output-replicate-Replicate|LLM|BaseLLM|BaseLanguageModel",
+                        "id": "replicate_0-output-replicate-Replicate|BaseChatModel|LLM|BaseLLM|BaseLanguageModel|Runnable",
                         "name": "replicate",
                         "label": "Replicate",
-                        "type": "Replicate | LLM | BaseLLM | BaseLanguageModel"
+                        "type": "Replicate | BaseChatModel | LLM | BaseLLM | BaseLanguageModel | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -243,8 +248,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 607.4915400488668,
-                "y": -60.643337207007804
+                "x": 623.313978186024,
+                "y": -72.92788335022428
             },
             "dragging": false
         }
@@ -263,11 +268,11 @@
         },
         {
             "source": "replicate_0",
-            "sourceHandle": "replicate_0-output-replicate-Replicate|LLM|BaseLLM|BaseLanguageModel",
+            "sourceHandle": "replicate_0-output-replicate-Replicate|BaseChatModel|LLM|BaseLLM|BaseLanguageModel|Runnable",
             "target": "llmChain_1",
             "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "replicate_0-replicate_0-output-replicate-Replicate|LLM|BaseLLM|BaseLanguageModel-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "id": "replicate_0-replicate_0-output-replicate-Replicate|BaseChatModel|LLM|BaseLLM|BaseLanguageModel|Runnable-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
