@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter } from 'langchain/vectorstores/vectara'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
 
 class VectaraExisting_VectorStores implements INode {
     label: string
@@ -41,6 +41,20 @@ class VectaraExisting_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Sentences Before',
+                name: 'sentencesBefore',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Sentences After',
+                name: 'sentencesAfter',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Lambda',
                 name: 'lambda',
                 type: 'number',
@@ -77,6 +91,8 @@ class VectaraExisting_VectorStores implements INode {
         const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
 
         const vectaraMetadataFilter = nodeData.inputs?.filter as string
+        const sentencesBefore = nodeData.inputs?.sentencesBefore as number
+        const sentencesAfter = nodeData.inputs?.sentencesAfter as number
         const lambda = nodeData.inputs?.lambda as number
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
@@ -91,6 +107,11 @@ class VectaraExisting_VectorStores implements INode {
         const vectaraFilter: VectaraFilter = {}
         if (vectaraMetadataFilter) vectaraFilter.filter = vectaraMetadataFilter
         if (lambda) vectaraFilter.lambda = lambda
+
+        const vectaraContextConfig: VectaraContextConfig = {}
+        if (sentencesBefore) vectaraContextConfig.sentencesBefore = sentencesBefore
+        if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
+        vectaraFilter.contextConfig = vectaraContextConfig
 
         const vectorStore = new VectaraStore(vectaraArgs)
 
