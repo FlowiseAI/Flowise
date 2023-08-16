@@ -16,11 +16,7 @@
                 "version": 1,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": [
-                    "ChatOpenAI",
-                    "BaseChatModel",
-                    "BaseLanguageModel"
-                ],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -28,9 +24,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
@@ -176,10 +170,7 @@
                 "version": 1,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
-                "baseClasses": [
-                    "OpenAIEmbeddings",
-                    "Embeddings"
-                ],
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
                 "description": "OpenAI API to generate embeddings for a given text",
                 "inputParams": [
@@ -187,9 +178,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
                     },
                     {
@@ -329,10 +318,7 @@
                 "version": 1,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": [
-                    "ConversationalRetrievalQAChain",
-                    "BaseChain"
-                ],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
@@ -442,9 +428,7 @@
                 "version": 1,
                 "name": "cheerioWebScraper",
                 "type": "Document",
-                "baseClasses": [
-                    "Document"
-                ],
+                "baseClasses": ["Document"],
                 "category": "Document Loaders",
                 "description": "Load data from webpages",
                 "inputParams": [
@@ -543,11 +527,7 @@
                 "version": 1,
                 "name": "pineconeUpsert",
                 "type": "Pinecone",
-                "baseClasses": [
-                    "Pinecone",
-                    "VectorStoreRetriever",
-                    "BaseRetriever"
-                ],
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
                 "description": "Upsert documents to Pinecone",
                 "inputParams": [
@@ -555,9 +535,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "pineconeApi"
-                        ],
+                        "credentialNames": ["pineconeApi"],
                         "id": "pineconeUpsert_0-input-credential-credential"
                     },
                     {
@@ -602,9 +580,7 @@
                     }
                 ],
                 "inputs": {
-                    "document": [
-                        "{{cheerioWebScraper_0.data.instance}}"
-                    ],
+                    "document": ["{{cheerioWebScraper_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
@@ -659,11 +635,7 @@
                 "version": 1,
                 "name": "motorheadMemory",
                 "type": "MotorheadMemory",
-                "baseClasses": [
-                    "MotorheadMemory",
-                    "BaseChatMemory",
-                    "BaseMemory"
-                ],
+                "baseClasses": ["MotorheadMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
                 "description": "Use Motorhead Memory to store chat conversations",
                 "inputParams": [
@@ -673,9 +645,7 @@
                         "type": "credential",
                         "optional": true,
                         "description": "Only needed when using hosted solution - https://getmetal.io",
-                        "credentialNames": [
-                            "motorheadMemoryApi"
-                        ],
+                        "credentialNames": ["motorheadMemoryApi"],
                         "id": "motorheadMemory_0-input-credential-credential"
                     },
                     {

@@ -102,7 +102,7 @@ class Playwright_DocumentLoaders implements INode {
                 type: 'string',
                 optional: true,
                 additionalParams: true,
-                description: 'CSS selectors like .div or #div',
+                description: 'CSS selectors like .div or #div'
             },
             {
                 label: 'Metadata',
@@ -119,7 +119,7 @@ class Playwright_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         let limit = nodeData.inputs?.limit as string
-        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as "load" | "domcontentloaded" | "networkidle" | "commit" | undefined
+        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
         let waitForSelector = nodeData.inputs?.waitForSelector as string
 
         let url = nodeData.inputs?.url as string
@@ -136,14 +136,14 @@ class Playwright_DocumentLoaders implements INode {
                         args: ['--no-sandbox'],
                         headless: true
                     }
-                };
+                }
                 if (waitUntilGoToOption) {
                     config['gotoOptions'] = {
                         waitUntil: waitUntilGoToOption
                     }
                 }
                 if (waitForSelector) {
-                    config['evaluate'] = async (page: Page, browser: Browser): Promise<string> => {
+                    config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
                         await page.waitForSelector(waitForSelector)
 
                         const result = await page.evaluate(() => document.body.innerHTML)

@@ -63,7 +63,8 @@ class Puppeteer_DocumentLoaders implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true,
-                description: 'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
+                description:
+                    'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
                 warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
             },
             {
@@ -75,12 +76,12 @@ class Puppeteer_DocumentLoaders implements INode {
                     {
                         label: 'Load',
                         name: 'load',
-                        description: `When the initial HTML document\'s DOM has been loaded and parsed`
+                        description: `When the initial HTML document's DOM has been loaded and parsed`
                     },
                     {
                         label: 'DOM Content Loaded',
                         name: 'domcontentloaded',
-                        description: `When the complete HTML document\'s DOM has been loaded and parsed`
+                        description: `When the complete HTML document's DOM has been loaded and parsed`
                     },
                     {
                         label: 'Network Idle 0',
@@ -102,7 +103,7 @@ class Puppeteer_DocumentLoaders implements INode {
                 type: 'string',
                 optional: true,
                 additionalParams: true,
-                description: 'CSS selectors like .div or #div',
+                description: 'CSS selectors like .div or #div'
             },
             {
                 label: 'Metadata',
@@ -136,14 +137,14 @@ class Puppeteer_DocumentLoaders implements INode {
                         args: ['--no-sandbox'],
                         headless: 'new'
                     }
-                };
+                }
                 if (waitUntilGoToOption) {
                     config['gotoOptions'] = {
                         waitUntil: waitUntilGoToOption
                     }
                 }
                 if (waitForSelector) {
-                    config['evaluate'] = async (page: Page, browser: Browser): Promise<string> => {
+                    config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
                         await page.waitForSelector(waitForSelector)
 
                         const result = await page.evaluate(() => document.body.innerHTML)
