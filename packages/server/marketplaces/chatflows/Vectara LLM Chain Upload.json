@@ -3,184 +3,9 @@
     "nodes": [
         {
             "width": 300,
-            "height": 408,
-            "id": "vectaraUpsert_0",
-            "position": { "x": 438, "y": 214 },
-            "type": "customNode",
-            "data": {
-                "id": "vectaraUpsert_0",
-                "label": "Vectara Upsert Document",
-                "version": 1,
-                "name": "vectaraUpsert",
-                "type": "Vectara",
-                "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Upsert documents to Vectara",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["vectaraApi"],
-                        "id": "vectaraUpsert_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Filter",
-                        "name": "filter",
-                        "type": "json",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpsert_0-input-filter-json"
-                    },
-                    {
-                        "label": "Lambda",
-                        "name": "lambda",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpsert_0-input-lambda-number"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Defaults to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpsert_0-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Document",
-                        "name": "document",
-                        "type": "Document",
-                        "list": true,
-                        "id": "vectaraUpsert_0-input-document-Document"
-                    }
-                ],
-                "inputs": {
-                    "document": ["{{pdfFile_0.data.instance}}"],
-                    "filter": "",
-                    "lambda": "",
-                    "topK": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Vectara Retriever",
-                                "type": "Vectara | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "vectaraUpsert_0-output-vectorStore-Vectara|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Vectara Vector Store",
-                                "type": "Vectara | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": { "output": "retriever" },
-                "selected": false
-            },
-            "selected": false,
-            "dragging": false,
-            "positionAbsolute": { "x": 438, "y": 214 }
-        },
-        {
-            "width": 300,
-            "height": 509,
-            "id": "pdfFile_0",
-            "position": { "x": 68.3013317598369, "y": 199.60454731299677 },
-            "type": "customNode",
-            "data": {
-                "id": "pdfFile_0",
-                "label": "Pdf File",
-                "version": 1,
-                "name": "pdfFile",
-                "type": "Document",
-                "baseClasses": ["Document"],
-                "category": "Document Loaders",
-                "description": "Load data from PDF files",
-                "inputParams": [
-                    {
-                        "label": "Pdf File",
-                        "name": "pdfFile",
-                        "type": "file",
-                        "fileType": ".pdf",
-                        "id": "pdfFile_0-input-pdfFile-file"
-                    },
-                    {
-                        "label": "Usage",
-                        "name": "usage",
-                        "type": "options",
-                        "options": [
-                            { "label": "One document per page", "name": "perPage" },
-                            { "label": "One document per file", "name": "perFile" }
-                        ],
-                        "default": "perPage",
-                        "id": "pdfFile_0-input-usage-options"
-                    },
-                    {
-                        "label": "Use Legacy Build",
-                        "name": "legacyBuild",
-                        "type": "boolean",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pdfFile_0-input-legacyBuild-boolean"
-                    },
-                    {
-                        "label": "Metadata",
-                        "name": "metadata",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pdfFile_0-input-metadata-json"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Text Splitter",
-                        "name": "textSplitter",
-                        "type": "TextSplitter",
-                        "optional": true,
-                        "id": "pdfFile_0-input-textSplitter-TextSplitter"
-                    }
-                ],
-                "inputs": {
-                    "textSplitter": "",
-                    "usage": "perPage",
-                    "legacyBuild": "",
-                    "metadata": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "pdfFile_0-output-pdfFile-Document",
-                        "name": "pdfFile",
-                        "label": "Document",
-                        "type": "Document"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": { "x": 68.3013317598369, "y": 199.60454731299677 },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 525,
             "id": "chatOpenAI_0",
-            "position": { "x": 804.3889791707068, "y": 195.11620799951592 },
+            "position": { "x": 514.1088940275924, "y": 199.574479681537 },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
@@ -211,10 +36,7 @@
                             { "label": "gpt-3.5-turbo", "name": "gpt-3.5-turbo" },
                             { "label": "gpt-3.5-turbo-0613", "name": "gpt-3.5-turbo-0613" },
                             { "label": "gpt-3.5-turbo-16k", "name": "gpt-3.5-turbo-16k" },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
+                            { "label": "gpt-3.5-turbo-16k-0613", "name": "gpt-3.5-turbo-16k-0613" }
                         ],
                         "default": "gpt-3.5-turbo",
                         "optional": true,
@@ -286,7 +108,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
-                    "temperature": "0.2",
+                    "temperature": "0.5",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -306,14 +128,14 @@
                 "selected": false
             },
             "selected": false,
-            "positionAbsolute": { "x": 804.3889791707068, "y": 195.11620799951592 },
+            "positionAbsolute": { "x": 514.1088940275924, "y": 199.574479681537 },
             "dragging": false
         },
         {
             "width": 300,
             "height": 481,
             "id": "conversationalRetrievalQAChain_0",
-            "position": { "x": 1160.4877473512795, "y": 259.2799138505109 },
+            "position": { "x": 900.4793407261002, "y": 205.9476004518217 },
             "type": "customNode",
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
@@ -410,11 +232,200 @@
                 "selected": false
             },
             "selected": false,
-            "positionAbsolute": { "x": 1160.4877473512795, "y": 259.2799138505109 },
+            "positionAbsolute": { "x": 900.4793407261002, "y": 205.9476004518217 },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 509,
+            "id": "pdfFile_0",
+            "position": { "x": -210.44158723479913, "y": 236.6627524951051 },
+            "type": "customNode",
+            "data": {
+                "id": "pdfFile_0",
+                "label": "Pdf File",
+                "version": 1,
+                "name": "pdfFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from PDF files",
+                "inputParams": [
+                    { "label": "Pdf File", "name": "pdfFile", "type": "file", "fileType": ".pdf", "id": "pdfFile_0-input-pdfFile-file" },
+                    {
+                        "label": "Usage",
+                        "name": "usage",
+                        "type": "options",
+                        "options": [
+                            { "label": "One document per page", "name": "perPage" },
+                            { "label": "One document per file", "name": "perFile" }
+                        ],
+                        "default": "perPage",
+                        "id": "pdfFile_0-input-usage-options"
+                    },
+                    {
+                        "label": "Use Legacy Build",
+                        "name": "legacyBuild",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pdfFile_0-input-legacyBuild-boolean"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pdfFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "pdfFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": { "textSplitter": "", "usage": "perPage", "legacyBuild": "", "metadata": "" },
+                "outputAnchors": [
+                    { "id": "pdfFile_0-output-pdfFile-Document", "name": "pdfFile", "label": "Document", "type": "Document" }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": { "x": -210.44158723479913, "y": 236.6627524951051 },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 408,
+            "id": "vectaraUpsert_0",
+            "position": { "x": 172.06946164914868, "y": 373.11406233089934 },
+            "type": "customNode",
+            "data": {
+                "id": "vectaraUpsert_0",
+                "label": "Vectara Upsert Document",
+                "version": 1,
+                "name": "vectaraUpsert",
+                "type": "Vectara",
+                "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert documents to Vectara",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["vectaraApi"],
+                        "id": "vectaraUpsert_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Vectara Metadata Filter",
+                        "name": "filter",
+                        "description": "Filter to apply to Vectara metadata. Refer to the <a target=\"_blank\" href=\"https://docs.flowiseai.com/vector-stores/vectara\">documentation</a> on how to use Vectara filters with Flowise.",
+                        "type": "string",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectaraUpsert_0-input-filter-string"
+                    },
+                    {
+                        "label": "Sentences Before",
+                        "name": "sentencesBefore",
+                        "description": "Number of sentences to fetch before the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectaraUpsert_0-input-sentencesBefore-number"
+                    },
+                    {
+                        "label": "Sentences After",
+                        "name": "sentencesAfter",
+                        "description": "Number of sentences to fetch after the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectaraUpsert_0-input-sentencesAfter-number"
+                    },
+                    {
+                        "label": "Lambda",
+                        "name": "lambda",
+                        "description": "Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectaraUpsert_0-input-lambda-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Defaults to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectaraUpsert_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "id": "vectaraUpsert_0-input-document-Document"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{pdfFile_0.data.instance}}"],
+                    "filter": "",
+                    "sentencesBefore": "",
+                    "sentencesAfter": "",
+                    "lambda": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Vectara Retriever",
+                                "type": "Vectara | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "vectaraUpsert_0-output-vectorStore-Vectara|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Vectara Vector Store",
+                                "type": "Vectara | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": { "output": "retriever" },
+                "selected": false
+            },
+            "positionAbsolute": { "x": 172.06946164914868, "y": 373.11406233089934 },
+            "selected": false
         }
     ],
     "edges": [
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": { "label": "" }
+        },
         {
             "source": "pdfFile_0",
             "sourceHandle": "pdfFile_0-output-pdfFile-Document",
@@ -431,15 +442,6 @@
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
             "id": "vectaraUpsert_0-vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "data": { "label": "" }
-        },
-        {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "data": { "label": "" }
         }
     ]
