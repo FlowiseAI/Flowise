@@ -162,6 +162,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             if (response.data) {
                 const data = response.data
+                if (data.sessionId !== undefined && data.sessionId !== chatId) {
+                    const sessionId = data.sessionId
+                    const body = {
+                        chatflowId: chatflowid,
+                        chatId: chatId,
+                        sessionId: sessionId
+                    }
+                    await chatmessageApi.updateChatmessage(body)
+                    localStorage.setItem(chatflowid + '_internal', sessionId)
+                    chatId = sessionId
+                }
                 if (typeof data === 'object' && data.text && data.sourceDocuments) {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [
@@ -174,7 +185,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
                     }
-                    addChatMessage(data, 'apiMessage')
+                    addChatMessage(data.text, 'apiMessage')
                 }
                 setLoading(false)
                 setUserInput('')

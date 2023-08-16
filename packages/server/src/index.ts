@@ -392,6 +392,22 @@ export class App {
             return res.json(results)
         })
 
+        // Update chatmessages for chatflowid
+        this.app.put('/api/v1/chatmessage', async (req: Request, res: Response) => {
+            const chatId = req.body.chatId
+            const chatflowId = req.body.chatflowId
+            const sessionId = req.body.sessionId
+
+            const results = await this.AppDataSource.getRepository(ChatMessage)
+                .createQueryBuilder()
+                .update()
+                .set({ chatId: sessionId })
+                .where('chatflowid = :chatflowId', { chatflowId })
+                .andWhere('chatId = :chatId OR id = :chatId', { chatId })
+                .execute()
+            return res.json(results)
+        })
+
         // Delete all chatmessages from chatflowid
         this.app.delete('/api/v1/chatmessage/:id/:chatId', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -412,7 +428,7 @@ export class App {
                 .createQueryBuilder()
                 .delete()
                 .from(ChatMessage)
-                .where('chatflowId = :chatflowId', { chatflowId })
+                .where('chatflowid = :chatflowId', { chatflowId })
                 .andWhere('chatId = :chatId OR id = :chatId', { chatId })
                 .execute()
             return res.json(results)
@@ -918,10 +934,9 @@ export class App {
 
             isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
-            if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
-
-            const result = isStreamValid
+            let sessionId = undefined
+            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
+            let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       socketIO,
@@ -938,6 +953,8 @@ export class App {
                   })
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+            if (typeof result === 'string') return res.json({ text: result, sessionId: sessionId })
+            result.sessionId = sessionId
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
