@@ -4,14 +4,14 @@
         {
             "width": 300,
             "height": 408,
-            "id": "vectaraExisting_0",
+            "id": "vectaraUpsert_0",
             "position": { "x": 438, "y": 214 },
             "type": "customNode",
             "data": {
-                "id": "vectaraExisting_0",
+                "id": "vectaraUpsert_0",
                 "label": "Vectara Upsert Document",
                 "version": 1,
-                "name": "vectaraExisting",
+                "name": "vectaraUpsert",
                 "type": "Vectara",
                 "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
@@ -22,7 +22,7 @@
                         "name": "credential",
                         "type": "credential",
                         "credentialNames": ["vectaraApi"],
-                        "id": "vectaraExisting_0-input-credential-credential"
+                        "id": "vectaraUpsert_0-input-credential-credential"
                     },
                     {
                         "label": "Filter",
@@ -30,7 +30,7 @@
                         "type": "json",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "vectaraExisting_0-input-filter-json"
+                        "id": "vectaraUpsert_0-input-filter-json"
                     },
                     {
                         "label": "Lambda",
@@ -38,7 +38,7 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "vectaraExisting_0-input-lambda-number"
+                        "id": "vectaraUpsert_0-input-lambda-number"
                     },
                     {
                         "label": "Top K",
@@ -48,7 +48,7 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "vectaraExisting_0-input-topK-number"
+                        "id": "vectaraUpsert_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -57,7 +57,7 @@
                         "name": "document",
                         "type": "Document",
                         "list": true,
-                        "id": "vectaraExisting_0-input-document-Document"
+                        "id": "vectaraUpsert_0-input-document-Document"
                     }
                 ],
                 "inputs": {
@@ -73,13 +73,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "vectaraExisting_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+                                "id": "vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Vectara Retriever",
                                 "type": "Vectara | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "vectaraExisting_0-output-vectorStore-Vectara|VectorStore",
+                                "id": "vectaraUpsert_0-output-vectorStore-Vectara|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Vectara Vector Store",
                                 "type": "Vectara | VectorStore"
@@ -392,7 +392,7 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{vectaraExisting_0.data.instance}}",
+                    "vectorStoreRetriever": "{{vectaraUpsert_0.data.instance}}",
                     "memory": "",
                     "returnSourceDocuments": "",
                     "systemMessagePrompt": "",
@@ -418,19 +418,19 @@
         {
             "source": "pdfFile_0",
             "sourceHandle": "pdfFile_0-output-pdfFile-Document",
-            "target": "vectaraExisting_0",
-            "targetHandle": "vectaraExisting_0-input-document-Document",
+            "target": "vectaraUpsert_0",
+            "targetHandle": "vectaraUpsert_0-input-document-Document",
             "type": "buttonedge",
-            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-vectaraExisting_0-vectaraExisting_0-input-document-Document",
+            "id": "pdfFile_0-pdfFile_0-output-pdfFile-Document-vectaraUpsert_0-vectaraUpsert_0-input-document-Document",
             "data": { "label": "" }
         },
         {
-            "source": "vectaraExisting_0",
-            "sourceHandle": "vectaraExisting_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+            "source": "vectaraUpsert_0",
+            "sourceHandle": "vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "vectaraExisting_0-vectaraExisting_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "id": "vectaraUpsert_0-vectaraUpsert_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": { "label": "" }
         },
         {
