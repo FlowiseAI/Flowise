@@ -5,6 +5,9 @@ import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { DataSourceOptions } from 'typeorm/data-source'
+
+type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
 
 class SqlDatabaseChain_Chains implements INode {
     label: string
@@ -38,36 +41,48 @@ class SqlDatabaseChain_Chains implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'SQlite',
+                        label: 'SQLite',
                         name: 'sqlite'
+                    },
+                    {
+                        label: 'PostgreSQL',
+                        name: 'postgres'
+                    },
+                    {
+                        label: 'MSSQL',
+                        name: 'mssql'
+                    },
+                    {
+                        label: 'MySQL',
+                        name: 'mysql'
                     }
                 ],
                 default: 'sqlite'
             },
             {
-                label: 'Database File Path',
-                name: 'dbFilePath',
+                label: 'Connection string or file path (sqlite only)',
+                name: 'url',
                 type: 'string',
-                placeholder: 'C:/Users/chinook.db'
+                placeholder: '1270.0.0.1:5432/chinook'
             }
         ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const databaseType = nodeData.inputs?.database as 'sqlite'
+        const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const dbFilePath = nodeData.inputs?.dbFilePath
+        const url = nodeData.inputs?.url
 
-        const chain = await getSQLDBChain(databaseType, dbFilePath, model)
+        const chain = await getSQLDBChain(databaseType, url, model)
         return chain
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const databaseType = nodeData.inputs?.database as 'sqlite'
+        const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const dbFilePath = nodeData.inputs?.dbFilePath
+        const url = nodeData.inputs?.url
 
-        const chain = await getSQLDBChain(databaseType, dbFilePath, model)
+        const chain = await getSQLDBChain(databaseType, url, model)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
 
         if (options.socketIO && options.socketIOClientId) {
@@ -81,11 +96,18 @@ class SqlDatabaseChain_Chains implements INode {
     }
 }
 
-const getSQLDBChain = async (databaseType: 'sqlite', dbFilePath: string, llm: BaseLanguageModel) => {
-    const datasource = new DataSource({
-        type: databaseType,
-        database: dbFilePath
-    })
+const getSQLDBChain = async (databaseType: DatabaseType, url: string, llm: BaseLanguageModel) => {
+    const datasource = new DataSource(
+        databaseType === 'sqlite'
+            ? {
+                  type: databaseType,
+                  database: url
+              }
+            : ({
+                  type: databaseType,
+                  url: url
+              } as DataSourceOptions)
+    )
 
     const db = await SqlDatabase.fromDataSourceParams({
         appDataSource: datasource
