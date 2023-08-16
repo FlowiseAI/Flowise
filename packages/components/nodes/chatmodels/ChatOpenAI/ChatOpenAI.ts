@@ -123,6 +123,16 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'BasePath',
                 name: 'basepath',
                 type: 'string',
+                description: "Defaults to OpenAI's chat completion endpoint. Change this if you are using a proxy, like Helicone.",
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'HeliconeApiKey',
+                name: 'heliconeApiKey',
+                type: 'password',
+                description:
+                    "Helicone API Key. If informed, you will need to change the BasePath to Helicone's proxy URL (https://oai.hconeai.com/v1).",
                 optional: true,
                 additionalParams: true
             }
@@ -139,6 +149,7 @@ class ChatOpenAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const heliconeApiKey = nodeData.inputs?.heliconeApiKey as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -156,8 +167,19 @@ class ChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
+        let baseOptions: any | undefined = undefined
+
+        if (heliconeApiKey) {
+            baseOptions = {
+                headers: {
+                    'Helicone-Auth': 'Bearer ' + heliconeApiKey
+                }
+            }
+        }
+
         const model = new ChatOpenAI(obj, {
-            basePath
+            basePath,
+            baseOptions
         })
         return model
     }
