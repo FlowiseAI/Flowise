@@ -50,6 +50,7 @@
         "notion-to-md": "^3.1.1",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^3.7.107",
+        "pg": "^8.11.2",
         "playwright": "^1.35.0",
         "puppeteer": "^20.7.1",
         "pyodide": ">=0.21.0-alpha.2",
@@ -63,6 +64,7 @@
     "devDependencies": {
         "@types/gulp": "4.0.9",
         "@types/node-fetch": "2.6.2",
+        "@types/pg": "^8.10.2",
         "@types/ws": "^8.5.3",
         "gulp": "^4.0.2",
         "typescript": "^4.8.4"
