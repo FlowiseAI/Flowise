@@ -2,7 +2,7 @@
 
 # Flowise - Low-Code LLM apps builder
 
-English | [中文](./README-ZH.md)
+English | [中文](<./README-ZH.md>)
 
 ![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
 
