@@ -18,7 +18,7 @@ import {
     IComponentCredentials,
     ICredentialReqBody
 } from '../Interface'
-import { cloneDeep, get, omit, merge, isEqual } from 'lodash'
+import { cloneDeep, get, isEqual } from 'lodash'
 import {
     ICommonObject,
     getInputVariables,
@@ -394,25 +394,6 @@ export const getVariableValue = (
 }
 
 /**
- * Temporarily disable streaming if vectorStore is Faiss
- * @param {INodeData} flowNodeData
- * @returns {boolean}
- */
-export const isVectorStoreFaiss = (flowNodeData: INodeData) => {
-    if (flowNodeData.inputs && flowNodeData.inputs.vectorStoreRetriever) {
-        const vectorStoreRetriever = flowNodeData.inputs.vectorStoreRetriever
-        if (typeof vectorStoreRetriever === 'string' && vectorStoreRetriever.includes('faiss')) return true
-        if (
-            typeof vectorStoreRetriever === 'object' &&
-            vectorStoreRetriever.vectorStore &&
-            vectorStoreRetriever.vectorStore.constructor.name === 'FaissStore'
-        )
-            return true
-    }
-    return false
-}
-
-/**
  * Loop through each inputs and resolve variable if neccessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -426,11 +407,6 @@ export const resolveVariables = (
     chatHistory: IMessage[]
 ): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
-    if (reactFlowNodeData.instance && isVectorStoreFaiss(reactFlowNodeData)) {
-        // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
-        const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
-        flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
-    }
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
@@ -819,7 +795,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData)
+    return isChatOrLLMsExist && isValidChainOrAgent
 }
 
 /**

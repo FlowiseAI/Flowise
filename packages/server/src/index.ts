@@ -36,7 +36,6 @@ import {
     isSameOverrideConfig,
     replaceAllAPIKeys,
     isFlowValidForStream,
-    isVectorStoreFaiss,
     databaseEntities,
     getApiKey,
     transformToCredentialEntity,
@@ -911,7 +910,6 @@ export class App {
             const nodeModule = await import(nodeInstanceFilePath)
             const nodeInstance = new nodeModule.nodeClass()
 
-            isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
