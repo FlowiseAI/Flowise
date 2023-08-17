@@ -2,7 +2,7 @@
 
 # Flowise UI
 
-English | [中文](./README-ZH.md)
+English | [中文](<./README-ZH.md>)
 
 React frontend ui for Flowise.
 
