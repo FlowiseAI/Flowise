@@ -61,7 +61,7 @@ class Postgres_Existing_VectorStores implements INode {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
-                placeholder: 'embeddings',
+                placeholder: 'documents',
                 additionalParams: true,
                 optional: true
             },
@@ -93,7 +93,8 @@ class Postgres_Existing_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const user = getCredentialParam('user', credentialData, nodeData)
         const password = getCredentialParam('password', credentialData, nodeData)
-        const tableName = nodeData.inputs?.tableName as string
+        const _tableName = nodeData.inputs?.tableName as string
+        const tableName = _tableName ? _tableName : 'documents'
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string

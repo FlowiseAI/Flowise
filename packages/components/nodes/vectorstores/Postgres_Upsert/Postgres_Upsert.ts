@@ -70,7 +70,7 @@ class PostgresUpsert_VectorStores implements INode {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
-                placeholder: 'embeddings',
+                placeholder: 'documents',
                 additionalParams: true,
                 optional: true
             },
@@ -125,7 +125,8 @@ class PostgresUpsert_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const user = getCredentialParam('user', credentialData, nodeData)
         const password = getCredentialParam('password', credentialData, nodeData)
-        const tableName = nodeData.inputs?.tableName as string
+        const _tableName = nodeData.inputs?.tableName as string
+        const tableName = _tableName ? _tableName : 'documents'
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
