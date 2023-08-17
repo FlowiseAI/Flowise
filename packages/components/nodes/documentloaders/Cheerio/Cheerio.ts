@@ -64,7 +64,7 @@ class Cheerio_DocumentLoaders implements INode {
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
-                warning: `Retreiving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+                warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
             },
             {
                 label: 'Metadata',
