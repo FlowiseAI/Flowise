@@ -123,7 +123,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                     </div>
                 )}
                 {getNodeConfigApi.data && getNodeConfigApi.data.length > 0 && (
-                    <TableViewOnly rows={getNodeConfigApi.data} columns={Object.keys(getNodeConfigApi.data[0])} />
+                    <TableViewOnly rows={getNodeConfigApi.data} columns={Object.keys(getNodeConfigApi.data[0]).slice(-3)} />
                 )}
             </DialogContent>
         </Dialog>
