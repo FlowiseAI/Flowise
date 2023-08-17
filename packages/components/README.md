@@ -2,7 +2,7 @@
 
 # Flowise Components
 
-English | [中文](./README-ZH.md)
+English | [中文](<./README-ZH.md>)
 
 Apps integration for Flowise. Contain Nodes and Credentials.
 
