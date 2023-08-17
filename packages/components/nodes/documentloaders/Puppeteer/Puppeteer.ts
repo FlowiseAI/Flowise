@@ -1,8 +1,9 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { PuppeteerWebBaseLoader } from 'langchain/document_loaders/web/puppeteer'
+import { Browser, Page, PuppeteerWebBaseLoader, PuppeteerWebBaseLoaderOptions } from 'langchain/document_loaders/web/puppeteer'
 import { test } from 'linkifyjs'
 import { webCrawl, xmlScrape } from '../../../src'
+import { PuppeteerLifeCycleEvent } from 'puppeteer'
 
 class Puppeteer_DocumentLoaders implements INode {
     label: string
@@ -64,7 +65,45 @@ class Puppeteer_DocumentLoaders implements INode {
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
-                warning: `Retreiving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+                warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+            },
+            {
+                label: 'Wait Until',
+                name: 'waitUntilGoToOption',
+                type: 'options',
+                description: 'Select a go to wait until option',
+                options: [
+                    {
+                        label: 'Load',
+                        name: 'load',
+                        description: `When the initial HTML document's DOM has been loaded and parsed`
+                    },
+                    {
+                        label: 'DOM Content Loaded',
+                        name: 'domcontentloaded',
+                        description: `When the complete HTML document's DOM has been loaded and parsed`
+                    },
+                    {
+                        label: 'Network Idle 0',
+                        name: 'networkidle0',
+                        description: 'Navigation is finished when there are no more than 0 network connections for at least 500 ms'
+                    },
+                    {
+                        label: 'Network Idle 2',
+                        name: 'networkidle2',
+                        description: 'Navigation is finished when there are no more than 2 network connections for at least 500 ms'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Wait for selector to load',
+                name: 'waitForSelector',
+                type: 'string',
+                optional: true,
+                additionalParams: true,
+                description: 'CSS selectors like .div or #div'
             },
             {
                 label: 'Metadata',
@@ -81,6 +120,8 @@ class Puppeteer_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         let limit = nodeData.inputs?.limit as string
+        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
+        let waitForSelector = nodeData.inputs?.waitForSelector as string
 
         let url = nodeData.inputs?.url as string
         url = url.trim()
@@ -91,12 +132,26 @@ class Puppeteer_DocumentLoaders implements INode {
         async function puppeteerLoader(url: string): Promise<any> {
             try {
                 let docs = []
-                const loader = new PuppeteerWebBaseLoader(url, {
+                const config: PuppeteerWebBaseLoaderOptions = {
                     launchOptions: {
                         args: ['--no-sandbox'],
                         headless: 'new'
                     }
-                })
+                }
+                if (waitUntilGoToOption) {
+                    config['gotoOptions'] = {
+                        waitUntil: waitUntilGoToOption
+                    }
+                }
+                if (waitForSelector) {
+                    config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
+                        await page.waitForSelector(waitForSelector)
+
+                        const result = await page.evaluate(() => document.body.innerHTML)
+                        return result
+                    }
+                }
+                const loader = new PuppeteerWebBaseLoader(url, config)
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {
