@@ -18,7 +18,7 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@dqbd/tiktoken": "^1.0.7",
-        "@getzep/zep-js": "^0.4.1",
+        "@getzep/zep-js": "^0.6.3",
         "@huggingface/inference": "^2.6.1",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
@@ -40,7 +40,7 @@
         "google-auth-library": "^9.0.0",
         "graphql": "^16.6.0",
         "html-to-text": "^9.0.5",
-        "langchain": "^0.0.126",
+        "langchain": "^0.0.128",
         "linkifyjs": "^4.1.1",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",

@@ -120,7 +120,8 @@ class ZepMemory_Memory implements INode {
         zep.loadMemoryVariables = async (values) => {
             let data = await tmpFunc.bind(zep, values)()
             if (autoSummary && zep.returnMessages && data[zep.memoryKey] && data[zep.memoryKey].length) {
-                const memory = await zep.zepClient.getMemory(zep.sessionId, parseInt(k, 10) ?? 10)
+                const zepClient = await zep.zepClientPromise
+                const memory = await zepClient.memory.getMemory(zep.sessionId, parseInt(k, 10) ?? 10)
                 if (memory?.summary) {
                     let summary = autoSummaryTemplate.replace(/{summary}/g, memory.summary.content)
                     // eslint-disable-next-line no-console
@@ -189,23 +190,6 @@ class ZepMemoryExtended extends ZepMemory {
     constructor(fields: ZepMemoryInput & Partial<ZepMemoryExtendedInput>) {
         super(fields)
         this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
-    }
-
-    async clear(): Promise<void> {
-        // Only clear when sessionId is using chatId
-        // If sessionId is specified, clearing and inserting again will error because the sessionId has been soft deleted
-        // If using chatId, it will not be a problem because the sessionId will always be the new chatId
-        if (this.isSessionIdUsingChatMessageId) {
-            try {
-                await this.zepClient.deleteMemory(this.sessionId)
-            } catch (error) {
-                console.error('Error deleting session: ', error)
-            }
-
-            // Clear the superclass's chat history
-            await super.clear()
-        }
-        await this.chatHistory.clear()
     }
 }
 
