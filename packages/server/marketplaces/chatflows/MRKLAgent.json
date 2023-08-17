@@ -1,0 +1,336 @@
+{
+    "description": "An agent that uses the React Framework to decide what action to take",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 143,
+            "id": "calculator_1",
+            "position": {
+                "x": 664.1366474718458,
+                "y": 123.16419000640141
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_1",
+                "label": "Calculator",
+                "name": "calculator",
+                "version": 1,
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Calculator | Tool | StructuredTool | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 664.1366474718458,
+                "y": 123.16419000640141
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 280,
+            "id": "mrklAgentLLM_0",
+            "position": {
+                "x": 1055.3271135179489,
+                "y": 245.36098016819074
+            },
+            "type": "customNode",
+            "data": {
+                "id": "mrklAgentLLM_0",
+                "label": "MRKL Agent for LLMs",
+                "name": "mrklAgentLLM",
+                "version": 1,
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "BaseLangChain"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct Framework to decide what action to take, optimized to be used with LLMs",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "mrklAgentLLM_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "mrklAgentLLM_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{calculator_1.data.instance}}", "{{serper_0.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "mrklAgentLLM_0-output-mrklAgentLLM-AgentExecutor|BaseChain|BaseLangChain",
+                        "name": "mrklAgentLLM",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | BaseLangChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1055.3271135179489,
+                "y": 245.36098016819074
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 277,
+            "id": "serper_0",
+            "position": {
+                "x": 330.964079024626,
+                "y": 109.83185250619351
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serper_0",
+                "label": "Serper",
+                "name": "serper",
+                "version": 1,
+                "type": "Serper",
+                "baseClasses": ["Serper", "Tool", "StructuredTool"],
+                "category": "Tools",
+                "description": "Wrapper around Serper.dev - Google Search API",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["serperApi"],
+                        "id": "serper_0-input-credential-credential"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool",
+                        "name": "serper",
+                        "label": "Serper",
+                        "type": "Serper | Tool | StructuredTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 330.964079024626,
+                "y": 109.83185250619351
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 333.58931284721206,
+                "y": 416.98420974875927
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "version": 1,
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 333.58931284721206,
+                "y": 416.98420974875927
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "calculator_1",
+            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "serper_0",
+            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool-mrklAgentLLM_0-mrklAgentLLM_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "mrklAgentLLM_0",
+            "targetHandle": "mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-mrklAgentLLM_0-mrklAgentLLM_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

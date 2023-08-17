@@ -3,10 +3,12 @@ import { BaseChatModel } from 'langchain/chat_models/base'
 import { AutoGPT } from 'langchain/experimental/autogpt'
 import { Tool } from 'langchain/tools'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'
+import { flatten } from 'lodash'
 
 class AutoGPT_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +19,7 @@ class AutoGPT_Agents implements INode {
     constructor() {
         this.label = 'AutoGPT'
         this.name = 'autoGPT'
+        this.version = 1.0
         this.type = 'AutoGPT'
         this.category = 'Agents'
         this.icon = 'autogpt.png'
@@ -67,7 +70,7 @@ class AutoGPT_Agents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever
         let tools = nodeData.inputs?.tools as Tool[]
-        tools = tools.flat()
+        tools = flatten(tools)
         const aiName = (nodeData.inputs?.aiName as string) || 'AutoGPT'
         const aiRole = (nodeData.inputs?.aiRole as string) || 'Assistant'
         const maxLoop = nodeData.inputs?.maxLoop as string
@@ -89,7 +92,6 @@ class AutoGPT_Agents implements INode {
             const res = await executor.run([input])
             return res || 'I have completed all my tasks.'
         } catch (e) {
-            console.error(e)
             throw new Error(e)
         }
     }

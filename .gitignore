@@ -8,6 +8,7 @@
 **/yarn.lock
 
 ## logs
+**/logs
 **/*.log
 
 ## build

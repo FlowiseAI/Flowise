@@ -1,59 +1,43 @@
 import { AzureOpenAIInput } from 'langchain/chat_models/openai'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/openai'
 
 class AzureOpenAIEmbedding_Embeddings implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Azure OpenAI Embeddings'
         this.name = 'azureOpenAIEmbeddings'
+        this.version = 1.0
         this.type = 'AzureOpenAIEmbeddings'
         this.icon = 'Azure.svg'
         this.category = 'Embeddings'
         this.description = 'Azure OpenAI API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAIEmbeddings)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['azureOpenAIApi']
+        }
         this.inputs = [
             {
-                label: 'Azure OpenAI Api Key',
-                name: 'azureOpenAIApiKey',
-                type: 'password'
-            },
-            {
-                label: 'Azure OpenAI Api Instance Name',
-                name: 'azureOpenAIApiInstanceName',
-                type: 'string',
-                placeholder: 'YOUR-INSTANCE-NAME'
-            },
-            {
-                label: 'Azure OpenAI Api Deployment Name',
-                name: 'azureOpenAIApiDeploymentName',
-                type: 'string',
-                placeholder: 'YOUR-DEPLOYMENT-NAME'
-            },
-            {
-                label: 'Azure OpenAI Api Version',
-                name: 'azureOpenAIApiVersion',
-                type: 'options',
-                options: [
-                    {
-                        label: '2023-03-15-preview',
-                        name: '2023-03-15-preview'
-                    },
-                    {
-                        label: '2022-12-01',
-                        name: '2022-12-01'
-                    }
-                ],
-                default: '2023-03-15-preview'
+                label: 'Batch Size',
+                name: 'batchSize',
+                type: 'number',
+                default: '1',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Timeout',
@@ -65,12 +49,15 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const azureOpenAIApiKey = nodeData.inputs?.azureOpenAIApiKey as string
-        const azureOpenAIApiInstanceName = nodeData.inputs?.azureOpenAIApiInstanceName as string
-        const azureOpenAIApiDeploymentName = nodeData.inputs?.azureOpenAIApiDeploymentName as string
-        const azureOpenAIApiVersion = nodeData.inputs?.azureOpenAIApiVersion as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
+        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData)
+        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
+        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
         const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> = {
             azureOpenAIApiKey,
@@ -79,6 +66,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             azureOpenAIApiVersion
         }
 
+        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
 
         const model = new OpenAIEmbeddings(obj)

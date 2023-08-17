@@ -3,7 +3,7 @@ name: Node CI
 on:
     push:
         branches:
-            - master
+            - main
 
     pull_request:
         branches:
@@ -19,7 +19,8 @@ jobs:
                 platform: [ubuntu-latest]
                 node-version: [18.15.0]
         runs-on: ${{ matrix.platform }}
-
+        env:
+            PUPPETEER_SKIP_DOWNLOAD: true
         steps:
             - uses: actions/checkout@v3
             - name: Use Node.js ${{ matrix.node-version }}

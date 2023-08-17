@@ -1,0 +1,771 @@
+{
+    "description": "Scrape web pages for QnA with long term memory Motorhead and return source documents",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 523,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1542.965468159417,
+                "y": -200.10756989974368
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 1,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": "0.9",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1542.965468159417,
+                "y": -200.10756989974368
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 328,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 827.6835380475393,
+                "y": 253.8955254525015
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "version": 1,
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 827.6835380475393,
+                "y": 253.8955254525015
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "htmlToMarkdownTextSplitter_0",
+            "position": {
+                "x": 465.86869036784685,
+                "y": -17.41141011530891
+            },
+            "type": "customNode",
+            "data": {
+                "id": "htmlToMarkdownTextSplitter_0",
+                "label": "HtmlToMarkdown Text Splitter",
+                "version": 1,
+                "name": "htmlToMarkdownTextSplitter",
+                "type": "HtmlToMarkdownTextSplitter",
+                "baseClasses": [
+                    "HtmlToMarkdownTextSplitter",
+                    "MarkdownTextSplitter",
+                    "RecursiveCharacterTextSplitter",
+                    "TextSplitter",
+                    "BaseDocumentTransformer"
+                ],
+                "category": "Text Splitters",
+                "description": "Converts Html to Markdown and then split your content into documents based on the Markdown headers",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "htmlToMarkdownTextSplitter_0-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "htmlToMarkdownTextSplitter_0-input-chunkOverlap-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": "4000",
+                    "chunkOverlap": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "htmlToMarkdownTextSplitter_0-output-htmlToMarkdownTextSplitter-HtmlToMarkdownTextSplitter|MarkdownTextSplitter|RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer",
+                        "name": "htmlToMarkdownTextSplitter",
+                        "label": "HtmlToMarkdownTextSplitter",
+                        "type": "HtmlToMarkdownTextSplitter | MarkdownTextSplitter | RecursiveCharacterTextSplitter | TextSplitter | BaseDocumentTransformer"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 465.86869036784685,
+                "y": -17.41141011530891
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 479,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1882.5543981868987,
+                "y": 305.08959224761225
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "version": 1,
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Chain Option",
+                        "name": "chainOption",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "MapReduceDocumentsChain",
+                                "name": "map_reduce",
+                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
+                            },
+                            {
+                                "label": "RefineDocumentsChain",
+                                "name": "refine",
+                                "description": "Suitable for QA tasks over a large number of documents."
+                            },
+                            {
+                                "label": "StuffDocumentsChain",
+                                "name": "stuff",
+                                "description": "Suitable for QA tasks over a small number of documents."
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "optional": true,
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}",
+                    "memory": "{{motorheadMemory_0.data.instance}}",
+                    "returnSourceDocuments": true,
+                    "systemMessagePrompt": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given context. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Do not make up any information that is not in the context. Refuse to answer any question not about the info. Never break character.",
+                    "chainOption": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1882.5543981868987,
+                "y": 305.08959224761225
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 380,
+            "id": "cheerioWebScraper_0",
+            "position": {
+                "x": 831.9867292136466,
+                "y": -181.92350323746112
+            },
+            "type": "customNode",
+            "data": {
+                "id": "cheerioWebScraper_0",
+                "label": "Cheerio Web Scraper",
+                "version": 1,
+                "name": "cheerioWebScraper",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from webpages",
+                "inputParams": [
+                    {
+                        "label": "URL",
+                        "name": "url",
+                        "type": "string",
+                        "id": "cheerioWebScraper_0-input-url-string"
+                    },
+                    {
+                        "label": "Get Relative Links Method",
+                        "name": "relativeLinksMethod",
+                        "type": "options",
+                        "description": "Select a method to retrieve relative links",
+                        "options": [
+                            {
+                                "label": "Web Crawl",
+                                "name": "webCrawl",
+                                "description": "Crawl relative links from HTML URL"
+                            },
+                            {
+                                "label": "Scrape XML Sitemap",
+                                "name": "scrapeXMLSitemap",
+                                "description": "Scrape relative links from XML sitemap URL"
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-relativeLinksMethod-options"
+                    },
+                    {
+                        "label": "Get Relative Links Limit",
+                        "name": "limit",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "description": "Only used when \"Get Relative Links Method\" is selected. Set 0 to retrieve all relative links, default limit is 10.",
+                        "warning": "Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)",
+                        "id": "cheerioWebScraper_0-input-limit-number"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "cheerioWebScraper_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "url": "https://flowiseai.com/",
+                    "textSplitter": "{{htmlToMarkdownTextSplitter_0.data.instance}}",
+                    "relativeLinksMethod": "",
+                    "limit": "",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "cheerioWebScraper_0-output-cheerioWebScraper-Document",
+                        "name": "cheerioWebScraper",
+                        "label": "Document",
+                        "type": "Document"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 831.9867292136466,
+                "y": -181.92350323746112
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 555,
+            "id": "pineconeUpsert_0",
+            "position": {
+                "x": 1179.6228496246993,
+                "y": -167.023255532671
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeUpsert_0",
+                "label": "Pinecone Upsert Document",
+                "version": 1,
+                "name": "pineconeUpsert",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert documents to Pinecone",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeUpsert_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeUpsert_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "id": "pineconeUpsert_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{cheerioWebScraper_0.data.instance}}"],
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1179.6228496246993,
+                "y": -167.023255532671
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 427,
+            "id": "motorheadMemory_0",
+            "position": {
+                "x": 1202.1545938923578,
+                "y": 425.69055061366237
+            },
+            "type": "customNode",
+            "data": {
+                "id": "motorheadMemory_0",
+                "label": "Motorhead Memory",
+                "version": 1,
+                "name": "motorheadMemory",
+                "type": "MotorheadMemory",
+                "baseClasses": ["MotorheadMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Use Motorhead Memory to store chat conversations",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "description": "Only needed when using hosted solution - https://getmetal.io",
+                        "credentialNames": ["motorheadMemoryApi"],
+                        "id": "motorheadMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Base URL",
+                        "name": "baseURL",
+                        "type": "string",
+                        "optional": true,
+                        "description": "To use the online version, leave the URL blank. More details at https://getmetal.io.",
+                        "id": "motorheadMemory_0-input-baseURL-string"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, the first CHAT_MESSAGE_ID will be used as sessionId",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "motorheadMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "motorheadMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "baseURL": "",
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory",
+                        "name": "motorheadMemory",
+                        "label": "MotorheadMemory",
+                        "type": "MotorheadMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1202.1545938923578,
+                "y": 425.69055061366237
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "htmlToMarkdownTextSplitter_0",
+            "sourceHandle": "htmlToMarkdownTextSplitter_0-output-htmlToMarkdownTextSplitter-HtmlToMarkdownTextSplitter|MarkdownTextSplitter|RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer",
+            "target": "cheerioWebScraper_0",
+            "targetHandle": "cheerioWebScraper_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "htmlToMarkdownTextSplitter_0-htmlToMarkdownTextSplitter_0-output-htmlToMarkdownTextSplitter-HtmlToMarkdownTextSplitter|MarkdownTextSplitter|RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer-cheerioWebScraper_0-cheerioWebScraper_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "cheerioWebScraper_0",
+            "sourceHandle": "cheerioWebScraper_0-output-cheerioWebScraper-Document",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "cheerioWebScraper_0-cheerioWebScraper_0-output-cheerioWebScraper-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pineconeUpsert_0",
+            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeUpsert_0",
+            "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "motorheadMemory_0",
+            "sourceHandle": "motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "motorheadMemory_0-motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

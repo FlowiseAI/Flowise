@@ -6,6 +6,7 @@ import { VectorStore } from 'langchain/vectorstores'
 class BabyAGI_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -16,6 +17,7 @@ class BabyAGI_Agents implements INode {
     constructor() {
         this.label = 'BabyAGI'
         this.name = 'babyAGI'
+        this.version = 1.0
         this.type = 'BabyAGI'
         this.category = 'Agents'
         this.icon = 'babyagi.jpg'
@@ -45,8 +47,9 @@ class BabyAGI_Agents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const taskLoop = nodeData.inputs?.taskLoop as string
+        const k = (vectorStore as any)?.k ?? 4
 
-        const babyAgi = BabyAGI.fromLLM(model, vectorStore, parseInt(taskLoop, 10))
+        const babyAgi = BabyAGI.fromLLM(model, vectorStore, parseInt(taskLoop, 10), k)
         return babyAgi
     }
 

@@ -14,8 +14,8 @@ apiClient.interceptors.request.use(function (config) {
 
     if (username && password) {
         config.auth = {
-            username: username.toLocaleLowerCase(),
-            password: password.toLocaleLowerCase()
+            username,
+            password
         }
     }
 

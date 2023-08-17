@@ -5,19 +5,31 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
-import { Box, Typography, Tooltip, IconButton } from '@mui/material'
+import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
 
 // project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
+import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
-import { isValidConnection, getAvailableNodesForVariable } from 'utils/genericHelper'
+import { isValidConnection } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import ToolDialog from 'views/tools/ToolDialog'
+import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
+import CredentialInputHandler from './CredentialInputHandler'
+
+// utils
+import { getInputVariables } from 'utils/genericHelper'
+
+// const
+import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+
+const EDITABLE_TOOLS = ['selectedTool']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -36,6 +48,11 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [position, setPosition] = useState(0)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [showAsyncOptionDialog, setAsyncOptionEditDialog] = useState('')
+    const [asyncOptionEditDialogProps, setAsyncOptionEditDialogProps] = useState({})
+    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
+    const [showFormatPromptValuesDialog, setShowFormatPromptValuesDialog] = useState(false)
+    const [formatPromptValuesDialogProps, setFormatPromptValuesDialogProps] = useState({})
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -45,20 +62,73 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
         }
-
-        if (!disabled) {
-            const nodes = reactFlowInstance.getNodes()
-            const edges = reactFlowInstance.getEdges()
-            const nodesForVariable = inputParam.acceptVariable ? getAvailableNodesForVariable(nodes, edges, data.id, inputParam.id) : []
-            dialogProp.availableNodesForVariable = nodesForVariable
-        }
         setExpandDialogProps(dialogProp)
         setShowExpandDialog(true)
+    }
+
+    const onFormatPromptValuesClicked = (value, inputParam) => {
+        // Preset values if the field is format prompt values
+        let inputValue = value
+        if (inputParam.name === 'promptValues' && !value) {
+            const obj = {}
+            const templateValue =
+                (data.inputs['template'] ?? '') + (data.inputs['systemMessagePrompt'] ?? '') + (data.inputs['humanMessagePrompt'] ?? '')
+            const inputVariables = getInputVariables(templateValue)
+            for (const inputVariable of inputVariables) {
+                obj[inputVariable] = ''
+            }
+            if (Object.keys(obj).length) inputValue = JSON.stringify(obj)
+        }
+        const dialogProp = {
+            value: inputValue,
+            inputParam,
+            nodes: reactFlowInstance.getNodes(),
+            edges: reactFlowInstance.getEdges(),
+            nodeId: data.id
+        }
+        setFormatPromptValuesDialogProps(dialogProp)
+        setShowFormatPromptValuesDialog(true)
     }
 
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
         data.inputs[inputParamName] = newValue
+    }
+
+    const editAsyncOption = (inputParamName, inputValue) => {
+        if (inputParamName === 'selectedTool') {
+            setAsyncOptionEditDialogProps({
+                title: 'Edit Tool',
+                type: 'EDIT',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Save',
+                toolId: inputValue
+            })
+        }
+        setAsyncOptionEditDialog(inputParamName)
+    }
+
+    const addAsyncOption = (inputParamName) => {
+        if (inputParamName === 'selectedTool') {
+            setAsyncOptionEditDialogProps({
+                title: 'Add New Tool',
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add'
+            })
+        }
+        setAsyncOptionEditDialog(inputParamName)
+    }
+
+    const onConfirmAsyncOption = (selectedOptionId = '') => {
+        if (!selectedOptionId) {
+            data.inputs[showAsyncOptionDialog] = ''
+        } else {
+            data.inputs[showAsyncOptionDialog] = selectedOptionId
+            setReloadTimestamp(Date.now().toString())
+        }
+        setAsyncOptionEditDialogProps({})
+        setAsyncOptionEditDialog('')
     }
 
     useEffect(() => {
@@ -95,6 +165,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         <Typography>
                             {inputAnchor.label}
                             {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                            {inputAnchor.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputAnchor.description} />}
                         </Typography>
                     </Box>
                 </>
@@ -144,6 +215,33 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 </IconButton>
                             )}
                         </div>
+                        {inputParam.warning && (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    borderRadius: 10,
+                                    background: 'rgb(254,252,191)',
+                                    padding: 10,
+                                    marginTop: 10,
+                                    marginBottom: 10
+                                }}
+                            >
+                                <IconAlertTriangle size={36} color='orange' />
+                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
+                            </div>
+                        )}
+                        {inputParam.type === 'credential' && (
+                            <CredentialInputHandler
+                                disabled={disabled}
+                                data={data}
+                                inputParam={inputParam}
+                                onSelect={(newValue) => {
+                                    data.credential = newValue
+                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                }}
+                            />
+                        )}
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}
@@ -161,6 +259,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
+                                key={data.inputs[inputParam.name]}
                                 disabled={disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
@@ -172,12 +271,33 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                             />
                         )}
                         {inputParam.type === 'json' && (
-                            <JsonEditorInput
-                                disabled={disabled}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                isDarkMode={customization.isDarkMode}
-                            />
+                            <>
+                                {!inputParam?.acceptVariable && (
+                                    <JsonEditorInput
+                                        disabled={disabled}
+                                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                        isDarkMode={customization.isDarkMode}
+                                    />
+                                )}
+                                {inputParam?.acceptVariable && (
+                                    <>
+                                        <Button
+                                            sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 2 }}
+                                            variant='outlined'
+                                            onClick={() => onFormatPromptValuesClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                        >
+                                            Format Prompt Values
+                                        </Button>
+                                        <FormatPromptValuesDialog
+                                            show={showFormatPromptValuesDialog}
+                                            dialogProps={formatPromptValuesDialogProps}
+                                            onCancel={() => setShowFormatPromptValuesDialog(false)}
+                                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        ></FormatPromptValuesDialog>
+                                    </>
+                                )}
+                            </>
                         )}
                         {inputParam.type === 'options' && (
                             <Dropdown
@@ -185,12 +305,44 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
+                        )}
+                        {inputParam.type === 'asyncOptions' && (
+                            <>
+                                {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
+                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <AsyncDropdown
+                                        disabled={disabled}
+                                        name={inputParam.name}
+                                        nodeData={data}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                        isCreateNewOption={EDITABLE_TOOLS.includes(inputParam.name)}
+                                        onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        onCreateNew={() => addAsyncOption(inputParam.name)}
+                                    />
+                                    {EDITABLE_TOOLS.includes(inputParam.name) && data.inputs[inputParam.name] && (
+                                        <IconButton
+                                            title='Edit'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
+                                        >
+                                            <IconEdit />
+                                        </IconButton>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </Box>
                 </>
             )}
+            <ToolDialog
+                show={EDITABLE_TOOLS.includes(showAsyncOptionDialog)}
+                dialogProps={asyncOptionEditDialogProps}
+                onCancel={() => setAsyncOptionEditDialog('')}
+                onConfirm={onConfirmAsyncOption}
+            ></ToolDialog>
         </div>
     )
 }

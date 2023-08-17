@@ -2,6 +2,7 @@
     width: 100%;
     height: 100%;
     overflow-y: scroll;
+    overflow-x: hidden;
     border-radius: 0.5rem;
 }
 
@@ -75,12 +76,15 @@
 }
 
 .markdownanswer a {
+    display: block;
+    margin-right: 2.5rem;
+    word-wrap: break-word;
     color: #16bed7;
     font-weight: 500;
 }
 
 .markdownanswer code {
-    color: #15cb19;
+    color: #0ab126;
     font-weight: 500;
     white-space: pre-wrap !important;
 }
@@ -92,6 +96,7 @@
 
 .boticon,
 .usericon {
+    margin-top: 1rem;
     margin-right: 1rem;
     border-radius: 1rem;
 }
@@ -114,6 +119,16 @@
 .cloud {
     width: 400px;
     height: calc(100vh - 260px);
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cloud-dialog {
+    width: 100%;
+    height: 100vh;
+    overflow-y: scroll;
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;

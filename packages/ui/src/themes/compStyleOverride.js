@@ -1,6 +1,39 @@
 export default function componentStyleOverrides(theme) {
     const bgColor = theme.colors?.grey50
     return {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: theme?.customization?.isDarkMode
+                        ? `${theme.colors?.grey500} ${theme.colors?.darkPrimaryMain}`
+                        : `${theme.colors?.grey300} ${theme.paper}`,
+                    '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+                        width: 12,
+                        height: 12,
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryMain : theme.paper
+                    },
+                    '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+                        borderRadius: 8,
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.grey500 : theme.colors?.grey300,
+                        minHeight: 24,
+                        border: `3px solid ${theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryMain : theme.paper}`
+                    },
+                    '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus': {
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.grey500
+                    },
+                    '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active': {
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.grey500
+                    },
+                    '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.grey500
+                    },
+                    '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+                        backgroundColor: theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryMain : theme.paper
+                    }
+                }
+            }
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
@@ -103,6 +136,9 @@ export default function componentStyleOverrides(theme) {
                     '&::placeholder': {
                         color: theme.darkTextSecondary,
                         fontSize: '0.875rem'
+                    },
+                    '&.Mui-disabled': {
+                        WebkitTextFillColor: theme?.customization?.isDarkMode ? theme.colors?.grey500 : theme.darkTextSecondary
                     }
                 }
             }

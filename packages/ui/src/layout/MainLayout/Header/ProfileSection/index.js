@@ -27,9 +27,10 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import MainCard from 'ui-component/cards/MainCard'
 import Transitions from 'ui-component/extended/Transitions'
 import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
+import AboutDialog from 'ui-component/dialog/AboutDialog'
 
 // assets
-import { IconLogout, IconSettings, IconFileExport, IconFileDownload } from '@tabler/icons'
+import { IconLogout, IconSettings, IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
 
 // API
 import databaseApi from 'api/database'
@@ -49,6 +50,7 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
     const uploadRef = useRef(null)
@@ -215,6 +217,18 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Export Database</Typography>} />
                                                 </ListItemButton>
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={() => {
+                                                        setOpen(false)
+                                                        setAboutDialogOpen(true)
+                                                    }}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                </ListItemButton>
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
@@ -237,6 +251,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             </Popper>
             <input ref={uploadRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
             <BackdropLoader open={loading} />
+            <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
         </>
     )
 }

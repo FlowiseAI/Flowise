@@ -3,10 +3,12 @@ import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/age
 import { getBaseClasses } from '../../../src/utils'
 import { Tool } from 'langchain/tools'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { flatten } from 'lodash'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +19,7 @@ class MRKLAgentChat_Agents implements INode {
     constructor() {
         this.label = 'MRKL Agent for Chat Models'
         this.name = 'mrklAgentChat'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -40,7 +43,7 @@ class MRKLAgentChat_Agents implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
-        tools = tools.flat()
+        tools = flatten(tools)
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'chat-zero-shot-react-description',
             verbose: process.env.DEBUG === 'true' ? true : false

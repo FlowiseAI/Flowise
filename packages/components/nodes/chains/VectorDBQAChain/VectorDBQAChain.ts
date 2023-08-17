@@ -1,12 +1,14 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { VectorDBQAChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { VectorStore } from 'langchain/vectorstores'
+import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class VectorDBQAChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -17,6 +19,7 @@ class VectorDBQAChain_Chains implements INode {
     constructor() {
         this.label = 'VectorDB QA Chain'
         this.name = 'vectorDBQAChain'
+        this.version = 1.0
         this.type = 'VectorDBQAChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
@@ -40,17 +43,29 @@ class VectorDBQAChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
 
-        const chain = VectorDBQAChain.fromLLM(model, vectorStore, { verbose: process.env.DEBUG === 'true' ? true : false })
+        const chain = VectorDBQAChain.fromLLM(model, vectorStore, {
+            k: (vectorStore as any)?.k ?? 4,
+            verbose: process.env.DEBUG === 'true' ? true : false
+        })
         return chain
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as VectorDBQAChain
         const obj = {
             query: input
         }
-        const res = await chain.call(obj)
-        return res?.text
+
+        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+
+        if (options.socketIO && options.socketIOClientId) {
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+            const res = await chain.call(obj, [loggerHandler, handler])
+            return res?.text
+        } else {
+            const res = await chain.call(obj, [loggerHandler])
+            return res?.text
+        }
     }
 }
 
