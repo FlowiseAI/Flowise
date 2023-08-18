@@ -86,6 +86,23 @@ class FaissUpsert_VectorStores implements INode {
         const vectorStore = await FaissStore.fromDocuments(finalDocs, embeddings)
         await vectorStore.save(basePath)
 
+        // Avoid illegal invocation error
+        vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
+            const index = vectorStore.index
+
+            if (k > index.ntotal()) {
+                const total = index.ntotal()
+                console.warn(`k (${k}) is greater than the number of elements in the index (${total}), setting k to ${total}`)
+                k = total
+            }
+
+            const result = index.search(query, k)
+            return result.labels.map((id, index) => {
+                const uuid = vectorStore._mapping[id]
+                return [vectorStore.docstore.search(uuid), result.distances[index]] as [Document, number]
+            })
+        }
+
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
             return retriever
