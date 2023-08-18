@@ -33,8 +33,6 @@ class PostgresUpsert_VectorStores implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            description: 'Needed when using Postgres cloud hosted',
-            optional: true,
             credentialNames: ['PostgresApi']
         }
         this.inputs = [
@@ -75,32 +73,9 @@ class PostgresUpsert_VectorStores implements INode {
                 optional: true
             },
             {
-                label: 'Content Column Name',
-                name: 'contentColumnName',
-                type: 'string',
-                placeholder: 'content',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Vector Column Name',
-                name: 'vectorColumnName',
-                type: 'string',
-                placeholder: 'vector',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Metadata Column Name',
-                name: 'metadataColumnName',
-                type: 'string',
-                placeholder: 'metadata',
-                additionalParams: true,
-                optional: true
-            },
-            {
                 label: 'Top K',
                 name: 'topK',
+                description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
                 additionalParams: true,
