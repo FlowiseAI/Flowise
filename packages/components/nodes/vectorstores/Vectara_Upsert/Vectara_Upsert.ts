@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter } from 'langchain/vectorstores/vectara'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
 import { Document } from 'langchain/document'
 import { flatten } from 'lodash'
 
@@ -50,8 +50,26 @@ class VectaraUpsert_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Sentences Before',
+                name: 'sentencesBefore',
+                description: 'Number of sentences to fetch before the matched sentence. Defaults to 2.',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Sentences After',
+                name: 'sentencesAfter',
+                description: 'Number of sentences to fetch after the matched sentence. Defaults to 2.',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Lambda',
                 name: 'lambda',
+                description:
+                    'Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.',
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -88,6 +106,8 @@ class VectaraUpsert_VectorStores implements INode {
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = {} as Embeddings
         const vectaraMetadataFilter = nodeData.inputs?.filter as string
+        const sentencesBefore = nodeData.inputs?.sentencesBefore as number
+        const sentencesAfter = nodeData.inputs?.sentencesAfter as number
         const lambda = nodeData.inputs?.lambda as number
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
@@ -102,6 +122,11 @@ class VectaraUpsert_VectorStores implements INode {
         const vectaraFilter: VectaraFilter = {}
         if (vectaraMetadataFilter) vectaraFilter.filter = vectaraMetadataFilter
         if (lambda) vectaraFilter.lambda = lambda
+
+        const vectaraContextConfig: VectaraContextConfig = {}
+        if (sentencesBefore) vectaraContextConfig.sentencesBefore = sentencesBefore
+        if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
+        vectaraFilter.contextConfig = vectaraContextConfig
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []

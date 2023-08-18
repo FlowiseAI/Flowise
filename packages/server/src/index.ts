@@ -36,7 +36,6 @@ import {
     isSameOverrideConfig,
     replaceAllAPIKeys,
     isFlowValidForStream,
-    isVectorStoreFaiss,
     databaseEntities,
     getApiKey,
     transformToCredentialEntity,
@@ -811,11 +810,17 @@ export class App {
                 }
             }
 
+            /*** Get chatflows and prepare data  ***/
+            const flowData = chatflow.flowData
+            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+            const nodes = parsedFlowData.nodes
+            const edges = parsedFlowData.edges
+
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
-             * - Flow doesn't start with nodes that depend on incomingInput.question
+             * - Flow doesn't start with/contain nodes that depend on incomingInput.question
              ***/
             const isFlowReusable = () => {
                 return (
@@ -826,15 +831,9 @@ export class App {
                         this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
                         incomingInput.overrideConfig
                     ) &&
-                    !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes)
+                    !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes, nodes)
                 )
             }
-
-            /*** Get chatflows and prepare data  ***/
-            const flowData = chatflow.flowData
-            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-            const nodes = parsedFlowData.nodes
-            const edges = parsedFlowData.edges
 
             if (isFlowReusable()) {
                 nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
@@ -884,6 +883,7 @@ export class App {
                     depthQueue,
                     this.nodesPool.componentNodes,
                     incomingInput.question,
+                    incomingInput.history,
                     chatId,
                     this.AppDataSource,
                     incomingInput?.overrideConfig
@@ -894,7 +894,12 @@ export class App {
 
                 if (incomingInput.overrideConfig)
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
-                const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question)
+                const reactFlowNodeData: INodeData = resolveVariables(
+                    nodeToExecute.data,
+                    reactFlowNodes,
+                    incomingInput.question,
+                    incomingInput.history
+                )
                 nodeToExecuteData = reactFlowNodeData
 
                 const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
@@ -905,7 +910,6 @@ export class App {
             const nodeModule = await import(nodeInstanceFilePath)
             const nodeInstance = new nodeModule.nodeClass()
 
-            isStreamValid = isStreamValid && !isVectorStoreFaiss(nodeToExecuteData)
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)

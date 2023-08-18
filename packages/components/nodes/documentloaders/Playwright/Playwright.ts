@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { PlaywrightWebBaseLoader } from 'langchain/document_loaders/web/playwright'
+import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
 import { webCrawl, xmlScrape } from '../../../src'
 
@@ -64,7 +64,45 @@ class Playwright_DocumentLoaders implements INode {
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
-                warning: `Retreiving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+                warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+            },
+            {
+                label: 'Wait Until',
+                name: 'waitUntilGoToOption',
+                type: 'options',
+                description: 'Select a go to wait until option',
+                options: [
+                    {
+                        label: 'Load',
+                        name: 'load',
+                        description: 'Consider operation to be finished when the load event is fired.'
+                    },
+                    {
+                        label: 'DOM Content Loaded',
+                        name: 'domcontentloaded',
+                        description: 'Consider operation to be finished when the DOMContentLoaded event is fired.'
+                    },
+                    {
+                        label: 'Network Idle',
+                        name: 'networkidle',
+                        description: 'Navigation is finished when there are no more connections for at least 500 ms.'
+                    },
+                    {
+                        label: 'Commit',
+                        name: 'commit',
+                        description: 'Consider operation to be finished when network response is received and the document started loading.'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Wait for selector to load',
+                name: 'waitForSelector',
+                type: 'string',
+                optional: true,
+                additionalParams: true,
+                description: 'CSS selectors like .div or #div'
             },
             {
                 label: 'Metadata',
@@ -81,6 +119,8 @@ class Playwright_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         let limit = nodeData.inputs?.limit as string
+        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
+        let waitForSelector = nodeData.inputs?.waitForSelector as string
 
         let url = nodeData.inputs?.url as string
         url = url.trim()
@@ -91,7 +131,26 @@ class Playwright_DocumentLoaders implements INode {
         async function playwrightLoader(url: string): Promise<any> {
             try {
                 let docs = []
-                const loader = new PlaywrightWebBaseLoader(url)
+                const config: PlaywrightWebBaseLoaderOptions = {
+                    launchOptions: {
+                        args: ['--no-sandbox'],
+                        headless: true
+                    }
+                }
+                if (waitUntilGoToOption) {
+                    config['gotoOptions'] = {
+                        waitUntil: waitUntilGoToOption
+                    }
+                }
+                if (waitForSelector) {
+                    config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
+                        await page.waitForSelector(waitForSelector)
+
+                        const result = await page.evaluate(() => document.body.innerHTML)
+                        return result
+                    }
+                }
+                const loader = new PlaywrightWebBaseLoader(url, config)
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {
