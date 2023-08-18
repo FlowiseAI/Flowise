@@ -18,8 +18,15 @@ import {
     IComponentCredentials,
     ICredentialReqBody
 } from '../Interface'
-import { cloneDeep, get, omit, merge, isEqual } from 'lodash'
-import { ICommonObject, getInputVariables, IDatabaseEntity, handleEscapeCharacters } from 'flowise-components'
+import { cloneDeep, get, isEqual } from 'lodash'
+import {
+    ICommonObject,
+    getInputVariables,
+    IDatabaseEntity,
+    handleEscapeCharacters,
+    IMessage,
+    convertChatHistoryToText
+} from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { lib, PBKDF2, AES, enc } from 'crypto-js'
 
@@ -30,6 +37,7 @@ import { Tool } from '../entity/Tool'
 import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'
+const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
 export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
@@ -199,6 +207,7 @@ export const buildLangchain = async (
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
     question: string,
+    chatHistory: IMessage[],
     chatId: string,
     appDataSource: DataSource,
     overrideConfig?: ICommonObject
@@ -231,7 +240,7 @@ export const buildLangchain = async (
 
             let flowNodeData = cloneDeep(reactFlowNode.data)
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question)
+            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
             logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
@@ -315,7 +324,13 @@ export const clearSessionMemory = async (
  * @param {boolean} isAcceptVariable
  * @returns {string}
  */
-export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowNode[], question: string, isAcceptVariable = false) => {
+export const getVariableValue = (
+    paramValue: string,
+    reactFlowNodes: IReactFlowNode[],
+    question: string,
+    chatHistory: IMessage[],
+    isAcceptVariable = false
+) => {
     let returnVal = paramValue
     const variableStack = []
     const variableDict = {} as IVariableDict
@@ -343,6 +358,10 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
+            }
+
+            if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -375,38 +394,19 @@ export const getVariableValue = (paramValue: string, reactFlowNodes: IReactFlowN
 }
 
 /**
- * Temporarily disable streaming if vectorStore is Faiss
- * @param {INodeData} flowNodeData
- * @returns {boolean}
- */
-export const isVectorStoreFaiss = (flowNodeData: INodeData) => {
-    if (flowNodeData.inputs && flowNodeData.inputs.vectorStoreRetriever) {
-        const vectorStoreRetriever = flowNodeData.inputs.vectorStoreRetriever
-        if (typeof vectorStoreRetriever === 'string' && vectorStoreRetriever.includes('faiss')) return true
-        if (
-            typeof vectorStoreRetriever === 'object' &&
-            vectorStoreRetriever.vectorStore &&
-            vectorStoreRetriever.vectorStore.constructor.name === 'FaissStore'
-        )
-            return true
-    }
-    return false
-}
-
-/**
  * Loop through each inputs and resolve variable if neccessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {string} question
  * @returns {INodeData}
  */
-export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: IReactFlowNode[], question: string): INodeData => {
+export const resolveVariables = (
+    reactFlowNodeData: INodeData,
+    reactFlowNodes: IReactFlowNode[],
+    question: string,
+    chatHistory: IMessage[]
+): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
-    if (reactFlowNodeData.instance && isVectorStoreFaiss(reactFlowNodeData)) {
-        // omit and merge because cloneDeep of instance gives "Illegal invocation" Exception
-        const flowNodeDataWithoutInstance = cloneDeep(omit(reactFlowNodeData, ['instance']))
-        flowNodeData = merge(flowNodeDataWithoutInstance, { instance: reactFlowNodeData.instance })
-    }
     const types = 'inputs'
 
     const getParamValues = (paramsObj: ICommonObject) => {
@@ -415,13 +415,13 @@ export const resolveVariables = (reactFlowNodeData: INodeData, reactFlowNodes: I
             if (Array.isArray(paramValue)) {
                 const resolvedInstances = []
                 for (const param of paramValue) {
-                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question)
+                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question, chatHistory)
                     resolvedInstances.push(resolvedInstance)
                 }
                 paramsObj[key] = resolvedInstances
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
-                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, isAcceptVariable)
+                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, chatHistory, isAcceptVariable)
                 paramsObj[key] = resolvedInstance
             }
         }
@@ -474,12 +474,16 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  * @param {IReactFlowNode[]} startingNodes
  * @returns {boolean}
  */
-export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[]): boolean => {
+export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
         }
+    }
+    const whitelistNodeNames = ['vectorStoreToDocument']
+    for (const node of nodes) {
+        if (whitelistNodeNames.includes(node.data.name)) return true
     }
     return false
 }
@@ -791,7 +795,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent && !isVectorStoreFaiss(endingNodeData)
+    return isChatOrLLMsExist && isValidChainOrAgent
 }
 
 /**

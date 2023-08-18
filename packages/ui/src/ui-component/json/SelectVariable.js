@@ -2,14 +2,15 @@ import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Box, List, ListItemButton, ListItem, ListItemAvatar, ListItemText, Typography, Stack } from '@mui/material'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-
+import robotPNG from 'assets/images/robot.png'
+import chatPNG from 'assets/images/chathistory.png'
 import { baseURL } from 'store/constant'
 
 const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectAndReturnVal }) => {
     const customization = useSelector((state) => state.customization)
 
-    const onSelectOutputResponseClick = (node, isUserQuestion = false) => {
-        let variablePath = isUserQuestion ? `question` : `${node.id}.data.instance`
+    const onSelectOutputResponseClick = (node, prefix) => {
+        let variablePath = node ? `${node.id}.data.instance` : prefix
         const newInput = `{{${variablePath}}}`
         onSelectAndReturnVal(newInput)
     }
@@ -32,7 +33,7 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                         mb: 1
                                     }}
                                     disabled={disabled}
-                                    onClick={() => onSelectOutputResponseClick(null, true)}
+                                    onClick={() => onSelectOutputResponseClick(null, 'question')}
                                 >
                                     <ListItem alignItems='center'>
                                         <ListItemAvatar>
@@ -52,11 +53,50 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                         objectFit: 'contain'
                                                     }}
                                                     alt='AI'
-                                                    src='https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                                                    src={robotPNG}
                                                 />
                                             </div>
                                         </ListItemAvatar>
                                         <ListItemText sx={{ ml: 1 }} primary='question' secondary={`User's question from chatbox`} />
+                                    </ListItem>
+                                </ListItemButton>
+                                <ListItemButton
+                                    sx={{
+                                        p: 0,
+                                        borderRadius: `${customization.borderRadius}px`,
+                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+                                        mb: 1
+                                    }}
+                                    disabled={disabled}
+                                    onClick={() => onSelectOutputResponseClick(null, 'chat_history')}
+                                >
+                                    <ListItem alignItems='center'>
+                                        <ListItemAvatar>
+                                            <div
+                                                style={{
+                                                    width: 50,
+                                                    height: 50,
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'white'
+                                                }}
+                                            >
+                                                <img
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        padding: 10,
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    alt='chatHistory'
+                                                    src={chatPNG}
+                                                />
+                                            </div>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            sx={{ ml: 1 }}
+                                            primary='chat_history'
+                                            secondary={`Past conversation history between user and AI`}
+                                        />
                                     </ListItem>
                                 </ListItemButton>
                                 {availableNodesForVariable &&
