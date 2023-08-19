@@ -16,9 +16,11 @@ export const TableViewOnly = ({ columns, rows }) => {
                     <TableBody>
                         {rows.map((row, index) => (
                             <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                {Object.keys(row).map((key, index) => (
-                                    <TableCell key={index}>{row[key]}</TableCell>
-                                ))}
+                                {Object.keys(row)
+                                    .slice(-3)
+                                    .map((key, index) => (
+                                        <TableCell key={index}>{row[key]}</TableCell>
+                                    ))}
                             </TableRow>
                         ))}
                     </TableBody>

@@ -29,6 +29,7 @@ import useApi from 'hooks/useApi'
 // utils
 import useNotifier from 'utils/useNotifier'
 import { generateRandomGradient } from 'utils/genericHelper'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
@@ -154,6 +155,12 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             return []
         }
     }
+
+    useEffect(() => {
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+        else dispatch({ type: HIDE_CANVAS_DIALOG })
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+    }, [show, dispatch])
 
     useEffect(() => {
         if (getSpecificToolApi.data) {
@@ -488,7 +495,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             Javascript Function
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string.'
+                                title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>'
                             />
                         </Typography>
                     </Stack>

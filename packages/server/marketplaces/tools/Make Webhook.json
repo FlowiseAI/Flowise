@@ -1,0 +1,8 @@
+{
+    "name": "make_webhook",
+    "description": "Useful when you need to send message to Discord",
+    "color": "linear-gradient(rgb(19,94,2), rgb(19,124,59))",
+    "iconSrc": "https://github.com/FlowiseAI/Flowise/assets/26460777/517fdab2-8a6e-4781-b3c8-fb92cc78aa0b",
+    "schema": "[{\"id\":0,\"property\":\"message\",\"description\":\"Message to send\",\"type\":\"string\",\"required\":true}]",
+    "func": "/*\n* You can use any libraries imported in Flowise\n* You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid\n* Must return a string value at the end of function\n*/\n\nconst fetch = require('node-fetch');\nconst webhookUrl = 'https://hook.eu1.make.com/abcdefg';\nconst body = {\n\t\"message\": $message\n};\nconst options = {\n    method: 'POST',\n    headers: {\n        'Content-Type': 'application/json'\n    },\n    body: JSON.stringify(body)\n};\ntry {\n    const response = await fetch(webhookUrl, options);\n    const text = await response.text();\n    return text;\n} catch (error) {\n    console.error(error);\n    return '';\n}"
+}

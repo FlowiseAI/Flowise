@@ -6,14 +6,15 @@ services:
         restart: always
         environment:
             - PORT=${PORT}
+            - PASSPHRASE=${PASSPHRASE}
             - FLOWISE_USERNAME=${FLOWISE_USERNAME}
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
             - DEBUG=${DEBUG}
             - DATABASE_PATH=${DATABASE_PATH}
             - APIKEY_PATH=${APIKEY_PATH}
-            - LOG_PATH=${LOG_PATH}
+            - SECRETKEY_PATH=${SECRETKEY_PATH}
             - LOG_LEVEL=${LOG_LEVEL}
-            - EXECUTION_MODE=${EXECUTION_MODE}
+            - LOG_PATH=${LOG_PATH}
         ports:
             - '${PORT}:${PORT}'
         volumes:

@@ -14,7 +14,7 @@ export class ChatMessage implements IChatMessage {
     @Column()
     chatflowid: string
 
-    @Column({ type: "text" })
+    @Column({ type: 'text' })
     content: string
 
     @Column({ nullable: true })

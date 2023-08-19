@@ -5,6 +5,7 @@ import { PromptTemplateInput } from 'langchain/prompts'
 class PromptTemplate_Prompts implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class PromptTemplate_Prompts implements INode {
     constructor() {
         this.label = 'Prompt Template'
         this.name = 'promptTemplate'
+        this.version = 1.0
         this.type = 'PromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
@@ -45,7 +47,7 @@ class PromptTemplate_Prompts implements INode {
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValues = JSON.parse(promptValuesStr.replace(/\s/g, ''))
+            promptValues = JSON.parse(promptValuesStr)
         }
 
         const inputVariables = getInputVariables(template)

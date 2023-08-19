@@ -19,6 +19,7 @@ export const API_RESPONSE_RAW_PROMPT_TEMPLATE =
 class GETApiChain_Chains implements INode {
     label: string
     name: string
+    version: number
     type: string
     icon: string
     category: string
@@ -29,6 +30,7 @@ class GETApiChain_Chains implements INode {
     constructor() {
         this.label = 'GET API Chain'
         this.name = 'getApiChain'
+        this.version = 1.0
         this.type = 'GETApiChain'
         this.icon = 'apichain.svg'
         this.category = 'Chains'

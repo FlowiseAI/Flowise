@@ -9,6 +9,7 @@ import {
 class CodeTextSplitter_TextSplitters implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -18,6 +19,7 @@ class CodeTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'Code Text Splitter'
         this.name = 'codeTextSplitter'
+        this.version = 1.0
         this.type = 'CodeTextSplitter'
         this.icon = 'codeTextSplitter.svg'
         this.category = 'Text Splitters'

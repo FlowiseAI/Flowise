@@ -14,6 +14,7 @@
                 "id": "promptRetriever_0",
                 "label": "Prompt Retriever",
                 "name": "promptRetriever",
+                "version": 1,
                 "type": "PromptRetriever",
                 "baseClasses": ["PromptRetriever"],
                 "category": "Retrievers",
@@ -81,6 +82,7 @@
                 "id": "multiPromptChain_0",
                 "label": "Multi Prompt Chain",
                 "name": "multiPromptChain",
+                "version": 1,
                 "type": "MultiPromptChain",
                 "baseClasses": ["MultiPromptChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
@@ -140,6 +142,7 @@
                 "id": "promptRetriever_1",
                 "label": "Prompt Retriever",
                 "name": "promptRetriever",
+                "version": 1,
                 "type": "PromptRetriever",
                 "baseClasses": ["PromptRetriever"],
                 "category": "Retrievers",
@@ -207,6 +210,7 @@
                 "id": "promptRetriever_2",
                 "label": "Prompt Retriever",
                 "name": "promptRetriever",
+                "version": 1,
                 "type": "PromptRetriever",
                 "baseClasses": ["PromptRetriever"],
                 "category": "Retrievers",
@@ -263,27 +267,29 @@
         },
         {
             "width": 300,
-            "height": 524,
+            "height": 523,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1230.07368145571,
-                "y": -296.44522826934826
+                "x": 1228.4059611466973,
+                "y": -326.46419383157513
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
+                "version": 1,
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "BaseLangChain"],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
                     {
-                        "label": "OpenAI Api Key",
-                        "name": "openAIApiKey",
-                        "type": "password",
-                        "id": "chatOpenAI_0-input-openAIApiKey-password"
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
                         "label": "Model Name",
@@ -392,14 +398,15 @@
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
-                    "timeout": ""
+                    "timeout": "",
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
                         "name": "chatOpenAI",
                         "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | BaseLangChain"
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
                     }
                 ],
                 "outputs": {},
@@ -407,8 +414,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1230.07368145571,
-                "y": -296.44522826934826
+                "x": 1228.4059611466973,
+                "y": -326.46419383157513
             },
             "dragging": false
         }
@@ -449,11 +456,11 @@
         },
         {
             "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "multiPromptChain_0",
             "targetHandle": "multiPromptChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|BaseLangChain-multiPromptChain_0-multiPromptChain_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-multiPromptChain_0-multiPromptChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }

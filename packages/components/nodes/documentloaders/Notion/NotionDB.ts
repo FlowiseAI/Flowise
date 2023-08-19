@@ -1,38 +1,41 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { NotionAPILoader, NotionAPILoaderOptions } from 'langchain/document_loaders/web/notionapi'
+import { getCredentialData, getCredentialParam } from '../../../src'
 
 class NotionDB_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Notion Database'
         this.name = 'notionDB'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'notion.png'
         this.category = 'Document Loaders'
         this.description = 'Load data from Notion Database (each row is a separate document with all properties as metadata)'
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['notionApi']
+        }
         this.inputs = [
             {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
                 optional: true
-            },
-            {
-                label: 'Notion Integration Token',
-                name: 'notionIntegrationToken',
-                type: 'password',
-                description:
-                    'You can find integration token <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">here</a>'
             },
             {
                 label: 'Notion Database Id',
@@ -50,11 +53,13 @@ class NotionDB_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const databaseId = nodeData.inputs?.databaseId as string
         const metadata = nodeData.inputs?.metadata
-        const notionIntegrationToken = nodeData.inputs?.notionIntegrationToken as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData)
 
         const obj: NotionAPILoaderOptions = {
             clientOptions: {

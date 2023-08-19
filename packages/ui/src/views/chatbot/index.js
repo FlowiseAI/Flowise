@@ -26,6 +26,7 @@ const ChatbotFull = () => {
     const [loginDialogOpen, setLoginDialogOpen] = useState(false)
     const [loginDialogProps, setLoginDialogProps] = useState({})
     const [isLoading, setLoading] = useState(true)
+    const [chatbotOverrideConfig, setChatbotOverrideConfig] = useState({})
 
     const getSpecificChatflowFromPublicApi = useApi(chatflowsApi.getSpecificChatflowFromPublicEndpoint)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
@@ -77,10 +78,19 @@ const ChatbotFull = () => {
             setChatflow(chatflowData)
             if (chatflowData.chatbotConfig) {
                 try {
-                    setChatbotTheme(JSON.parse(chatflowData.chatbotConfig))
+                    const parsedConfig = JSON.parse(chatflowData.chatbotConfig)
+                    setChatbotTheme(parsedConfig)
+                    if (parsedConfig.overrideConfig) {
+                        // Generate new sessionId
+                        if (parsedConfig.overrideConfig.generateNewSession) {
+                            parsedConfig.overrideConfig.sessionId = Date.now().toString()
+                        }
+                        setChatbotOverrideConfig(parsedConfig.overrideConfig)
+                    }
                 } catch (e) {
                     console.error(e)
                     setChatbotTheme({})
+                    setChatbotOverrideConfig({})
                 }
             }
         }
@@ -97,7 +107,12 @@ const ChatbotFull = () => {
                     {!chatflow || chatflow.apikeyid ? (
                         <p>Invalid Chatbot</p>
                     ) : (
-                        <FullPageChat chatflowid={chatflow.id} apiHost={baseURL} theme={{ chatWindow: chatbotTheme }} />
+                        <FullPageChat
+                            chatflowid={chatflow.id}
+                            apiHost={baseURL}
+                            chatflowConfig={chatbotOverrideConfig}
+                            theme={{ chatWindow: chatbotTheme }}
+                        />
                     )}
                     <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
                 </>

@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm'
 class CustomTool_Tools implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -17,6 +18,7 @@ class CustomTool_Tools implements INode {
     constructor() {
         this.label = 'Custom Tool'
         this.name = 'customTool'
+        this.version = 1.0
         this.type = 'CustomTool'
         this.icon = 'customtool.svg'
         this.category = 'Tools'
@@ -34,7 +36,7 @@ class CustomTool_Tools implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listTools(nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listTools(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const returnData: INodeOptionsValue[] = []
 
             const appDataSource = options.appDataSource as DataSource
@@ -58,8 +60,9 @@ class CustomTool_Tools implements INode {
         }
     }
 
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const selectedToolId = nodeData.inputs?.selectedTool as string
+        const customToolFunc = nodeData.inputs?.customToolFunc as string
 
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
@@ -76,6 +79,7 @@ class CustomTool_Tools implements INode {
                 schema: z.object(convertSchemaToZod(tool.schema)),
                 code: tool.func
             }
+            if (customToolFunc) obj.code = customToolFunc
             return new DynamicStructuredTool(obj)
         } catch (e) {
             throw new Error(e)

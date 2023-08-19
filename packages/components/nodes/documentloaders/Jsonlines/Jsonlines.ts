@@ -5,6 +5,7 @@ import { JSONLinesLoader } from 'langchain/document_loaders/fs/json'
 class Jsonlines_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Jsonlines_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Json Lines File'
         this.name = 'jsonlinesFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'jsonlines.svg'
         this.category = 'Document Loaders'

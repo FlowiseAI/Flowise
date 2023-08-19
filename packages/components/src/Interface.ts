@@ -59,6 +59,7 @@ export interface INodeParams {
     description?: string
     warning?: string
     options?: Array<INodeOptionsValue>
+    credentialNames?: Array<string>
     optional?: boolean | INodeDisplay
     step?: number
     rows?: number
@@ -83,6 +84,7 @@ export interface INodeProperties {
     name: string
     type: string
     icon: string
+    version: number
     category: string
     baseClasses: string[]
     description?: string
@@ -104,8 +106,16 @@ export interface INodeData extends INodeProperties {
     id: string
     inputs?: ICommonObject
     outputs?: ICommonObject
+    credential?: string
     instance?: any
     loadMethod?: string // method to load async options
+}
+
+export interface INodeCredential {
+    label: string
+    name: string
+    description?: string
+    inputs?: INodeParams[]
 }
 
 export interface IMessage {

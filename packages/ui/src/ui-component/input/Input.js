@@ -37,7 +37,7 @@ export const Input = ({ inputParam, value, onChange, disabled = false, showDialo
                         onChange(e.target.value)
                     }}
                     inputProps={{
-                        step: inputParam.step ?? 0.1,
+                        step: inputParam.step ?? 1,
                         style: {
                             height: inputParam.rows ? '90px' : 'inherit'
                         }

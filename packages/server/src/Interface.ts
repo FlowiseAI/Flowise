@@ -38,7 +38,20 @@ export interface ITool {
     createdDate: Date
 }
 
+export interface ICredential {
+    id: string
+    name: string
+    credentialName: string
+    encryptedData: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 export interface IComponentNodes {
+    [key: string]: INode
+}
+
+export interface IComponentCredentials {
     [key: string]: INode
 }
 
@@ -144,6 +157,7 @@ export interface IActiveChatflows {
 
 export interface IOverrideConfig {
     node: string
+    nodeId: string
     label: string
     name: string
     type: string
@@ -155,15 +169,16 @@ export interface IDatabaseExport {
     apikeys: ICommonObject[]
 }
 
-export interface IRunChatflowMessageValue {
-    chatflow: IChatFlow
-    chatId: string
-    incomingInput: IncomingInput
-    componentNodes: IComponentNodes
-    endingNodeData?: INodeData
+export type ICredentialDataDecrypted = ICommonObject
+
+// Plain credential object sent to server
+export interface ICredentialReqBody {
+    name: string
+    credentialName: string
+    plainDataObj: ICredentialDataDecrypted
 }
 
-export interface IChildProcessMessage {
-    key: string
-    value?: any
+// Decrypted credential object sent back to client
+export interface ICredentialReturnResponse extends ICredential {
+    plainDataObj: ICredentialDataDecrypted
 }

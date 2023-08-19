@@ -5,6 +5,7 @@ import { JSONLoader } from 'langchain/document_loaders/fs/json'
 class Json_DocumentLoaders implements INode {
     label: string
     name: string
+    version: number
     description: string
     type: string
     icon: string
@@ -15,6 +16,7 @@ class Json_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Json File'
         this.name = 'jsonFile'
+        this.version = 1.0
         this.type = 'Document'
         this.icon = 'json.svg'
         this.category = 'Document Loaders'
