@@ -147,7 +147,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         try {
             const params = {
                 question: userInput,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
+                history: messages.filter((msg) => msg.message !== 'Hey mijn naam is AIsa! Hoe kan ik je helpen?')
             }
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
