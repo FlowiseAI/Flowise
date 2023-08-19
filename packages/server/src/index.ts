@@ -806,7 +806,8 @@ export class App {
                 incomingInput = {
                     question: req.body.question ?? 'hello',
                     overrideConfig,
-                    history: []
+                    history: [],
+                    socketIOClientId: req.body.socketIOClientId
                 }
             }
 
