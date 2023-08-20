@@ -833,6 +833,7 @@ export class App {
                     question: req.body.question ?? 'hello',
                     overrideConfig,
                     history: [],
+                    socketIOClientId: req.body.socketIOClientId,
                     chatId: chatId ?? chatflowid
                 }
             }
