@@ -3,78 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 424,
-            "id": "sqlDatabaseChain_0",
-            "position": {
-                "x": 1255.0372022176111,
-                "y": 217.507437391498
-            },
-            "type": "customNode",
-            "data": {
-                "id": "sqlDatabaseChain_0",
-                "label": "Sql Database Chain",
-                "name": "sqlDatabaseChain",
-                "version": 1,
-                "type": "SqlDatabaseChain",
-                "baseClasses": ["SqlDatabaseChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "Answer questions over a SQL database",
-                "inputParams": [
-                    {
-                        "label": "Database",
-                        "name": "database",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "SQlite",
-                                "name": "sqlite"
-                            }
-                        ],
-                        "default": "sqlite",
-                        "id": "sqlDatabaseChain_0-input-database-options"
-                    },
-                    {
-                        "label": "Database File Path",
-                        "name": "dbFilePath",
-                        "type": "string",
-                        "placeholder": "C:/Users/chinook.db",
-                        "id": "sqlDatabaseChain_0-input-dbFilePath-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "sqlDatabaseChain_0-input-model-BaseLanguageModel"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "database": "sqlite",
-                    "dbFilePath": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "sqlDatabaseChain_0-output-sqlDatabaseChain-SqlDatabaseChain|BaseChain|BaseLangChain",
-                        "name": "sqlDatabaseChain",
-                        "label": "SqlDatabaseChain",
-                        "type": "SqlDatabaseChain | BaseChain | BaseLangChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1255.0372022176111,
-                "y": 217.507437391498
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 523,
+            "height": 522,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 855.0396169649254,
@@ -84,8 +13,8 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "name": "chatOpenAI",
                 "version": 1,
+                "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -223,6 +152,89 @@
             "positionAbsolute": {
                 "x": 855.0396169649254,
                 "y": 179.29430548099504
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 423,
+            "id": "sqlDatabaseChain_0",
+            "position": {
+                "x": 1229.0092429246013,
+                "y": 231.59431102290245
+            },
+            "type": "customNode",
+            "data": {
+                "id": "sqlDatabaseChain_0",
+                "label": "Sql Database Chain",
+                "version": 1,
+                "name": "sqlDatabaseChain",
+                "type": "SqlDatabaseChain",
+                "baseClasses": ["SqlDatabaseChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Answer questions over a SQL database",
+                "inputParams": [
+                    {
+                        "label": "Database",
+                        "name": "database",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "SQLite",
+                                "name": "sqlite"
+                            },
+                            {
+                                "label": "PostgreSQL",
+                                "name": "postgres"
+                            },
+                            {
+                                "label": "MSSQL",
+                                "name": "mssql"
+                            },
+                            {
+                                "label": "MySQL",
+                                "name": "mysql"
+                            }
+                        ],
+                        "default": "sqlite",
+                        "id": "sqlDatabaseChain_0-input-database-options"
+                    },
+                    {
+                        "label": "Connection string or file path (sqlite only)",
+                        "name": "url",
+                        "type": "string",
+                        "placeholder": "1270.0.0.1:5432/chinook",
+                        "id": "sqlDatabaseChain_0-input-url-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "sqlDatabaseChain_0-input-model-BaseLanguageModel"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "database": "sqlite",
+                    "url": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "sqlDatabaseChain_0-output-sqlDatabaseChain-SqlDatabaseChain|BaseChain|Runnable",
+                        "name": "sqlDatabaseChain",
+                        "label": "SqlDatabaseChain",
+                        "type": "SqlDatabaseChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1229.0092429246013,
+                "y": 231.59431102290245
             },
             "dragging": false
         }
