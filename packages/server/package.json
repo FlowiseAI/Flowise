@@ -45,6 +45,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
+        "@slack/bolt": "^3.13.3",
         "@oclif/core": "^1.13.10",
         "axios": "^0.27.2",
         "cors": "^2.8.5",
