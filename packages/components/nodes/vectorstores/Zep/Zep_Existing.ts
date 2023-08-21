@@ -79,12 +79,12 @@ class Zep_Existing_VectorStores implements INode {
         ]
         this.outputs = [
             {
-                label: 'Pinecone Retriever',
+                label: 'Zep Retriever',
                 name: 'retriever',
                 baseClasses: this.baseClasses
             },
             {
-                label: 'Pinecone Vector Store',
+                label: 'Zep Vector Store',
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(ZepVectorStore)]
             }
