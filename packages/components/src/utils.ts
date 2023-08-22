@@ -214,24 +214,44 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
     const dom = new JSDOM(htmlBody)
     const linkElements = dom.window.document.querySelectorAll('a')
     const urls: string[] = []
+	const hostWithPort = baseURL.split('/')[2]
+	const protocol = baseURL.split('/')[0]
+	if (process.env.DEBUG === 'true') console.error(`enter getURLsFromHTML with baseURL: ${baseURL}`)
     for (const linkElement of linkElements) {
-        if (linkElement.href.slice(0, 1) === '/') {
-            try {
-                const urlObj = new URL(baseURL + linkElement.href)
-                urls.push(urlObj.href) //relative
-            } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
-                continue
-            }
-        } else {
-            try {
-                const urlObj = new URL(linkElement.href)
-                urls.push(urlObj.href) //absolute
-            } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
-                continue
-            }
-        }
+		if(!linkElement.href || 
+			linkElement.href.startsWith("about:blank") || 
+			linkElement.href.startsWith("mailto:") ||
+			linkElement.href.indexOf('#') != -1) continue
+		if(linkElement.href.startsWith('http://') || 
+			linkElement.href.startsWith('https://') || 
+			linkElement.href.startsWith('//')) {
+			try {
+				if(linkElement.href.startsWith('http')) {
+					const urlObj = new URL(linkElement.href)
+					urls.push(urlObj.href)
+				}
+				else {
+					const urlObj = new URL(protocol + linkElement.href)
+					urls.push(urlObj.href)
+				}
+			}
+			catch(err) {	
+				if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message} with href ${linkElement.href}`)
+				continue
+			}
+		}
+		else {
+			try {
+				const urlObj = new URL((linkElement.href.startsWith('/') ? 
+										protocol + "//" + hostWithPort + linkElement.href : 
+				                        baseURL + '/' + linkElement.href))
+				urls.push(urlObj.href)
+			}
+			catch(err) {
+				if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message} with href ${linkElement.href}`)
+				continue
+			}
+		}
     }
     return urls
 }
@@ -262,7 +282,7 @@ function normalizeURL(urlString: string): string {
 async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
     const baseURLObj = new URL(baseURL)
     const currentURLObj = new URL(currentURL)
-
+    if (process.env.DEBUG === 'true') console.info(`enter crawl: ${baseURL} ${currentURL}`)
     if (limit !== 0 && pages.length === limit) return pages
 
     if (baseURLObj.hostname !== currentURLObj.hostname) return pages
@@ -274,7 +294,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     pages.push(normalizeCurrentURL)
 
-    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
+    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL} pages: ${pages.length}`)
     try {
         const resp = await fetch(currentURL)
 
@@ -290,9 +310,9 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         }
 
         const htmlBody = await resp.text()
-        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
+        const nextURLs = getURLsFromHTML(htmlBody, normalizeCurrentURL)
         for (const nextURL of nextURLs) {
-            pages = await crawl(baseURL, nextURL, pages, limit)
+            pages = await crawl(normalizeCurrentURL, nextURL, pages, limit)
         }
     } catch (err) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
