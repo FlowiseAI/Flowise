@@ -26,6 +26,12 @@ export class ChatMessage implements IChatMessage {
     @Column({ nullable: true })
     chatId?: string
 
+    @Column({ nullable: true })
+    memoryType?: string
+
+    @Column({ nullable: true })
+    sessionId?: string
+
     @CreateDateColumn()
     createdDate: Date
 }

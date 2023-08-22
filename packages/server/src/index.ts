@@ -382,11 +382,8 @@ export class App {
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const body = req.body
-            const newChatMessage = new ChatMessage()
-            Object.assign(newChatMessage, body)
 
-            const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-            const results = await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+            const results = await this.addMessage(body)
 
             return res.json(results)
         })
@@ -395,15 +392,11 @@ export class App {
         this.app.put('/api/v1/chatmessage', async (req: Request, res: Response) => {
             const chatId = req.body.chatId
             const chatflowId = req.body.chatflowId
+            const memoryType = req.body.memoryType
             const sessionId = req.body.sessionId
 
-            const results = await this.AppDataSource.getRepository(ChatMessage)
-                .createQueryBuilder()
-                .update()
-                .set({ chatId: sessionId })
-                .where('chatflowid = :chatflowId', { chatflowId })
-                .andWhere('chatId = :chatId OR id = :chatId', { chatId })
-                .execute()
+            const results = await this.updateMessageMemory(chatflowId, chatId, memoryType, sessionId)
+
             return res.json(results)
         })
 
@@ -654,12 +647,12 @@ export class App {
 
         // Send input message and get prediction result (External)
         this.app.post('/api/v1/prediction/:id', upload.array('files'), async (req: Request, res: Response) => {
-            await this.processPrediction(req, res, socketIO)
+            await this.processPrediction(req, res, socketIO, req.body.apiType)
         })
 
         // Send input message and get prediction result (Internal)
         this.app.post('/api/v1/internal-prediction/:id', async (req: Request, res: Response) => {
-            await this.processPrediction(req, res, socketIO, true)
+            await this.processPrediction(req, res, socketIO, 'internal')
         })
 
         // ----------------------------------------
@@ -791,9 +784,9 @@ export class App {
      * @param {Request} req
      * @param {Response} res
      * @param {Server} socketIO
-     * @param {boolean} isInternal
+     * @param {string} isInternal
      */
-    async processPrediction(req: Request, res: Response, socketIO?: Server, isInternal = false) {
+    async processPrediction(req: Request, res: Response, socketIO?: Server, apiType: 'internal' | 'embedded' | undefined = undefined) {
         try {
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
@@ -805,10 +798,26 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-            let chatId = incomingInput.chatId
+            //Add userMessage into chat_message table
+            let chatId = undefined
+            if (apiType) {
+                const userMessage: ChatMessage = await this.addMessage({
+                    role: 'userMessage',
+                    chatType: apiType,
+                    content: incomingInput.question,
+                    chatflowid: chatflowid,
+                    chatId: incomingInput.chatId ? incomingInput.chatId : undefined,
+                    memoryType: incomingInput.memory?.type ? incomingInput.memory?.type : undefined,
+                    sessionId: incomingInput.memory?.sessionId ? incomingInput.memory?.sessionId : undefined
+                })
+
+                //incomingInput.chatId represent the first chat message id, if it's undefined mean it a new session
+                chatId = incomingInput.chatId ? incomingInput.chatId : userMessage.id
+            }
+
             if (!chatId) chatId = chatflowid
 
-            if (!isInternal) {
+            if (apiType !== 'internal') {
                 await this.validateKey(req, res, chatflow)
             }
 
@@ -855,7 +864,7 @@ export class App {
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
                     isSameOverrideConfig(
-                        isInternal,
+                        apiType,
                         this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
                         incomingInput.overrideConfig
                     ) &&
@@ -941,6 +950,8 @@ export class App {
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             let sessionId = undefined
             if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
+            let memoryLabel = undefined
+            if (sessionId) memoryLabel = this.findMemoryLabel(nodes)
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
@@ -957,14 +968,65 @@ export class App {
                       databaseEntities
                   })
 
+            //Update sessionId and memoryType for chat message if chatflow have memory node
+            if (
+                apiType &&
+                (!incomingInput.memory || //when 1st user message do not carry memory information required to update that 1st row
+                    (incomingInput.memory &&
+                        (sessionId !== incomingInput.memory.sessionId || memoryLabel !== incomingInput.memory.type))) && //when incomingInput.memory have outdataed value which require to update on all relavant chat messages based on chatId
+                memoryLabel &&
+                sessionId
+            )
+                await this.updateMessageMemory(chatflowid, chatId, memoryLabel, sessionId)
+
+            //Add apiMessage into chat_message table
+            if (apiType)
+                await this.addMessage({
+                    chatType: apiType,
+                    role: 'apiMessage',
+                    chatflowid: chatflowid,
+                    content: typeof result === 'string' ? result : result.text,
+                    sourceDocuments: result.sourceDocuments ? JSON.stringify(result.sourceDocuments) : undefined,
+                    chatId: chatId,
+                    memoryType: memoryLabel ? memoryLabel : undefined,
+                    sessionId: sessionId ? sessionId : undefined
+                })
+
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-            if (typeof result === 'string') return res.json({ text: result, sessionId: sessionId })
+            if (typeof result === 'string') result = { text: result }
+            result.chatId = chatId
+            result.memoryType = memoryLabel
             result.sessionId = sessionId
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)
         }
+    }
+
+    async addMessage(body: any): Promise<ChatMessage> {
+        const newChatMessage = new ChatMessage()
+        Object.assign(newChatMessage, body)
+        const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+        return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    }
+
+    async updateMessageMemory(chatflowId: string, chatId: string, memoryType: string, sessionId: string) {
+        return await this.AppDataSource.getRepository(ChatMessage)
+            .createQueryBuilder()
+            .update()
+            .set({ memoryType: memoryType, sessionId: sessionId })
+            .where('chatflowid = :chatflowId', { chatflowId })
+            .andWhere('chatId = :chatId OR id = :chatId', { chatId })
+            .execute()
+    }
+
+    findMemoryLabel(nodes: any[]): string | undefined {
+        const memoryNode = nodes.find((node) => {
+            return node.data.category === 'Memory'
+        })
+
+        return memoryNode ? memoryNode.data.label : undefined
     }
 
     async stopApp() {

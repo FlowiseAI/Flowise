@@ -143,12 +143,18 @@ export interface IMessage {
     type: MessageType
 }
 
+export interface memory {
+    type: string
+    sessionId: string
+}
+
 export interface IncomingInput {
     question: string
     history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
+    memory?: memory
 }
 
 export interface IActiveChatflows {

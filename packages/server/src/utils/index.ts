@@ -496,11 +496,11 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
  * @returns {boolean}
  */
 export const isSameOverrideConfig = (
-    isInternal: boolean,
+    apiType: 'internal' | 'embedded' | undefined,
     existingOverrideConfig?: ICommonObject,
     newOverrideConfig?: ICommonObject
 ): boolean => {
-    if (isInternal) {
+    if (apiType === 'internal') {
         if (existingOverrideConfig && Object.keys(existingOverrideConfig).length) return false
         return true
     }
