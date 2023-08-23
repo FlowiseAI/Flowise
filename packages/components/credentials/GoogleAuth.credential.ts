@@ -12,6 +12,13 @@ class GoogleVertexAuth implements INodeCredential {
         this.version = 1.0
         this.inputs = [
             {
+                label: 'Skip Extra Credential File',
+                name: 'skipExtraCredentialFile',
+                description: 'Enable this if you are using GCP and do not need to register an extra credential file',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Google Application Credential File Path',
                 name: 'googleApplicationCredentialFilePath',
                 description:
@@ -35,11 +42,14 @@ class GoogleVertexAuth implements INodeCredential {
     "token_uri": ...,
     "auth_provider_x509_cert_url": ...,
     "client_x509_cert_url": ...
+    
 }`,
                 type: 'string',
                 rows: 4,
                 optional: true
             },
+
+            
             {
                 label: 'Project ID',
                 name: 'projectID',
