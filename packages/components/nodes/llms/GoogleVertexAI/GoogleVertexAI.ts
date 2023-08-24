@@ -80,10 +80,10 @@ class GoogleVertexAI_LLMs implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const skipExtraCredentialFile = getCredentialParam('skipExtraCredentialFile', credentialData, nodeData)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
+
 
         if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
             throw new Error('Please specify your Google Application Credential')
@@ -114,8 +114,6 @@ class GoogleVertexAI_LLMs implements INode {
             temperature: parseFloat(temperature),
             model: modelName
         }
-
-        if (authOptions) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
