@@ -43,19 +43,18 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
             throw new Error('Please specify your Google Application Credential')
 
-        const inputs = [
-            googleApplicationCredentialFilePath, 
-            googleApplicationCredential, 
-            skipExtraCredentialFile
-        ];
-        
+        const inputs = [googleApplicationCredentialFilePath, googleApplicationCredential, skipExtraCredentialFile]
+
         if (inputs.filter(Boolean).length > 1) {
-            throw new Error('Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path, Google Credential JSON Object, or Skip Extra Credential File.')
+            throw new Error(
+                'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path, Google Credential JSON Object, or Skip Extra Credential File.'
+            )
         }
 
         const authOptions: GoogleAuthOptions = {}
-        if (!skipExtraCredentialFile){
-            if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
+        if (!skipExtraCredentialFile) {
+            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
+                authOptions.keyFile = googleApplicationCredentialFilePath
             else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
                 authOptions.credentials = JSON.parse(googleApplicationCredential)
 

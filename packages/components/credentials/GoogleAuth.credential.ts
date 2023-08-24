@@ -49,7 +49,6 @@ class GoogleVertexAuth implements INodeCredential {
                 optional: true
             },
 
-            
             {
                 label: 'Project ID',
                 name: 'projectID',
