@@ -20,9 +20,9 @@ class GoogleVertexAI_ChatModels implements INode {
         this.name = 'chatGoogleVertexAI'
         this.version = 1.0
         this.type = 'ChatGoogleVertexAI'
-        this.icon = 'vertexa1i.svg'
+        this.icon = 'vertexai.svg'
         this.category = 'Chat Models'
-        this.description = 'wassyoi'
+        this.description = 'Wrapper around VertexAI large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(ChatGoogleVertexAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -37,7 +37,7 @@ class GoogleVertexAI_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'chat-bison11111',
+                        label: 'chat-bison',
                         name: 'chat-bison'
                     },
                     {
@@ -45,7 +45,7 @@ class GoogleVertexAI_ChatModels implements INode {
                         name: 'codechat-bison'
                     }
                 ],
-                default: 'chat-bison11111',
+                default: 'chat-bison',
                 optional: true
             },
             {
@@ -82,8 +82,8 @@ class GoogleVertexAI_ChatModels implements INode {
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        // if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
-        //     throw new Error('Please specify your Google Application Credential')
+        if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
+            throw new Error('Please specify your Google Application Credential')
 
         const inputs = [googleApplicationCredentialFilePath, googleApplicationCredential, skipExtraCredentialFile]
 
