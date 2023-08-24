@@ -20,9 +20,9 @@ class GoogleVertexAI_ChatModels implements INode {
         this.name = 'chatGoogleVertexAI'
         this.version = 1.0
         this.type = 'ChatGoogleVertexAI'
-        this.icon = 'vertexai.svg'
+        this.icon = 'vertexa1i.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around VertexAI large language models that use the Chat endpoint'
+        this.description = 'wassyoi'
         this.baseClasses = [this.type, ...getBaseClasses(ChatGoogleVertexAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -37,7 +37,7 @@ class GoogleVertexAI_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'chat-bison',
+                        label: 'chat-bison11111',
                         name: 'chat-bison'
                     },
                     {
@@ -45,7 +45,7 @@ class GoogleVertexAI_ChatModels implements INode {
                         name: 'codechat-bison'
                     }
                 ],
-                default: 'chat-bison',
+                default: 'chat-bison11111',
                 optional: true
             },
             {
@@ -77,21 +77,31 @@ class GoogleVertexAI_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const skipExtraCredentialFile = getCredentialParam('skipExtraCredentialFile', credentialData, nodeData)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-            throw new Error('Please specify your Google Application Credential')
-        if (googleApplicationCredentialFilePath && googleApplicationCredential)
-            throw new Error('Please use either Google Application Credential File Path or Google Credential JSON Object')
+        // if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
+        //     throw new Error('Please specify your Google Application Credential')
+
+        const inputs = [googleApplicationCredentialFilePath, googleApplicationCredential, skipExtraCredentialFile]
+
+        if (inputs.filter(Boolean).length > 1) {
+            throw new Error(
+                'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path, Google Credential JSON Object, or Skip Extra Credential File.'
+            )
+        }
 
         const authOptions: GoogleAuthOptions = {}
-        if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
-        else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-            authOptions.credentials = JSON.parse(googleApplicationCredential)
+        if (!skipExtraCredentialFile) {
+            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
+                authOptions.keyFile = googleApplicationCredentialFilePath
+            else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
+                authOptions.credentials = JSON.parse(googleApplicationCredential)
 
-        if (projectID) authOptions.projectId = projectID
+            if (projectID) authOptions.projectId = projectID
+        }
 
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
@@ -100,9 +110,9 @@ class GoogleVertexAI_ChatModels implements INode {
 
         const obj: Partial<GoogleVertexAIChatInput> = {
             temperature: parseFloat(temperature),
-            model: modelName,
-            authOptions
+            model: modelName
         }
+        if (authOptions) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
