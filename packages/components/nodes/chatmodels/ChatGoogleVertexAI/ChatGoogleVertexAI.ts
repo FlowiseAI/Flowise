@@ -28,7 +28,10 @@ class GoogleVertexAI_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['googleVertexAuth']
+            credentialNames: ['googleVertexAuth'],
+            optional: true,
+            description:
+                'Google Vertex AI credential. If you are using a GCP service like Cloud Run, or if you have installed default credentials on your local machine, you do not need to set this credential.'
         }
         this.inputs = [
             {
