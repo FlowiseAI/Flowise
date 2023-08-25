@@ -82,7 +82,6 @@ class GoogleVertexAI_ChatModels implements INode {
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
         const authOptions: GoogleAuthOptions = {}
-        console.log('credentialData', credentialData)
         if (Object.keys(credentialData).length !== 0) {
             if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
                 throw new Error('Please specify your Google Application Credential')
