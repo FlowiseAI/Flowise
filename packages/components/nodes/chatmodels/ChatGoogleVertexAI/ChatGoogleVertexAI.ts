@@ -77,24 +77,20 @@ class GoogleVertexAI_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const skipExtraCredentialFile = getCredentialParam('skipExtraCredentialFile', credentialData, nodeData)
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
-            throw new Error('Please specify your Google Application Credential')
-
-        const inputs = [googleApplicationCredentialFilePath, googleApplicationCredential, skipExtraCredentialFile]
-
-        if (inputs.filter(Boolean).length > 1) {
-            throw new Error(
-                'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path, Google Credential JSON Object, or Skip Extra Credential File.'
-            )
-        }
-
         const authOptions: GoogleAuthOptions = {}
-        if (!skipExtraCredentialFile) {
+        console.log('credentialData', credentialData)
+        if (Object.keys(credentialData).length !== 0) {
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error('Please specify your Google Application Credential')
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error(
+                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
+                )
+
             if (googleApplicationCredentialFilePath && !googleApplicationCredential)
                 authOptions.keyFile = googleApplicationCredentialFilePath
             else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
@@ -112,7 +108,7 @@ class GoogleVertexAI_ChatModels implements INode {
             temperature: parseFloat(temperature),
             model: modelName
         }
-        if (authOptions) obj.authOptions = authOptions
+        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
