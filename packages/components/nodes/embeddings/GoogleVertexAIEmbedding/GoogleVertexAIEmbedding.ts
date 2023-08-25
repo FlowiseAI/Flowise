@@ -28,7 +28,10 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['googleVertexAuth']
+            credentialNames: ['googleVertexAuth'],
+            optional: true,
+            description:
+                'Google Vertex AI credential. If you are using a GCP service like Cloud Run, or if you have installed default credentials on your local machine, you do not need to set this credential.'
         }
         this.inputs = []
     }
@@ -38,21 +41,16 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
-        const skipExtraCredentialFile = getCredentialParam('skipExtraCredentialFile', credentialData, nodeData)
-
-        if (!skipExtraCredentialFile && !googleApplicationCredentialFilePath && !googleApplicationCredential)
-            throw new Error('Please specify your Google Application Credential')
-
-        const inputs = [googleApplicationCredentialFilePath, googleApplicationCredential, skipExtraCredentialFile]
-
-        if (inputs.filter(Boolean).length > 1) {
-            throw new Error(
-                'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path, Google Credential JSON Object, or Skip Extra Credential File.'
-            )
-        }
 
         const authOptions: GoogleAuthOptions = {}
-        if (!skipExtraCredentialFile) {
+        if (Object.keys(credentialData).length !== 0) {
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error('Please specify your Google Application Credential')
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error(
+                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
+                )
+
             if (googleApplicationCredentialFilePath && !googleApplicationCredential)
                 authOptions.keyFile = googleApplicationCredentialFilePath
             else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
@@ -60,9 +58,8 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
             if (projectID) authOptions.projectId = projectID
         }
-
         const obj: GoogleVertexAIEmbeddingsParams = {}
-        if (authOptions) obj.authOptions = authOptions
+        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         const model = new GoogleVertexAIEmbeddings(obj)
         return model
