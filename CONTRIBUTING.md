@@ -139,6 +139,7 @@ Flowise support different environment variables to configure your instance. You 
 | DATABASE_USER              | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
 | DATABASE_PASSWORD          | Database password (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
 | DATABASE_NAME              | Database name (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
+| PG_CERT_BASE64             | Base64 encoded certificate (When DATABASE_TYPE is  postgres)                 | String                                           |                                     |
 | PASSPHRASE                 | Passphrase used to create encryption key                                     | String                                           | `MYPASSPHRASE`                      |
 | SECRETKEY_PATH             | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
 
