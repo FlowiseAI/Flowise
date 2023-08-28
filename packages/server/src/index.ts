@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
 import cors from 'cors'
@@ -54,6 +54,7 @@ import { Credential } from './entity/Credential'
 import { Tool } from './entity/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
+import { createRateLimiter, getRateLimiter } from './utils/rateLimit'
 
 export class App {
     app: express.Application
@@ -653,6 +654,21 @@ export class App {
         // ----------------------------------------
         // Prediction
         // ----------------------------------------
+
+        this.app.get(
+            '/api/v1/rate-limit/:id',
+            upload.array('files'),
+            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
+            // specificRouteLimiter,
+            async (req: Request, res: Response) => {
+                res.send("you're fine")
+            }
+        )
+
+        this.app.post('/api/v1/rate-limit/', async (req: Request, res: Response) => {
+            createRateLimiter(req)
+            res.send('Created/Updated rate limit')
+        })
 
         // Send input message and get prediction result (External)
         this.app.post('/api/v1/prediction/:id', upload.array('files'), async (req: Request, res: Response) => {

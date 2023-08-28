@@ -52,6 +52,7 @@
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
         "express-basic-auth": "^1.2.1",
+        "express-rate-limit": "^6.9.0",
         "flowise-components": "*",
         "flowise-ui": "*",
         "moment-timezone": "^0.5.34",
