@@ -55,6 +55,7 @@ class Github_DocumentLoaders implements INode {
                 label: 'Max Concurrency',
                 name: 'maxConcurrency',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -74,6 +75,7 @@ class Github_DocumentLoaders implements INode {
                 description:
                     'The maximum number of retries that can be made for a single call, with an exponential backoff between each attempt. Defaults to 2.',
                 type: 'number',
+                step: 1,
                 optional: true,
                 additionalParams: true
             },
