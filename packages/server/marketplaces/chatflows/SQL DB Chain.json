@@ -157,17 +157,17 @@
         },
         {
             "width": 300,
-            "height": 423,
+            "height": 475,
             "id": "sqlDatabaseChain_0",
             "position": {
-                "x": 1229.0092429246013,
-                "y": 231.59431102290245
+                "x": 1206.5244299447634,
+                "y": 201.04431101230608
             },
             "type": "customNode",
             "data": {
                 "id": "sqlDatabaseChain_0",
                 "label": "Sql Database Chain",
-                "version": 1,
+                "version": 2,
                 "name": "sqlDatabaseChain",
                 "type": "SqlDatabaseChain",
                 "baseClasses": ["SqlDatabaseChain", "BaseChain", "Runnable"],
@@ -205,6 +205,18 @@
                         "type": "string",
                         "placeholder": "1270.0.0.1:5432/chinook",
                         "id": "sqlDatabaseChain_0-input-url-string"
+                    },
+                    {
+                        "label": "Custom Prompt",
+                        "name": "customPrompt",
+                        "type": "string",
+                        "description": "You can provide custom prompt to the chain. This will override the existing default prompt used. See <a target=\"_blank\" href=\"https://python.langchain.com/docs/integrations/tools/sqlite#customize-prompt\">guide</a>",
+                        "warning": "Prompt must include 3 input variables: {input}, {dialect}, {table_info}. You can refer to official guide from description above",
+                        "rows": 4,
+                        "placeholder": "Given an input question, first create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer. Unless the user specifies in his question a specific number of examples he wishes to obtain, always limit your query to at most {top_k} results. You can order the results by a relevant column to return the most interesting examples in the database.\n\nNever query for all the columns from a specific table, only ask for a the few relevant columns given the question.\n\nPay attention to use only the column names that you can see in the schema description. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.\n\nUse the following format:\n\nQuestion: \"Question here\"\nSQLQuery: \"SQL Query to run\"\nSQLResult: \"Result of the SQLQuery\"\nAnswer: \"Final answer here\"\n\nOnly use the tables listed below.\n\n{table_info}\n\nQuestion: {input}",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "sqlDatabaseChain_0-input-customPrompt-string"
                     }
                 ],
                 "inputAnchors": [
@@ -218,7 +230,8 @@
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "database": "sqlite",
-                    "url": ""
+                    "url": "",
+                    "customPrompt": ""
                 },
                 "outputAnchors": [
                     {
@@ -233,8 +246,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1229.0092429246013,
-                "y": 231.59431102290245
+                "x": 1206.5244299447634,
+                "y": 201.04431101230608
             },
             "dragging": false
         }
