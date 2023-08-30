@@ -1,9 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
-import { Document } from 'langchain/document'
-import { flatten } from 'lodash'
 
 class VectaraUpload_VectorStores implements INode {
     label: string
@@ -37,6 +34,8 @@ class VectaraUpload_VectorStores implements INode {
             {
                 label: 'File',
                 name: 'file',
+                description:
+                    'File to upload to Vectara. Supported file types: https://docs.vectara.com/docs/api-reference/indexing-apis/file-upload/file-upload-filetypes',
                 type: 'file'
             },
             {
