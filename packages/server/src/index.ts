@@ -54,7 +54,7 @@ import { Credential } from './entity/Credential'
 import { Tool } from './entity/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
-import { createRateLimiter, getRateLimiter } from './utils/rateLimit'
+import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 
 export class App {
     app: express.Application
@@ -84,6 +84,10 @@ export class App {
 
                 // Initialize encryption key
                 await getEncryptionKey()
+
+                // Initialize Rate Limit
+                const AllChatFlow: IChatFlow[] = await getAllChatFlow()
+                await initializeRateLimiter(AllChatFlow)
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -246,7 +250,7 @@ export class App {
 
         // Get all chatflows
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const chatflows: IChatFlow[] = await this.AppDataSource.getRepository(ChatFlow).find()
+            const chatflows: IChatFlow[] = await getAllChatFlow()
             return res.json(chatflows)
         })
 
@@ -655,21 +659,6 @@ export class App {
         // Prediction
         // ----------------------------------------
 
-        this.app.get(
-            '/api/v1/rate-limit/:id',
-            upload.array('files'),
-            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
-            // specificRouteLimiter,
-            async (req: Request, res: Response) => {
-                res.send("you're fine")
-            }
-        )
-
-        this.app.post('/api/v1/rate-limit/', async (req: Request, res: Response) => {
-            createRateLimiter(req)
-            res.send('Created/Updated rate limit')
-        })
-
         // Send input message and get prediction result (External)
         this.app.post('/api/v1/prediction/:id', upload.array('files'), async (req: Request, res: Response) => {
             await this.processPrediction(req, res, socketIO)
@@ -766,6 +755,39 @@ export class App {
             } catch (err: any) {
                 return res.status(500).send(err?.message)
             }
+        })
+
+        // ----------------------------------------
+        // Rate Limit
+        // ----------------------------------------
+
+        this.app.get(
+            '/api/v1/rate-limit/:id',
+            upload.array('files'),
+            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
+            // specificRouteLimiter,
+            async (req: Request, res: Response) => {
+                res.send("you're fine")
+            }
+        )
+
+        this.app.post('/api/v1/rate-limit/', async (req: Request, res: Response) => {
+            const id = req.body.id
+            const duration = req.body.duration
+            const limit = req.body.limit
+            const message = req.body.message
+
+            const result = await getDataSource()
+                .getRepository(ChatFlow)
+                .createQueryBuilder()
+                .update(ChatFlow)
+                .set({ rateLimit: limit, rateLimitDuration: duration, rateLimitMsg: message })
+                .where('id = :id', { id: id })
+                .execute()
+
+            await createRateLimiter(id, Number(duration), Number(limit), message)
+
+            res.send({ result })
         })
 
         // ----------------------------------------
@@ -1011,6 +1033,10 @@ export async function getChatId(chatflowid: string) {
 }
 
 let serverApp: App | undefined
+
+export async function getAllChatFlow(): Promise<IChatFlow[]> {
+    return await getDataSource().getRepository(ChatFlow).find()
+}
 
 export async function start(): Promise<void> {
     serverApp = new App()

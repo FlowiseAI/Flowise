@@ -1,56 +1,39 @@
 import { NextFunction, Request, Response } from 'express'
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit'
+import { IChatFlow } from '../Interface'
+import { Mutex } from 'async-mutex'
 
-interface RateLimit {
-    id: string
-    rateLimitObj: RateLimitRequestHandler
-}
+let rateLimiters: Record<string, RateLimitRequestHandler> = {}
+const rateLimiterMutex = new Mutex()
 
-export const specificRouteLimiter: RateLimitRequestHandler = rateLimit({
-    windowMs: 1 * 60 * 1000, // 15 minutes
-    max: 1, // Limit each IP to 100 requests per windowMs
-    message: 'Too many requests, please try again later.'
-})
-
-let rateLimiters: RateLimit[] = []
-
-export function createRateLimiter(req: Request) {
-    const id = req.body.id
-    const duration = req.body.duration
-    const limit = req.body.limit
-    const message = req.body.message
-
-    const rateLimitObj: RateLimitRequestHandler = rateLimit({
-        windowMs: Number(duration),
-        max: limit,
-        handler: (req, res) => {
-            res.status(429).json({ error: message })
-        }
-    })
-
-    const existingIndex: number = rateLimiters.findIndex((rateLimit) => rateLimit.id === id)
-
-    if (existingIndex === -1) {
-        rateLimiters.push({
-            id,
-            rateLimitObj
+export async function createRateLimiter(id: string, duration: number, limit: number, message: string) {
+    const release = await rateLimiterMutex.acquire()
+    try {
+        rateLimiters[id] = rateLimit({
+            windowMs: duration,
+            max: limit,
+            handler: (req, res) => {
+                res.status(429).json({ error: message })
+            }
         })
-    } else {
-        rateLimiters[existingIndex] = {
-            id,
-            rateLimitObj
-        }
+    } finally {
+        release()
     }
 }
 
 export function getRateLimiter(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id
 
-    const ratelimiter = rateLimiters.find((rateLimit) => rateLimit.id === id)
+    if (!rateLimiters[id]) return next()
 
-    if (!ratelimiter) return next()
-
-    const idRateLimiter = ratelimiter.rateLimitObj
+    const idRateLimiter = rateLimiters[id]
 
     return idRateLimiter(req, res, next)
+}
+
+export async function initializeRateLimiter(ChatFlowPool: IChatFlow[]) {
+    await ChatFlowPool.map(async (ChatFlow) => {
+        if (ChatFlow.rateLimitDuration && ChatFlow.rateLimit && ChatFlow.rateLimitMsg)
+            await createRateLimiter(ChatFlow.id, ChatFlow.rateLimitDuration, ChatFlow.rateLimit, ChatFlow.rateLimitMsg)
+    })
 }

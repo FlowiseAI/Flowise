@@ -25,6 +25,15 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true })
     chatbotConfig?: string
 
+    @Column({ nullable: true })
+    rateLimit?: number
+
+    @Column({ nullable: true })
+    rateLimitDuration?: number
+
+    @Column({ nullable: true })
+    rateLimitMsg?: string
+
     @CreateDateColumn()
     createdDate: Date
 

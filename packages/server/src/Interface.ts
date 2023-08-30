@@ -15,6 +15,9 @@ export interface IChatFlow {
     isPublic?: boolean
     apikeyid?: string
     chatbotConfig?: string
+    rateLimit?: number
+    rateLimitDuration?: number
+    rateLimitMsg?: string
 }
 
 export interface IChatMessage {
