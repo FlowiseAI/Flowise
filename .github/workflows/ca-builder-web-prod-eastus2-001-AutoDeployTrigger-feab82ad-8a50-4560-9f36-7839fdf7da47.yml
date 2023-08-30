@@ -1,0 +1,45 @@
+name: Trigger auto deployment for ca-builder-web-prod-eastus2-001
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/ca-builder-web-prod-eastus2-001-AutoDeployTrigger-feab82ad-8a50-4560-9f36-7839fdf7da47.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CABUILDERWEBPRODEASTUS2001_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CABUILDERWEBPRODEASTUS2001_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CABUILDERWEBPRODEASTUS2001_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: startseacrprod.azurecr.io
+          registryUsername: ${{ secrets.CABUILDERWEBPRODEASTUS2001_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CABUILDERWEBPRODEASTUS2001_REGISTRY_PASSWORD }}
+          containerAppName: ca-builder-web-prod-eastus2-001
+          resourceGroup: startse
+          imageToBuild: startseacrprod.azurecr.io/ca-builder-web-prod-eastus2-001:${{ github.sha }}
+          dockerfilePath: Dockerfile
+
+
