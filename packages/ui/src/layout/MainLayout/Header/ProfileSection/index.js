@@ -110,7 +110,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                     setLoading(false)
                 }
             } else {
-                alert('Incorrect Flowise Database Format')
+                alert('Incorrect Builder Database Format')
             }
         }
         reader.readAsText(file)
@@ -227,7 +227,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconInfoCircle stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>About Ai Builder</Typography>} />
                                                 </ListItemButton>
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
