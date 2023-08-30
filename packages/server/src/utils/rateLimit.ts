@@ -13,7 +13,7 @@ export async function createRateLimiter(id: string, duration: number, limit: num
             windowMs: duration,
             max: limit,
             handler: (req, res) => {
-                res.status(429).json({ error: message })
+                res.status(429).send(message)
             }
         })
     } finally {
