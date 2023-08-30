@@ -481,7 +481,7 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
             if (inputVariables.length > 0) return true
         }
     }
-    const whitelistNodeNames = ['vectorStoreToDocument']
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
     for (const node of nodes) {
         if (whitelistNodeNames.includes(node.data.name)) return true
     }
