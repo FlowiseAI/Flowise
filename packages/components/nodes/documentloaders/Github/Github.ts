@@ -18,7 +18,7 @@ class Github_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Github'
         this.name = 'github'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'github.png'
         this.category = 'Document Loaders'
