@@ -432,6 +432,10 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
     const databaseEntities = options.databaseEntities as IDatabaseEntity
 
     try {
+        if (!selectedCredentialId) {
+            return {}
+        }
+
         const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
             id: selectedCredentialId
         })
