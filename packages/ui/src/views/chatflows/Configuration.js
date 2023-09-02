@@ -36,13 +36,17 @@ const Configuration = () => {
         const obj = {
             rateLimit: {}
         }
-
-        if (limitMax && limitDuration && limitMsg)
+        const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
+        const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
+        if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
+            throw new Error('Need to fill all rate limit input fields')
+        } else if (rateLimitFilledValues.length === 3) {
             obj.rateLimit = {
                 limitMax,
                 limitDuration,
                 limitMsg
             }
+        }
 
         return obj
     }
@@ -69,7 +73,9 @@ const Configuration = () => {
             }
         } catch (error) {
             console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response
+                ? error.response.data || `${error.response.status}: ${error.response.statusText}`
+                : error.message
             enqueueSnackbar({
                 message: `Failed to save API Configuration: ${errorData}`,
                 options: {
