@@ -127,8 +127,8 @@ const Configuration = () => {
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
                 Rate Limit
             </Typography>
-            {textField(limitMax, 'Limit Max', 'Max Limit', 'number')}
-            {textField(limitDuration, 'Limit Duration', 'Font Size', 'number')}
+            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number')}
+            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number')}
             {textField(limitMsg, 'limitMsg', 'Limit Message', 'string')}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>

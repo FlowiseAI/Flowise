@@ -6,11 +6,11 @@ import { Mutex } from 'async-mutex'
 let rateLimiters: Record<string, RateLimitRequestHandler> = {}
 const rateLimiterMutex = new Mutex()
 
-export async function createRateLimiter(id: string, duration: number, limit: number, message: string) {
+async function addRateLimiter(id: string, duration: number, limit: number, message: string) {
     const release = await rateLimiterMutex.acquire()
     try {
         rateLimiters[id] = rateLimit({
-            windowMs: duration,
+            windowMs: duration * 1000,
             max: limit,
             handler: (req, res) => {
                 res.status(429).send(message)
@@ -31,9 +31,17 @@ export function getRateLimiter(req: Request, res: Response, next: NextFunction) 
     return idRateLimiter(req, res, next)
 }
 
-export async function initializeRateLimiter(ChatFlowPool: IChatFlow[]) {
-    await ChatFlowPool.map(async (ChatFlow) => {
-        if (ChatFlow.rateLimitDuration && ChatFlow.rateLimit && ChatFlow.rateLimitMsg)
-            await createRateLimiter(ChatFlow.id, ChatFlow.rateLimitDuration, ChatFlow.rateLimit, ChatFlow.rateLimitMsg)
+export async function createRateLimiter(chatFlow: IChatFlow) {
+    if (!chatFlow.apiConfig) return
+    const apiConfig: any = JSON.parse(chatFlow.apiConfig)
+    const rateLimit: { limitDuration: number; limitMax: number; limitMsg: string } = apiConfig.rateLimit
+    if (!rateLimit) return
+    const { limitDuration, limitMax, limitMsg } = rateLimit
+    if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
+}
+
+export async function initializeRateLimiter(chatFlowPool: IChatFlow[]) {
+    await chatFlowPool.map(async (chatFlow) => {
+        await createRateLimiter(chatFlow)
     })
 }

@@ -319,6 +319,9 @@ export class App {
             const updateChatFlow = new ChatFlow()
             Object.assign(updateChatFlow, body)
 
+            updateChatFlow.id = chatflow.id
+            createRateLimiter(updateChatFlow)
+
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
@@ -760,38 +763,6 @@ export class App {
             } catch (err: any) {
                 return res.status(500).send(err?.message)
             }
-        })
-
-        // ----------------------------------------
-        // Rate Limit
-        // ----------------------------------------
-
-        this.app.get(
-            '/api/v1/rate-limit/:id',
-            upload.array('files'),
-            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
-            async (req: Request, res: Response) => {
-                res.send("you're fine")
-            }
-        )
-
-        this.app.post('/api/v1/rate-limit/', async (req: Request, res: Response) => {
-            const id = req.body.id
-            const duration = req.body.duration
-            const limit = req.body.limit
-            const message = req.body.message
-
-            const result = await getDataSource()
-                .getRepository(ChatFlow)
-                .createQueryBuilder()
-                .update(ChatFlow)
-                .set({ rateLimit: limit, rateLimitDuration: duration, rateLimitMsg: message })
-                .where('id = :id', { id: id })
-                .execute()
-
-            await createRateLimiter(id, Number(duration), Number(limit), message)
-
-            res.send({ result })
         })
 
         // ----------------------------------------
