@@ -12,7 +12,7 @@ class ConfluenceApi implements INodeCredential {
         this.name = 'confluenceApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get accessToken on Confluence'
+            'Refer <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">here</a> to get accessToken on Confluence'
         this.inputs = [
             {
                 label: 'Access Token',
