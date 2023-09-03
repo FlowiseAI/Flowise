@@ -61,7 +61,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const modelName = nodeData.inputs?.modelName ?? 'textembedding-gecko@001'
+        const modelName = nodeData.inputs?.modelName as string
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
