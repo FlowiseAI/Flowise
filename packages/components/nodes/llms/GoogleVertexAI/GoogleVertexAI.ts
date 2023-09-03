@@ -28,7 +28,10 @@ class GoogleVertexAI_LLMs implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['googleVertexAuth']
+            credentialNames: ['googleVertexAuth'],
+            optional: true,
+            description:
+                'Google Vertex AI credential. If you are using a GCP service like Cloud Run, or if you have installed default credentials on your local machine, you do not need to set this credential.'
         }
         this.inputs = [
             {
@@ -84,16 +87,22 @@ class GoogleVertexAI_LLMs implements INode {
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-            throw new Error('Please specify your Google Application Credential')
-        if (googleApplicationCredentialFilePath && googleApplicationCredential)
-            throw new Error('Please use either Google Application Credential File Path or Google Credential JSON Object')
-
         const authOptions: GoogleAuthOptions = {}
-        if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
-        else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-            authOptions.credentials = JSON.parse(googleApplicationCredential)
-        if (projectID) authOptions.projectId = projectID
+        if (Object.keys(credentialData).length !== 0) {
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error('Please specify your Google Application Credential')
+            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
+                throw new Error(
+                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
+                )
+
+            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
+                authOptions.keyFile = googleApplicationCredentialFilePath
+            else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
+                authOptions.credentials = JSON.parse(googleApplicationCredential)
+
+            if (projectID) authOptions.projectId = projectID
+        }
 
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
@@ -102,9 +111,9 @@ class GoogleVertexAI_LLMs implements INode {
 
         const obj: Partial<GoogleVertexAITextInput> = {
             temperature: parseFloat(temperature),
-            model: modelName,
-            authOptions
+            model: modelName
         }
+        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)

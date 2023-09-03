@@ -571,6 +571,34 @@ export class App {
             return res.json(availableConfigs)
         })
 
+        this.app.get('/api/v1/version', async (req: Request, res: Response) => {
+            const getPackageJsonPath = (): string => {
+                const checkPaths = [
+                    path.join(__dirname, '..', 'package.json'),
+                    path.join(__dirname, '..', '..', 'package.json'),
+                    path.join(__dirname, '..', '..', '..', 'package.json'),
+                    path.join(__dirname, '..', '..', '..', '..', 'package.json'),
+                    path.join(__dirname, '..', '..', '..', '..', '..', 'package.json')
+                ]
+                for (const checkPath of checkPaths) {
+                    if (fs.existsSync(checkPath)) {
+                        return checkPath
+                    }
+                }
+                return ''
+            }
+
+            const packagejsonPath = getPackageJsonPath()
+            if (!packagejsonPath) return res.status(404).send('Version not found')
+            try {
+                const content = await fs.promises.readFile(packagejsonPath, 'utf8')
+                const parsedContent = JSON.parse(content)
+                return res.json({ version: parsedContent.version })
+            } catch (error) {
+                return res.status(500).send(`Version not found: ${error}`)
+            }
+        })
+
         // ----------------------------------------
         // Export Load Chatflow & ChatMessage & Apikeys
         // ----------------------------------------

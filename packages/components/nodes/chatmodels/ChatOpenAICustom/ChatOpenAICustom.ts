@@ -1,8 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
+import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 
-class OpenAI_LLMs implements INode {
+class ChatOpenAICustom_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -15,52 +15,34 @@ class OpenAI_LLMs implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenAI'
-        this.name = 'openAI'
+        this.label = 'ChatOpenAI Custom'
+        this.name = 'chatOpenAICustom'
         this.version = 1.0
-        this.type = 'OpenAI'
+        this.type = 'ChatOpenAI-Custom'
         this.icon = 'openai.png'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around OpenAI large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
+        this.category = 'Chat Models'
+        this.description = 'Custom/FineTuned model using OpenAI Chat compatible API'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['openAIApi']
+            credentialNames: ['openAIApi'],
+            optional: true
         }
         this.inputs = [
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'text-davinci-003',
-                        name: 'text-davinci-003'
-                    },
-                    {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
-                    },
-                    {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
-                    },
-                    {
-                        label: 'text-babbage-001',
-                        name: 'text-babbage-001'
-                    }
-                ],
-                default: 'text-davinci-003',
-                optional: true
+                type: 'string',
+                placeholder: 'ft:gpt-3.5-turbo:my-org:custom_suffix:id'
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                default: 0.7,
+                default: 0.9,
                 optional: true
             },
             {
@@ -80,14 +62,6 @@ class OpenAI_LLMs implements INode {
                 additionalParams: true
             },
             {
-                label: 'Best Of',
-                name: 'bestOf',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Frequency Penalty',
                 name: 'frequencyPenalty',
                 type: 'number',
@@ -100,14 +74,6 @@ class OpenAI_LLMs implements INode {
                 name: 'presencePenalty',
                 type: 'number',
                 step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Batch Size',
-                name: 'batchSize',
-                type: 'number',
-                step: 1,
                 optional: true,
                 additionalParams: true
             },
@@ -144,8 +110,6 @@ class OpenAI_LLMs implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
-        const batchSize = nodeData.inputs?.batchSize as string
-        const bestOf = nodeData.inputs?.bestOf as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
@@ -153,7 +117,7 @@ class OpenAI_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -165,8 +129,6 @@ class OpenAI_LLMs implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
-        if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
         let parsedBaseOptions: any | undefined = undefined
 
@@ -174,11 +136,10 @@ class OpenAI_LLMs implements INode {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
             } catch (exception) {
-                throw new Error("Invalid JSON in the OpenAI's BaseOptions: " + exception)
+                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-
-        const model = new OpenAI(obj, {
+        const model = new ChatOpenAI(obj, {
             basePath,
             baseOptions: parsedBaseOptions
         })
@@ -186,4 +147,4 @@ class OpenAI_LLMs implements INode {
     }
 }
 
-module.exports = { nodeClass: OpenAI_LLMs }
+module.exports = { nodeClass: ChatOpenAICustom_ChatModels }
