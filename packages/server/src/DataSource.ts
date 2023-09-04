@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm'
 import { getUserHome } from './utils'
 import { entities } from './database/entities'
 import { sqliteMigrations } from './database/migrations/sqlite'
+import { mysqlMigrations } from './database/migrations/mysql'
 
 let appDataSource: DataSource
 
@@ -33,7 +34,7 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: []
+                migrations: mysqlMigrations
             })
             break
         case 'postgres':
