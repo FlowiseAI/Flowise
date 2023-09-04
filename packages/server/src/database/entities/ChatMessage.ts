@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IChatMessage, MessageType } from '../Interface'
+import { IChatMessage, MessageType } from '../../Interface'
 
 @Entity()
 export class ChatMessage implements IChatMessage {

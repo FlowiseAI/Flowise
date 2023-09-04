@@ -48,10 +48,10 @@ import {
 import { cloneDeep, omit } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
-import { ChatFlow } from './entity/ChatFlow'
-import { ChatMessage } from './entity/ChatMessage'
-import { Credential } from './entity/Credential'
-import { Tool } from './entity/Tool'
+import { ChatFlow } from './database/entities/ChatFlow'
+import { ChatMessage } from './database/entities/ChatMessage'
+import { Credential } from './database/entities/Credential'
+import { Tool } from './database/entities/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 
@@ -70,6 +70,11 @@ export class App {
         this.AppDataSource.initialize()
             .then(async () => {
                 logger.info('📦 [server]: Data Source has been initialized!')
+
+                //Migrations
+                console.info(`start migration`)
+                await this.AppDataSource.runMigrations({ transaction: 'each' })
+                console.info(`finish migration`)
 
                 // Initialize nodes pool
                 this.nodesPool = new NodesPool()
