@@ -81,9 +81,8 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
             if (projectID) authOptions.projectId = projectID
         }
-        const obj: GoogleVertexAIEmbeddingsParams = {
-            model: modelName
-        }
+        const obj: GoogleVertexAIEmbeddingsParams = {}
+        if (modelName) obj.model = modelName
         if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         const model = new GoogleVertexAIEmbeddings(obj)
