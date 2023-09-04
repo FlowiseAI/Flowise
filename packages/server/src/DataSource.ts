@@ -3,7 +3,7 @@ import path from 'path'
 import { DataSource } from 'typeorm'
 import { getUserHome } from './utils'
 import { entities } from './database/entities'
-import { InitSqlite1693809869231 } from './database/migrations/1693809869231-initSqlite'
+import { sqliteMigrations } from './database/migrations/sqlite'
 
 let appDataSource: DataSource
 
@@ -18,7 +18,7 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: [InitSqlite1693809869231]
+                migrations: sqliteMigrations
             })
             break
         case 'mysql':
@@ -58,7 +58,7 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: [InitSqlite1693809869231]
+                migrations: sqliteMigrations
             })
             break
     }
