@@ -56,9 +56,9 @@ export class Init1693840429259 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE "chat_flow"`)
-        await queryRunner.query(`DROP TABLE "chat_message"`)
-        await queryRunner.query(`DROP TABLE "credential"`)
-        await queryRunner.query(`DROP TABLE "tool"`)
+        await queryRunner.query(`DROP TABLE chat_flow`)
+        await queryRunner.query(`DROP TABLE chat_message`)
+        await queryRunner.query(`DROP TABLE credential`)
+        await queryRunner.query(`DROP TABLE tool`)
     }
 }
