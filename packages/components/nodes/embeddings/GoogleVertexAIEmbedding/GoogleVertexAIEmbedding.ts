@@ -53,8 +53,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                     }
                 ],
                 default: 'textembedding-gecko@001',
-                optional: true,
-                additionalParams: true
+                optional: true
             }
         ]
     }
