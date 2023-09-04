@@ -13,7 +13,7 @@ export class Credential implements ICredential {
     @Column()
     credentialName: string
 
-    @Column()
+    @Column({ type: 'text' })
     encryptedData: string
 
     @CreateDateColumn()
