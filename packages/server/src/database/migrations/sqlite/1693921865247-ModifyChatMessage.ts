@@ -10,6 +10,7 @@ export class ModifyChatMessage1693921865247 implements MigrationInterface {
         )
         await queryRunner.query(`DROP TABLE chat_message;`)
         await queryRunner.query(`ALTER TABLE temp_chat_message RENAME TO chat_message;`)
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_e574527322272fd838f4f0f3d3" ON "chat_message" ("chatflowid") ;`)
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
