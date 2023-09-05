@@ -19,10 +19,10 @@ export class Tool implements ITool {
     @Column({ nullable: true })
     iconSrc?: string
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true })
     schema?: string
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true })
     func?: string
 
     @CreateDateColumn()

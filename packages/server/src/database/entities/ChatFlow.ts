@@ -22,7 +22,7 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true })
     apikeyid?: string
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true })
     chatbotConfig?: string
 
     @CreateDateColumn()
