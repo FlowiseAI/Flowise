@@ -17,7 +17,7 @@ export class ChatMessage implements IChatMessage {
     @Column({ type: 'text' })
     content: string
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'text' })
     sourceDocuments?: string
 
     @CreateDateColumn()
