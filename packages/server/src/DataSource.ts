@@ -5,6 +5,7 @@ import { getUserHome } from './utils'
 import { entities } from './database/entities'
 import { sqliteMigrations } from './database/migrations/sqlite'
 import { mysqlMigrations } from './database/migrations/mysql'
+import { postgresMigrations } from './database/migrations/postgres'
 
 let appDataSource: DataSource
 
@@ -48,7 +49,7 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: []
+                migrations: postgresMigrations
             })
             break
         default:
