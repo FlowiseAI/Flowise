@@ -13,6 +13,6 @@ export class ModifyCredential1693923551694 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE credential`)
+        await queryRunner.query(`DROP TABLE temp_credential`)
     }
 }
