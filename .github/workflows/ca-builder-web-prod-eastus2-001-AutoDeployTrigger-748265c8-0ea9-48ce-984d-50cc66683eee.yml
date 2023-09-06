@@ -6,9 +6,6 @@ on:
   push:
     branches: 
       [ main ]
-    paths:
-    - '//**'
-    - '.github/workflows/ca-builder-web-prod-eastus2-001-AutoDeployTrigger-748265c8-0ea9-48ce-984d-50cc66683eee.yml'
 
   # Allow mannually trigger 
   workflow_dispatch:      
