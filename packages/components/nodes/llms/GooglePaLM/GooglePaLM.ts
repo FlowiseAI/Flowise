@@ -27,12 +27,9 @@ class GooglePaLM_LLMs implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['googleMakerSuite'],
-            description:
-                'Google MakerSuite API credential. Get this from https://makersuite.google.com/app/apikey'
-
+            credentialNames: ['googleMakerSuite']
         }
-        this.inputs = [ 
+        this.inputs = [
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -52,12 +49,13 @@ class GooglePaLM_LLMs implements INode {
                 type: 'number',
                 step: 0.1,
                 default: 0.7,
-                optional: true, 
-                description: "Controls the randomness of the output.\n"+
-                  "Values can range from [0.0,1.0], inclusive. A value closer to 1.0 "+
-                  "will produce responses that are more varied and creative, while"+
-                  "a value closer to 0.0 will typically result in more straightforward"+
-                  "responses from the model."
+                optional: true,
+                description:
+                    'Controls the randomness of the output.\n' +
+                    'Values can range from [0.0,1.0], inclusive. A value closer to 1.0 ' +
+                    'will produce responses that are more varied and creative, while ' +
+                    'a value closer to 0.0 will typically result in more straightforward ' +
+                    'responses from the model.'
             },
             {
                 label: 'Max Output Tokens',
@@ -66,7 +64,7 @@ class GooglePaLM_LLMs implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true,
-                description: "Maximum number of tokens to generate in the completion."
+                description: 'Maximum number of tokens to generate in the completion.'
             },
             {
                 label: 'Top Probability',
@@ -74,13 +72,14 @@ class GooglePaLM_LLMs implements INode {
                 type: 'number',
                 step: 0.1,
                 optional: true,
-                additionalParams: true, 
-                description: "Top-p changes how the model selects tokens for output.\n"+
-                  "Tokens are selected from most probable to least until "+
-                  "the sum of their probabilities equals the top-p value.\n"+
-                  "For example, if tokens A, B, and C have a probability of .3, .2, and .1 "+
-                  "and the top-p value is .5, then the model will select either A or B "+
-                  "as the next token (using temperature)."
+                additionalParams: true,
+                description:
+                    'Top-p changes how the model selects tokens for output.\n' +
+                    'Tokens are selected from most probable to least until ' +
+                    'the sum of their probabilities equals the top-p value.\n' +
+                    'For example, if tokens A, B, and C have a probability of .3, .2, and .1 ' +
+                    'and the top-p value is .5, then the model will select either A or B ' +
+                    'as the next token (using temperature).'
             },
             {
                 label: 'Top-k',
@@ -89,11 +88,12 @@ class GooglePaLM_LLMs implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true,
-                description: "Top-k changes how the model selects tokens for output.\n"+
-                  "A top-k of 1 means the selected token is the most probable among "+
-                  "all tokens in the model’s vocabulary (also called greedy decoding), "+
-                  "while a top-k of 3 means that the next token is selected from "+
-                  "among the 3 most probable tokens (using temperature)."
+                description:
+                    'Top-k changes how the model selects tokens for output.\n' +
+                    'A top-k of 1 means the selected token is the most probable among ' +
+                    'all tokens in the model vocabulary (also called greedy decoding), ' +
+                    'while a top-k of 3 means that the next token is selected from ' +
+                    'among the 3 most probable tokens (using temperature).'
             },
             {
                 label: 'Stop Sequences',
@@ -102,11 +102,11 @@ class GooglePaLM_LLMs implements INode {
                 optional: true,
                 additionalParams: true
                 //default: { list:[] },
-                //description: 
-                //  "The 'list' field should contain a list of character strings (up to 5) that will stop output generation.\n"+
-                //  "  * If specified, the API will stop at the first appearance of a stop sequence.\n"+
-                //  "Note: The stop sequence will not be included as part of the response."
-            } 
+                //description:
+                //  'The "list" field should contain a list of character strings (up to 5) that will stop output generation.\n' +
+                //  '  * If specified, the API will stop at the first appearance of a stop sequence.\n' +
+                //  'Note: The stop sequence will not be included as part of the response.'
+            }
             /*
             {
                 label: 'Safety Settings',
