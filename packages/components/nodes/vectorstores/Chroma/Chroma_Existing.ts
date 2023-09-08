@@ -103,6 +103,7 @@ class Chroma_Existing_VectorStores implements INode {
             filter?: object | undefined
         } = { collectionName }
         if (chromaURL) obj.url = chromaURL
+        if (chromaApiKey) obj.chromaApiKey = chromaApiKey
         if (chromaMetadataFilter) {
             const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : JSON.parse(chromaMetadataFilter)
             obj.filter = metadatafilter
