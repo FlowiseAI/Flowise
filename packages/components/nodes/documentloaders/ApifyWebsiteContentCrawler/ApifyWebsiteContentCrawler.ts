@@ -21,11 +21,17 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         this.name = 'apifyWebsiteContentCrawler'
         this.type = 'Document'
         this.icon = 'apify-symbol-transparent.svg'
-        this.version = 1.0
+        this.version = 2.0
         this.category = 'Document Loaders'
         this.description = 'Load data from Apify Website Content Crawler'
         this.baseClasses = [this.type]
         this.inputs = [
+            {
+                label: 'Text Splitter',
+                name: 'textSplitter',
+                type: 'TextSplitter',
+                optional: true
+            },
             {
                 label: 'Start URLs',
                 name: 'urls',
@@ -64,14 +70,16 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
                 name: 'maxCrawlDepth',
                 type: 'number',
                 optional: true,
-                default: 1
+                default: 1,
+                additionalParams: true
             },
             {
                 label: 'Max crawl pages',
                 name: 'maxCrawlPages',
                 type: 'number',
                 optional: true,
-                default: 3
+                default: 3,
+                additionalParams: true
             },
             {
                 label: 'Additional input',
@@ -80,13 +88,15 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
                 default: JSON.stringify({}),
                 description:
                     'For additional input options for the crawler see <a target="_blank" href="https://apify.com/apify/website-content-crawler/input-schema">documentation</a>.',
-                optional: true
+                optional: true,
+                additionalParams: true
             },
             {
-                label: 'Text Splitter',
-                name: 'textSplitter',
-                type: 'TextSplitter',
-                optional: true
+                label: 'Metadata',
+                name: 'metadata',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.credential = {
@@ -99,6 +109,7 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const metadata = nodeData.inputs?.metadata
 
         // Get input options and merge with additional input
         const urls = nodeData.inputs?.urls as string
@@ -132,7 +143,31 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
             }
         })
 
-        return textSplitter ? loader.loadAndSplit(textSplitter) : loader.load()
+        let docs = []
+
+        if (textSplitter) {
+            docs = await loader.loadAndSplit(textSplitter)
+        } else {
+            docs = await loader.load()
+        }
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let finaldocs = []
+            for (const doc of docs) {
+                const newdoc = {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+                finaldocs.push(newdoc)
+            }
+            return finaldocs
+        }
+
+        return docs
     }
 }
 
