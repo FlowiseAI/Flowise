@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { ITool } from '../Interface'
+import { ITool } from '../../Interface'
 
 @Entity()
 export class Tool implements ITool {
@@ -19,10 +19,10 @@ export class Tool implements ITool {
     @Column({ nullable: true })
     iconSrc?: string
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'text' })
     schema?: string
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'text' })
     func?: string
 
     @CreateDateColumn()

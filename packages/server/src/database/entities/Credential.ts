@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm'
-import { ICredential } from '../Interface'
+import { ICredential } from '../../Interface'
 
 @Entity()
 export class Credential implements ICredential {
@@ -13,7 +13,7 @@ export class Credential implements ICredential {
     @Column()
     credentialName: string
 
-    @Column()
+    @Column({ type: 'text' })
     encryptedData: string
 
     @CreateDateColumn()
