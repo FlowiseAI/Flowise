@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IChatMessage, MessageType } from '../Interface'
+import { IChatMessage, MessageType } from '../../Interface'
 
 @Entity()
 export class ChatMessage implements IChatMessage {
@@ -17,7 +17,7 @@ export class ChatMessage implements IChatMessage {
     @Column({ type: 'text' })
     content: string
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'text' })
     sourceDocuments?: string
 
     @CreateDateColumn()

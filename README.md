@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [中文](<./README-ZH.md>)
+English | [中文](./README-ZH.md)
 
 <h3>Drag & drop UI to build your customized LLM flow</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -186,4 +186,4 @@ See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://
 
 ## 📄 License
 
-Source code in this repository is made available under the [MIT License](LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
