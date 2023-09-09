@@ -102,6 +102,9 @@ export class App {
         this.app.use(express.json({ limit: '50mb' }))
         this.app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
+        if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
+            this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
+
         // Allow access from *
         this.app.use(cors())
 
@@ -121,7 +124,8 @@ export class App {
                 '/api/v1/prediction/',
                 '/api/v1/node-icon/',
                 '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming'
+                '/api/v1/chatflows-streaming',
+                '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
@@ -131,6 +135,16 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
+
+        // ----------------------------------------
+        // Configure number of proxies in Host Environment
+        // ----------------------------------------
+        this.app.get('/api/v1/ip', (request, response) => {
+            response.send({
+                ip: request.ip,
+                msg: 'See the IP returned in the response. If it matches your IP address (which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/), then the number of proxies is correct and the rate limiter should now work correctly. If not, then keep increasing the number until it does.'
+            })
+        })
 
         // ----------------------------------------
         // Components
