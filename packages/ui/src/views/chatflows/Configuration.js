@@ -28,9 +28,9 @@ const Configuration = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? 20)
-    const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? 120)
-    const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? "Please don't spam me")
+    const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '')
+    const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '')
+    const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
 
     const formatObj = () => {
         const obj = {
