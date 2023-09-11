@@ -143,7 +143,7 @@ class SqlDatabaseChain_Chains implements INode {
         const includesTables = nodeData.inputs?.includesTables
         const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
         const ignoreTables = nodeData.inputs?.ignoreTables
-        const splittedIgnoreTables = ignoreTables == '' ? undefined : includesTables?.split(',')
+        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
         const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo
         const topK = nodeData.inputs?.topK
         const customPrompt = nodeData.inputs?.customPrompt
@@ -168,7 +168,7 @@ class SqlDatabaseChain_Chains implements INode {
         const includesTables = nodeData.inputs?.includesTables
         const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
         const ignoreTables = nodeData.inputs?.ignoreTables
-        const splittedIgnoreTables = ignoreTables == '' ? undefined : includesTables?.split(',')
+        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
         const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo
         const topK = nodeData.inputs?.topK
         const customPrompt = nodeData.inputs?.customPrompt
