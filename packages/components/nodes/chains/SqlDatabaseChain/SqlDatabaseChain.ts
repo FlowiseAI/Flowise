@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { DataSourceOptions } from 'typeorm/data-source'
 
 type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
@@ -119,13 +119,14 @@ class SqlDatabaseChain_Chains implements INode {
 
         const chain = await getSQLDBChain(databaseType, url, model, customPrompt)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(input, [loggerHandler, handler])
+            const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return res
         } else {
-            const res = await chain.run(input, [loggerHandler])
+            const res = await chain.run(input, [loggerHandler, ...callbacks])
             return res
         }
     }

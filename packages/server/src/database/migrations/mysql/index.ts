@@ -4,6 +4,7 @@ import { ModifyChatMessage1693999022236 } from './1693999022236-ModifyChatMessag
 import { ModifyCredential1693999261583 } from './1693999261583-ModifyCredential'
 import { ModifyTool1694001465232 } from './1694001465232-ModifyTool'
 import { AddApiConfig1694099200729 } from './1694099200729-AddApiConfig'
+import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -11,5 +12,6 @@ export const mysqlMigrations = [
     ModifyChatMessage1693999022236,
     ModifyCredential1693999261583,
     ModifyTool1694001465232,
-    AddApiConfig1694099200729
+    AddApiConfig1694099200729,
+    AddAnalytic1694432361423
 ]
