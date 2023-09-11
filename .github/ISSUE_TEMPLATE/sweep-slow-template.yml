@@ -1,0 +1,14 @@
+name: Sweep Slow Issue
+title: 'Sweep (slow): '
+description: For larger bugs, features, refactors, and tests to be handled by Sweep, an AI-powered junior developer. Sweep will perform a deeper search and more self-reviews but will take longer.
+labels: sweep
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Details
+      description: Tell Sweep where and what to edit and provide enough context for a new developer to the codebase
+      placeholder: |
+        Bugs: The bug might be in ... file. Here are the logs: ...
+        Features: the new endpoint should use the ... class from ... file because it contains ... logic.
+        Refactors: We are migrating this function to ... version because ...
