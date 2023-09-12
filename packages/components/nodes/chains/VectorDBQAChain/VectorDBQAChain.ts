@@ -2,7 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses } from '../../../src/utils'
 import { VectorDBQAChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
-import { VectorStore } from 'langchain/vectorstores'
+import { VectorStore } from 'langchain/vectorstores/base'
 import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 
 class VectorDBQAChain_Chains implements INode {
