@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from 'langchain/vectorstores/vectara'
 
 class VectaraUpload_VectorStores implements INode {
     label: string
@@ -99,7 +99,7 @@ class VectaraUpload_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
         const customerId = getCredentialParam('customerID', credentialData, nodeData)
-        const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
+        const corpusId = getCredentialParam('corpusID', credentialData, nodeData).split(',')
 
         const fileBase64 = nodeData.inputs?.file
         const vectaraMetadataFilter = nodeData.inputs?.filter as string
@@ -133,17 +133,17 @@ class VectaraUpload_VectorStores implements INode {
             files = [fileBase64]
         }
 
-        const blobs: Blob[] = []
+        const vectaraFiles: VectaraFile[] = []
         for (const file of files) {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
             const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
             const blob = new Blob([bf])
-            blobs.push(blob)
+            vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
         }
 
         const vectorStore = new VectaraStore(vectaraArgs)
-        const res = await vectorStore.addFiles(blobs)
+        await vectorStore.addFiles(vectaraFiles)
         files = []
 
         if (output === 'retriever') {
@@ -154,6 +154,23 @@ class VectaraUpload_VectorStores implements INode {
             return vectorStore
         }
         return vectorStore
+    }
+}
+
+const getFileName = (fileBase64: string) => {
+    let fileNames = []
+    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+        const files = JSON.parse(fileBase64)
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+            fileNames.push(filename)
+        }
+        return fileNames.join(', ')
+    } else {
+        const splitDataURI = fileBase64.split(',')
+        const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+        return filename
     }
 }
 
