@@ -139,14 +139,14 @@ class SqlDatabaseChain_Chains implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const url = nodeData.inputs?.url
+        const url = nodeData.inputs?.url as string
         const includesTables = nodeData.inputs?.includesTables
         const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
         const ignoreTables = nodeData.inputs?.ignoreTables
         const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
-        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo
-        const topK = nodeData.inputs?.topK
-        const customPrompt = nodeData.inputs?.customPrompt
+        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
+        const topK = nodeData.inputs?.topK as number
+        const customPrompt = nodeData.inputs?.customPrompt as string
 
         const chain = await getSQLDBChain(
             databaseType,
@@ -164,14 +164,14 @@ class SqlDatabaseChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
-        const url = nodeData.inputs?.url
+        const url = nodeData.inputs?.url as string
         const includesTables = nodeData.inputs?.includesTables
         const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
         const ignoreTables = nodeData.inputs?.ignoreTables
         const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
-        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo
-        const topK = nodeData.inputs?.topK
-        const customPrompt = nodeData.inputs?.customPrompt
+        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
+        const topK = nodeData.inputs?.topK as number
+        const customPrompt = nodeData.inputs?.customPrompt as string
 
         const chain = await getSQLDBChain(
             databaseType,
