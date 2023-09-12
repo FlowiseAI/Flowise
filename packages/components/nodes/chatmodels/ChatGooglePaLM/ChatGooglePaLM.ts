@@ -86,18 +86,8 @@ class ChatGooglePaLM_ChatModels implements INode {
                     'while a top-k of 3 means that the next token is selected from ' +
                     'among the 3 most probable tokens (using temperature).'
             }
-            /*
-            {
-                label: 'Examples',
-                name: 'examplesObj',
-                type: 'json',
-                optional: true,
-                additionalParams: true
-                //default: { list:[] },
-                //description:
-                //  'The "examples" field should contain a list of pairs of strings to use as prior turns for this conversation.'
-            }
-            */
+            // 'The "examples" field should contain a list of pairs of strings to use as prior turns for this conversation.'
+            // NB: While 'examples:[]' exists in langchain.ts backend, it is unlikely to be actually used there, since ChatOpenAI doesn't support it
         ]
     }
 
@@ -106,7 +96,6 @@ class ChatGooglePaLM_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
-        //const examplesObj = nodeData.inputs?.examplesObj
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)
@@ -119,18 +108,6 @@ class ChatGooglePaLM_ChatModels implements INode {
 
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
-
-        /*
-        let parsedExamples: any | undefined = undefined
-        if (examplesObj) {
-            try {
-                parsedExamples = typeof examplseObj === 'object' ? examplseObj : JSON.parse(examplseObj)
-                obj.examples = parsedExamples.examples || []
-            } catch (exception) {
-                throw new Error("Invalid JSON in the GooglePaLM's examplseObj: " + exception)
-            }
-        }
-        */
 
         const model = new ChatGooglePaLM(obj)
         return model
