@@ -97,4 +97,4 @@ npx flowise start --PORT=3000 --DEBUG=true
 
 ## 📄 许可证
 
-本仓库中的源代码在[MIT 许可证](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md)下提供。
+本仓库中的源代码在[Apache License Version 2.0 许可证](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md)下提供。

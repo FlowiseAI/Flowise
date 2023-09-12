@@ -46,6 +46,14 @@ class GoogleVertexAI_ChatModels implements INode {
                     {
                         label: 'codechat-bison',
                         name: 'codechat-bison'
+                    },
+                    {
+                        label: 'chat-bison-32k',
+                        name: 'chat-bison-32k'
+                    },
+                    {
+                        label: 'codechat-bison-32k',
+                        name: 'codechat-bison-32k'
                     }
                 ],
                 default: 'chat-bison',

@@ -30,10 +30,10 @@ import {
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
 import { lib, PBKDF2, AES, enc } from 'crypto-js'
 
-import { ChatFlow } from '../entity/ChatFlow'
-import { ChatMessage } from '../entity/ChatMessage'
-import { Credential } from '../entity/Credential'
-import { Tool } from '../entity/Tool'
+import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatMessage } from '../database/entities/ChatMessage'
+import { Credential } from '../database/entities/Credential'
+import { Tool } from '../database/entities/Tool'
 import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'

@@ -19,6 +19,7 @@
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@getzep/zep-js": "^0.6.3",
+        "@google-ai/generativelanguage": "^0.2.1",
         "@huggingface/inference": "^2.6.1",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
