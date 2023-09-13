@@ -3,17 +3,18 @@ import { MigrationInterface, QueryRunner } from 'typeorm'
 export class AddChainLog1694609574842 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-            CREATE TABLE chain_log (
-                id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-                created_date TIMESTAMP NOT NULL DEFAULT now(),
-                question TEXT NOT NULL,
-                text TEXT NOT NULL,
-                chat_id TEXT NOT NULL,
-                is_internal BOOLEAN NOT NULL,
-                chatflow_id TEXT NOT NULL,
-                chatflow_name TEXT NOT NULL,
-                result JSON NOT NULL
-            );
+            CREATE TABLE IF NOT EXISTS \`chat_flow\` (
+                \`id\` varchar(36) NOT NULL,
+                \`createdDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                \`question\` text NOT NULL,
+                \`text\` text NOT NULL,
+                \`chatId\` varchar(255) DEFAULT NULL,
+                \`isInternal\` tinyint DEFAULT NULL,
+                \`chatflowId\` varchar(255) DEFAULT NULL,
+                \`chatflowName\` varchar(255) DEFAULT NULL,
+                \`result\` text NOT NULL,
+                PRIMARY KEY (\`id\`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         `)
     }
 

@@ -28,7 +28,9 @@ const logger = createLogger({
         package: 'server'
     },
     transports: [
-        new transports.Console(),
+        new transports.Console({
+            level: config.logging.server.level ?? 'info'
+        }),
         new transports.File({
             filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
             level: config.logging.server.level ?? 'info'

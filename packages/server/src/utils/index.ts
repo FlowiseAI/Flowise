@@ -34,13 +34,21 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
+import { ChainLog } from '../database/entities/ChainLog'
+
 import { DataSource } from 'typeorm'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
+export const databaseEntities: IDatabaseEntity = {
+    ChatFlow: ChatFlow,
+    ChatMessage: ChatMessage,
+    Tool: Tool,
+    Credential: Credential,
+    ChainLog: ChainLog
+}
 
 /**
  * Returns the home folder path of the user if

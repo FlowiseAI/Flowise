@@ -5,7 +5,7 @@ import { ModifyCredential1693997070000 } from './1693997070000-ModifyCredential'
 import { ModifyTool1693997339912 } from './1693997339912-ModifyTool'
 import { AddApiConfig1694099183389 } from './1694099183389-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
-import { AddChainLog1694609598769 } from './1694609598769-AddChainLog'
+import { AddChainLog1694609598769 } from './1694609598769-AddChainLog'
 
 export const postgresMigrations = [
     Init1693891895163,
