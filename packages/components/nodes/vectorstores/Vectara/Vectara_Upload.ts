@@ -144,7 +144,6 @@ class VectaraUpload_VectorStores implements INode {
 
         const vectorStore = new VectaraStore(vectaraArgs)
         await vectorStore.addFiles(vectaraFiles)
-        files = []
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k, vectaraFilter)
