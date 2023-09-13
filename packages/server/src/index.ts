@@ -980,13 +980,15 @@ export class App {
                       socketIOClientId: incomingInput.socketIOClientId,
                       logger,
                       appDataSource: this.AppDataSource,
-                      databaseEntities
+                      databaseEntities,
+                      analytic: chatflow.analytic
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
-                      databaseEntities
+                      databaseEntities,
+                      analytic: chatflow.analytic
                   })
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)

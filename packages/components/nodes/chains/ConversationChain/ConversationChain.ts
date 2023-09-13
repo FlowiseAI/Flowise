@@ -4,7 +4,7 @@ import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BufferMemory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { flatten } from 'lodash'
 import { Document } from 'langchain/document'
 
@@ -111,13 +111,14 @@ class ConversationChain_Chains implements INode {
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const res = await chain.call({ input }, [loggerHandler, handler])
+            const res = await chain.call({ input }, [loggerHandler, handler, ...callbacks])
             return res?.response
         } else {
-            const res = await chain.call({ input }, [loggerHandler])
+            const res = await chain.call({ input }, [loggerHandler, ...callbacks])
             return res?.response
         }
     }

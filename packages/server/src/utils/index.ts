@@ -448,9 +448,10 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
             // If overrideConfig[key] is object
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
-                if (!nodeIds.includes(flowNodeData.id)) continue
-                else paramsObj[config] = overrideConfig[config][flowNodeData.id]
-                continue
+                if (nodeIds.includes(flowNodeData.id)) {
+                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
+                    continue
+                }
             }
 
             let paramValue = overrideConfig[config] ?? paramsObj[config]
@@ -877,12 +878,14 @@ export const decryptCredentialData = async (
  * @returns {Credential}
  */
 export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
-    const encryptedData = await encryptCredentialData(body.plainDataObj)
-
-    const credentialBody = {
+    const credentialBody: ICommonObject = {
         name: body.name,
-        credentialName: body.credentialName,
-        encryptedData
+        credentialName: body.credentialName
+    }
+
+    if (body.plainDataObj) {
+        const encryptedData = await encryptCredentialData(body.plainDataObj)
+        credentialBody.encryptedData = encryptedData
     }
 
     const newCredential = new Credential()
