@@ -992,19 +992,6 @@ export class App {
 
                 const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
-
-                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
-                // save logs to database
-                this.AppDataSource.getRepository(ChainLog).save({
-                    question: incomingInput.question,
-                    text: result?.text ? result.text : result,
-                    chatId: chatId,
-                    isInternal: isInternal,
-                    chatflowId: chatflowid,
-                    chatflowName: chatflow.name,
-                    result: typeof result === 'string' ? { text: result } : result
-                })
             }
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
@@ -1034,6 +1021,17 @@ export class App {
                   })
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+
+            // save logs to database
+            this.AppDataSource.getRepository(ChainLog).save({
+                question: incomingInput.question,
+                text: result?.text ? result.text : result,
+                chatId: chatId,
+                isInternal: isInternal,
+                chatflowId: chatflowid,
+                chatflowName: chatflow.name,
+                result: typeof result === 'string' ? { text: result } : result
+            })
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
