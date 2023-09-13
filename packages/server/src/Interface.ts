@@ -49,6 +49,15 @@ export interface ICredential {
     createdDate: Date
 }
 
+export interface IChainLog {
+    question: string
+    text: string
+    isInternal: boolean
+    chatflowId: string
+    chatflowName: string
+    result: unknown
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }

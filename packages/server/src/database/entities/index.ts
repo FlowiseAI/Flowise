@@ -1,3 +1,4 @@
+import { ChainLog } from './ChainLog'
 import { ChatFlow } from './ChatFlow'
 import { ChatMessage } from './ChatMessage'
 import { Credential } from './Credential'
@@ -7,5 +8,6 @@ export const entities = {
     ChatFlow,
     ChatMessage,
     Credential,
-    Tool
+    Tool,
+    ChainLog
 }

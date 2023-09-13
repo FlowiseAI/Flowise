@@ -55,6 +55,8 @@ import { Tool } from './database/entities/Tool'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
+import { ChainLog } from './database/entities/ChainLog'
+import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 
 export class App {
     app: express.Application
@@ -782,6 +784,33 @@ export class App {
             }
         })
 
+        // Get all chain logs
+        this.app.get('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const { query } = req
+                const repository = this.AppDataSource.getRepository(ChainLog)
+
+                const queryParameters = prepareQueryParametersForLists(query)
+                const data = await getDataByQueries({ repository, ...queryParameters })
+
+                return res.status(200).json(data)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
+        // Batch delete hcain logs
+        this.app.delete('/api/v1/chain-logs', async (req: Request, res: Response) => {
+            try {
+                const ids = req.body.ids
+                const userRepository = this.AppDataSource.getRepository(ChainLog)
+                await userRepository.delete(ids)
+                return res.status(200).send('The log records have been deleted successfully.')
+            } catch (error: any) {
+                return res.status(500).send(error?.message)
+            }
+        })
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------
@@ -963,6 +992,19 @@ export class App {
 
                 const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
+
+                logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+
+                // save logs to database
+                this.AppDataSource.getRepository(ChainLog).save({
+                    question: incomingInput.question,
+                    text: result?.text ? result.text : result,
+                    chatId: chatId,
+                    isInternal: isInternal,
+                    chatflowId: chatflowid,
+                    chatflowName: chatflow.name,
+                    result: typeof result === 'string' ? { text: result } : result
+                })
             }
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string

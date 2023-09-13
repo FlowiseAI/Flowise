@@ -19,6 +19,9 @@ const Tools = Loadable(lazy(() => import('views/tools')))
 // credentials routing
 const Credentials = Loadable(lazy(() => import('views/credentials')))
 
+// Chat logs
+const ChainLogs = Loadable(lazy(() => import('views/chainlogs')))
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -48,6 +51,10 @@ const MainRoutes = {
         {
             path: '/credentials',
             element: <Credentials />
+        },
+        {
+            path: '/chain-logs',
+            element: <ChainLogs />
         }
     ]
 }
