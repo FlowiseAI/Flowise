@@ -11,7 +11,7 @@ export default function ChainLogs() {
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
             <Stack flexDirection='row'>
-                <h1>Chain Logs </h1>
+                <h1>Chain Logs</h1>
             </Stack>
             <ChainLogsTable />
         </MainCard>

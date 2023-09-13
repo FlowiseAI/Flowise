@@ -56,7 +56,7 @@ const dashboard = {
             title: 'Chain Logs',
             type: 'item',
             url: '/chain-logs',
-            icon: IconArticle,
+            icon: icons.IconArticle,
             breadcrumbs: true
         }
     ]

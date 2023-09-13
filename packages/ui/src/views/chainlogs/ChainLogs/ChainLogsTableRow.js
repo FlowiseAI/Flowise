@@ -19,7 +19,7 @@ export const StyledFilterButton = styled(ButtonBase)(({ theme }) => ({
     }
 }))
 
-export const StyledTruncatedTypography = styled(Typography)(({ theme }) => ({
+export const StyledTruncatedTypography = styled(Typography)(() => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',

@@ -52,10 +52,10 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
+import { ChainLog } from './database/entities/ChainLog'
 import { ChatflowPool } from './ChatflowPool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
-import { ChainLog } from './database/entities/ChainLog'
 import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
 
 export class App {

@@ -55,7 +55,8 @@ export interface IChainLog {
     isInternal: boolean
     chatflowId: string
     chatflowName: string
-    result: unknown
+    result: JSON
+    createdDate: Date
 }
 
 export interface IComponentNodes {

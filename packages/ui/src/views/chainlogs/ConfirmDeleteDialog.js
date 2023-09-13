@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogActions, DialogTitle, Typography } from '@mui/material'
 
-const ConfirmDeleteDialog = ({ show, onCancel, onConfirm, title = '', text = '' }) => {
+export const ConfirmDeleteDialog = ({ show, onCancel, title = '', text = '' }) => {
     const portalElement = document.getElementById('portal')
 
     const component = show ? (

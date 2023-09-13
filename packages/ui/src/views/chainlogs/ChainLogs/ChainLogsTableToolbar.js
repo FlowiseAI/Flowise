@@ -32,7 +32,7 @@ export function ChainLogsTableToolbar(props) {
     useEffect(() => {
         onChangeTerm(value)
         setLoading(false)
-    }, [debouncedValue])
+    }, [debouncedValue, onChangeTerm, value])
 
     const parsedFilters = Object.entries(JSON.parse(filters || '{}'))
 
