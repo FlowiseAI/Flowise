@@ -2,6 +2,11 @@ import { BaseTracer, Run, BaseCallbackHandler } from 'langchain/callbacks'
 import { AgentAction, ChainValues } from 'langchain/schema'
 import { Logger } from 'winston'
 import { Server } from 'socket.io'
+import { Client } from 'langsmith'
+import { LangChainTracer } from 'langchain/callbacks'
+import { getCredentialData, getCredentialParam } from './utils'
+import { ICommonObject, INodeData } from './Interface'
+import CallbackHandler from 'langfuse-langchain'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -176,5 +181,67 @@ export class CustomChainHandler extends BaseCallbackHandler {
         if (this.returnSourceDocuments) {
             this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
         }
+    }
+}
+
+export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
+    try {
+        if (!options.analytic) return []
+
+        const analytic = JSON.parse(options.analytic)
+        const callbacks: any = []
+
+        for (const provider in analytic) {
+            const providerStatus = analytic[provider].status as boolean
+            if (providerStatus) {
+                if (provider === 'langSmith') {
+                    const credentialId = analytic[provider].credentialId as string
+                    const langSmithProject = analytic[provider].projectName as string
+
+                    const credentialData = await getCredentialData(credentialId ?? '', options)
+                    const langSmithApiKey = getCredentialParam('langSmithApiKey', credentialData, nodeData)
+                    const langSmithEndpoint = getCredentialParam('langSmithEndpoint', credentialData, nodeData)
+
+                    const client = new Client({
+                        apiUrl: langSmithEndpoint ?? 'https://api.smith.langchain.com',
+                        apiKey: langSmithApiKey
+                    })
+
+                    const tracer = new LangChainTracer({
+                        projectName: langSmithProject ?? 'default',
+                        //@ts-ignore
+                        client
+                    })
+                    callbacks.push(tracer)
+                } else if (provider === 'langFuse') {
+                    const credentialId = analytic[provider].credentialId as string
+                    const flushAt = analytic[provider].flushAt as string
+                    const flushInterval = analytic[provider].flushInterval as string
+                    const requestTimeout = analytic[provider].requestTimeout as string
+                    const release = analytic[provider].release as string
+
+                    const credentialData = await getCredentialData(credentialId ?? '', options)
+                    const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
+                    const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
+                    const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
+
+                    const langFuseOptions: ICommonObject = {
+                        secretKey: langFuseSecretKey,
+                        publicKey: langFusePublicKey,
+                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
+                    }
+                    if (flushAt) langFuseOptions.flushAt = parseInt(flushAt, 10)
+                    if (flushInterval) langFuseOptions.flushInterval = parseInt(flushInterval, 10)
+                    if (requestTimeout) langFuseOptions.requestTimeout = parseInt(requestTimeout, 10)
+                    if (release) langFuseOptions.release = release
+
+                    const handler = new CallbackHandler(langFuseOptions)
+                    callbacks.push(handler)
+                }
+            }
+        }
+        return callbacks
+    } catch (e) {
+        throw new Error(e)
     }
 }
