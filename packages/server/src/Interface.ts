@@ -24,8 +24,11 @@ export interface IChatMessage {
     role: MessageType
     content: string
     chatflowid: string
-    createdDate: Date
     sourceDocuments?: string
+    chatType: string
+    memoryType?: string
+    sessionId?: string
+    createdDate: Date
 }
 
 export interface ITool {
