@@ -28,6 +28,9 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     apiConfig?: string
 
+    @Column({ nullable: true, type: 'text' })
+    analytic?: string
+
     @CreateDateColumn()
     createdDate: Date
 

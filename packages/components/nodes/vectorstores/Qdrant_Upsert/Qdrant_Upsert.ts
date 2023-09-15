@@ -5,6 +5,9 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
+import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
+
+type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
 
 class QdrantUpsert_VectorStores implements INode {
     label: string
@@ -67,6 +70,14 @@ class QdrantUpsert_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Qdrant Search Filter',
+                name: 'qdrantFilter',
+                description: 'Only return points which satisfy the conditions',
+                type: 'json',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -91,6 +102,7 @@ class QdrantUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        let queryFilter = nodeData.inputs?.qdrantFilter
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -111,10 +123,19 @@ class QdrantUpsert_VectorStores implements INode {
             url: qdrantServerUrl,
             collectionName
         }
+
+        const retrieverConfig: RetrieverConfig = {
+            k
+        }
+
+        if (queryFilter) {
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
+        }
+
         const vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
+            const retriever = vectorStore.asRetriever(retrieverConfig)
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
