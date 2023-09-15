@@ -104,20 +104,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     const onChange = useCallback((e) => setUserInput(e.target.value), [setUserInput])
 
-    const addChatMessage = async (message, type, sourceDocuments) => {
-        try {
-            const newChatMessageBody = {
-                role: type,
-                content: message,
-                chatflowid: chatflowid
-            }
-            if (sourceDocuments) newChatMessageBody.sourceDocuments = JSON.stringify(sourceDocuments)
-            await chatmessageApi.createNewChatmessage(chatflowid, newChatMessageBody)
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
     const updateLastMessage = (text) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
@@ -140,7 +126,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
         setMessages((prevMessages) => [...prevMessages, { message, type: 'apiMessage' }])
-        addChatMessage(message, 'apiMessage')
         setLoading(false)
         setUserInput('')
         setTimeout(() => {
@@ -158,8 +143,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
         setLoading(true)
         setMessages((prevMessages) => [...prevMessages, { message: userInput, type: 'userMessage' }])
-        // waiting for first chatmessage saved, the first chatmessage will be used in sendMessageAndGetPrediction
-        await addChatMessage(userInput, 'userMessage')
 
         // Send user question and history to API
         try {
@@ -183,12 +166,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
                         ])
                     }
-                    addChatMessage(data.text, 'apiMessage', data.sourceDocuments)
                 } else {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
                     }
-                    addChatMessage(data, 'apiMessage')
                 }
                 setLoading(false)
                 setUserInput('')

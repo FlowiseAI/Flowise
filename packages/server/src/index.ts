@@ -16,7 +16,8 @@ import {
     IReactFlowObject,
     INodeData,
     IDatabaseExport,
-    ICredentialReturnResponse
+    ICredentialReturnResponse,
+    chatType
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -404,12 +405,7 @@ export class App {
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const body = req.body
-            const newChatMessage = new ChatMessage()
-            Object.assign(newChatMessage, body)
-
-            const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-            const results = await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-
+            const results = await this.addChatMessage(body)
             return res.json(results)
         })
 
@@ -819,6 +815,18 @@ export class App {
     }
 
     /**
+     * Add Chat Message
+     * @param {any} chatMessage
+     */
+    async addChatMessage(chatMessage: any) {
+        const newChatMessage = new ChatMessage()
+        Object.assign(newChatMessage, chatMessage)
+
+        const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+        return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    }
+
+    /**
      * Process Prediction
      * @param {Request} req
      * @param {Response} res
@@ -843,6 +851,13 @@ export class App {
             if (!isInternal) {
                 await this.validateKey(req, res, chatflow)
             }
+
+            await this.addChatMessage({
+                role: 'userMessage',
+                content: incomingInput.question,
+                chatflowid: chatflowid,
+                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL
+            })
 
             let isStreamValid = false
 
@@ -990,6 +1005,15 @@ export class App {
                       databaseEntities,
                       analytic: chatflow.analytic
                   })
+
+            const apiMessage: any = {
+                role: 'apiMessage',
+                content: typeof result === 'string' ? result : result.text,
+                chatflowid: chatflowid,
+                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL
+            }
+            if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
+            await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             return res.json(result)
