@@ -23,6 +23,9 @@ export class ChatMessage implements IChatMessage {
     @Column()
     chatType: string
 
+    @Column()
+    chatId: string
+
     @Column({ nullable: true })
     memoryType?: string
 

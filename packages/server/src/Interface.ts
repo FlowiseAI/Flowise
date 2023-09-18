@@ -30,6 +30,7 @@ export interface IChatMessage {
     chatflowid: string
     sourceDocuments?: string
     chatType: string
+    chatId: string
     memoryType?: string
     sessionId?: string
     createdDate: Date
@@ -153,6 +154,7 @@ export interface IncomingInput {
     history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
+    chatId?: string
 }
 
 export interface IActiveChatflows {
