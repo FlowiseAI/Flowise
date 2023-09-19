@@ -50,6 +50,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
+    const [chatId, setChatId] = useState(undefined)
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
@@ -148,7 +149,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         try {
             const params = {
                 question: userInput,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?')
+                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
+                chatId
             }
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
@@ -159,18 +161,16 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
                 data = handleVectaraMetadata(data)
 
-                if (typeof data === 'object' && data.text && data.sourceDocuments) {
-                    if (!isChatFlowAvailableToStream) {
-                        setMessages((prevMessages) => [
-                            ...prevMessages,
-                            { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
-                        ])
-                    }
-                } else {
-                    if (!isChatFlowAvailableToStream) {
-                        setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
-                    }
+                if (!chatId) {
+                    setChatId(data.chatId)
                 }
+                if (!isChatFlowAvailableToStream) {
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { message: data.text, sourceDocuments: data?.sourceDocuments, type: 'apiMessage' }
+                    ])
+                }
+
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -201,15 +201,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data) {
-            const loadedMessages = []
-            for (const message of getChatmessageApi.data) {
+            setChatId(getChatmessageApi.data[0]?.chatId)
+            const loadedMessages = getChatmessageApi.data.map((message) => {
                 const obj = {
                     message: message.content,
                     type: message.role
                 }
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
-                loadedMessages.push(obj)
-            }
+                return obj
+            })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
         }
 
