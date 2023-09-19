@@ -163,6 +163,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
                 if (!chatId) {
                     setChatId(data.chatId)
+                    localStorage.setItem(`${chatflowid}_INTERNAL`, data.chatId)
                 }
                 if (!isChatFlowAvailableToStream) {
                     setMessages((prevMessages) => [
@@ -200,8 +201,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     // Get chatmessages successful
     useEffect(() => {
-        if (getChatmessageApi.data) {
-            setChatId(getChatmessageApi.data[0]?.chatId)
+        if (getChatmessageApi.data?.length) {
+            const chatId = getChatmessageApi.data[0]?.chatId
+            setChatId(chatId)
+            localStorage.setItem(`${chatflowid}_INTERNAL`, chatId)
             const loadedMessages = getChatmessageApi.data.map((message) => {
                 const obj = {
                     message: message.content,

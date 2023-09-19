@@ -409,22 +409,29 @@ export class App {
             return res.json(results)
         })
 
-        // Delete all chatmessages from chatflowid
+        // Delete all chatmessages from chatId
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const chatId = req.params.id
+            const chatMessage = await this.AppDataSource.getRepository(ChatMessage).findOneBy({
+                chatId: chatId
+            })
+            if (!chatMessage) {
+                res.status(404).send(`chatmessage ${chatId} not found`)
+                return
+            }
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
+                id: chatMessage.chatflowid
             })
             if (!chatflow) {
-                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                res.status(404).send(`Chatflow ${chatMessage.chatflowid} not found`)
                 return
             }
             const flowData = chatflow.flowData
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
-            let chatId = await getChatId(chatflow.id)
-            if (!chatId) chatId = chatflow.id
+
             clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, req.query.sessionId as string)
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
+            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatId: chatId })
             return res.json(results)
         })
 
