@@ -19,15 +19,14 @@ export default class Start extends Command {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
-        PASSPHRASE: Flags.string(),
         DEBUG: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
+        FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
         TOOL_FUNCTION_EXTERNAL_DEP: Flags.string(),
-        OVERRIDE_DATABASE: Flags.string(),
         DATABASE_TYPE: Flags.string(),
         DATABASE_PATH: Flags.string(),
         DATABASE_PORT: Flags.string(),
@@ -80,8 +79,8 @@ export default class Start extends Command {
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
 
         // Credentials
-        if (flags.PASSPHRASE) process.env.PASSPHRASE = flags.PASSPHRASE
         if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
+        if (flags.FLOWISE_SECRETKEY_OVERWRITE) process.env.FLOWISE_SECRETKEY_OVERWRITE = flags.FLOWISE_SECRETKEY_OVERWRITE
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
@@ -92,7 +91,6 @@ export default class Start extends Command {
         if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
 
         // Database config
-        if (flags.OVERRIDE_DATABASE) process.env.OVERRIDE_DATABASE = flags.OVERRIDE_DATABASE
         if (flags.DATABASE_TYPE) process.env.DATABASE_TYPE = flags.DATABASE_TYPE
         if (flags.DATABASE_PATH) process.env.DATABASE_PATH = flags.DATABASE_PATH
         if (flags.DATABASE_PORT) process.env.DATABASE_PORT = flags.DATABASE_PORT
