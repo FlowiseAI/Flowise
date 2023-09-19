@@ -1,0 +1,14 @@
+name: Sweep Fast Issue
+title: 'Sweep (fast): '
+description: For few-line fixes to be handled by Sweep, an AI-powered junior developer. Sweep will use GPT-3.5 to quickly create a PR for very small changes.
+labels: sweep
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Details
+      description: Tell Sweep where and what to edit and provide enough context for a new developer to the codebase
+      placeholder: |
+        Bugs: The bug might be in ... file. Here are the logs: ...
+        Features: the new endpoint should use the ... class from ... file because it contains ... logic.
+        Refactors: We are migrating this function to ... version because ...
