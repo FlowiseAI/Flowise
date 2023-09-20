@@ -32,7 +32,7 @@
         "apify-client": "^2.7.1",
         "axios": "^0.27.2",
         "cheerio": "^1.0.0-rc.12",
-        "chromadb": "^1.5.3",
+        "chromadb": "^1.5.11",
         "cohere-ai": "^6.2.0",
         "d3-dsv": "2",
         "dotenv": "^16.0.0",
