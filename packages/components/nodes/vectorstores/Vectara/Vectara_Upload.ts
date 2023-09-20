@@ -1,11 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
-import { Document } from 'langchain/document'
-import { flatten } from 'lodash'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from 'langchain/vectorstores/vectara'
 
-class VectaraUpsert_VectorStores implements INode {
+class VectaraUpload_VectorStores implements INode {
     label: string
     name: string
     version: number
@@ -19,13 +16,13 @@ class VectaraUpsert_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Vectara Upsert Document'
-        this.name = 'vectaraUpsert'
+        this.label = 'Vectara Upload File'
+        this.name = 'vectaraUpload'
         this.version = 1.0
         this.type = 'Vectara'
         this.icon = 'vectara.png'
         this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Vectara'
+        this.description = 'Upload files to Vectara'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.credential = {
             label: 'Connect Credential',
@@ -35,10 +32,11 @@ class VectaraUpsert_VectorStores implements INode {
         }
         this.inputs = [
             {
-                label: 'Document',
-                name: 'document',
-                type: 'Document',
-                list: true
+                label: 'File',
+                name: 'file',
+                description:
+                    'File to upload to Vectara. Supported file types: https://docs.vectara.com/docs/api-reference/indexing-apis/file-upload/file-upload-filetypes',
+                type: 'file'
             },
             {
                 label: 'Vectara Metadata Filter',
@@ -101,10 +99,9 @@ class VectaraUpsert_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
         const customerId = getCredentialParam('customerID', credentialData, nodeData)
-        const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
+        const corpusId = getCredentialParam('corpusID', credentialData, nodeData).split(',')
 
-        const docs = nodeData.inputs?.document as Document[]
-        const embeddings = {} as Embeddings
+        const fileBase64 = nodeData.inputs?.file
         const vectaraMetadataFilter = nodeData.inputs?.filter as string
         const sentencesBefore = nodeData.inputs?.sentencesBefore as number
         const sentencesAfter = nodeData.inputs?.sentencesAfter as number
@@ -128,13 +125,25 @@ class VectaraUpsert_VectorStores implements INode {
         if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
         vectaraFilter.contextConfig = vectaraContextConfig
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+        let files: string[] = []
+
+        if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+            files = JSON.parse(fileBase64)
+        } else {
+            files = [fileBase64]
         }
 
-        const vectorStore = await VectaraStore.fromDocuments(finalDocs, embeddings, vectaraArgs)
+        const vectaraFiles: VectaraFile[] = []
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            const blob = new Blob([bf])
+            vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
+        }
+
+        const vectorStore = new VectaraStore(vectaraArgs)
+        await vectorStore.addFiles(vectaraFiles)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k, vectaraFilter)
@@ -147,4 +156,21 @@ class VectaraUpsert_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: VectaraUpsert_VectorStores }
+const getFileName = (fileBase64: string) => {
+    let fileNames = []
+    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+        const files = JSON.parse(fileBase64)
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+            fileNames.push(filename)
+        }
+        return fileNames.join(', ')
+    } else {
+        const splitDataURI = fileBase64.split(',')
+        const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+        return filename
+    }
+}
+
+module.exports = { nodeClass: VectaraUpload_VectorStores }

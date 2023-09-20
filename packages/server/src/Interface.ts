@@ -14,7 +14,9 @@ export interface IChatFlow {
     deployed?: boolean
     isPublic?: boolean
     apikeyid?: string
+    analytic?: string
     chatbotConfig?: string
+    apiConfig?: any
 }
 
 export interface IChatMessage {

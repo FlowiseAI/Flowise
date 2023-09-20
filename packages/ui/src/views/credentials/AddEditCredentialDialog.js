@@ -26,7 +26,7 @@ import useApi from 'hooks/useApi'
 import useNotifier from 'utils/useNotifier'
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL, REDACTED_CREDENTIAL_VALUE } from 'store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
@@ -118,7 +118,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 onConfirm(createResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`
             enqueueSnackbar({
                 message: `Failed to add new Credential: ${errorData}`,
                 options: {
@@ -138,11 +138,20 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
 
     const saveCredential = async () => {
         try {
-            const saveResp = await credentialsApi.updateCredential(credential.id, {
+            const saveObj = {
                 name,
-                credentialName: componentCredential.name,
-                plainDataObj: credentialData
-            })
+                credentialName: componentCredential.name
+            }
+
+            let plainDataObj = {}
+            for (const key in credentialData) {
+                if (credentialData[key] !== REDACTED_CREDENTIAL_VALUE) {
+                    plainDataObj[key] = credentialData[key]
+                }
+            }
+            if (Object.keys(plainDataObj).length) saveObj.plainDataObj = plainDataObj
+
+            const saveResp = await credentialsApi.updateCredential(credential.id, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Credential saved',
