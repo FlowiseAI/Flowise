@@ -22,7 +22,7 @@ class SupabaseUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase Upsert Document'
         this.name = 'supabaseUpsert'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
@@ -94,6 +94,7 @@ class SupabaseUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const logger = options.logger
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
@@ -101,10 +102,25 @@ class SupabaseUpsert_VectorStores implements INode {
         const client = createClient(supabaseProjUrl, supabaseApiKey)
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
+
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            const d = new Document(flattenDocs[i])
+            finalDocs.push(d)
         }
+
+        // create an array with all sources
+        const sources = [...new Set(finalDocs.map((d) => d.metadata?.source))]
+
+        // remove from supabase all documents with the same source
+        sources.forEach(async (source) => {
+            logger.debug(`Supabase Upsert: Delete all ${tableName} for source ${source}`)
+            try {
+                await client.from(tableName).delete().eq('metadata->>source', source)
+            } catch (error) {
+                console.error('Error deleting from Supabase', error)
+            }
+        })
 
         const vectorStore = await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
             client,
