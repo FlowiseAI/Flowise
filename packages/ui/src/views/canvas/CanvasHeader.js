@@ -14,6 +14,7 @@ import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck,
 import Settings from 'views/settings'
 import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
 import APICodeDialog from 'views/chatflows/APICodeDialog'
+import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -41,6 +42,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
     const [apiDialogOpen, setAPIDialogOpen] = useState(false)
     const [apiDialogProps, setAPIDialogProps] = useState({})
+    const [analyseDialogOpen, setAnalyseDialogOpen] = useState(false)
+    const [analyseDialogProps, setAnalyseDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -50,6 +53,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
 
         if (setting === 'deleteChatflow') {
             handleDeleteFlow()
+        } else if (setting === 'analyseChatflow') {
+            setAnalyseDialogProps({
+                title: 'Analyse Chatflow',
+                chatflow: chatflow
+            })
+            setAnalyseDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
                 localStorage.setItem('duplicatedFlowData', chatflow.flowData)
@@ -357,6 +366,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onConfirm={onConfirmSaveName}
             />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
+            <AnalyseFlowDialog show={analyseDialogOpen} dialogProps={analyseDialogProps} onCancel={() => setAnalyseDialogOpen(false)} />
         </>
     )
 }

@@ -34,6 +34,7 @@ import javascriptSVG from 'assets/images/javascript.svg'
 import cURLSVG from 'assets/images/cURL.svg'
 import EmbedSVG from 'assets/images/embed.svg'
 import ShareChatbotSVG from 'assets/images/sharing.png'
+import settingsSVG from 'assets/images/settings.svg'
 
 // API
 import apiKeyApi from 'api/apikey'
@@ -46,6 +47,7 @@ import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
 import { TableViewOnly } from 'ui-component/table/Table'
 
 import { IconBulb } from '@tabler/icons'
+import Configuration from './Configuration'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -141,7 +143,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot', 'Configuration']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
@@ -321,6 +323,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return cURLSVG
         } else if (codeLang === 'Share Chatbot') {
             return ShareChatbotSVG
+        } else if (codeLang === 'Configuration') {
+            return settingsSVG
         }
         return pythonSVG
     }
@@ -647,7 +651,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             </>
                         )}
                         {codeLang === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
-                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && (
+                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && codeLang !== 'Configuration' && (
                             <>
                                 <CopyBlock
                                     theme={atomOneDark}
@@ -770,6 +774,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                         {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
                             <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} />
                         )}
+                        {codeLang === 'Configuration' && <Configuration />}
                     </TabPanel>
                 ))}
             </DialogContent>
