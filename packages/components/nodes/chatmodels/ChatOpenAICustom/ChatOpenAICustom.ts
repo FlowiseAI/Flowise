@@ -2,7 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 
-class ChatOpenAIFineTuned_ChatModels implements INode {
+class ChatOpenAICustom_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -15,19 +15,20 @@ class ChatOpenAIFineTuned_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOpenAI Fine-Tuned'
-        this.name = 'chatOpenAIFineTuned'
+        this.label = 'ChatOpenAI Custom'
+        this.name = 'chatOpenAICustom'
         this.version = 1.0
-        this.type = 'ChatOpenAI-FineTuned'
+        this.type = 'ChatOpenAI-Custom'
         this.icon = 'openai.png'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around fine-tuned OpenAI LLM that use the Chat endpoint'
+        this.description = 'Custom/FineTuned model using OpenAI Chat compatible API'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['openAIApi']
+            credentialNames: ['openAIApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -146,4 +147,4 @@ class ChatOpenAIFineTuned_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: ChatOpenAIFineTuned_ChatModels }
+module.exports = { nodeClass: ChatOpenAICustom_ChatModels }
