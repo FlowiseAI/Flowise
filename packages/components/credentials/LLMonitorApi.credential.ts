@@ -11,8 +11,7 @@ class LLMonitorApi implements INodeCredential {
         this.label = 'LLMonitor API'
         this.name = 'llmonitorApi'
         this.version = 1.0
-        this.description =
-            'Refer to <a target="_blank" href="https://docs.smith.langchain.com/">official guide</a> on how to get API key on Langsmith'
+        this.description = 'Refer to <a target="_blank" href="https://llmonitor.com/docs">official guide</a> to get APP ID'
         this.inputs = [
             {
                 label: 'APP ID',
