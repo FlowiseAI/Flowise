@@ -1,8 +1,10 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CheerioWebBaseLoader } from 'langchain/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
+import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'
+import { SelectorType } from 'cheerio'
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -18,7 +20,7 @@ class Cheerio_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Cheerio Web Scraper'
         this.name = 'cheerioWebScraper'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Document'
         this.icon = 'cheerio.svg'
         this.category = 'Document Loaders'
@@ -67,6 +69,14 @@ class Cheerio_DocumentLoaders implements INode {
                 warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
             },
             {
+                label: 'Selector (CSS)',
+                name: 'selector',
+                type: 'string',
+                description: 'Specify a CSS selector to select the content to be extracted',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -88,10 +98,18 @@ class Cheerio_DocumentLoaders implements INode {
             throw new Error('Invalid URL')
         }
 
+        const selector: SelectorType = nodeData.inputs?.selector as SelectorType
+
+        let params: WebBaseLoaderParams = {}
+        if (selector) {
+            parse(selector) // comes with cheerio - will throw error if invalid
+            params['selector'] = selector
+        }
+
         async function cheerioLoader(url: string): Promise<any> {
             try {
                 let docs = []
-                const loader = new CheerioWebBaseLoader(url)
+                const loader = new CheerioWebBaseLoader(url, params)
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {

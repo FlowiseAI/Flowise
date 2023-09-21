@@ -114,7 +114,7 @@ class GoogleVertexAI_ChatModels implements INode {
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
 
-        const obj: Partial<GoogleVertexAIChatInput> = {
+        const obj: GoogleVertexAIChatInput<GoogleAuthOptions> = {
             temperature: parseFloat(temperature),
             model: modelName
         }
