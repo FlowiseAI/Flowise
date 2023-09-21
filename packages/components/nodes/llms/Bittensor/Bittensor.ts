@@ -1,6 +1,6 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import {NIBittensorLLM, BittensorInput} from 'langchain/experimental/llms/bittensor';
+import { NIBittensorLLM, BittensorInput } from 'langchain/experimental/llms/bittensor'
 
 class Bittensor_LLMs implements INode {
     label: string
@@ -39,15 +39,14 @@ class Bittensor_LLMs implements INode {
                 additionalParams: true
             }
         ]
-        
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const system_prompt = nodeData.inputs?.system_prompt as string
-        const topResponses = Number(nodeData.inputs?.topResponses as number);
+        const topResponses = Number(nodeData.inputs?.topResponses as number)
         const obj: Partial<BittensorInput> = {
             systemPrompt: system_prompt,
-            topResponses: topResponses,
+            topResponses: topResponses
         }
 
         const model = new NIBittensorLLM(obj)

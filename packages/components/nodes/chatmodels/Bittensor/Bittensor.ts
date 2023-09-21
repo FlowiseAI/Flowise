@@ -1,6 +1,6 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import {NIBittensorChatModel, BittensorInput} from 'langchain/experimental/chat_models/bittensor';
+import { NIBittensorChatModel, BittensorInput } from 'langchain/experimental/chat_models/bittensor'
 
 class Bittensor_ChatModels implements INode {
     label: string
@@ -29,17 +29,15 @@ class Bittensor_ChatModels implements INode {
                 type: 'string',
                 additionalParams: true,
                 optional: true
-            },
+            }
         ]
-        
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const system_prompt = nodeData.inputs?.system_prompt as string
         const obj: Partial<BittensorInput> = {
-            systemPrompt: system_prompt,
+            systemPrompt: system_prompt
         }
-
         const model = new NIBittensorChatModel(obj)
         return model
     }
