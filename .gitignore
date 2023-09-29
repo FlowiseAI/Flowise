@@ -44,3 +44,5 @@
 
 ## compressed
 **/*.tgz
+
+.swp
