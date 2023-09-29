@@ -151,6 +151,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
+    cachedResponse = true
 
     constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
@@ -161,6 +162,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 
     handleLLMStart() {
+        this.cachedResponse = false
         if (this.skipK > 0) this.skipK -= 1
     }
 
@@ -175,13 +177,31 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 
     handleLLMEnd() {
-        this.socketIO.to(this.socketIOClientId).emit('end')
+        /* send the end event from handleChainEnd */
+        // this.socketIO.to(this.socketIOClientId).emit('end')
     }
 
     handleChainEnd(outputs: ChainValues): void | Promise<void> {
         if (this.returnSourceDocuments) {
             this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
         }
+        /*
+            Langchain does not call handleLLMStart, handleLLMEnd, handleLLMNewToken when the chain is cached.
+            Callback Order is "Chain Start -> LLM Start --> LLM Token --> LLM End -> Chain End" for normal responses.
+            Callback Order is "Chain Start -> Chain End" for cached responses.
+         */
+        if (this.cachedResponse) {
+            const cachedValue = outputs.text as string
+            //split at whitespace, and keep the whitespace. This is to preserve the original formatting.
+            const result = cachedValue.split(/(\s+)/)
+            result.forEach((token: string, index: number) => {
+                if (index === 0) {
+                    this.socketIO.to(this.socketIOClientId).emit('start', token)
+                }
+                this.socketIO.to(this.socketIOClientId).emit('token', token)
+            })
+        }
+        this.socketIO.to(this.socketIOClientId).emit('end')
     }
 }
 
