@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
-import { BaseLLMParams } from 'langchain/dist/llms/base'
+import { BaseLLMParams } from 'langchain/llms/base'
 import { BaseCache } from 'langchain/schema'
 
 class OpenAI_LLMs implements INode {
