@@ -2,7 +2,7 @@ import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/I
 import { InMemoryCache } from 'langchain/cache'
 import { getBaseClasses } from '../../../src'
 
-class LocalMemoryCache implements INode {
+class LLMInMemoryCache implements INode {
     label: string
     name: string
     version: number
@@ -41,4 +41,4 @@ class LocalMemoryCache implements INode {
     }
 }
 
-module.exports = { nodeClass: LocalMemoryCache }
+module.exports = { nodeClass: LLMInMemoryCache }
