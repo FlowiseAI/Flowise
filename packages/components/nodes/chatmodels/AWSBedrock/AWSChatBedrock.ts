@@ -35,7 +35,8 @@ class AWSChatBedrock_ChatModels implements INode {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['awsApi']
+            credentialNames: ['awsApi'],
+            optional: true
         }
         this.inputs = [
             {
