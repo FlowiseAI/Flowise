@@ -121,26 +121,6 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: false,
                 default: 200,
                 additionalParams: false
-            },
-            {
-                label: 'Top Probability',
-                name: 'top_p',
-                type: 'number',
-                step: 0.1,
-                description: 'Top Probability parameter may not apply to certain model. Please check available model parameters',
-                optional: false,
-                additionalParams: true,
-                default: 0.5
-            },
-            {
-                label: 'Top K',
-                name: 'top_k',
-                type: 'number',
-                step: 10,
-                description: 'Top K parameter may not apply to certain model. Please check available model parameters',
-                optional: false,
-                default: 25,
-                additionalParams: true
             }
         ]
     }
