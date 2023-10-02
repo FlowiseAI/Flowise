@@ -4,6 +4,7 @@ import { Logger } from 'winston'
 import { Server } from 'socket.io'
 import { Client } from 'langsmith'
 import { LangChainTracer } from 'langchain/callbacks'
+import { LLMonitorHandler } from 'langchain/callbacks/handlers/llmonitor'
 import { getCredentialData, getCredentialParam } from './utils'
 import { ICommonObject, INodeData } from './Interface'
 import CallbackHandler from 'langfuse-langchain'
@@ -194,11 +195,11 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
         for (const provider in analytic) {
             const providerStatus = analytic[provider].status as boolean
             if (providerStatus) {
+                const credentialId = analytic[provider].credentialId as string
+                const credentialData = await getCredentialData(credentialId ?? '', options)
                 if (provider === 'langSmith') {
-                    const credentialId = analytic[provider].credentialId as string
                     const langSmithProject = analytic[provider].projectName as string
 
-                    const credentialData = await getCredentialData(credentialId ?? '', options)
                     const langSmithApiKey = getCredentialParam('langSmithApiKey', credentialData, nodeData)
                     const langSmithEndpoint = getCredentialParam('langSmithEndpoint', credentialData, nodeData)
 
@@ -214,13 +215,11 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     })
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
-                    const credentialId = analytic[provider].credentialId as string
                     const flushAt = analytic[provider].flushAt as string
                     const flushInterval = analytic[provider].flushInterval as string
                     const requestTimeout = analytic[provider].requestTimeout as string
                     const release = analytic[provider].release as string
 
-                    const credentialData = await getCredentialData(credentialId ?? '', options)
                     const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
                     const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
                     const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
@@ -236,6 +235,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     if (release) langFuseOptions.release = release
 
                     const handler = new CallbackHandler(langFuseOptions)
+                    callbacks.push(handler)
+                } else if (provider === 'llmonitor') {
+                    const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, nodeData)
+                    const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, nodeData)
+
+                    const llmonitorFields: ICommonObject = {
+                        appId: llmonitorAppId,
+                        apiUrl: llmonitorEndpoint ?? 'https://app.llmonitor.com'
+                    }
+
+                    const handler = new LLMonitorHandler(llmonitorFields)
                     callbacks.push(handler)
                 }
             }
