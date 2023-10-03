@@ -17,7 +17,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAI'
         this.icon = 'openai.png'
         this.category = 'LLMs'
@@ -36,23 +36,19 @@ class OpenAI_LLMs implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'text-davinci-003',
-                        name: 'text-davinci-003'
+                        label: 'gpt-3.5-turbo-instruct',
+                        name: 'gpt-3.5-turbo-instruct'
                     },
                     {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
+                        label: 'babbage-002',
+                        name: 'babbage-002'
                     },
                     {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
-                    },
-                    {
-                        label: 'text-babbage-001',
-                        name: 'text-babbage-001'
+                        label: 'davinci-002',
+                        name: 'davinci-002'
                     }
                 ],
-                default: 'text-davinci-003',
+                default: 'gpt-3.5-turbo-instruct',
                 optional: true
             },
             {
@@ -125,6 +121,13 @@ class OpenAI_LLMs implements INode {
                 type: 'string',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BaseOptions',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -141,6 +144,7 @@ class OpenAI_LLMs implements INode {
         const bestOf = nodeData.inputs?.bestOf as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -160,8 +164,19 @@ class OpenAI_LLMs implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
+        let parsedBaseOptions: any | undefined = undefined
+
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the OpenAI's BaseOptions: " + exception)
+            }
+        }
+
         const model = new OpenAI(obj, {
-            basePath
+            basePath,
+            baseOptions: parsedBaseOptions
         })
         return model
     }

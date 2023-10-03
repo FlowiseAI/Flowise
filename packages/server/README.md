@@ -2,7 +2,7 @@
 
 # Flowise - Low-Code LLM apps builder
 
-English | [中文](<./README-ZH.md>)
+English | [中文](./README-ZH.md)
 
 ![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
 
@@ -77,4 +77,4 @@ See [contributing guide](https://github.com/FlowiseAI/Flowise/blob/master/CONTRI
 
 ## 📄 License
 
-Source code in this repository is made available under the [MIT License](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).

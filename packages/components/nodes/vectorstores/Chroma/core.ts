@@ -1,6 +1,7 @@
 import { Chroma, ChromaLibArgs } from 'langchain/vectorstores/chroma'
 import { Embeddings } from 'langchain/embeddings/base'
 import type { Collection } from 'chromadb'
+import { ChromaClient } from 'chromadb'
 
 interface ChromaAuth {
     chromaApiKey?: string
@@ -23,22 +24,22 @@ export class ChromaExtended extends Chroma {
     async ensureCollection(): Promise<Collection> {
         if (!this.collection) {
             if (!this.index) {
-                const { ChromaClient } = await Chroma.imports()
                 const obj: any = {
                     path: this.url
                 }
                 if (this.chromaApiKey) {
                     obj.fetchOptions = {
                         headers: {
-                            'X-Api-Key': this.chromaApiKey
+                            Authorization: `Bearer ${this.chromaApiKey}`
                         }
                     }
                 }
                 this.index = new ChromaClient(obj)
             }
             try {
-                this.collection = await this.index.getOrCreateCollection({
-                    name: this.collectionName
+                this.collection = await this.index!.getOrCreateCollection({
+                    name: this.collectionName,
+                    ...(this.collectionMetadata && { metadata: this.collectionMetadata })
                 })
             } catch (err) {
                 throw new Error(`Chroma getOrCreateCollection error: ${err}`)

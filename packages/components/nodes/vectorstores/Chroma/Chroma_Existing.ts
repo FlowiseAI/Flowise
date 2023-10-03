@@ -52,6 +52,13 @@ class Chroma_Existing_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Chroma Metadata Filter',
+                name: 'chromaMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -86,13 +93,20 @@ class Chroma_Existing_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const chromaApiKey = getCredentialParam('chromaApiKey', credentialData, nodeData)
 
+        const chromaMetadataFilter = nodeData.inputs?.chromaMetadataFilter
+
         const obj: {
             collectionName: string
             url?: string
             chromaApiKey?: string
+            filter?: object | undefined
         } = { collectionName }
         if (chromaURL) obj.url = chromaURL
         if (chromaApiKey) obj.chromaApiKey = chromaApiKey
+        if (chromaMetadataFilter) {
+            const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : JSON.parse(chromaMetadataFilter)
+            obj.filter = metadatafilter
+        }
 
         const vectorStore = await ChromaExtended.fromExistingCollection(embeddings, obj)
 

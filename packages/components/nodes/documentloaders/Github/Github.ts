@@ -18,7 +18,7 @@ class Github_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Github'
         this.name = 'github'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'github.png'
         this.category = 'Document Loaders'
@@ -52,6 +52,34 @@ class Github_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Max Concurrency',
+                name: 'maxConcurrency',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Ignore Paths',
+                name: 'ignorePath',
+                description: 'An array of paths to be ignored',
+                placeholder: `["*.md"]`,
+                type: 'string',
+                rows: 4,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Retries',
+                name: 'maxRetries',
+                description:
+                    'The maximum number of retries that can be made for a single call, with an exponential backoff between each attempt. Defaults to 2.',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Text Splitter',
                 name: 'textSplitter',
                 type: 'TextSplitter',
@@ -73,6 +101,9 @@ class Github_DocumentLoaders implements INode {
         const recursive = nodeData.inputs?.recursive as boolean
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
+        const maxConcurrency = nodeData.inputs?.maxConcurrency as string
+        const maxRetries = nodeData.inputs?.maxRetries as string
+        const ignorePath = nodeData.inputs?.ignorePath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
@@ -84,6 +115,9 @@ class Github_DocumentLoaders implements INode {
         }
 
         if (accessToken) githubOptions.accessToken = accessToken
+        if (maxConcurrency) githubOptions.maxConcurrency = parseInt(maxConcurrency, 10)
+        if (maxRetries) githubOptions.maxRetries = parseInt(maxRetries, 10)
+        if (ignorePath) githubOptions.ignorePaths = JSON.parse(ignorePath)
 
         const loader = new GithubRepoLoader(repoLink, githubOptions)
         const docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()

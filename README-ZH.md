@@ -2,7 +2,7 @@
 
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
 
-# Flowise - 轻松构建LLM应用程序
+# Flowise - 轻松构建 LLM 应用程序
 
 [![发布说明](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -10,13 +10,13 @@
 [![GitHub星图](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub分支](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](<./README.md>) | 中文
+[English](./README.md) | 中文
 
 <h3>拖放界面构建定制化的LLM流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡快速入门
+## ⚡ 快速入门
 
 下载并安装 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
@@ -67,7 +67,7 @@
 
 ## 👨‍💻 开发者
 
-Flowise 在一个单一的代码库中有3个不同的模块。
+Flowise 在一个单一的代码库中有 3 个不同的模块。
 
 -   `server`：用于提供 API 逻辑的 Node 后端
 -   `ui`：React 前端
@@ -185,4 +185,4 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
 ## 📄 许可证
 
-此代码库中的源代码在[MIT许可证](LICENSE.md)下提供。
+此代码库中的源代码在[Apache License Version 2.0 许可证](LICENSE.md)下提供。

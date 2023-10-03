@@ -396,6 +396,9 @@ const getEncryptionKeyPath = (): string => {
  * @returns {Promise<string>}
  */
 const getEncryptionKey = async (): Promise<string> => {
+    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
+        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
@@ -432,6 +435,10 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
     const databaseEntities = options.databaseEntities as IDatabaseEntity
 
     try {
+        if (!selectedCredentialId) {
+            return {}
+        }
+
         const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
             id: selectedCredentialId
         })
