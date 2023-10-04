@@ -17,7 +17,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAI'
         this.icon = 'openai.png'
         this.category = 'LLMs'
@@ -36,23 +36,19 @@ class OpenAI_LLMs implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'text-davinci-003',
-                        name: 'text-davinci-003'
+                        label: 'gpt-3.5-turbo-instruct',
+                        name: 'gpt-3.5-turbo-instruct'
                     },
                     {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
+                        label: 'babbage-002',
+                        name: 'babbage-002'
                     },
                     {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
-                    },
-                    {
-                        label: 'text-babbage-001',
-                        name: 'text-babbage-001'
+                        label: 'davinci-002',
+                        name: 'davinci-002'
                     }
                 ],
-                default: 'text-davinci-003',
+                default: 'gpt-3.5-turbo-instruct',
                 optional: true
             },
             {
