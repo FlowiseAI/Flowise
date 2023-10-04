@@ -42,7 +42,7 @@
         "google-auth-library": "^9.0.0",
         "graphql": "^16.6.0",
         "html-to-text": "^9.0.5",
-        "langchain": "^0.0.152",
+        "langchain": "^0.0.157",
         "langfuse-langchain": "^1.0.14-alpha.0",
         "langsmith": "^0.0.32",
         "linkifyjs": "^4.1.1",
