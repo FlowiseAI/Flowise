@@ -2,8 +2,8 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { UpstashRedisChatMessageHistory, UpstashRedisChatMessageHistoryInput } from "langchain/stores/message/upstash_redis";
-import { Redis, RedisConfigNodejs } from '@upstash/redis';
+import { UpstashRedisChatMessageHistory, UpstashRedisChatMessageHistoryInput } from "langchain/stores/message/upstash_redis"
+import { Redis, RedisConfigNodejs } from '@upstash/redis'
 
 class UpstashRedisBackedChatMemory_Memory implements INode {
     label: string
@@ -90,7 +90,7 @@ const initalizeUpstashRedis = (nodeData: INodeData, options: ICommonObject): Buf
     let isSessionIdUsingChatMessageId = false
     if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
-    const upstashRedisConfig = ({ url: baseURL, token }) as RedisConfigNodejs;
+    const upstashRedisConfig = ({ url: baseURL, token }) as RedisConfigNodejs
     const redisClient = new Redis(upstashRedisConfig)
     let obj: UpstashRedisChatMessageHistoryInput = {
         sessionId: sessionId ? sessionId : chatId,
