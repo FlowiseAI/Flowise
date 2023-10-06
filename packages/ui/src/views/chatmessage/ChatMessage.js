@@ -343,7 +343,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                                     chatflowid={chatflowid}
                                                                     isDialog={isDialog}
                                                                     language={(match && match[1]) || ''}
-                                                                    value={String(children)}
+                                                                    value={String(children).replace(/\n$/, '')}
                                                                     {...props}
                                                                 />
                                                             ) : (
