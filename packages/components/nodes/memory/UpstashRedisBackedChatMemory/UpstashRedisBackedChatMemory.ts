@@ -1,8 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { UpstashRedisChatMessageHistory, UpstashRedisChatMessageHistoryInput } from "langchain/stores/message/upstash_redis"
+import { UpstashRedisChatMessageHistory, UpstashRedisChatMessageHistoryInput } from 'langchain/stores/message/upstash_redis'
 import { Redis, RedisConfigNodejs } from '@upstash/redis'
 
 class UpstashRedisBackedChatMemory_Memory implements INode {
@@ -14,6 +14,7 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -25,18 +26,19 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in upstash Redis server'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            description: 'Configure password authentication on your upstash redis instance',
+            credentialNames: ['upstashRedisMemoryApi']
+        }
         this.inputs = [
             {
                 label: 'Base URL',
                 name: 'baseURL',
                 type: 'string',
-                default: 'redis://localhost:6379'
-            },
-            {
-                label: 'Token',
-                name: 'token',
-                type: 'string',
-                default: '********'
+                default: 'https://<your-url>.upstash.io'
             },
             {
                 label: 'Session Id',
@@ -70,7 +72,7 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
     }
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const redis = initalizeUpstashRedis(nodeData, options)
+        const redis = await initalizeUpstashRedis(nodeData, options)
         const sessionId = nodeData.inputs?.sessionId as string
         const chatId = options?.chatId as string
         options.logger.info(`Clearing Upstash Redis memory session ${sessionId ? sessionId : chatId}`)
@@ -79,18 +81,20 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
     }
 }
 
-const initalizeUpstashRedis = (nodeData: INodeData, options: ICommonObject): BufferMemory => {
+const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const baseURL = nodeData.inputs?.baseURL as string
     const sessionId = nodeData.inputs?.sessionId as string
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
     const chatId = options?.chatId as string
-    const token = nodeData.inputs?.token as string
 
     let isSessionIdUsingChatMessageId = false
     if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
-    const upstashRedisConfig = ({ url: baseURL, token }) as RedisConfigNodejs
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const upstashRedisPassword = getCredentialParam('upstashRedisPassword', credentialData, nodeData)
+
+    const upstashRedisConfig = { url: baseURL, token: upstashRedisPassword } as RedisConfigNodejs
     const redisClient = new Redis(upstashRedisConfig)
     let obj: UpstashRedisChatMessageHistoryInput = {
         sessionId: sessionId ? sessionId : chatId,
