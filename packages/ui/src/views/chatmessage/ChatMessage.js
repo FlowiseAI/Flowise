@@ -65,7 +65,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }
 
     const handleVectaraMetadata = (message) => {
-        if (message.sourceDocuments && message.sourceDocuments[0].metadata.length)
+        if (message.sourceDocuments && message.sourceDocuments.length && message.sourceDocuments[0].metadata.length)
             message.sourceDocuments = message.sourceDocuments.map((docs) => {
                 const newMetadata = docs.metadata.reduce((newMetadata, metadata) => {
                     newMetadata[metadata.name] = metadata.value

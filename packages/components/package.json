@@ -55,6 +55,7 @@
         "notion-to-md": "^3.1.1",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^3.7.107",
+        "peggy": "^3.0.2",
         "pg": "^8.11.2",
         "playwright": "^1.35.0",
         "puppeteer": "^20.7.1",

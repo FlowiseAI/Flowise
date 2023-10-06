@@ -1,8 +1,9 @@
 import { VectorStore } from 'langchain/vectorstores/base'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate } from 'langchain/prompts'
+import { handleEscapeCharacters } from '../../../src'
 
 class HydeRetriever_Retrievers implements INode {
     label: string
@@ -14,11 +15,12 @@ class HydeRetriever_Retrievers implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Hyde Retriever'
         this.name = 'HydeRetriever'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'HydeRetriever'
         this.icon = 'hyderetriever.svg'
         this.category = 'Retrievers'
@@ -96,15 +98,33 @@ class HydeRetriever_Retrievers implements INode {
                 optional: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'SelfQuery Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Document',
+                name: 'document',
+                baseClasses: ['Document']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const llm = nodeData.inputs?.model as BaseLanguageModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const promptKey = nodeData.inputs?.promptKey as PromptKey
         const customPrompt = nodeData.inputs?.customPrompt as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseInt(topK, 10) : 4
+        const output = nodeData.outputs?.output as string
 
         const obj: HydeRetrieverOptions<any> = {
             llm,
@@ -116,6 +136,19 @@ class HydeRetriever_Retrievers implements INode {
         else if (promptKey) obj.promptTemplate = promptKey
 
         const retriever = new HydeRetriever(obj)
+
+        if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever.getRelevantDocuments(input)
+        else if (output === 'text') {
+            let finaltext = ''
+
+            const docs = await retriever.getRelevantDocuments(input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
+        }
+
         return retriever
     }
 }
