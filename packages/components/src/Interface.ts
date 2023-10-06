@@ -1,7 +1,6 @@
 /**
  * Types
  */
-import { BaseCache } from 'langchain/schema'
 
 export type NodeParamsType =
     | 'asyncOptions'
@@ -176,10 +175,4 @@ export class VectorStoreRetriever {
         this.description = fields.description
         this.vectorStore = fields.vectorStore
     }
-}
-
-export interface LLMCacheBase {
-    name: string
-    description: string
-    baseCache: BaseCache
 }
