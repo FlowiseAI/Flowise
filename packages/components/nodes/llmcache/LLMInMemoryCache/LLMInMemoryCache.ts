@@ -1,4 +1,4 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { INode, INodeParams } from '../../../src/Interface'
 import { InMemoryCache } from 'langchain/cache'
 import { getBaseClasses } from '../../../src'
 
@@ -12,7 +12,6 @@ class LLMInMemoryCache implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
     inMemoryCache: any
 
     constructor() {
@@ -22,18 +21,11 @@ class LLMInMemoryCache implements INode {
         this.type = 'LLMCache'
         this.icon = 'memorycache.png'
         this.category = 'LLM Cache'
-        this.baseClasses = [this.type, 'LLMCacheBase']
+        this.baseClasses = [this.type, ...getBaseClasses(InMemoryCache)]
         this.inputs = []
-        this.outputs = [
-            {
-                label: 'LLM Cache',
-                name: 'cache',
-                baseClasses: [this.type, ...getBaseClasses(InMemoryCache)]
-            }
-        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(): Promise<any> {
         if (!this.inMemoryCache) {
             this.inMemoryCache = InMemoryCache.global()
         }
