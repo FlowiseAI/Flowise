@@ -1,13 +1,4 @@
-import {
-    getBaseClasses,
-    getCredentialData,
-    getCredentialParam,
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeOutputsValue,
-    INodeParams
-} from '../../../src'
+import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { UpstashRedisCache } from 'langchain/cache/upstash_redis'
 
 class LLMUpstashRedisCache implements INode {
@@ -20,7 +11,6 @@ class LLMUpstashRedisCache implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
     credential: INodeParams
 
     constructor() {
@@ -30,7 +20,7 @@ class LLMUpstashRedisCache implements INode {
         this.type = 'LLMCache'
         this.icon = 'upstash.png'
         this.category = 'LLM Cache'
-        this.baseClasses = [this.type, 'LLMCacheBase']
+        this.baseClasses = [this.type, ...getBaseClasses(UpstashRedisCache)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -39,13 +29,6 @@ class LLMUpstashRedisCache implements INode {
             credentialNames: ['upstashRedisApi']
         }
         this.inputs = []
-        this.outputs = [
-            {
-                label: 'LLM Cache',
-                name: 'cache',
-                baseClasses: [this.type, ...getBaseClasses(UpstashRedisCache)]
-            }
-        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
