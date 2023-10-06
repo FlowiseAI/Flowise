@@ -1,13 +1,4 @@
-import {
-    getBaseClasses,
-    getCredentialData,
-    getCredentialParam,
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeOutputsValue,
-    INodeParams
-} from '../../../src'
+import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { MomentoCache } from 'langchain/cache/momento'
 import { CacheClient, Configurations, CredentialProvider } from '@gomomento/sdk'
 
@@ -21,7 +12,6 @@ class LLMMomentoCache implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
     credential: INodeParams
 
     constructor() {
@@ -31,7 +21,7 @@ class LLMMomentoCache implements INode {
         this.type = 'LLMCache'
         this.icon = 'momento.png'
         this.category = 'LLM Cache'
-        this.baseClasses = [this.type, 'LLMCacheBase']
+        this.baseClasses = [this.type, ...getBaseClasses(MomentoCache)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -40,13 +30,6 @@ class LLMMomentoCache implements INode {
             credentialNames: ['momentoCacheApi']
         }
         this.inputs = []
-        this.outputs = [
-            {
-                label: 'LLM Cache',
-                name: 'cache',
-                baseClasses: [this.type, ...getBaseClasses(MomentoCache)]
-            }
-        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
