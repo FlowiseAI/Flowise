@@ -2,8 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { UpstashRedisChatMessageHistory, UpstashRedisChatMessageHistoryInput } from 'langchain/stores/message/upstash_redis'
-import { Redis, RedisConfigNodejs } from '@upstash/redis'
+import { UpstashRedisChatMessageHistory } from 'langchain/stores/message/upstash_redis'
 
 class UpstashRedisBackedChatMemory_Memory implements INode {
     label: string
@@ -35,10 +34,10 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
         }
         this.inputs = [
             {
-                label: 'Base URL',
+                label: 'Upstash Redis REST URL',
                 name: 'baseURL',
                 type: 'string',
-                default: 'https://<your-url>.upstash.io'
+                placeholder: 'https://<your-url>.upstash.io'
             },
             {
                 label: 'Session Id',
@@ -56,13 +55,6 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
                 description: 'Omit this parameter to make sessions never expire',
                 additionalParams: true,
                 optional: true
-            },
-            {
-                label: 'Memory Key',
-                name: 'memoryKey',
-                type: 'string',
-                default: 'chat_history',
-                additionalParams: true
             }
         ]
     }
@@ -84,38 +76,29 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
 const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const baseURL = nodeData.inputs?.baseURL as string
     const sessionId = nodeData.inputs?.sessionId as string
-    const sessionTTL = nodeData.inputs?.sessionTTL as number
-    const memoryKey = nodeData.inputs?.memoryKey as string
+    const sessionTTL = nodeData.inputs?.sessionTTL as string
     const chatId = options?.chatId as string
 
     let isSessionIdUsingChatMessageId = false
     if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-    const upstashRedisPassword = getCredentialParam('upstashRedisPassword', credentialData, nodeData)
+    const upstashRestToken = getCredentialParam('upstashRestToken', credentialData, nodeData)
 
-    const upstashRedisConfig = { url: baseURL, token: upstashRedisPassword } as RedisConfigNodejs
-    const redisClient = new Redis(upstashRedisConfig)
-    let obj: UpstashRedisChatMessageHistoryInput = {
+    const redisChatMessageHistory = new UpstashRedisChatMessageHistory({
         sessionId: sessionId ? sessionId : chatId,
-        client: redisClient
-    }
-
-    if (sessionTTL) {
-        obj = {
-            ...obj,
-            sessionTTL
+        sessionTTL: sessionTTL ? parseInt(sessionTTL, 10) : undefined,
+        config: {
+            url: baseURL,
+            token: upstashRestToken
         }
-    }
-
-    const redisChatMessageHistory = new UpstashRedisChatMessageHistory(obj)
+    })
 
     const memory = new BufferMemoryExtended({
-        memoryKey,
         chatHistory: redisChatMessageHistory,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
+
     return memory
 }
 
