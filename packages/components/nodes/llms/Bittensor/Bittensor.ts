@@ -27,8 +27,8 @@ class Bittensor_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -52,13 +52,13 @@ class Bittensor_LLMs implements INode {
     async init(nodeData: INodeData, _: string): Promise<any> {
         const system_prompt = nodeData.inputs?.system_prompt as string
         const topResponses = Number(nodeData.inputs?.topResponses as number)
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<BittensorInput> & BaseLLMParams = {
             systemPrompt: system_prompt,
             topResponses: topResponses
         }
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         const model = new NIBittensorLLM(obj)
         return model

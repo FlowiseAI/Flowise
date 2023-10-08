@@ -33,8 +33,8 @@ class Cohere_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -92,7 +92,7 @@ class Cohere_LLMs implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
 
@@ -103,7 +103,7 @@ class Cohere_LLMs implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (modelName) obj.model = modelName
         if (temperature) obj.temperature = parseFloat(temperature)
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
         const model = new Cohere(obj)
         return model
     }

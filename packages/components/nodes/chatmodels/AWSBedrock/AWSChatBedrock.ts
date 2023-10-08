@@ -44,7 +44,7 @@ class AWSChatBedrock_ChatModels implements INode {
             {
                 label: 'Cache',
                 name: 'cache',
-                type: 'LLMCache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -138,7 +138,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const iModel = nodeData.inputs?.model as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
-        const cache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: BaseBedrockInput & BaseLLMParams = {
             region: iRegion,

@@ -32,8 +32,8 @@ class GooglePaLM_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -132,7 +132,7 @@ class GooglePaLM_LLMs implements INode {
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const stopSequencesObj = nodeData.inputs?.stopSequencesObj
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)
@@ -146,7 +146,7 @@ class GooglePaLM_LLMs implements INode {
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         let parsedStopSequences: any | undefined = undefined
         if (stopSequencesObj) {

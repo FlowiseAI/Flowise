@@ -33,8 +33,8 @@ class AzureOpenAI_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -170,7 +170,7 @@ class AzureOpenAI_LLMs implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIInput> = {
             temperature: parseFloat(temperature),
@@ -188,7 +188,7 @@ class AzureOpenAI_LLMs implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         const model = new OpenAI(obj)
         return model

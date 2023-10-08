@@ -33,8 +33,8 @@ class HuggingFaceInference_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -113,7 +113,7 @@ class HuggingFaceInference_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
 
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<HFInput> = {
             model,
@@ -128,7 +128,7 @@ class HuggingFaceInference_LLMs implements INode {
         if (endpoint) obj.endpoint = endpoint
 
         const huggingFace = new HuggingFaceInference(obj)
-        if (llmCache) huggingFace.cache = llmCache
+        if (cache) huggingFace.cache = cache
 
         return huggingFace
     }

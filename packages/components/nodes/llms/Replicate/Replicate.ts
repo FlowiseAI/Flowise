@@ -34,8 +34,8 @@ class Replicate_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -111,7 +111,7 @@ class Replicate_LLMs implements INode {
         const name = modelName.split(':')[0].split('/').pop()
         const org = modelName.split(':')[0].split('/')[0]
 
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ReplicateInput & BaseLLMParams = {
             model: `${org}/${name}:${version}`,
@@ -130,7 +130,7 @@ class Replicate_LLMs implements INode {
         }
         if (Object.keys(inputs).length) obj.input = inputs
 
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         const model = new Replicate(obj)
         return model

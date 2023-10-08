@@ -29,7 +29,7 @@ class ChatLocalAI_ChatModels implements INode {
             {
                 label: 'Cache',
                 name: 'cache',
-                type: 'LLMCache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -86,7 +86,7 @@ class ChatLocalAI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
-        const cache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),

@@ -34,8 +34,8 @@ class OpenAI_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -157,7 +157,7 @@ class OpenAI_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<OpenAIInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
@@ -174,7 +174,7 @@ class OpenAI_LLMs implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         let parsedBaseOptions: any | undefined = undefined
         if (baseOptions) {

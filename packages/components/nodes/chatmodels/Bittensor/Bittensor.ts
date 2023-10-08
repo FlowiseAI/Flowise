@@ -27,7 +27,7 @@ class Bittensor_ChatModels implements INode {
             {
                 label: 'Cache',
                 name: 'cache',
-                type: 'LLMCache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -42,7 +42,7 @@ class Bittensor_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string): Promise<any> {
         const system_prompt = nodeData.inputs?.system_prompt as string
-        const cache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<BittensorInput> = {
             systemPrompt: system_prompt

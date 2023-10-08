@@ -35,7 +35,7 @@ class ChatOpenAI_ChatModels implements INode {
             {
                 label: 'Cache',
                 name: 'cache',
-                type: 'LLMCache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -159,7 +159,7 @@ class ChatOpenAI_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const cache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),

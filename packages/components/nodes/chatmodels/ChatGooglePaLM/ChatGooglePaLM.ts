@@ -34,7 +34,7 @@ class ChatGooglePaLM_ChatModels implements INode {
             {
                 label: 'Cache',
                 name: 'cache',
-                type: 'LLMCache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -103,7 +103,7 @@ class ChatGooglePaLM_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
-        const cache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)

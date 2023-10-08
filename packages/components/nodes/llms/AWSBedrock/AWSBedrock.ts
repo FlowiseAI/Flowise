@@ -2,6 +2,8 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Bedrock } from 'langchain/llms/bedrock'
 import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 /**
  * I had to run the following to build the component
@@ -39,6 +41,12 @@ class AWSBedrock_LLMs implements INode {
             optional: true
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Region',
                 name: 'region',
@@ -130,8 +138,8 @@ class AWSBedrock_LLMs implements INode {
         const iModel = nodeData.inputs?.model as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
-
-        const obj: Partial<BaseBedrockInput> = {
+        const cache = nodeData.inputs?.cache as BaseCache
+        const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
             model: iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
@@ -157,6 +165,7 @@ class AWSBedrock_LLMs implements INode {
                 sessionToken: credentialApiSession
             }
         }
+        if (cache) obj.cache = cache
 
         const amazonBedrock = new Bedrock(obj)
         return amazonBedrock

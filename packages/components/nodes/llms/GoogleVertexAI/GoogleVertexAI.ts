@@ -37,8 +37,8 @@ class GoogleVertexAI_LLMs implements INode {
         this.inputs = [
             {
                 label: 'Cache',
-                name: 'llmCache',
-                type: 'LLMCache',
+                name: 'cache',
+                type: 'BaseCache',
                 optional: true
             },
             {
@@ -127,7 +127,7 @@ class GoogleVertexAI_LLMs implements INode {
         const modelName = nodeData.inputs?.modelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
-        const llmCache = nodeData.inputs?.llmCache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<GoogleVertexAITextInput> = {
             temperature: parseFloat(temperature),
@@ -137,7 +137,7 @@ class GoogleVertexAI_LLMs implements INode {
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
-        if (llmCache) obj.cache = llmCache
+        if (cache) obj.cache = cache
 
         const model = new GoogleVertexAI(obj)
         return model
