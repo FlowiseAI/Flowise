@@ -1,8 +1,8 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { RedisCache } from 'langchain/cache/ioredis'
+import { RedisCache as LangchainRedisCache } from 'langchain/cache/ioredis'
 import { Redis } from 'ioredis'
 
-class LLMRedisCache implements INode {
+class RedisCache implements INode {
     label: string
     name: string
     version: number
@@ -18,9 +18,9 @@ class LLMRedisCache implements INode {
         this.label = 'Redis LLM Cache'
         this.name = 'redisCache'
         this.version = 1.0
-        this.type = 'LLMCache'
+        this.type = 'Cache'
         this.icon = 'redis.svg'
-        this.category = 'LLM Cache'
+        this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(RedisCache)]
         this.credential = {
             label: 'Connect Credential',
@@ -45,8 +45,8 @@ class LLMRedisCache implements INode {
             username,
             password
         })
-        return new RedisCache(client)
+        return new LangchainRedisCache(client)
     }
 }
 
-module.exports = { nodeClass: LLMRedisCache }
+module.exports = { nodeClass: RedisCache }

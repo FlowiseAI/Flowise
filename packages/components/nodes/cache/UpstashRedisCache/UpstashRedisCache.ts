@@ -1,7 +1,7 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { UpstashRedisCache } from 'langchain/cache/upstash_redis'
+import { UpstashRedisCache as LangchainUpstashRedisCache } from 'langchain/cache/upstash_redis'
 
-class LLMUpstashRedisCache implements INode {
+class UpstashRedisCache implements INode {
     label: string
     name: string
     version: number
@@ -17,9 +17,9 @@ class LLMUpstashRedisCache implements INode {
         this.label = 'Upstash Redis LLM Cache'
         this.name = 'upstashRedisCache'
         this.version = 1.0
-        this.type = 'LLMCache'
+        this.type = 'Cache'
         this.icon = 'upstash.png'
-        this.category = 'LLM Cache'
+        this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(UpstashRedisCache)]
         this.credential = {
             label: 'Connect Credential',
@@ -36,7 +36,7 @@ class LLMUpstashRedisCache implements INode {
         const upstashConnectionUrl = getCredentialParam('upstashConnectionUrl', credentialData, nodeData)
         const upstashToken = getCredentialParam('upstashConnectionToken', credentialData, nodeData)
 
-        const cache = new UpstashRedisCache({
+        const cache = new LangchainUpstashRedisCache({
             config: {
                 url: upstashConnectionUrl,
                 token: upstashToken
@@ -46,4 +46,4 @@ class LLMUpstashRedisCache implements INode {
     }
 }
 
-module.exports = { nodeClass: LLMUpstashRedisCache }
+module.exports = { nodeClass: UpstashRedisCache }
