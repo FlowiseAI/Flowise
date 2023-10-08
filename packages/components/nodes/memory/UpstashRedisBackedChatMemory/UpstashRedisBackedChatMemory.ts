@@ -18,12 +18,12 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
 
     constructor() {
         this.label = 'Upstash Redis-Backed Chat Memory'
-        this.name = 'UpstashRedisBackedChatMemory'
+        this.name = 'upstashRedisBackedChatMemory'
         this.version = 1.0
         this.type = 'UpstashRedisBackedChatMemory'
         this.icon = 'upstash.svg'
         this.category = 'Memory'
-        this.description = 'Summarizes the conversation and stores the memory in upstash Redis server'
+        this.description = 'Summarizes the conversation and stores the memory in Upstash Redis server'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
         this.credential = {
             label: 'Connect Credential',
