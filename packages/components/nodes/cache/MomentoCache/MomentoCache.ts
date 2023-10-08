@@ -36,7 +36,6 @@ class MomentoCache implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('momentoApiKey', credentialData, nodeData)
         const cacheName = getCredentialParam('momentoCache', credentialData, nodeData)
-        const endPoint = getCredentialParam('momentoEndpoint', credentialData, nodeData)
 
         // See https://github.com/momentohq/client-sdk-javascript for connection options
         const client = new CacheClient({
