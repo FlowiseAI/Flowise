@@ -20,7 +20,7 @@ class UpstashRedisCache implements INode {
         this.type = 'Cache'
         this.icon = 'upstash.png'
         this.category = 'Cache'
-        this.baseClasses = [this.type, ...getBaseClasses(UpstashRedisCache)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainUpstashRedisCache)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
