@@ -28,6 +28,7 @@
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",
         "@types/jsdom": "^21.1.1",
+        "@upstash/redis": "^1.22.1",
         "@zilliz/milvus2-sdk-node": "^2.2.24",
         "apify-client": "^2.7.1",
         "axios": "^0.27.2",
@@ -64,8 +65,7 @@
         "srt-parser-2": "^1.2.3",
         "vm2": "^3.9.19",
         "weaviate-ts-client": "^1.1.0",
-        "ws": "^8.9.0",
-        "@upstash/redis": "^1.22.1"
+        "ws": "^8.9.0"
     },
     "devDependencies": {
         "@types/gulp": "4.0.9",
