@@ -15,10 +15,10 @@ class RedisCache implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'Redis LLM Cache'
+        this.label = 'Redis Cache'
         this.name = 'redisCache'
         this.version = 1.0
-        this.type = 'Cache'
+        this.type = 'RedisCache'
         this.icon = 'redis.svg'
         this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(LangchainRedisCache)]
