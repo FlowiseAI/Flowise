@@ -14,10 +14,10 @@ class UpstashRedisCache implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'Upstash Redis LLM Cache'
+        this.label = 'Upstash Redis Cache'
         this.name = 'upstashRedisCache'
         this.version = 1.0
-        this.type = 'Cache'
+        this.type = 'UpstashRedisCache'
         this.icon = 'upstash.png'
         this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(LangchainUpstashRedisCache)]
