@@ -28,6 +28,7 @@
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",
         "@types/jsdom": "^21.1.1",
+        "@upstash/redis": "^1.22.1",
         "@zilliz/milvus2-sdk-node": "^2.2.24",
         "apify-client": "^2.7.1",
         "axios": "^0.27.2",
