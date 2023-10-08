@@ -12,11 +12,11 @@ class UpstashRedisMemoryApi implements INodeCredential {
         this.name = 'upstashRedisMemoryApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">official guide</a> on how to create redis instance and get password on upstash'
+            'Refer to <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">official guide</a> on how to create redis instance and get redis REST Token'
         this.inputs = [
             {
-                label: 'Upstash Redis Password',
-                name: 'upstashRedisPassword',
+                label: 'Upstash Redis REST Token',
+                name: 'upstashRestToken',
                 type: 'password'
             }
         ]
