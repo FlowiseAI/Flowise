@@ -18,7 +18,7 @@ class MomentoCache implements INode {
         this.label = 'Momento Cache'
         this.name = 'momentoCache'
         this.version = 1.0
-        this.type = 'Cache'
+        this.type = 'MomentoCache'
         this.icon = 'momento.png'
         this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(LangchainMomentoCache)]
