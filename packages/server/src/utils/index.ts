@@ -481,6 +481,7 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
         }
+        if (Object.prototype.hasOwnProperty.call(node.data, 'credential')) return true
     }
     const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
     for (const node of nodes) {
