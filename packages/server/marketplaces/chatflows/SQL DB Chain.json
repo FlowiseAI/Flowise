@@ -13,7 +13,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 1,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -126,7 +126,15 @@
                         "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": "0",

@@ -113,14 +113,14 @@
             "id": "chatOpenAI_0",
             "position": {
                 "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "y": -76.177600120515933
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 1,
+                "version": 2,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -232,7 +232,15 @@
                         "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": "0",
@@ -257,7 +265,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 1197.7264239788542,
-                "y": -16.177600120515933
+                "y": -76.177600120515933
             },
             "dragging": false
         },
