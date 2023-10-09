@@ -28,7 +28,7 @@ import {
     convertChatHistoryToText
 } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
-import { lib, PBKDF2, AES, enc } from 'crypto-js'
+import { AES, enc } from 'crypto-js'
 
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
@@ -477,6 +477,7 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
+        if (node.data.category === 'Cache') return true
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
@@ -814,12 +815,7 @@ export const getEncryptionKeyPath = (): string => {
  * @returns {string}
  */
 export const generateEncryptKey = (): string => {
-    const salt = lib.WordArray.random(128 / 8)
-    const key256Bits = PBKDF2(process.env.PASSPHRASE || 'MYPASSPHRASE', salt, {
-        keySize: 256 / 32,
-        iterations: 1000
-    })
-    return key256Bits.toString()
+    return randomBytes(24).toString('base64')
 }
 
 /**
@@ -827,6 +823,9 @@ export const generateEncryptKey = (): string => {
  * @returns {Promise<string>}
  */
 export const getEncryptionKey = async (): Promise<string> => {
+    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
+        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
@@ -868,7 +867,7 @@ export const decryptCredentialData = async (
         return JSON.parse(decryptedData.toString(enc.Utf8))
     } catch (e) {
         console.error(e)
-        throw new Error('Credentials could not be decrypted.')
+        return {}
     }
 }
 

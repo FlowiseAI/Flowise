@@ -92,7 +92,7 @@ class VectaraExisting_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
         const customerId = getCredentialParam('customerID', credentialData, nodeData)
-        const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
+        const corpusId = getCredentialParam('corpusID', credentialData, nodeData).split(',')
 
         const vectaraMetadataFilter = nodeData.inputs?.filter as string
         const sentencesBefore = nodeData.inputs?.sentencesBefore as number

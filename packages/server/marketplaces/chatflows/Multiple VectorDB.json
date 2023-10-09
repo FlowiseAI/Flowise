@@ -321,14 +321,14 @@
             "id": "openAI_2",
             "position": {
                 "x": 520.8471510168988,
-                "y": -1282.1183473852964
+                "y": -1362.1183473852964
             },
             "type": "customNode",
             "data": {
                 "id": "openAI_2",
                 "label": "OpenAI",
                 "name": "openAI",
-                "version": 1,
+                "version": 3,
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -347,23 +347,19 @@
                         "type": "options",
                         "options": [
                             {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
+                                "label": "gpt-3.5-turbo-instruct",
+                                "name": "gpt-3.5-turbo-instruct"
                             },
                             {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
+                                "label": "babbage-002",
+                                "name": "babbage-002"
                             },
                             {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
+                                "label": "davinci-002",
+                                "name": "davinci-002"
                             }
                         ],
-                        "default": "text-davinci-003",
+                        "default": "gpt-3.5-turbo-instruct",
                         "optional": true,
                         "id": "openAI_2-input-modelName-options"
                     },
@@ -440,9 +436,17 @@
                         "id": "openAI_2-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "openAI_2-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "text-davinci-003",
+                    "modelName": "gpt-3.5-turbo-instruct",
                     "temperature": 0.7,
                     "maxTokens": "",
                     "topP": "",
@@ -467,7 +471,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 520.8471510168988,
-                "y": -1282.1183473852964
+                "y": -1362.1183473852964
             },
             "dragging": false
         },
@@ -561,7 +565,7 @@
             "id": "chromaExistingIndex_0",
             "position": {
                 "x": 509.55198017578016,
-                "y": -732.42003311752
+                "y": -782.42003311752
             },
             "type": "customNode",
             "data": {
@@ -642,7 +646,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 509.55198017578016,
-                "y": -732.42003311752
+                "y": -782.42003311752
             },
             "dragging": false
         },
@@ -736,14 +740,14 @@
             "id": "openAI_3",
             "position": {
                 "x": 504.808358369027,
-                "y": -197.78194663790197
+                "y": -257.78194663790197
             },
             "type": "customNode",
             "data": {
                 "id": "openAI_3",
                 "label": "OpenAI",
                 "name": "openAI",
-                "version": 1,
+                "version": 3,
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -762,23 +766,19 @@
                         "type": "options",
                         "options": [
                             {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
+                                "label": "gpt-3.5-turbo-instruct",
+                                "name": "gpt-3.5-turbo-instruct"
                             },
                             {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
+                                "label": "babbage-002",
+                                "name": "babbage-002"
                             },
                             {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
+                                "label": "davinci-002",
+                                "name": "davinci-002"
                             }
                         ],
-                        "default": "text-davinci-003",
+                        "default": "gpt-3.5-turbo-instruct",
                         "optional": true,
                         "id": "openAI_3-input-modelName-options"
                     },
@@ -855,9 +855,17 @@
                         "id": "openAI_3-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "openAI_3-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "text-davinci-003",
+                    "modelName": "gpt-3.5-turbo-instruct",
                     "temperature": 0.7,
                     "maxTokens": "",
                     "topP": "",
@@ -882,7 +890,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 504.808358369027,
-                "y": -197.78194663790197
+                "y": -257.78194663790197
             },
             "dragging": false
         },
@@ -1001,14 +1009,14 @@
             "id": "openAI_4",
             "position": {
                 "x": 1619.5346765785587,
-                "y": 292.29615581180684
+                "y": 352.29615581180684
             },
             "type": "customNode",
             "data": {
                 "id": "openAI_4",
                 "label": "OpenAI",
                 "name": "openAI",
-                "version": 1,
+                "version": 3,
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -1027,23 +1035,19 @@
                         "type": "options",
                         "options": [
                             {
-                                "label": "text-davinci-003",
-                                "name": "text-davinci-003"
+                                "label": "gpt-3.5-turbo-instruct",
+                                "name": "gpt-3.5-turbo-instruct"
                             },
                             {
-                                "label": "text-davinci-002",
-                                "name": "text-davinci-002"
+                                "label": "babbage-002",
+                                "name": "babbage-002"
                             },
                             {
-                                "label": "text-curie-001",
-                                "name": "text-curie-001"
-                            },
-                            {
-                                "label": "text-babbage-001",
-                                "name": "text-babbage-001"
+                                "label": "davinci-002",
+                                "name": "davinci-002"
                             }
                         ],
-                        "default": "text-davinci-003",
+                        "default": "gpt-3.5-turbo-instruct",
                         "optional": true,
                         "id": "openAI_4-input-modelName-options"
                     },
@@ -1120,9 +1124,17 @@
                         "id": "openAI_4-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "openAI_4-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "text-davinci-003",
+                    "modelName": "gpt-3.5-turbo-instruct",
                     "temperature": 0.7,
                     "maxTokens": "",
                     "topP": "",
@@ -1147,7 +1159,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 1619.5346765785587,
-                "y": 292.29615581180684
+                "y": 352.29615581180684
             },
             "dragging": false
         }
