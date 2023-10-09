@@ -95,8 +95,12 @@ class ConversationalAgent_Agents implements INode {
         const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options && options.chatHistory) {
-            memory.chatHistory = mapChatHistory(options)
-            executor.memory = memory
+            const chatHistoryClassName = memory.chatHistory.constructor.name
+            // Only replace when its In-Memory
+            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
+                memory.chatHistory = mapChatHistory(options)
+                executor.memory = memory
+            }
         }
 
         const result = await executor.call({ input }, [...callbacks])
