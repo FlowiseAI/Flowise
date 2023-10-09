@@ -2,6 +2,8 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatBedrock } from 'langchain/chat_models/bedrock'
 import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 /**
  * I had to run the following to build the component
@@ -25,7 +27,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS Bedrock'
         this.name = 'awsChatBedrock'
-        this.version = 1.1
+        this.version = 2.0
         this.type = 'AWSChatBedrock'
         this.icon = 'awsBedrock.png'
         this.category = 'Chat Models'
@@ -39,6 +41,12 @@ class AWSChatBedrock_ChatModels implements INode {
             optional: true
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Region',
                 name: 'region',
@@ -130,8 +138,9 @@ class AWSChatBedrock_ChatModels implements INode {
         const iModel = nodeData.inputs?.model as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
+        const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: BaseBedrockInput = {
+        const obj: BaseBedrockInput & BaseLLMParams = {
             region: iRegion,
             model: iModel,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
@@ -157,6 +166,7 @@ class AWSChatBedrock_ChatModels implements INode {
                 sessionToken: credentialApiSession
             }
         }
+        if (cache) obj.cache = cache
 
         const amazonBedrock = new ChatBedrock(obj)
         return amazonBedrock
