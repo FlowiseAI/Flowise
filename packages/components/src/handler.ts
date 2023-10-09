@@ -177,21 +177,17 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 
     handleLLMEnd() {
-        /* send the end event from handleChainEnd */
-        // this.socketIO.to(this.socketIOClientId).emit('end')
+        this.socketIO.to(this.socketIOClientId).emit('end')
     }
 
-    handleChainEnd(outputs: ChainValues): void | Promise<void> {
-        if (this.returnSourceDocuments) {
-            this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
-        }
+    handleChainEnd(outputs: ChainValues, _: string, parentRunId?: string): void | Promise<void> {
         /*
             Langchain does not call handleLLMStart, handleLLMEnd, handleLLMNewToken when the chain is cached.
             Callback Order is "Chain Start -> LLM Start --> LLM Token --> LLM End -> Chain End" for normal responses.
             Callback Order is "Chain Start -> Chain End" for cached responses.
          */
-        if (this.cachedResponse) {
-            const cachedValue: string = outputs.text ?? outputs.response ?? outputs.output ?? ''
+        if (this.cachedResponse && parentRunId === undefined) {
+            const cachedValue = outputs.text ?? outputs.response ?? outputs.output ?? outputs.output_text
             //split at whitespace, and keep the whitespace. This is to preserve the original formatting.
             const result = cachedValue.split(/(\s+)/)
             result.forEach((token: string, index: number) => {
@@ -200,8 +196,15 @@ export class CustomChainHandler extends BaseCallbackHandler {
                 }
                 this.socketIO.to(this.socketIOClientId).emit('token', token)
             })
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
+            this.socketIO.to(this.socketIOClientId).emit('end')
+        } else {
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
         }
-        this.socketIO.to(this.socketIOClientId).emit('end')
     }
 }
 
