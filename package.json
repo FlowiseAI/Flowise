@@ -53,5 +53,8 @@
     },
     "engines": {
         "node": ">=18.15.0"
+    },
+    "dependencies": {
+        "langchain": "^0.0.163"
     }
 }
