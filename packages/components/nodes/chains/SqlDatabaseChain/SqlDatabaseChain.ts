@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains/sql_db'
+import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
@@ -7,7 +7,6 @@ import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { DataSourceOptions } from 'typeorm/data-source'
-import { DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
 
 type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
 
