@@ -772,8 +772,8 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic'],
-        LLMs: ['azureOpenAI', 'openAI']
+        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama'],
+        LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
     let isChatOrLLMsExist = false
