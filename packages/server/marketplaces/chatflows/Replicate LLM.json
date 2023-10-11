@@ -148,13 +148,13 @@
             "id": "replicate_0",
             "position": {
                 "x": 623.313978186024,
-                "y": -72.92788335022428
+                "y": -142.92788335022428
             },
             "type": "customNode",
             "data": {
                 "id": "replicate_0",
                 "label": "Replicate",
-                "version": 1,
+                "version": 2,
                 "name": "replicate",
                 "type": "Replicate",
                 "baseClasses": ["Replicate", "BaseChatModel", "LLM", "BaseLLM", "BaseLanguageModel", "Runnable"],
@@ -226,7 +226,15 @@
                         "id": "replicate_0-input-additionalInputs-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "replicate_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "model": "a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
                     "temperature": 0.7,
@@ -249,7 +257,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 623.313978186024,
-                "y": -72.92788335022428
+                "y": -142.92788335022428
             },
             "dragging": false
         }

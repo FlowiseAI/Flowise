@@ -477,6 +477,7 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
+        if (node.data.category === 'Cache') return true
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true

@@ -30,7 +30,7 @@ export class ChromaExtended extends Chroma {
                 if (this.chromaApiKey) {
                     obj.fetchOptions = {
                         headers: {
-                            'X-Api-Key': this.chromaApiKey
+                            Authorization: `Bearer ${this.chromaApiKey}`
                         }
                     }
                 }
