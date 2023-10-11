@@ -88,8 +88,7 @@ class AWSBedrock_LLMs implements INode {
                     { label: 'us-west-1', name: 'us-west-1' },
                     { label: 'us-west-2', name: 'us-west-2' }
                 ],
-                default: 'us-east-1',
-                optional: false
+                default: 'us-east-1'
             },
             {
                 label: 'Model Name',
@@ -98,17 +97,12 @@ class AWSBedrock_LLMs implements INode {
                 options: [
                     { label: 'amazon.titan-tg1-large', name: 'amazon.titan-tg1-large' },
                     { label: 'amazon.titan-e1t-medium', name: 'amazon.titan-e1t-medium' },
-                    { label: 'stability.stable-diffusion-xl', name: 'stability.stable-diffusion-xl' },
+                    { label: 'cohere.command-text-v14', name: 'cohere.command-text-v14' },
                     { label: 'ai21.j2-grande-instruct', name: 'ai21.j2-grande-instruct' },
                     { label: 'ai21.j2-jumbo-instruct', name: 'ai21.j2-jumbo-instruct' },
                     { label: 'ai21.j2-mid', name: 'ai21.j2-mid' },
-                    { label: 'ai21.j2-ultra', name: 'ai21.j2-ultra' },
-                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
-                    { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
-                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' }
-                ],
-                default: 'anthropic.claude-v2',
-                optional: false
+                    { label: 'ai21.j2-ultra', name: 'ai21.j2-ultra' }
+                ]
             },
             {
                 label: 'Temperature',
@@ -117,8 +111,7 @@ class AWSBedrock_LLMs implements INode {
                 step: 0.1,
                 description: 'Temperature parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
-                default: 0.7,
-                additionalParams: false
+                default: 0.7
             },
             {
                 label: 'Max Tokens to Sample',
@@ -126,9 +119,8 @@ class AWSBedrock_LLMs implements INode {
                 type: 'number',
                 step: 10,
                 description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
-                optional: false,
-                default: 200,
-                additionalParams: false
+                optional: true,
+                default: 200
             }
         ]
     }
