@@ -1,18 +1,9 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatBedrock } from 'langchain/chat_models/bedrock'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { BedrockEmbeddings, BedrockEmbeddingsParams } from 'langchain/embeddings/bedrock'
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
-/**
- * I had to run the following to build the component
- * and get the icon copied over to the dist directory
- * Flowise/packages/components > yarn build
- *
- * @author Michael Connor <mlconnor@yahoo.com>
- */
-class AWSChatBedrock_ChatModels implements INode {
+class AWSBedrockEmbedding_Embeddings implements INode {
     label: string
     name: string
     version: number
@@ -25,14 +16,14 @@ class AWSChatBedrock_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'AWS Bedrock'
-        this.name = 'awsChatBedrock'
-        this.version = 2.0
-        this.type = 'AWSChatBedrock'
+        this.label = 'AWS Bedrock Embeddings'
+        this.name = 'AWSBedrockEmbeddings'
+        this.version = 1.0
+        this.type = 'AWSBedrockEmbeddings'
         this.icon = 'awsBedrock.png'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around AWS Bedrock large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatBedrock)]
+        this.category = 'Embeddings'
+        this.description = 'AWSBedrock embedding models to generate embeddings for a given text'
+        this.baseClasses = [this.type, ...getBaseClasses(BedrockEmbeddings)]
         this.credential = {
             label: 'AWS Credential',
             name: 'credential',
@@ -41,12 +32,6 @@ class AWSChatBedrock_ChatModels implements INode {
             optional: true
         }
         this.inputs = [
-            {
-                label: 'Cache',
-                name: 'cache',
-                type: 'BaseCache',
-                optional: true
-            },
             {
                 label: 'Region',
                 name: 'region',
@@ -94,30 +79,8 @@ class AWSChatBedrock_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'model',
                 type: 'options',
-                options: [
-                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
-                    { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
-                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' }
-                ],
-                default: 'anthropic.claude-v2'
-            },
-            {
-                label: 'Temperature',
-                name: 'temperature',
-                type: 'number',
-                step: 0.1,
-                description: 'Temperature parameter may not apply to certain model. Please check available model parameters',
-                optional: true,
-                default: 0.7
-            },
-            {
-                label: 'Max Tokens to Sample',
-                name: 'max_tokens_to_sample',
-                type: 'number',
-                step: 10,
-                description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
-                optional: true,
-                default: 200
+                options: [{ label: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1' }],
+                default: 'amazon.titan-embed-text-v1'
             }
         ]
     }
@@ -125,24 +88,12 @@ class AWSChatBedrock_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const iRegion = nodeData.inputs?.region as string
         const iModel = nodeData.inputs?.model as string
-        const iTemperature = nodeData.inputs?.temperature as string
-        const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
-        const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: BaseBedrockInput & BaseLLMParams = {
-            region: iRegion,
+        const obj: BedrockEmbeddingsParams = {
             model: iModel,
-            maxTokens: parseInt(iMax_tokens_to_sample, 10),
-            temperature: parseFloat(iTemperature)
+            region: iRegion
         }
 
-        /**
-         * Long-term credentials specified in LLM configuration are optional.
-         * Bedrock's credential provider falls back to the AWS SDK to fetch
-         * credentials from the running environment.
-         * When specified, we override the default provider with configured values.
-         * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
-         */
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         if (credentialData && Object.keys(credentialData).length !== 0) {
             const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
@@ -155,11 +106,47 @@ class AWSChatBedrock_ChatModels implements INode {
                 sessionToken: credentialApiSession
             }
         }
-        if (cache) obj.cache = cache
 
-        const amazonBedrock = new ChatBedrock(obj)
-        return amazonBedrock
+        const client = new BedrockRuntimeClient({
+            region: obj.region,
+            credentials: obj.credentials
+        })
+
+        const model = new BedrockEmbeddings(obj)
+
+        // Avoid Illegal Invocation
+        model.embedQuery = async (document: string): Promise<number[]> => {
+            return await embedText(document, client, iModel)
+        }
+
+        model.embedDocuments = async (documents: string[]): Promise<number[][]> => {
+            return Promise.all(documents.map((document) => embedText(document, client, iModel)))
+        }
+        return model
     }
 }
 
-module.exports = { nodeClass: AWSChatBedrock_ChatModels }
+const embedText = async (text: string, client: BedrockRuntimeClient, model: string): Promise<number[]> => {
+    // replace newlines, which can negatively affect performance.
+    const cleanedText = text.replace(/\n/g, ' ')
+
+    const res = await client.send(
+        new InvokeModelCommand({
+            modelId: model,
+            body: JSON.stringify({
+                inputText: cleanedText
+            }),
+            contentType: 'application/json',
+            accept: 'application/json'
+        })
+    )
+
+    try {
+        const body = new TextDecoder().decode(res.body)
+        return JSON.parse(body).embedding
+    } catch (e) {
+        throw new Error('An invalid response was returned by Bedrock.')
+    }
+}
+
+module.exports = { nodeClass: AWSBedrockEmbedding_Embeddings }
