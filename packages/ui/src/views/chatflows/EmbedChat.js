@@ -44,6 +44,9 @@ const embedPopupHtmlCode = (chatflowid) => {
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
+        chatflowConfig: {
+            dashboardID: window.dundas.context.baseViewService.currentItemId
+        }
     })
 </script>`
 }
