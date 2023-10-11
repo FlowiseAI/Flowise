@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput } from 'langchain/chains/sql_db'
+import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { SqlDatabase } from 'langchain/sql_db'
@@ -9,25 +9,6 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { DataSourceOptions } from 'typeorm/data-source'
 
 type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
-
-const defaultPrompt = `Given an input question, first create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer. Unless the user specifies in his question a specific number of examples he wishes to obtain, always limit your query to at most {top_k} results. You can order the results by a relevant column to return the most interesting examples in the database.
-
-Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
-
-Pay attention to use only the column names that you can see in the schema description. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
-
-Use the following format:
-
-Question: "Question here"
-SQLQuery: "SQL Query to run"
-SQLResult: "Result of the SQLQuery"
-Answer: "Final answer here"
-
-Only use the tables listed below.
-
-{table_info}
-
-Question: {input}`
 
 class SqlDatabaseChain_Chains implements INode {
     label: string
@@ -131,7 +112,7 @@ class SqlDatabaseChain_Chains implements INode {
                 warning:
                     'Prompt must include 3 input variables: {input}, {dialect}, {table_info}. You can refer to official guide from description above',
                 rows: 4,
-                placeholder: defaultPrompt,
+                placeholder: DEFAULT_SQL_DATABASE_PROMPT.template + DEFAULT_SQL_DATABASE_PROMPT.templateFormat,
                 additionalParams: true,
                 optional: true
             }
