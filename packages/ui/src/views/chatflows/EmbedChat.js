@@ -45,7 +45,7 @@ const embedPopupHtmlCode = (chatflowid) => {
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
         chatflowConfig: {
-            dashboardID: window.dundas.context.baseViewService.currentItemId
+            logiSymphonyDashboardId: window.dundas.context.baseViewService.currentItemId
         }
     })
 </script>`
