@@ -35,6 +35,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -197,8 +198,10 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {IComponentNodes} componentNodes
  * @param {string} question
  * @param {string} chatId
+ * @param {string} chatflowid
  * @param {DataSource} appDataSource
  * @param {ICommonObject} overrideConfig
+ * @param {CachePool} cachePool
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -209,8 +212,10 @@ export const buildLangchain = async (
     question: string,
     chatHistory: IMessage[],
     chatId: string,
+    chatflowid: string,
     appDataSource: DataSource,
-    overrideConfig?: ICommonObject
+    overrideConfig?: ICommonObject,
+    cachePool?: CachePool
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -245,9 +250,11 @@ export const buildLangchain = async (
             logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
+                chatflowid,
                 appDataSource,
                 databaseEntities,
-                logger
+                logger,
+                cachePool
             })
             logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
