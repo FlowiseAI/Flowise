@@ -20,7 +20,7 @@ class ElectricsearchAPI implements INodeCredential {
                 type: 'string'
             },
             {
-                label: 'Elasticsearch API ID',
+                label: 'Elasticsearch API Key',
                 name: 'apiKey',
                 type: 'password'
             }
