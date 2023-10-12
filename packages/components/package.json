@@ -27,7 +27,7 @@
         "@huggingface/inference": "^2.6.1",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
-        "@pinecone-database/pinecone": "^0.0.14",
+        "@pinecone-database/pinecone": "^1.1.1",
         "@qdrant/js-client-rest": "^1.2.2",
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",

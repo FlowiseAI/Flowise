@@ -1,12 +1,10 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { PineconeClient } from '@pinecone-database/pinecone'
+import { Pinecone } from '@pinecone-database/pinecone'
 import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
 import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { flatten } from 'lodash'
 
-class PineconeUpsert_VectorStores implements INode {
+class Pinecone_Existing_VectorStores implements INode {
     label: string
     name: string
     version: number
@@ -20,13 +18,13 @@ class PineconeUpsert_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Pinecone Upsert Document'
-        this.name = 'pineconeUpsert'
+        this.label = 'Pinecone Load Existing Index'
+        this.name = 'pineconeExistingIndex'
         this.version = 1.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.png'
         this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Pinecone'
+        this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.credential = {
             label: 'Connect Credential',
@@ -35,12 +33,6 @@ class PineconeUpsert_VectorStores implements INode {
             credentialNames: ['pineconeApi']
         }
         this.inputs = [
-            {
-                label: 'Document',
-                name: 'document',
-                type: 'Document',
-                list: true
-            },
             {
                 label: 'Embeddings',
                 name: 'embeddings',
@@ -58,6 +50,13 @@ class PineconeUpsert_VectorStores implements INode {
                 placeholder: 'my-first-namespace',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Pinecone Metadata Filter',
+                name: 'pineconeMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Top K',
@@ -86,7 +85,7 @@ class PineconeUpsert_VectorStores implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const index = nodeData.inputs?.pineconeIndex as string
         const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
-        const docs = nodeData.inputs?.document as Document[]
+        const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
@@ -96,27 +95,24 @@ class PineconeUpsert_VectorStores implements INode {
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
         const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
-        const client = new PineconeClient()
-        await client.init({
+        const client = new Pinecone({
             apiKey: pineconeApiKey,
             environment: pineconeEnv
         })
 
         const pineconeIndex = client.Index(index)
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
-        }
-
         const obj: PineconeLibArgs = {
             pineconeIndex
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
+        if (pineconeMetadataFilter) {
+            const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            obj.filter = metadatafilter
+        }
 
-        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
+        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
@@ -129,4 +125,4 @@ class PineconeUpsert_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: PineconeUpsert_VectorStores }
+module.exports = { nodeClass: Pinecone_Existing_VectorStores }
