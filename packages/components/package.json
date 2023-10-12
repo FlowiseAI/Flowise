@@ -18,6 +18,7 @@
     "dependencies": {
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
+        "@aws-sdk/client-s3": "^3.427.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@getzep/zep-js": "^0.6.3",
         "@gomomento/sdk": "^1.40.2",
