@@ -238,9 +238,6 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     })
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
-                    const flushAt = analytic[provider].flushAt as string
-                    const flushInterval = analytic[provider].flushInterval as string
-                    const requestTimeout = analytic[provider].requestTimeout as string
                     const release = analytic[provider].release as string
 
                     const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
@@ -252,9 +249,6 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
-                    if (flushAt) langFuseOptions.flushAt = parseInt(flushAt, 10)
-                    if (flushInterval) langFuseOptions.flushInterval = parseInt(flushInterval, 10)
-                    if (requestTimeout) langFuseOptions.requestTimeout = parseInt(requestTimeout, 10)
                     if (release) langFuseOptions.release = release
 
                     const handler = new CallbackHandler(langFuseOptions)
