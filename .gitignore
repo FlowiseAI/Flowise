@@ -44,3 +44,6 @@
 
 ## compressed
 **/*.tgz
+
+## logi
+**/LogiSymphony
