@@ -11,6 +11,7 @@ import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
 
 // project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
+import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
 import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import { Input } from 'ui-component/input/Input'
 import { File } from 'ui-component/file/File'
@@ -301,6 +302,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         )}
                         {inputParam.type === 'options' && (
                             <Dropdown
+                                disabled={disabled}
+                                name={inputParam.name}
+                                options={inputParam.options}
+                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                            />
+                        )}
+                        {inputParam.type === 'multiOptions' && (
+                            <MultiDropdown
                                 disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}
