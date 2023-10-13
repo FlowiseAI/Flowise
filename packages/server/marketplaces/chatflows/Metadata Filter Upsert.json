@@ -109,13 +109,29 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "textFile_0-output-textFile-Document",
-                        "name": "textFile",
-                        "label": "Document",
-                        "type": "Document"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "textFile_0-output-document-Document",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document"
+                            },
+                            {
+                                "id": "textFile_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
                     }
                 ],
-                "outputs": {},
+                "outputs": {
+                    "output": "document"
+                },
                 "selected": false
             },
             "selected": false,
