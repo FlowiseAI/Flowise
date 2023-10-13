@@ -176,6 +176,12 @@ export class App {
             })
         }
 
+        // Logi Symphony authorization check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const logiSymphony = await import('./utils/LogiSymphony/logisymphony')
+            logiSymphony.setupRequestAuthorization(this.app)
+        }
+
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
         // ----------------------------------------
@@ -1597,6 +1603,12 @@ export class App {
         try {
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
+
+            // Logi Symphony session ID override config injection check.
+            if (process.env.LOGI_SYMPHONY_URL) {
+                const logiSymphony = await import('./utils/LogiSymphony/logisymphony')
+                logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+            }
 
             let nodeToExecuteData: INodeData
 
