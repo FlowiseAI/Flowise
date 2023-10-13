@@ -5,6 +5,7 @@ import { BaseChatMemory } from 'langchain/memory'
 import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
+import { additionalCallbacks } from '../../../src/handler'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -91,13 +92,14 @@ class ConversationalAgent_Agents implements INode {
         const executor = nodeData.instance as AgentExecutor
         const memory = nodeData.inputs?.memory as BaseChatMemory
 
+        const callbacks = await additionalCallbacks(nodeData, options)
+
         if (options && options.chatHistory) {
             memory.chatHistory = mapChatHistory(options)
             executor.memory = memory
         }
 
-        const result = await executor.call({ input })
-
+        const result = await executor.call({ input }, [...callbacks])
         return result?.output
     }
 }

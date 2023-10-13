@@ -1,9 +1,10 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
 import { Tool } from 'langchain/tools'
 import { getBaseClasses } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
+import { additionalCallbacks } from '../../../src/handler'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -52,9 +53,12 @@ class MRKLAgentLLM_Agents implements INode {
         return executor
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
-        const result = await executor.call({ input })
+
+        const callbacks = await additionalCallbacks(nodeData, options)
+
+        const result = await executor.call({ input }, [...callbacks])
 
         return result?.output
     }
