@@ -18,7 +18,7 @@ class ElasicsearchExisting_VectorStores extends ElasticSearchBase implements INo
     async constructVectorStore(
         embeddings: Embeddings,
         elasticSearchClientArgs: ElasticClientArgs,
-        docs: Document<Record<string, any>>[] | undefined
+        _: Document<Record<string, any>>[] | undefined
     ): Promise<VectorStore> {
         return await ElasticVectorSearch.fromExistingIndex(embeddings, elasticSearchClientArgs)
     }

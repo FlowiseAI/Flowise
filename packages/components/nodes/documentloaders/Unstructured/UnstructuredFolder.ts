@@ -46,13 +46,72 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                 default: 'http://localhost:8000/general/v0/general'
             },
             {
+                label: 'Element Type',
+                name: 'elementType',
+                description:
+                    'Unstructured partition document into different types, select the types to return. If not selected, all types will be returned',
+                type: 'multiOptions',
+                options: [
+                    {
+                        label: 'FigureCaption',
+                        name: 'FigureCaption'
+                    },
+                    {
+                        label: 'NarrativeText',
+                        name: 'NarrativeText'
+                    },
+                    {
+                        label: 'ListItem',
+                        name: 'ListItem'
+                    },
+                    {
+                        label: 'Title',
+                        name: 'Title'
+                    },
+                    {
+                        label: 'Address',
+                        name: 'Address'
+                    },
+                    {
+                        label: 'Table',
+                        name: 'Table'
+                    },
+                    {
+                        label: 'PageBreak',
+                        name: 'PageBreak'
+                    },
+                    {
+                        label: 'Header',
+                        name: 'Header'
+                    },
+                    {
+                        label: 'Footer',
+                        name: 'Footer'
+                    },
+                    {
+                        label: 'UncategorizedText',
+                        name: 'UncategorizedText'
+                    },
+                    {
+                        label: 'Image',
+                        name: 'Image'
+                    },
+                    {
+                        label: 'Formula',
+                        name: 'Formula'
+                    }
+                ],
+                default: [],
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
                 optional: true,
                 additionalParams: true
             }
-            /*TODO Add Filter Options*/
         ]
     }
 
@@ -60,6 +119,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         const folderPath = nodeData.inputs?.folderPath as string
         const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string
         const metadata = nodeData.inputs?.metadata
+        const elementType = nodeData.inputs?.elementType as string
 
         const obj: UnstructuredLoaderOptions = { apiUrl: unstructuredAPIUrl }
 
@@ -69,6 +129,15 @@ class UnstructuredFolder_DocumentLoaders implements INode {
 
         const loader = new UnstructuredDirectoryLoader(folderPath, obj)
         const docs = await loader.load()
+
+        let elementTypes: string[] = []
+        if (elementType) {
+            try {
+                elementTypes = JSON.parse(elementType)
+            } catch (e) {
+                elementTypes = []
+            }
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
@@ -83,10 +152,10 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                 }
                 finaldocs.push(newdoc)
             }
-            return finaldocs
+            return elementTypes.length ? finaldocs.filter((doc) => elementTypes.includes(doc.metadata.category)) : finaldocs
         }
 
-        return docs
+        return elementTypes.length ? docs.filter((doc) => elementTypes.includes(doc.metadata.category)) : docs
     }
 }
 
