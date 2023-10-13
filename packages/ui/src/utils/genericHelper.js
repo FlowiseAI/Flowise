@@ -39,7 +39,20 @@ export const initNode = (nodeData, newNodeId) => {
     const incoming = nodeData.inputs ? nodeData.inputs.length : 0
     const outgoing = 1
 
-    const whitelistTypes = ['asyncOptions', 'options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
+    const whitelistTypes = [
+        'asyncOptions',
+        'options',
+        'multiOptions',
+        'string',
+        'number',
+        'boolean',
+        'password',
+        'json',
+        'code',
+        'date',
+        'file',
+        'folder'
+    ]
 
     // Inputs
     for (let i = 0; i < incoming; i += 1) {

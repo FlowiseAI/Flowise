@@ -1,6 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatOpenAICustom_ChatModels implements INode {
     label: string
@@ -17,7 +19,7 @@ class ChatOpenAICustom_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI Custom'
         this.name = 'chatOpenAICustom'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatOpenAI-Custom'
         this.icon = 'openai.png'
         this.category = 'Chat Models'
@@ -31,6 +33,12 @@ class ChatOpenAICustom_ChatModels implements INode {
             optional: true
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -113,11 +121,12 @@ class ChatOpenAICustom_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -129,6 +138,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
 
         let parsedBaseOptions: any | undefined = undefined
 

@@ -41,7 +41,7 @@ class VectaraUpsert_VectorStores implements INode {
                 list: true
             },
             {
-                label: 'Vectara Metadata Filter',
+                label: 'Metadata Filter',
                 name: 'filter',
                 description:
                     'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
@@ -101,7 +101,7 @@ class VectaraUpsert_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
         const customerId = getCredentialParam('customerID', credentialData, nodeData)
-        const corpusId = getCredentialParam('corpusID', credentialData, nodeData)
+        const corpusId = getCredentialParam('corpusID', credentialData, nodeData).split(',')
 
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = {} as Embeddings
@@ -116,7 +116,8 @@ class VectaraUpsert_VectorStores implements INode {
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,
             customerId: customerId,
-            corpusId: corpusId
+            corpusId: corpusId,
+            source: 'flowise'
         }
 
         const vectaraFilter: VectaraFilter = {}

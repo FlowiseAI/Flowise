@@ -167,6 +167,10 @@ export interface IActiveChatflows {
     }
 }
 
+export interface IActiveCache {
+    [key: string]: Map<any, any>
+}
+
 export interface IOverrideConfig {
     node: string
     nodeId: string

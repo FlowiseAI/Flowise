@@ -7,14 +7,14 @@
             "id": "chatOpenAI_0",
             "position": {
                 "x": 1184.1176114500388,
-                "y": -44.15535835370571
+                "y": -74.15535835370571
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 1,
+                "version": 2,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -126,7 +126,15 @@
                         "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": "0",
@@ -150,7 +158,7 @@
             },
             "positionAbsolute": {
                 "x": 1184.1176114500388,
-                "y": -44.15535835370571
+                "y": -74.15535835370571
             },
             "selected": false,
             "dragging": false
@@ -418,7 +426,7 @@
                 "id": "textFile_0",
                 "label": "Text File",
                 "name": "textFile",
-                "version": 1,
+                "version": 2,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -455,13 +463,29 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "textFile_0-output-textFile-Document",
-                        "name": "textFile",
-                        "label": "Document",
-                        "type": "Document"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "textFile_0-output-document-Document",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document"
+                            },
+                            {
+                                "id": "textFile_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
                     }
                 ],
-                "outputs": {},
+                "outputs": {
+                    "output": "document"
+                },
                 "selected": false
             },
             "selected": false,

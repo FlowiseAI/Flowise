@@ -54,6 +54,7 @@ import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { ChainLog } from './database/entities/ChainLog'
 import { ChatflowPool } from './ChatflowPool'
+import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { getDataByQueries, prepareQueryParametersForLists } from './utils/queryHelpers'
@@ -62,6 +63,7 @@ export class App {
     app: express.Application
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
+    cachePool: CachePool
     AppDataSource = getDataSource()
 
     constructor() {
@@ -93,6 +95,9 @@ export class App {
                 // Initialize Rate Limit
                 const AllChatFlow: IChatFlow[] = await getAllChatFlow()
                 await initializeRateLimiter(AllChatFlow)
+
+                // Initialize cache pool
+                this.cachePool = new CachePool()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -973,8 +978,10 @@ export class App {
                     incomingInput.question,
                     incomingInput.history,
                     chatId,
+                    chatflowid,
                     this.AppDataSource,
-                    incomingInput?.overrideConfig
+                    incomingInput?.overrideConfig,
+                    this.cachePool
                 )
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)

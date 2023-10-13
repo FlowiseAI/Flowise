@@ -31,6 +31,7 @@ import { Input } from 'ui-component/input/Input'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import langsmithPNG from 'assets/images/langchain.png'
 import langfusePNG from 'assets/images/langfuse.png'
+import llmonitorPNG from 'assets/images/llmonitor.png'
 
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
@@ -81,32 +82,31 @@ const analyticProviders = [
                 credentialNames: ['langfuseApi']
             },
             {
-                label: 'Flush At',
-                name: 'flushAt',
-                type: 'number',
-                optional: true,
-                description: 'Number of queued requests'
-            },
-            {
-                label: 'Flush Interval',
-                name: 'flushInterval',
-                type: 'number',
-                optional: true,
-                description: 'Interval in ms to flush requests'
-            },
-            {
-                label: 'Request Timeout',
-                name: 'requestTimeout',
-                type: 'number',
-                optional: true,
-                description: 'Timeout in ms for requests'
-            },
-            {
                 label: 'Release',
                 name: 'release',
                 type: 'string',
                 optional: true,
                 description: 'The release number/hash of the application to provide analytics grouped by release'
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
+    {
+        label: 'LLMonitor',
+        name: 'llmonitor',
+        icon: llmonitorPNG,
+        url: 'https://llmonitor.com',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['llmonitorApi']
             },
             {
                 label: 'On/Off',
