@@ -113,7 +113,8 @@ class VectaraUpload_VectorStores implements INode {
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,
             customerId: customerId,
-            corpusId: corpusId
+            corpusId: corpusId,
+            source: "flowise",
         }
 
         const vectaraFilter: VectaraFilter = {}
