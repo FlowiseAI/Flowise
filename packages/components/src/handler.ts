@@ -244,7 +244,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
                     const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
 
-                    const langFuseOptions: ICommonObject = {
+                    const langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
