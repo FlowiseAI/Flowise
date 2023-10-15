@@ -15,6 +15,7 @@ services:
             - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
             - LOG_LEVEL=${LOG_LEVEL}
             - LOG_PATH=${LOG_PATH}
+            - PLUGIN_PATH=${PLUGIN_PATH}
         ports:
             - '${PORT}:${PORT}'
         volumes:
