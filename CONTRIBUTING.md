@@ -12,7 +12,7 @@ Star and share the [Github Repo](https://github.com/FlowiseAI/Flowise).
 
 ## 🙋 Q&A
 
-Search up for any questions in [Q&A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
+Search up for any questions in [Q&amp;A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
 
 ## 🙌 Share Chatflow
 
@@ -52,16 +52,13 @@ Flowise has 3 different modules in a single mono repository.
 #### Step by step
 
 1. Fork the official [Flowise Github Repository](https://github.com/FlowiseAI/Flowise).
-
 2. Clone your forked repository.
-
 3. Create a new branch, see [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository). Naming conventions:
 
     - For feature branch: `feature/<Your New Feature>`
     - For bug fix branch: `bugfix/<Your New Bugfix>`.
 
 4. Switch to the newly created branch.
-
 5. Go into repository folder
 
     ```bash
@@ -120,26 +117,27 @@ Flowise has 3 different modules in a single mono repository.
 
 Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
-| Variable                    | Description                                                                  | Type                                             | Default                             |
-| --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- | --- |
-| PORT                        | The HTTP port Flowise runs on                                                | Number                                           | 3000                                |
-| FLOWISE_USERNAME            | Username to login                                                            | String                                           |                                     |
-| FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
-| DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |
-| LOG_PATH                    | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
-| LOG_LEVEL                   | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
-| APIKEY_PATH                 | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |
-| TOOL_FUNCTION_BUILTIN_DEP   | NodeJS built-in modules to be used for Tool Function                         | String                                           |                                     |
-| TOOL_FUNCTION_EXTERNAL_DEP  | External modules to be used for Tool Function                                | String                                           |                                     |     |
-| DATABASE_TYPE               | Type of database to store the flowise data                                   | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
-| DATABASE_PATH               | Location where database is saved (When DATABASE_TYPE is sqlite)              | String                                           | `your-home-dir/.flowise`            |
-| DATABASE_HOST               | Host URL or IP address (When DATABASE_TYPE is not sqlite)                    | String                                           |                                     |
-| DATABASE_PORT               | Database port (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
-| DATABASE_USER               | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
-| DATABASE_PASSWORD           | Database password (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
-| DATABASE_NAME               | Database name (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
-| SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
-| FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
+| Variable                    | Description                                                                  | Type                                            | Default                             |     |
+| --------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------- | --- |
+| PORT                        | The HTTP port Flowise runs on                                                | Number                                          | 3000                                |     |
+| FLOWISE_USERNAME            | Username to login                                                            | String                                          |                                     |     |
+| FLOWISE_PASSWORD            | Password to login                                                            | String                                          |                                     |     |
+| DEBUG                       | Print logs from components                                                   | Boolean                                         |                                     |     |
+| LOG_PATH                    | Location where log files are stored                                          | String                                          | `your-path/Flowise/logs`            |     |
+| LOG_LEVEL                   | Different levels of logs                                                     | Enum String:`error`, `info`, `verbose`, `debug` | `info`                              |     |
+| APIKEY_PATH                 | Location where api keys are saved                                            | String                                          | `your-path/Flowise/packages/server` |     |
+| TOOL_FUNCTION_BUILTIN_DEP   | NodeJS built-in modules to be used for Tool Function                         | String                                          |                                     |     |
+| TOOL_FUNCTION_EXTERNAL_DEP  | External modules to be used for Tool Function                                | String                                          |                                     |     |
+| DATABASE_TYPE               | Type of database to store the flowise data                                   | Enum String:`sqlite`, `mysql`, `postgres`       | `sqlite`                            |     |
+| DATABASE_PATH               | Location where database is saved (When DATABASE_TYPE is sqlite)              | String                                          | `your-home-dir/.flowise`            |     |
+| DATABASE_HOST               | Host URL or IP address (When DATABASE_TYPE is not sqlite)                    | String                                          |                                     |     |
+| DATABASE_PORT               | Database port (When DATABASE_TYPE is not sqlite)                             | String                                          |                                     |     |
+| DATABASE_USER               | Database username (When DATABASE_TYPE is not sqlite)                         | String                                          |                                     |     |
+| DATABASE_PASSWORD           | Database password (When DATABASE_TYPE is not sqlite)                         | String                                          |                                     |     |
+| DATABASE_NAME               | Database name (When DATABASE_TYPE is not sqlite)                             | String                                          |                                     |     |
+| SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                          | `your-path/Flowise/packages/server` |     |
+| FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                          |                                     |     |
+| PLUGIN_PATH                 | Location where plugins are loaded from.                                      | String                                          |                                     |     |
 
 You can also specify the env variables when using `npx`. For example:
 
