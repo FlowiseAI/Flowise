@@ -1,0 +1,23 @@
+{
+    "name": "my-plugin",
+    "version": "1.0.0",
+    "description": "My First Plugin",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "types": "dist/src/index.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "tsc && gulp",
+        "dev": "tsc --watch"
+    },
+    "author": "Matthias Platzer @engarde.net",
+    "dependencies": {
+        "flowise": "*",
+        "flowise-components": "*",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "@types/winston": "^2.4.4",
+        "typescript": "^4.8.4"
+    }
+}
