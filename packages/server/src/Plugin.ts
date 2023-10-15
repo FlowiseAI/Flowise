@@ -41,12 +41,12 @@ class PluginManager {
     /**
      * Load plugins from the plugin directory without initializing them.
      *
-     * @uses process.env.PLUGIN_DIR to specify the plugin directory
+     * @uses process.env.PLUGIN_PATH to specify the plugin directory
      * @returns {Promise<void>}
      */
     async loadPlugins() {
-        const pluginDir = process.env.PLUGIN_DIR
-            ? path.join(__dirname, process.env.PLUGIN_DIR)
+        const pluginDir = process.env.PLUGIN_PATH
+            ? path.join(__dirname, process.env.PLUGIN_PATH)
             : path.join(__dirname, '..', '..', '..', 'plugins')
 
         const pluginFolders = fs.readdirSync(pluginDir)
