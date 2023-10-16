@@ -35,6 +35,11 @@ class MultiPromptChain_Chains implements INode {
                 name: 'promptRetriever',
                 type: 'PromptRetriever',
                 list: true
+            },
+            {
+                label: 'Memory',
+                name: 'memory',
+                type: 'BaseMemory'
             }
         ]
     }
