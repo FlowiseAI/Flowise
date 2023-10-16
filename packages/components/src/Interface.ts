@@ -5,6 +5,7 @@
 export type NodeParamsType =
     | 'asyncOptions'
     | 'options'
+    | 'multiOptions'
     | 'string'
     | 'number'
     | 'boolean'

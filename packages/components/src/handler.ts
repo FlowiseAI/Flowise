@@ -151,6 +151,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
+    cachedResponse = true
 
     constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
@@ -161,6 +162,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 
     handleLLMStart() {
+        this.cachedResponse = false
         if (this.skipK > 0) this.skipK -= 1
     }
 
@@ -178,9 +180,30 @@ export class CustomChainHandler extends BaseCallbackHandler {
         this.socketIO.to(this.socketIOClientId).emit('end')
     }
 
-    handleChainEnd(outputs: ChainValues): void | Promise<void> {
-        if (this.returnSourceDocuments) {
-            this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+    handleChainEnd(outputs: ChainValues, _: string, parentRunId?: string): void | Promise<void> {
+        /*
+            Langchain does not call handleLLMStart, handleLLMEnd, handleLLMNewToken when the chain is cached.
+            Callback Order is "Chain Start -> LLM Start --> LLM Token --> LLM End -> Chain End" for normal responses.
+            Callback Order is "Chain Start -> Chain End" for cached responses.
+         */
+        if (this.cachedResponse && parentRunId === undefined) {
+            const cachedValue = outputs.text ?? outputs.response ?? outputs.output ?? outputs.output_text
+            //split at whitespace, and keep the whitespace. This is to preserve the original formatting.
+            const result = cachedValue.split(/(\s+)/)
+            result.forEach((token: string, index: number) => {
+                if (index === 0) {
+                    this.socketIO.to(this.socketIOClientId).emit('start', token)
+                }
+                this.socketIO.to(this.socketIOClientId).emit('token', token)
+            })
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
+            this.socketIO.to(this.socketIOClientId).emit('end')
+        } else {
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
         }
     }
 }
@@ -215,23 +238,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     })
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
-                    const flushAt = analytic[provider].flushAt as string
-                    const flushInterval = analytic[provider].flushInterval as string
-                    const requestTimeout = analytic[provider].requestTimeout as string
                     const release = analytic[provider].release as string
 
                     const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
                     const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
                     const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
 
-                    const langFuseOptions: ICommonObject = {
+                    const langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
-                    if (flushAt) langFuseOptions.flushAt = parseInt(flushAt, 10)
-                    if (flushInterval) langFuseOptions.flushInterval = parseInt(flushInterval, 10)
-                    if (requestTimeout) langFuseOptions.requestTimeout = parseInt(requestTimeout, 10)
                     if (release) langFuseOptions.release = release
 
                     const handler = new CallbackHandler(langFuseOptions)

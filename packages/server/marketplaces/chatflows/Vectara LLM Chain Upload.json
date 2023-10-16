@@ -32,7 +32,7 @@
                         "id": "vectaraUpload_0-input-file-file"
                     },
                     {
-                        "label": "Vectara Metadata Filter",
+                        "label": "Metadata Filter",
                         "name": "filter",
                         "description": "Filter to apply to Vectara metadata. Refer to the <a target=\"_blank\" href=\"https://docs.flowiseai.com/vector-stores/vectara\">documentation</a> on how to use Vectara filters with Flowise.",
                         "type": "string",
@@ -124,7 +124,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 1,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -230,7 +230,15 @@
                         "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": "0.5",

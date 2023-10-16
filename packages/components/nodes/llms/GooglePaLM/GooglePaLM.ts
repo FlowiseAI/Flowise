@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { GooglePaLM, GooglePaLMTextInput } from 'langchain/llms/googlepalm'
-
+import { BaseCache } from 'langchain/schema'
 class GooglePaLM_LLMs implements INode {
     label: string
     name: string
@@ -17,7 +17,7 @@ class GooglePaLM_LLMs implements INode {
     constructor() {
         this.label = 'GooglePaLM'
         this.name = 'GooglePaLM'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'GooglePaLM'
         this.icon = 'Google_PaLM_Logo.svg'
         this.category = 'LLMs'
@@ -30,6 +30,12 @@ class GooglePaLM_LLMs implements INode {
             credentialNames: ['googleMakerSuite']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -126,6 +132,7 @@ class GooglePaLM_LLMs implements INode {
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const stopSequencesObj = nodeData.inputs?.stopSequencesObj
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)
@@ -139,6 +146,7 @@ class GooglePaLM_LLMs implements INode {
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
+        if (cache) obj.cache = cache
 
         let parsedStopSequences: any | undefined = undefined
         if (stopSequencesObj) {

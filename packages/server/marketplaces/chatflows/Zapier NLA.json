@@ -115,7 +115,7 @@
                 "id": "openAI_0",
                 "label": "OpenAI",
                 "name": "openAI",
-                "version": 2,
+                "version": 3,
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -223,7 +223,15 @@
                         "id": "openAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "openAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo-instruct",
                     "temperature": 0.7,

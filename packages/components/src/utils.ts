@@ -533,7 +533,7 @@ export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
  * @param {IMessage[]} chatHistory
  * @returns {string}
  */
-export const convertChatHistoryToText = (chatHistory: IMessage[]): string => {
+export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string => {
     return chatHistory
         .map((chatMessage) => {
             if (chatMessage.type === 'apiMessage') {

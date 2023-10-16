@@ -1,6 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, OpenAIInput } from 'langchain/llms/openai'
+import { BaseLLMParams } from 'langchain/llms/base'
+import { BaseCache } from 'langchain/schema'
 
 class OpenAI_LLMs implements INode {
     label: string
@@ -17,7 +19,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'OpenAI'
         this.icon = 'openai.png'
         this.category = 'LLMs'
@@ -30,6 +32,12 @@ class OpenAI_LLMs implements INode {
             credentialNames: ['openAIApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -149,7 +157,9 @@ class OpenAI_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIInput> & { openAIApiKey?: string } = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<OpenAIInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -164,8 +174,9 @@ class OpenAI_LLMs implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
 
-        let parsedBaseOptions: any | undefined = undefined
+        if (cache) obj.cache = cache
 
+        let parsedBaseOptions: any | undefined = undefined
         if (baseOptions) {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)

@@ -2,6 +2,8 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Bedrock } from 'langchain/llms/bedrock'
 import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 /**
  * I had to run the following to build the component
@@ -39,6 +41,12 @@ class AWSBedrock_LLMs implements INode {
             optional: true
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Region',
                 name: 'region',
@@ -80,8 +88,7 @@ class AWSBedrock_LLMs implements INode {
                     { label: 'us-west-1', name: 'us-west-1' },
                     { label: 'us-west-2', name: 'us-west-2' }
                 ],
-                default: 'us-east-1',
-                optional: false
+                default: 'us-east-1'
             },
             {
                 label: 'Model Name',
@@ -90,17 +97,12 @@ class AWSBedrock_LLMs implements INode {
                 options: [
                     { label: 'amazon.titan-tg1-large', name: 'amazon.titan-tg1-large' },
                     { label: 'amazon.titan-e1t-medium', name: 'amazon.titan-e1t-medium' },
-                    { label: 'stability.stable-diffusion-xl', name: 'stability.stable-diffusion-xl' },
+                    { label: 'cohere.command-text-v14', name: 'cohere.command-text-v14' },
                     { label: 'ai21.j2-grande-instruct', name: 'ai21.j2-grande-instruct' },
                     { label: 'ai21.j2-jumbo-instruct', name: 'ai21.j2-jumbo-instruct' },
                     { label: 'ai21.j2-mid', name: 'ai21.j2-mid' },
-                    { label: 'ai21.j2-ultra', name: 'ai21.j2-ultra' },
-                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
-                    { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
-                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' }
-                ],
-                default: 'anthropic.claude-v2',
-                optional: false
+                    { label: 'ai21.j2-ultra', name: 'ai21.j2-ultra' }
+                ]
             },
             {
                 label: 'Temperature',
@@ -109,8 +111,7 @@ class AWSBedrock_LLMs implements INode {
                 step: 0.1,
                 description: 'Temperature parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
-                default: 0.7,
-                additionalParams: false
+                default: 0.7
             },
             {
                 label: 'Max Tokens to Sample',
@@ -118,9 +119,8 @@ class AWSBedrock_LLMs implements INode {
                 type: 'number',
                 step: 10,
                 description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
-                optional: false,
-                default: 200,
-                additionalParams: false
+                optional: true,
+                default: 200
             }
         ]
     }
@@ -130,8 +130,8 @@ class AWSBedrock_LLMs implements INode {
         const iModel = nodeData.inputs?.model as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
-
-        const obj: Partial<BaseBedrockInput> = {
+        const cache = nodeData.inputs?.cache as BaseCache
+        const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
             model: iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
@@ -157,6 +157,7 @@ class AWSBedrock_LLMs implements INode {
                 sessionToken: credentialApiSession
             }
         }
+        if (cache) obj.cache = cache
 
         const amazonBedrock = new Bedrock(obj)
         return amazonBedrock

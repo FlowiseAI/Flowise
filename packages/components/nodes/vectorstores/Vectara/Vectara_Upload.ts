@@ -39,7 +39,7 @@ class VectaraUpload_VectorStores implements INode {
                 type: 'file'
             },
             {
-                label: 'Vectara Metadata Filter',
+                label: 'Metadata Filter',
                 name: 'filter',
                 description:
                     'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
@@ -113,7 +113,8 @@ class VectaraUpload_VectorStores implements INode {
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,
             customerId: customerId,
-            corpusId: corpusId
+            corpusId: corpusId,
+            source: 'flowise'
         }
 
         const vectaraFilter: VectaraFilter = {}

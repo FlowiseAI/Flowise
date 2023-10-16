@@ -1,8 +1,10 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
 import { Embeddings } from 'langchain/embeddings/base'
-import { Client } from '@opensearch-project/opensearch'
+import { Document } from 'langchain/document'
+import { Client, RequestParams } from '@opensearch-project/opensearch'
 import { getBaseClasses } from '../../../src/utils'
+import { buildMetadataTerms } from './core'
 
 class OpenSearch_Existing_VectorStores implements INode {
     label: string
@@ -43,6 +45,13 @@ class OpenSearch_Existing_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'OpenSearch Metadata Filter',
+                name: 'openSearchMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -73,6 +82,7 @@ class OpenSearch_Existing_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const openSearchMetadataFilter = nodeData.inputs?.openSearchMetadataFilter
 
         const client = new Client({
             nodes: [opensearchURL]
@@ -82,6 +92,46 @@ class OpenSearch_Existing_VectorStores implements INode {
             client,
             indexName
         })
+
+        vectorStore.similaritySearchVectorWithScore = async (
+            query: number[],
+            k: number,
+            filter?: object | undefined
+        ): Promise<[Document, number][]> => {
+            if (openSearchMetadataFilter) {
+                const metadatafilter =
+                    typeof openSearchMetadataFilter === 'object' ? openSearchMetadataFilter : JSON.parse(openSearchMetadataFilter)
+                filter = metadatafilter
+            }
+            const search: RequestParams.Search = {
+                index: indexName,
+                body: {
+                    query: {
+                        bool: {
+                            filter: { bool: { must: buildMetadataTerms(filter) } },
+                            must: [
+                                {
+                                    knn: {
+                                        embedding: { vector: query, k }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    size: k
+                }
+            }
+
+            const { body } = await client.search(search)
+
+            return body.hits.hits.map((hit: any) => [
+                new Document({
+                    pageContent: hit._source.text,
+                    metadata: hit._source.metadata
+                }),
+                hit._score
+            ])
+        }
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
