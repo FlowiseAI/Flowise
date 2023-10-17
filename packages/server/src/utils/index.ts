@@ -931,6 +931,7 @@ export const redactCredentialWithPasswordType = (
 export const checkMemorySessionId = (instance: any, chatId: string): string => {
     if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
         instance.memory.sessionId = chatId
+        instance.memory.chatHistory.sessionId = chatId
     }
     return instance.memory.sessionId
 }
