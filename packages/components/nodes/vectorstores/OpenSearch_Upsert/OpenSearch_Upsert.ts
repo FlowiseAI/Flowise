@@ -2,10 +2,9 @@ import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/I
 import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { Client, RequestParams } from '@opensearch-project/opensearch'
+import { Client } from '@opensearch-project/opensearch'
 import { flatten } from 'lodash'
 import { getBaseClasses } from '../../../src/utils'
-import { buildMetadataTerms } from './core'
 
 class OpenSearchUpsert_VectorStores implements INode {
     label: string
@@ -96,43 +95,8 @@ class OpenSearchUpsert_VectorStores implements INode {
 
         const vectorStore = await OpenSearchVectorStore.fromDocuments(finalDocs, embeddings, {
             client,
-            indexName
+            indexName: indexName
         })
-
-        vectorStore.similaritySearchVectorWithScore = async (
-            query: number[],
-            k: number,
-            filter?: object | undefined
-        ): Promise<[Document, number][]> => {
-            const search: RequestParams.Search = {
-                index: indexName,
-                body: {
-                    query: {
-                        bool: {
-                            filter: { bool: { must: buildMetadataTerms(filter) } },
-                            must: [
-                                {
-                                    knn: {
-                                        embedding: { vector: query, k }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    size: k
-                }
-            }
-
-            const { body } = await client.search(search)
-
-            return body.hits.hits.map((hit: any) => [
-                new Document({
-                    pageContent: hit._source.text,
-                    metadata: hit._source.metadata
-                }),
-                hit._score
-            ])
-        }
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
