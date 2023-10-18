@@ -4,7 +4,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import axios from 'axios'
 
 class Airtable_Agents implements INode {
@@ -102,6 +102,7 @@ class Airtable_Agents implements INode {
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         const pyodide = await LoadPyodide()
 
@@ -141,7 +142,7 @@ json.dumps(my_dict)`
                 dict: dataframeColDict,
                 question: input
             }
-            const res = await chain.call(inputs, [loggerHandler])
+            const res = await chain.call(inputs, [loggerHandler, ...callbacks])
             pythonCode = res?.text
         }
 
@@ -169,10 +170,10 @@ json.dumps(my_dict)`
             }
 
             if (options.socketIO && options.socketIOClientId) {
-                const result = await chain.call(inputs, [loggerHandler, handler])
+                const result = await chain.call(inputs, [loggerHandler, handler, ...callbacks])
                 return result?.text
             } else {
-                const result = await chain.call(inputs, [loggerHandler])
+                const result = await chain.call(inputs, [loggerHandler, ...callbacks])
                 return result?.text
             }
         }

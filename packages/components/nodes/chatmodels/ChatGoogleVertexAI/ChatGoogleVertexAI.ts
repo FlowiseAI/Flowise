@@ -2,6 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatGoogleVertexAI, GoogleVertexAIChatInput } from 'langchain/chat_models/googlevertexai'
 import { GoogleAuthOptions } from 'google-auth-library'
+import { BaseCache } from 'langchain/schema'
 
 class GoogleVertexAI_ChatModels implements INode {
     label: string
@@ -18,7 +19,7 @@ class GoogleVertexAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleVertexAI'
         this.name = 'chatGoogleVertexAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatGoogleVertexAI'
         this.icon = 'vertexai.svg'
         this.category = 'Chat Models'
@@ -35,6 +36,12 @@ class GoogleVertexAI_ChatModels implements INode {
         }
         this.inputs = [
             {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
@@ -46,6 +53,14 @@ class GoogleVertexAI_ChatModels implements INode {
                     {
                         label: 'codechat-bison',
                         name: 'codechat-bison'
+                    },
+                    {
+                        label: 'chat-bison-32k',
+                        name: 'chat-bison-32k'
+                    },
+                    {
+                        label: 'codechat-bison-32k',
+                        name: 'codechat-bison-32k'
                     }
                 ],
                 default: 'chat-bison',
@@ -105,8 +120,9 @@ class GoogleVertexAI_ChatModels implements INode {
         const modelName = nodeData.inputs?.modelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
+        const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<GoogleVertexAIChatInput> = {
+        const obj: GoogleVertexAIChatInput<GoogleAuthOptions> = {
             temperature: parseFloat(temperature),
             model: modelName
         }
@@ -114,6 +130,7 @@ class GoogleVertexAI_ChatModels implements INode {
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
+        if (cache) obj.cache = cache
 
         const model = new ChatGoogleVertexAI(obj)
         return model

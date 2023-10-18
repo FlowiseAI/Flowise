@@ -15,7 +15,7 @@ export class NodesPool {
      */
     async initialize() {
         await this.initializeNodes()
-        await this.initializeCrdentials()
+        await this.initializeCredentials()
     }
 
     /**
@@ -34,8 +34,6 @@ export class NodesPool {
                         const newNodeInstance = new nodeModule.nodeClass()
                         newNodeInstance.filePath = file
 
-                        this.componentNodes[newNodeInstance.name] = newNodeInstance
-
                         // Replace file icon with absolute path
                         if (
                             newNodeInstance.icon &&
@@ -46,7 +44,7 @@ export class NodesPool {
                             const filePath = file.replace(/\\/g, '/').split('/')
                             filePath.pop()
                             const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
-                            this.componentNodes[newNodeInstance.name].icon = nodeIconAbsolutePath
+                            newNodeInstance.icon = nodeIconAbsolutePath
 
                             // Store icon path for componentCredentials
                             if (newNodeInstance.credential) {
@@ -54,6 +52,11 @@ export class NodesPool {
                                     this.credentialIconPath[credName] = nodeIconAbsolutePath
                                 }
                             }
+                        }
+
+                        const skipCategories = ['Analytic']
+                        if (!skipCategories.includes(newNodeInstance.category)) {
+                            this.componentNodes[newNodeInstance.name] = newNodeInstance
                         }
                     }
                 }
@@ -64,7 +67,7 @@ export class NodesPool {
     /**
      * Initialize credentials
      */
-    private async initializeCrdentials() {
+    private async initializeCredentials() {
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'credentials')
         const nodeFiles = await this.getFiles(nodesPath)

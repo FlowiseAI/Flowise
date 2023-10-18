@@ -2,6 +2,8 @@ import { OpenAIBaseInput } from 'langchain/dist/types/openai-types'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { AzureOpenAIInput, ChatOpenAI } from 'langchain/chat_models/openai'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
@@ -18,7 +20,7 @@ class AzureChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'Azure ChatOpenAI'
         this.name = 'azureChatOpenAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
@@ -31,6 +33,12 @@ class AzureChatOpenAI_ChatModels implements INode {
             credentialNames: ['azureOpenAIApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -107,6 +115,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
@@ -114,7 +123,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<AzureOpenAIInput> & Partial<OpenAIBaseInput> = {
+        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIBaseInput> = {
             temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
@@ -128,6 +137,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
 
         const model = new ChatOpenAI(obj)
         return model

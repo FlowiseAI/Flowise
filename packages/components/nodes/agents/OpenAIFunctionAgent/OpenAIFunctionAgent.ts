@@ -4,7 +4,7 @@ import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { BaseChatMemory } from 'langchain/memory'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class OpenAIFunctionAgent_Agents implements INode {
     label: string
@@ -81,18 +81,23 @@ class OpenAIFunctionAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as BaseChatMemory
 
         if (options && options.chatHistory) {
-            memory.chatHistory = mapChatHistory(options)
-            executor.memory = memory
+            const chatHistoryClassName = memory.chatHistory.constructor.name
+            // Only replace when its In-Memory
+            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
+                memory.chatHistory = mapChatHistory(options)
+                executor.memory = memory
+            }
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const result = await executor.run(input, [loggerHandler, handler])
+            const result = await executor.run(input, [loggerHandler, handler, ...callbacks])
             return result
         } else {
-            const result = await executor.run(input, [loggerHandler])
+            const result = await executor.run(input, [loggerHandler, ...callbacks])
             return result
         }
     }

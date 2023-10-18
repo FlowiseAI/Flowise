@@ -141,14 +141,14 @@
             "id": "chatAnthropic_0",
             "position": {
                 "x": 800.5525382783799,
-                "y": -76.7988221837009
+                "y": -130.7988221837009
             },
             "type": "customNode",
             "data": {
                 "id": "chatAnthropic_0",
                 "label": "ChatAnthropic",
                 "name": "chatAnthropic",
-                "version": 1,
+                "version": 2,
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -258,7 +258,15 @@
                         "id": "chatAnthropic_0-input-topK-number"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "claude-2",
                     "temperature": 0.9,
@@ -280,7 +288,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 800.5525382783799,
-                "y": -76.7988221837009
+                "y": -130.7988221837009
             },
             "dragging": false
         },

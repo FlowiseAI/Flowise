@@ -53,7 +53,7 @@ class ChatPromptTemplate_Prompts implements INode {
         const humanMessagePrompt = nodeData.inputs?.humanMessagePrompt as string
         const promptValuesStr = nodeData.inputs?.promptValues as string
 
-        const prompt = ChatPromptTemplate.fromPromptMessages([
+        const prompt = ChatPromptTemplate.fromMessages([
             SystemMessagePromptTemplate.fromTemplate(systemMessagePrompt),
             HumanMessagePromptTemplate.fromTemplate(humanMessagePrompt)
         ])

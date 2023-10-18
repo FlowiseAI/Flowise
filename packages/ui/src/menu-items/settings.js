@@ -1,8 +1,8 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy } from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -31,6 +31,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileExport
+        },
+        {
+            id: 'analyseChatflow',
+            title: 'Analyse Chatflow',
+            type: 'item',
+            url: '',
+            icon: icons.IconSearch
         },
         {
             id: 'deleteChatflow',
