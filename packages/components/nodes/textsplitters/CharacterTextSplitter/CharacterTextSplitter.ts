@@ -24,12 +24,6 @@ class CharacterTextSplitter_TextSplitters implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(CharacterTextSplitter)]
         this.inputs = [
             {
-                label: 'Separator',
-                name: 'separator',
-                type: 'string',
-                optional: true
-            },
-            {
                 label: 'Chunk Size',
                 name: 'chunkSize',
                 type: 'number',
@@ -40,6 +34,14 @@ class CharacterTextSplitter_TextSplitters implements INode {
                 label: 'Chunk Overlap',
                 name: 'chunkOverlap',
                 type: 'number',
+                optional: true
+            },
+            {
+                label: 'Custom Separator',
+                name: 'separator',
+                type: 'string',
+                placeholder: `" "`,
+                description: 'Seperator to determine when to split the text, will override the default separator',
                 optional: true
             }
         ]
