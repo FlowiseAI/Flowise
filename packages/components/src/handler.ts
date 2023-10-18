@@ -2,6 +2,12 @@ import { BaseTracer, Run, BaseCallbackHandler } from 'langchain/callbacks'
 import { AgentAction, ChainValues } from 'langchain/schema'
 import { Logger } from 'winston'
 import { Server } from 'socket.io'
+import { Client } from 'langsmith'
+import { LangChainTracer } from 'langchain/callbacks'
+import { LLMonitorHandler } from 'langchain/callbacks/handlers/llmonitor'
+import { getCredentialData, getCredentialParam } from './utils'
+import { ICommonObject, INodeData } from './Interface'
+import CallbackHandler from 'langfuse-langchain'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -145,6 +151,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
+    cachedResponse = true
 
     constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
@@ -155,6 +162,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 
     handleLLMStart() {
+        this.cachedResponse = false
         if (this.skipK > 0) this.skipK -= 1
     }
 
@@ -172,9 +180,95 @@ export class CustomChainHandler extends BaseCallbackHandler {
         this.socketIO.to(this.socketIOClientId).emit('end')
     }
 
-    handleChainEnd(outputs: ChainValues): void | Promise<void> {
-        if (this.returnSourceDocuments) {
-            this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+    handleChainEnd(outputs: ChainValues, _: string, parentRunId?: string): void | Promise<void> {
+        /*
+            Langchain does not call handleLLMStart, handleLLMEnd, handleLLMNewToken when the chain is cached.
+            Callback Order is "Chain Start -> LLM Start --> LLM Token --> LLM End -> Chain End" for normal responses.
+            Callback Order is "Chain Start -> Chain End" for cached responses.
+         */
+        if (this.cachedResponse && parentRunId === undefined) {
+            const cachedValue = outputs.text ?? outputs.response ?? outputs.output ?? outputs.output_text
+            //split at whitespace, and keep the whitespace. This is to preserve the original formatting.
+            const result = cachedValue.split(/(\s+)/)
+            result.forEach((token: string, index: number) => {
+                if (index === 0) {
+                    this.socketIO.to(this.socketIOClientId).emit('start', token)
+                }
+                this.socketIO.to(this.socketIOClientId).emit('token', token)
+            })
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
+            this.socketIO.to(this.socketIOClientId).emit('end')
+        } else {
+            if (this.returnSourceDocuments) {
+                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            }
         }
+    }
+}
+
+export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
+    try {
+        if (!options.analytic) return []
+
+        const analytic = JSON.parse(options.analytic)
+        const callbacks: any = []
+
+        for (const provider in analytic) {
+            const providerStatus = analytic[provider].status as boolean
+            if (providerStatus) {
+                const credentialId = analytic[provider].credentialId as string
+                const credentialData = await getCredentialData(credentialId ?? '', options)
+                if (provider === 'langSmith') {
+                    const langSmithProject = analytic[provider].projectName as string
+
+                    const langSmithApiKey = getCredentialParam('langSmithApiKey', credentialData, nodeData)
+                    const langSmithEndpoint = getCredentialParam('langSmithEndpoint', credentialData, nodeData)
+
+                    const client = new Client({
+                        apiUrl: langSmithEndpoint ?? 'https://api.smith.langchain.com',
+                        apiKey: langSmithApiKey
+                    })
+
+                    const tracer = new LangChainTracer({
+                        projectName: langSmithProject ?? 'default',
+                        //@ts-ignore
+                        client
+                    })
+                    callbacks.push(tracer)
+                } else if (provider === 'langFuse') {
+                    const release = analytic[provider].release as string
+
+                    const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
+                    const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
+                    const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
+
+                    const langFuseOptions: any = {
+                        secretKey: langFuseSecretKey,
+                        publicKey: langFusePublicKey,
+                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
+                    }
+                    if (release) langFuseOptions.release = release
+
+                    const handler = new CallbackHandler(langFuseOptions)
+                    callbacks.push(handler)
+                } else if (provider === 'llmonitor') {
+                    const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, nodeData)
+                    const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, nodeData)
+
+                    const llmonitorFields: ICommonObject = {
+                        appId: llmonitorAppId,
+                        apiUrl: llmonitorEndpoint ?? 'https://app.llmonitor.com'
+                    }
+
+                    const handler = new LLMonitorHandler(llmonitorFields)
+                    callbacks.push(handler)
+                }
+            }
+        }
+        return callbacks
+    } catch (e) {
+        throw new Error(e)
     }
 }

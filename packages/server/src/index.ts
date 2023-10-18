@@ -53,6 +53,7 @@ import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { ChatflowPool } from './ChatflowPool'
+import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 
@@ -60,6 +61,7 @@ export class App {
     app: express.Application
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
+    cachePool: CachePool
     AppDataSource = getDataSource()
 
     constructor() {
@@ -91,6 +93,9 @@ export class App {
                 // Initialize Rate Limit
                 const AllChatFlow: IChatFlow[] = await getAllChatFlow()
                 await initializeRateLimiter(AllChatFlow)
+
+                // Initialize cache pool
+                this.cachePool = new CachePool()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -142,7 +147,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the IP returned in the response. If it matches your IP address (which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/), then the number of proxies is correct and the rate limiter should now work correctly. If not, then keep increasing the number until it does.'
+                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
             })
         })
 
@@ -944,8 +949,10 @@ export class App {
                     incomingInput.question,
                     incomingInput.history,
                     chatId,
+                    chatflowid,
                     this.AppDataSource,
-                    incomingInput?.overrideConfig
+                    incomingInput?.overrideConfig,
+                    this.cachePool
                 )
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
@@ -980,13 +987,15 @@ export class App {
                       socketIOClientId: incomingInput.socketIOClientId,
                       logger,
                       appDataSource: this.AppDataSource,
-                      databaseEntities
+                      databaseEntities,
+                      analytic: chatflow.analytic
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
-                      databaseEntities
+                      databaseEntities,
+                      analytic: chatflow.analytic
                   })
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)

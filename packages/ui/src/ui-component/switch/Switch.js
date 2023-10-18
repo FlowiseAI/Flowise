@@ -22,7 +22,7 @@ export const SwitchInput = ({ value, onChange, disabled = false }) => {
 }
 
 SwitchInput.propTypes = {
-    value: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     onChange: PropTypes.func,
     disabled: PropTypes.bool
 }
