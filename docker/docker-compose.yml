@@ -25,4 +25,10 @@ services:
             - '${PORT}:${PORT}'
         volumes:
             - ~/.flowise:/root/.flowise
+        networks:
+            - flowise_net
         command: /bin/sh -c "sleep 3; flowise start"
+networks:
+    flowise_net:
+        name: chroma_net
+        external: true
