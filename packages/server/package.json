@@ -41,7 +41,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "engines": {
-        "node": ">=18.15.0"
+        "node": ">=18.8.0"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
