@@ -1077,7 +1077,7 @@ export class App {
             await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-            result.chatId = chatId
+            if (incomingInput.chatId) result.chatId = chatId
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
