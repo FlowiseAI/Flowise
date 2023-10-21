@@ -82,27 +82,6 @@ const analyticProviders = [
                 credentialNames: ['langfuseApi']
             },
             {
-                label: 'Flush At',
-                name: 'flushAt',
-                type: 'number',
-                optional: true,
-                description: 'Number of queued requests'
-            },
-            {
-                label: 'Flush Interval',
-                name: 'flushInterval',
-                type: 'number',
-                optional: true,
-                description: 'Interval in ms to flush requests'
-            },
-            {
-                label: 'Request Timeout',
-                name: 'requestTimeout',
-                type: 'number',
-                optional: true,
-                description: 'Timeout in ms for requests'
-            },
-            {
                 label: 'Release',
                 name: 'release',
                 type: 'string',

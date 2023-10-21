@@ -1,6 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { NIBittensorLLM, BittensorInput } from 'langchain/experimental/llms/bittensor'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class Bittensor_LLMs implements INode {
     label: string
@@ -16,13 +18,19 @@ class Bittensor_LLMs implements INode {
     constructor() {
         this.label = 'NIBittensorLLM'
         this.name = 'NIBittensorLLM'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Bittensor'
         this.icon = 'logo.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around Bittensor subnet 1 large language models'
         this.baseClasses = [this.type, ...getBaseClasses(NIBittensorLLM)]
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'System prompt',
                 name: 'system_prompt',
@@ -44,10 +52,13 @@ class Bittensor_LLMs implements INode {
     async init(nodeData: INodeData, _: string): Promise<any> {
         const system_prompt = nodeData.inputs?.system_prompt as string
         const topResponses = Number(nodeData.inputs?.topResponses as number)
-        const obj: Partial<BittensorInput> = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<BittensorInput> & BaseLLMParams = {
             systemPrompt: system_prompt,
             topResponses: topResponses
         }
+        if (cache) obj.cache = cache
 
         const model = new NIBittensorLLM(obj)
         return model

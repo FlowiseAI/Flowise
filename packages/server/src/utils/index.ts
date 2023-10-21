@@ -35,6 +35,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -197,8 +198,10 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {IComponentNodes} componentNodes
  * @param {string} question
  * @param {string} chatId
+ * @param {string} chatflowid
  * @param {DataSource} appDataSource
  * @param {ICommonObject} overrideConfig
+ * @param {CachePool} cachePool
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -209,8 +212,10 @@ export const buildLangchain = async (
     question: string,
     chatHistory: IMessage[],
     chatId: string,
+    chatflowid: string,
     appDataSource: DataSource,
-    overrideConfig?: ICommonObject
+    overrideConfig?: ICommonObject,
+    cachePool?: CachePool
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -245,9 +250,11 @@ export const buildLangchain = async (
             logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
+                chatflowid,
                 appDataSource,
                 databaseEntities,
-                logger
+                logger,
+                cachePool
             })
             logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
@@ -477,6 +484,7 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
+        if (node.data.category === 'Cache') return true
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
@@ -771,8 +779,8 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic'],
-        LLMs: ['azureOpenAI', 'openAI']
+        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama'],
+        LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
     let isChatOrLLMsExist = false

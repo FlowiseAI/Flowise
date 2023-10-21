@@ -148,14 +148,14 @@
             "id": "openAI_0",
             "position": {
                 "x": 513.3297923232442,
-                "y": -42.67554802812833
+                "y": -112.67554802812833
             },
             "type": "customNode",
             "data": {
                 "id": "openAI_0",
                 "label": "OpenAI",
                 "name": "openAI",
-                "version": 2,
+                "version": 3,
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -263,7 +263,15 @@
                         "id": "openAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "openAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo-instruct",
                     "temperature": 0.7,
@@ -290,7 +298,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 513.3297923232442,
-                "y": -42.67554802812833
+                "y": -112.67554802812833
             },
             "dragging": false
         }

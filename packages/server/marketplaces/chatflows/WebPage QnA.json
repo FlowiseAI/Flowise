@@ -13,7 +13,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 1,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -126,7 +126,15 @@
                         "id": "chatOpenAI_0-input-basepath-string"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo-16k",
                     "temperature": "0.9",
@@ -425,7 +433,7 @@
             "data": {
                 "id": "cheerioWebScraper_0",
                 "label": "Cheerio Web Scraper",
-                "version": 1,
+                "version": 1.1,
                 "name": "cheerioWebScraper",
                 "type": "Document",
                 "baseClasses": ["Document"],
@@ -468,6 +476,15 @@
                         "description": "Only used when \"Get Relative Links Method\" is selected. Set 0 to retrieve all relative links, default limit is 10.",
                         "warning": "Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)",
                         "id": "cheerioWebScraper_0-input-limit-number"
+                    },
+                    {
+                        "label": "Selector (CSS)",
+                        "name": "selector",
+                        "type": "string",
+                        "description": "Specify a CSS selector to select the content to be extracted",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-selector-string"
                     },
                     {
                         "label": "Metadata",
