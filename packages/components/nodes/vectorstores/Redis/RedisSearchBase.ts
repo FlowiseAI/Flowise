@@ -11,8 +11,9 @@ import {
 import { Embeddings } from 'langchain/embeddings/base'
 import { VectorStore } from 'langchain/vectorstores/base'
 import { Document } from 'langchain/document'
-import { createClient } from 'redis'
+import { createClient, SearchOptions } from 'redis'
 import { RedisVectorStore } from 'langchain/vectorstores/redis'
+import { escapeSpecialChars, unEscapeSpecialChars } from './utils'
 
 export abstract class RedisSearchBase {
     label: string
@@ -52,6 +53,40 @@ export abstract class RedisSearchBase {
                 type: 'string'
             },
             {
+                label: 'Delete and Recreate the Index (will remove all contents as well) ?',
+                name: 'deleteIndex',
+                description: 'Delete the index if it already exists',
+                default: false,
+                type: 'boolean'
+            },
+            {
+                label: 'Content Field',
+                name: 'contentKey',
+                description: 'Name of the field (column) that contains the actual content',
+                type: 'string',
+                default: 'content',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Metadata Field',
+                name: 'metadataKey',
+                description: 'Name of the field (column) that contains the metadata of the document',
+                type: 'string',
+                default: 'metadata',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Vector Field',
+                name: 'vectorKey',
+                description: 'Name of the field (column) that contains the vector',
+                type: 'string',
+                default: 'content_vector',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -78,14 +113,19 @@ export abstract class RedisSearchBase {
     abstract constructVectorStore(
         embeddings: Embeddings,
         indexName: string,
+        deleteIndex: boolean,
         docs: Document<Record<string, any>>[] | undefined
     ): Promise<VectorStore>
 
     async init(nodeData: INodeData, _: string, options: ICommonObject, docs: Document<Record<string, any>>[] | undefined): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const indexName = nodeData.inputs?.indexName as string
+        let contentKey = nodeData.inputs?.contentKey as string
+        let metadataKey = nodeData.inputs?.metadataKey as string
+        let vectorKey = nodeData.inputs?.vectorKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const topK = nodeData.inputs?.topK as string
+        const deleteIndex = nodeData.inputs?.deleteIndex as boolean
         const k = topK ? parseFloat(topK) : 4
         const output = nodeData.outputs?.output as string
 
@@ -102,7 +142,67 @@ export abstract class RedisSearchBase {
         this.redisClient = createClient({ url: redisUrl })
         await this.redisClient.connect()
 
-        const vectorStore = await this.constructVectorStore(embeddings, indexName, docs)
+        const vectorStore = await this.constructVectorStore(embeddings, indexName, deleteIndex, docs)
+        if (!contentKey || contentKey === '') contentKey = 'content'
+        if (!metadataKey || metadataKey === '') metadataKey = 'metadata'
+        if (!vectorKey || vectorKey === '') vectorKey = 'content_vector'
+
+        const buildQuery = (query: number[], k: number, filter?: string[]): [string, SearchOptions] => {
+            const vectorScoreField = 'vector_score'
+
+            let hybridFields = '*'
+            // if a filter is set, modify the hybrid query
+            if (filter && filter.length) {
+                // `filter` is a list of strings, then it's applied using the OR operator in the metadata key
+                hybridFields = `@${metadataKey}:(${filter.map(escapeSpecialChars).join('|')})`
+            }
+
+            const baseQuery = `${hybridFields} => [KNN ${k} @${vectorKey} $vector AS ${vectorScoreField}]`
+            const returnFields = [metadataKey, contentKey, vectorScoreField]
+
+            const options: SearchOptions = {
+                PARAMS: {
+                    vector: Buffer.from(new Float32Array(query).buffer)
+                },
+                RETURN: returnFields,
+                SORTBY: vectorScoreField,
+                DIALECT: 2,
+                LIMIT: {
+                    from: 0,
+                    size: k
+                }
+            }
+
+            return [baseQuery, options]
+        }
+
+        vectorStore.similaritySearchVectorWithScore = async (
+            query: number[],
+            k: number,
+            filter?: string[]
+        ): Promise<[Document, number][]> => {
+            const results = await this.redisClient.ft.search(indexName, ...buildQuery(query, k, filter))
+            const result: [Document, number][] = []
+
+            if (results.total) {
+                for (const res of results.documents) {
+                    if (res.value) {
+                        const document = res.value
+                        if (document.vector_score) {
+                            const metadataString = unEscapeSpecialChars(document[metadataKey] as string)
+                            result.push([
+                                new Document({
+                                    pageContent: document[contentKey] as string,
+                                    metadata: JSON.parse(metadataString)
+                                }),
+                                Number(document.vector_score)
+                            ])
+                        }
+                    }
+                }
+            }
+            return result
+        }
 
         if (output === 'retriever') {
             return vectorStore.asRetriever(k)

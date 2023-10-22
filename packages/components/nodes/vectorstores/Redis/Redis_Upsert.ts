@@ -6,6 +6,7 @@ import { flatten } from 'lodash'
 import { RedisSearchBase } from './RedisSearchBase'
 import { VectorStore } from 'langchain/vectorstores/base'
 import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
+import { escapeAllStrings } from './utils'
 
 class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
     constructor() {
@@ -22,10 +23,22 @@ class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
         })
     }
 
-    async constructVectorStore(embeddings: Embeddings, indexName: string, docs: Document<Record<string, any>>[]): Promise<VectorStore> {
+    async constructVectorStore(
+        embeddings: Embeddings,
+        indexName: string,
+        deleteIndex: boolean,
+        docs: Document<Record<string, any>>[]
+    ): Promise<VectorStore> {
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: this.redisClient,
             indexName: indexName
+        }
+        if (deleteIndex) {
+            let response = await this.redisClient.ft.dropIndex(indexName)
+            if (process.env.DEBUG === 'true') {
+                // eslint-disable-next-line no-console
+                console.log(`Redis Vector Store :: Dropping index [${indexName}], Received Response [${response}]`)
+            }
         }
         return await RedisVectorStore.fromDocuments(docs, embeddings, storeConfig)
     }
@@ -36,7 +49,9 @@ class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            const document = new Document(flattenDocs[i])
+            escapeAllStrings(document.metadata)
+            finalDocs.push(document)
         }
 
         return super.init(nodeData, _, options, flattenDocs)

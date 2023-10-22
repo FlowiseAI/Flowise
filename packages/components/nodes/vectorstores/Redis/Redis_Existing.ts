@@ -13,9 +13,19 @@ class RedisExisting_VectorStores extends RedisSearchBase implements INode {
         this.name = 'RedisIndex'
         this.version = 1.0
         this.description = 'Load existing index from Redis (i.e: Document has been upserted)'
+
+        // Remove deleteIndex from inputs as it is not applicable while fetching data from Redis
+        let input = this.inputs.find((i) => i.name === 'deleteIndex')
+        if (input) this.inputs.splice(this.inputs.indexOf(input), 1)
     }
 
-    async constructVectorStore(embeddings: Embeddings, indexName: string, _: Document<Record<string, any>>[]): Promise<VectorStore> {
+    async constructVectorStore(
+        embeddings: Embeddings,
+        indexName: string,
+        // eslint-disable-next-line unused-imports/no-unused-vars
+        deleteIndex: boolean,
+        _: Document<Record<string, any>>[]
+    ): Promise<VectorStore> {
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: this.redisClient,
             indexName: indexName
