@@ -1,9 +1,9 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { ICommonObject } from '../../../src'
+import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/redis'
-import { createClient } from 'redis'
+import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/ioredis'
+import { mapStoredMessageToChatMessage, BaseMessage } from 'langchain/schema'
+import { Redis } from 'ioredis'
 
 class RedisBackedChatMemory_Memory implements INode {
     label: string
@@ -15,6 +15,7 @@ class RedisBackedChatMemory_Memory implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
 
     constructor() {
         this.label = 'Redis-Backed Chat Memory'
@@ -25,13 +26,14 @@ class RedisBackedChatMemory_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in Redis server'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            optional: true,
+            credentialNames: ['redisApi']
+        }
         this.inputs = [
-            {
-                label: 'Base URL',
-                name: 'baseURL',
-                type: 'string',
-                default: 'redis://localhost:6379'
-            },
             {
                 label: 'Session Id',
                 name: 'sessionId',
@@ -60,11 +62,11 @@ class RedisBackedChatMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return initalizeRedis(nodeData, options)
+        return await initalizeRedis(nodeData, options)
     }
 
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const redis = initalizeRedis(nodeData, options)
+        const redis = await initalizeRedis(nodeData, options)
         const sessionId = nodeData.inputs?.sessionId as string
         const chatId = options?.chatId as string
         options.logger.info(`Clearing Redis memory session ${sessionId ? sessionId : chatId}`)
@@ -73,17 +75,28 @@ class RedisBackedChatMemory_Memory implements INode {
     }
 }
 
-const initalizeRedis = (nodeData: INodeData, options: ICommonObject): BufferMemory => {
-    const baseURL = nodeData.inputs?.baseURL as string
+const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const sessionId = nodeData.inputs?.sessionId as string
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
     const chatId = options?.chatId as string
 
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const username = getCredentialParam('redisUser', credentialData, nodeData)
+    const password = getCredentialParam('redisPwd', credentialData, nodeData)
+    const portStr = getCredentialParam('redisPort', credentialData, nodeData)
+    const host = getCredentialParam('redisHost', credentialData, nodeData)
+
     let isSessionIdUsingChatMessageId = false
     if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
-    const redisClient = createClient({ url: baseURL })
+    const redisClient = new Redis({
+        port: portStr ? parseInt(portStr) : 6379,
+        host,
+        username,
+        password
+    })
+
     let obj: RedisChatMessageHistoryInput = {
         sessionId: sessionId ? sessionId : chatId,
         client: redisClient
@@ -97,6 +110,24 @@ const initalizeRedis = (nodeData: INodeData, options: ICommonObject): BufferMemo
     }
 
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
+
+    redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
+        const rawStoredMessages = await redisClient.lrange(sessionId ? sessionId : chatId, 0, -1)
+        const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
+        return orderedMessages.map(mapStoredMessageToChatMessage)
+    }
+
+    redisChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
+        const messageToAdd = [message].map((msg) => msg.toDict())
+        await redisClient.lpush(sessionId ? sessionId : chatId, JSON.stringify(messageToAdd[0]))
+        if (sessionTTL) {
+            await redisClient.expire(sessionId ? sessionId : chatId, sessionTTL)
+        }
+    }
+
+    redisChatMessageHistory.clear = async (): Promise<void> => {
+        await redisClient.del(sessionId ? sessionId : chatId)
+    }
 
     const memory = new BufferMemoryExtended({
         memoryKey,
