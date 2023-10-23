@@ -79,7 +79,10 @@ class AWSBedrockEmbedding_Embeddings implements INode {
                 label: 'Model Name',
                 name: 'model',
                 type: 'options',
-                options: [{ label: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1' }],
+                options: [
+                    { label: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1' },
+                    { label: 'amazon.titan-embed-g1-text-02', name: 'amazon.titan-embed-g1-text-02' }
+                ],
                 default: 'amazon.titan-embed-text-v1'
             }
         ]
