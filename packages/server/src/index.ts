@@ -811,10 +811,13 @@ export class App {
      */
     async validateKey(req: Request, chatflow: ChatFlow) {
         const chatFlowApiKeyId = chatflow.apikeyid
+        if (!chatFlowApiKeyId) return true
+
         const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
         if (chatFlowApiKeyId && !authorizationHeader) return false
+
         const suppliedKey = authorizationHeader.split(`Bearer `).pop()
-        if (chatFlowApiKeyId && suppliedKey) {
+        if (suppliedKey) {
             const keys = await getAPIKeys()
             const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
             if (!compareKeys(apiSecret, suppliedKey)) return false
