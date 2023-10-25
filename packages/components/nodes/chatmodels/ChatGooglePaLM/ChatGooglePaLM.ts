@@ -1,6 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatGooglePaLM, GooglePaLMChatInput } from 'langchain/chat_models/googlepalm'
+import { BaseCache } from 'langchain/schema'
 
 class ChatGooglePaLM_ChatModels implements INode {
     label: string
@@ -17,7 +18,7 @@ class ChatGooglePaLM_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGooglePaLM'
         this.name = 'chatGooglePaLM'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatGooglePaLM'
         this.icon = 'Google_PaLM_Logo.svg'
         this.category = 'Chat Models'
@@ -30,6 +31,12 @@ class ChatGooglePaLM_ChatModels implements INode {
             credentialNames: ['googleMakerSuite']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -96,6 +103,7 @@ class ChatGooglePaLM_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)
@@ -108,6 +116,7 @@ class ChatGooglePaLM_ChatModels implements INode {
 
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
+        if (cache) obj.cache = cache
 
         const model = new ChatGooglePaLM(obj)
         return model

@@ -23,7 +23,7 @@ class Qdrant_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Load Existing Index'
         this.name = 'qdrantExistingIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -55,8 +55,39 @@ class Qdrant_Existing_VectorStores implements INode {
                 type: 'string'
             },
             {
-                label: 'Qdrant Collection Cofiguration',
+                label: 'Vector Dimension',
+                name: 'qdrantVectorDimension',
+                type: 'number',
+                default: 1536,
+                additionalParams: true
+            },
+            {
+                label: 'Similarity',
+                name: 'qdrantSimilarity',
+                description: 'Similarity measure used in Qdrant.',
+                type: 'options',
+                default: 'Cosine',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'Cosine'
+                    },
+                    {
+                        label: 'Euclid',
+                        name: 'Euclid'
+                    },
+                    {
+                        label: 'Dot',
+                        name: 'Dot'
+                    }
+                ],
+                additionalParams: true
+            },
+            {
+                label: 'Additional Collection Cofiguration',
                 name: 'qdrantCollectionConfiguration',
+                description:
+                    'Refer to <a target="_blank" href="https://qdrant.tech/documentation/concepts/collections">collection docs</a> for more reference',
                 type: 'json',
                 optional: true,
                 additionalParams: true
@@ -98,6 +129,8 @@ class Qdrant_Existing_VectorStores implements INode {
         const collectionName = nodeData.inputs?.qdrantCollection as string
         let qdrantCollectionConfiguration = nodeData.inputs?.qdrantCollectionConfiguration
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         let queryFilter = nodeData.inputs?.queryFilter
@@ -126,7 +159,14 @@ class Qdrant_Existing_VectorStores implements INode {
                 typeof qdrantCollectionConfiguration === 'object'
                     ? qdrantCollectionConfiguration
                     : JSON.parse(qdrantCollectionConfiguration)
-            dbConfig.collectionConfig = qdrantCollectionConfiguration
+            dbConfig.collectionConfig = {
+                ...qdrantCollectionConfiguration,
+                vectors: {
+                    ...qdrantCollectionConfiguration.vectors,
+                    size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                    distance: qdrantSimilarity ?? 'Cosine'
+                }
+            }
         }
 
         if (queryFilter) {

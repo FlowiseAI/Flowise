@@ -53,6 +53,7 @@ import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { ChatflowPool } from './ChatflowPool'
+import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 
@@ -60,6 +61,7 @@ export class App {
     app: express.Application
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
+    cachePool: CachePool
     AppDataSource = getDataSource()
 
     constructor() {
@@ -91,6 +93,9 @@ export class App {
                 // Initialize Rate Limit
                 const AllChatFlow: IChatFlow[] = await getAllChatFlow()
                 await initializeRateLimiter(AllChatFlow)
+
+                // Initialize cache pool
+                this.cachePool = new CachePool()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -804,18 +809,21 @@ export class App {
      * @param {Response} res
      * @param {ChatFlow} chatflow
      */
-    async validateKey(req: Request, res: Response, chatflow: ChatFlow) {
+    async validateKey(req: Request, chatflow: ChatFlow) {
         const chatFlowApiKeyId = chatflow.apikeyid
-        const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+        if (!chatFlowApiKeyId) return true
 
-        if (chatFlowApiKeyId && !authorizationHeader) return res.status(401).send(`Unauthorized`)
+        const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+        if (chatFlowApiKeyId && !authorizationHeader) return false
 
         const suppliedKey = authorizationHeader.split(`Bearer `).pop()
-        if (chatFlowApiKeyId && suppliedKey) {
+        if (suppliedKey) {
             const keys = await getAPIKeys()
             const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
-            if (!compareKeys(apiSecret, suppliedKey)) return res.status(401).send(`Unauthorized`)
+            if (!compareKeys(apiSecret, suppliedKey)) return false
+            return true
         }
+        return false
     }
 
     /**
@@ -841,7 +849,8 @@ export class App {
             if (!chatId) chatId = chatflowid
 
             if (!isInternal) {
-                await this.validateKey(req, res, chatflow)
+                const isKeyValidated = await this.validateKey(req, chatflow)
+                if (!isKeyValidated) return res.status(401).send('Unauthorized')
             }
 
             let isStreamValid = false
@@ -944,8 +953,10 @@ export class App {
                     incomingInput.question,
                     incomingInput.history,
                     chatId,
+                    chatflowid,
                     this.AppDataSource,
-                    incomingInput?.overrideConfig
+                    incomingInput?.overrideConfig,
+                    this.cachePool
                 )
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)

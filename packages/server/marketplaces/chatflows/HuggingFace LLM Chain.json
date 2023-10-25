@@ -148,14 +148,14 @@
             "id": "huggingFaceInference_LLMs_0",
             "position": {
                 "x": 498.8594464193537,
-                "y": -44.91050256311678
+                "y": -94.91050256311678
             },
             "type": "customNode",
             "data": {
                 "id": "huggingFaceInference_LLMs_0",
                 "label": "HuggingFace Inference",
                 "name": "huggingFaceInference_LLMs",
-                "version": 1,
+                "version": 2,
                 "type": "HuggingFaceInference",
                 "baseClasses": ["HuggingFaceInference", "LLM", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -232,7 +232,15 @@
                         "id": "huggingFaceInference_LLMs_0-input-frequencyPenalty-number"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "huggingFaceInference_LLMs_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "model": "tiiuae/falcon-7b-instruct",
                     "endpoint": "",
@@ -256,7 +264,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 498.8594464193537,
-                "y": -44.91050256311678
+                "y": -94.91050256311678
             },
             "dragging": false
         }

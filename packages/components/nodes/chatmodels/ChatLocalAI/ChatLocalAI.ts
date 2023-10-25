@@ -2,6 +2,8 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { OpenAIChat } from 'langchain/llms/openai'
 import { OpenAIChatInput } from 'langchain/chat_models/openai'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatLocalAI_ChatModels implements INode {
     label: string
@@ -17,13 +19,19 @@ class ChatLocalAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatLocalAI'
         this.name = 'chatLocalAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatLocalAI'
         this.icon = 'localai.png'
         this.category = 'Chat Models'
         this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI'
         this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)]
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Base Path',
                 name: 'basePath',
@@ -78,8 +86,9 @@ class ChatLocalAI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
+        const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
@@ -88,6 +97,7 @@ class ChatLocalAI_ChatModels implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
 
         const model = new OpenAIChat(obj, { basePath })
 
