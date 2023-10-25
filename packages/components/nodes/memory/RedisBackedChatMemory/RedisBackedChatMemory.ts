@@ -119,27 +119,26 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
 
     redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const rawStoredMessages = await client.lrange(sessionId ? sessionId : chatId, 0, -1)
+        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         return orderedMessages.map(mapStoredMessageToChatMessage)
     }
 
     redisChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
         const messageToAdd = [message].map((msg) => msg.toDict())
-        await client.lpush(sessionId ? sessionId : chatId, JSON.stringify(messageToAdd[0]))
+        await client.lpush((redisChatMessageHistory as any).sessionId, JSON.stringify(messageToAdd[0]))
         if (sessionTTL) {
-            await client.expire(sessionId ? sessionId : chatId, sessionTTL)
+            await client.expire((redisChatMessageHistory as any).sessionId, sessionTTL)
         }
     }
 
     redisChatMessageHistory.clear = async (): Promise<void> => {
-        await client.del(sessionId ? sessionId : chatId)
+        await client.del((redisChatMessageHistory as any).sessionId)
     }
 
     const memory = new BufferMemoryExtended({
         memoryKey,
         chatHistory: redisChatMessageHistory,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
     return memory
