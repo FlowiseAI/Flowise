@@ -62,14 +62,14 @@ class StructuredOutputParser implements INode {
         if (structure) {
             try {
                 parsedStructure = JSON.parse(structure)
+                if (structureType === 'fromZodSchema') {
+                    return LangchainStructuredOutputParser.fromZodSchema(parsedStructure)
+                } else {
+                    return LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
+                }
             } catch (exception) {
                 throw new Error('Invalid JSON in StructuredOutputParser: ' + exception)
             }
-        }
-        if (structureType === 'fromZodSchema') {
-            return LangchainStructuredOutputParser.fromZodSchema(parsedStructure)
-        } else {
-            return LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
         }
     }
 }
