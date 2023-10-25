@@ -23,7 +23,7 @@ class RedisExisting_VectorStores extends RedisSearchBase implements INode {
         embeddings: Embeddings,
         indexName: string,
         // eslint-disable-next-line unused-imports/no-unused-vars
-        deleteIndex: boolean,
+        replaceIndex: boolean,
         _: Document<Record<string, any>>[]
     ): Promise<VectorStore> {
         const storeConfig: RedisVectorStoreConfig = {

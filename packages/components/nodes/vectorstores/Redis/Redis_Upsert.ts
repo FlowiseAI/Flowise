@@ -26,14 +26,14 @@ class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
     async constructVectorStore(
         embeddings: Embeddings,
         indexName: string,
-        deleteIndex: boolean,
+        replaceIndex: boolean,
         docs: Document<Record<string, any>>[]
     ): Promise<VectorStore> {
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: this.redisClient,
             indexName: indexName
         }
-        if (deleteIndex) {
+        if (replaceIndex) {
             let response = await this.redisClient.ft.dropIndex(indexName)
             if (process.env.DEBUG === 'true') {
                 // eslint-disable-next-line no-console

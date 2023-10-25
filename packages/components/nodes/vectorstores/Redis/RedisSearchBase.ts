@@ -53,9 +53,9 @@ export abstract class RedisSearchBase {
                 type: 'string'
             },
             {
-                label: 'Delete and Recreate the Index (will remove all contents as well) ?',
-                name: 'deleteIndex',
-                description: 'Delete the index if it already exists',
+                label: 'Replace Index?',
+                name: 'replaceIndex',
+                description: 'Selecting this option will delete the existing index and recreate a new one',
                 default: false,
                 type: 'boolean'
             },
@@ -113,7 +113,7 @@ export abstract class RedisSearchBase {
     abstract constructVectorStore(
         embeddings: Embeddings,
         indexName: string,
-        deleteIndex: boolean,
+        replaceIndex: boolean,
         docs: Document<Record<string, any>>[] | undefined
     ): Promise<VectorStore>
 
@@ -125,7 +125,7 @@ export abstract class RedisSearchBase {
         let vectorKey = nodeData.inputs?.vectorKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const topK = nodeData.inputs?.topK as string
-        const deleteIndex = nodeData.inputs?.deleteIndex as boolean
+        const replaceIndex = nodeData.inputs?.replaceIndex as boolean
         const k = topK ? parseFloat(topK) : 4
         const output = nodeData.outputs?.output as string
 
@@ -142,7 +142,7 @@ export abstract class RedisSearchBase {
         this.redisClient = createClient({ url: redisUrl })
         await this.redisClient.connect()
 
-        const vectorStore = await this.constructVectorStore(embeddings, indexName, deleteIndex, docs)
+        const vectorStore = await this.constructVectorStore(embeddings, indexName, replaceIndex, docs)
         if (!contentKey || contentKey === '') contentKey = 'content'
         if (!metadataKey || metadataKey === '') metadataKey = 'metadata'
         if (!vectorKey || vectorKey === '') vectorKey = 'content_vector'
