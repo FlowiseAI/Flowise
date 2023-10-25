@@ -80,7 +80,7 @@ class FewShotPromptTemplate_Prompts implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const examplesStr = nodeData.inputs?.examples as string
+        const examplesStr = nodeData.inputs?.examples
         const prefix = nodeData.inputs?.prefix as string
         const suffix = nodeData.inputs?.suffix as string
         const exampleSeparator = nodeData.inputs?.exampleSeparator as string
@@ -88,7 +88,15 @@ class FewShotPromptTemplate_Prompts implements INode {
         const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate
 
         const inputVariables = getInputVariables(suffix)
-        const examples: Example[] = JSON.parse(examplesStr)
+
+        let examples: Example[] = []
+        if (examplesStr) {
+            try {
+                examples = typeof examplesStr === 'object' ? examplesStr : JSON.parse(examplesStr)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the FewShotPromptTemplate's examples: " + exception)
+            }
+        }
 
         try {
             const obj: FewShotPromptTemplateInput = {
