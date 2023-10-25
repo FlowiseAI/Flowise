@@ -30,7 +30,7 @@ class RedisCache implements INode {
             name: 'credential',
             type: 'credential',
             optional: true,
-            credentialNames: ['redisCacheApi']
+            credentialNames: ['redisCacheApi', 'redisCacheUrlApi']
         }
         this.inputs = [
             {
@@ -48,17 +48,24 @@ class RedisCache implements INode {
         const ttl = nodeData.inputs?.ttl as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
-        const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
-        const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
-        const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+        const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
 
-        const client = new Redis({
-            port: portStr ? parseInt(portStr) : 6379,
-            host,
-            username,
-            password
-        })
+        let client: Redis
+        if (!redisUrl || redisUrl === '') {
+            const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
+            const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
+            const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
+            const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+
+            client = new Redis({
+                port: portStr ? parseInt(portStr) : 6379,
+                host,
+                username,
+                password
+            })
+        } else {
+            client = new Redis(redisUrl)
+        }
 
         const redisClient = new LangchainRedisCache(client)
 

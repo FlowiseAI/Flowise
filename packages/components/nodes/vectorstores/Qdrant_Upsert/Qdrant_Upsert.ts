@@ -25,7 +25,7 @@ class QdrantUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Upsert Document'
         this.name = 'qdrantUpsert'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -61,6 +61,35 @@ class QdrantUpsert_VectorStores implements INode {
                 label: 'Qdrant Collection Name',
                 name: 'qdrantCollection',
                 type: 'string'
+            },
+            {
+                label: 'Vector Dimension',
+                name: 'qdrantVectorDimension',
+                type: 'number',
+                default: 1536,
+                additionalParams: true
+            },
+            {
+                label: 'Similarity',
+                name: 'qdrantSimilarity',
+                description: 'Similarity measure used in Qdrant.',
+                type: 'options',
+                default: 'Cosine',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'Cosine'
+                    },
+                    {
+                        label: 'Euclid',
+                        name: 'Euclid'
+                    },
+                    {
+                        label: 'Dot',
+                        name: 'Dot'
+                    }
+                ],
+                additionalParams: true
             },
             {
                 label: 'Top K',
@@ -99,6 +128,9 @@ class QdrantUpsert_VectorStores implements INode {
         const collectionName = nodeData.inputs?.qdrantCollection as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
@@ -121,7 +153,13 @@ class QdrantUpsert_VectorStores implements INode {
         const dbConfig: QdrantLibArgs = {
             client,
             url: qdrantServerUrl,
-            collectionName
+            collectionName,
+            collectionConfig: {
+                vectors: {
+                    size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                    distance: qdrantSimilarity ?? 'Cosine'
+                }
+            }
         }
 
         const retrieverConfig: RetrieverConfig = {
