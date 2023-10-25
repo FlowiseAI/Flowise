@@ -31,7 +31,7 @@ class RedisBackedChatMemory_Memory implements INode {
             name: 'credential',
             type: 'credential',
             optional: true,
-            credentialNames: ['redisApi']
+            credentialNames: ['redisCacheApi', 'redisCacheUrlApi']
         }
         this.inputs = [
             {
@@ -81,25 +81,32 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const memoryKey = nodeData.inputs?.memoryKey as string
     const chatId = options?.chatId as string
 
-    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-    const username = getCredentialParam('redisUser', credentialData, nodeData)
-    const password = getCredentialParam('redisPwd', credentialData, nodeData)
-    const portStr = getCredentialParam('redisPort', credentialData, nodeData)
-    const host = getCredentialParam('redisHost', credentialData, nodeData)
-
     let isSessionIdUsingChatMessageId = false
     if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
-    const redisClient = new Redis({
-        port: portStr ? parseInt(portStr) : 6379,
-        host,
-        username,
-        password
-    })
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
+
+    let client: Redis
+    if (!redisUrl || redisUrl === '') {
+        const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
+        const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
+        const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
+        const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+
+        client = new Redis({
+            port: portStr ? parseInt(portStr) : 6379,
+            host,
+            username,
+            password
+        })
+    } else {
+        client = new Redis(redisUrl)
+    }
 
     let obj: RedisChatMessageHistoryInput = {
         sessionId: sessionId ? sessionId : chatId,
-        client: redisClient
+        client
     }
 
     if (sessionTTL) {
@@ -112,21 +119,21 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
 
     redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const rawStoredMessages = await redisClient.lrange(sessionId ? sessionId : chatId, 0, -1)
+        const rawStoredMessages = await client.lrange(sessionId ? sessionId : chatId, 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         return orderedMessages.map(mapStoredMessageToChatMessage)
     }
 
     redisChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
         const messageToAdd = [message].map((msg) => msg.toDict())
-        await redisClient.lpush(sessionId ? sessionId : chatId, JSON.stringify(messageToAdd[0]))
+        await client.lpush(sessionId ? sessionId : chatId, JSON.stringify(messageToAdd[0]))
         if (sessionTTL) {
-            await redisClient.expire(sessionId ? sessionId : chatId, sessionTTL)
+            await client.expire(sessionId ? sessionId : chatId, sessionTTL)
         }
     }
 
     redisChatMessageHistory.clear = async (): Promise<void> => {
-        await redisClient.del(sessionId ? sessionId : chatId)
+        await client.del(sessionId ? sessionId : chatId)
     }
 
     const memory = new BufferMemoryExtended({
