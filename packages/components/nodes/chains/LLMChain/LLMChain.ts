@@ -4,7 +4,7 @@ import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
+import { injectOutputParser, applyOutputParser } from '../../outputparsers/OutputParserHelpers'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -21,7 +21,7 @@ class LLMChain_Chains implements INode {
     constructor() {
         this.label = 'LLM Chain'
         this.name = 'llmChain'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'LLMChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
@@ -95,30 +95,9 @@ class LLMChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
-        let promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
+        let promptValues: ICommonObject | undefined = nodeData.inputs?.prompt.promptValues as ICommonObject
         const outputParser = nodeData.inputs?.outputParser as BaseOutputParser
-        if (outputParser && chain.prompt) {
-            const formatInstructions = outputParser.getFormatInstructions()
-            if (chain.prompt instanceof PromptTemplate) {
-                let pt = chain.prompt
-                pt.template = pt.template + '\n{format_instructions}'
-                chain.prompt.partialVariables = { format_instructions: formatInstructions }
-            } else if (chain.prompt instanceof ChatPromptTemplate) {
-                let pt = chain.prompt
-                pt.promptMessages.forEach((msg) => {
-                    if (msg instanceof SystemMessagePromptTemplate) {
-                        ;(msg.prompt as any).partialVariables = { format_instructions: outputParser.getFormatInstructions() }
-                        ;(msg.prompt as any).template = ((msg.prompt as any).template + '\n{format_instructions}') as string
-                    }
-                })
-            } else if (chain.prompt instanceof FewShotPromptTemplate) {
-                chain.prompt.examplePrompt.partialVariables = { format_instructions: formatInstructions }
-                chain.prompt.examplePrompt.template = chain.prompt.examplePrompt.template + '\n{format_instructions}'
-            }
-
-            chain.prompt.inputVariables.push('format_instructions')
-            promptValues = { ...promptValues, format_instructions: outputParser.getFormatInstructions() }
-        }
+        promptValues = injectOutputParser(outputParser, chain, promptValues)
         const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData, outputParser)
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
@@ -132,7 +111,7 @@ const runPrediction = async (
     inputVariables: string[],
     chain: LLMChain,
     input: string,
-    promptValuesRaw: ICommonObject,
+    promptValuesRaw: ICommonObject | undefined,
     options: ICommonObject,
     nodeData: INodeData,
     outputParser: BaseOutputParser | undefined = undefined
@@ -167,10 +146,10 @@ const runPrediction = async (
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
-                return runOutputParser(res?.text, outputParser)
+                return applyOutputParser(res?.text, outputParser)
             } else {
                 const res = await chain.call(options, [loggerHandler, ...callbacks])
-                return runOutputParser(res?.text, outputParser)
+                return applyOutputParser(res?.text, outputParser)
             }
         } else if (seen.length === 1) {
             // If one inputVariable is not specify, use input (user's question) as value
@@ -183,10 +162,10 @@ const runPrediction = async (
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
-                return runOutputParser(res?.text, outputParser)
+                return applyOutputParser(res?.text, outputParser)
             } else {
                 const res = await chain.call(options, [loggerHandler, ...callbacks])
-                return runOutputParser(res?.text, outputParser)
+                return applyOutputParser(res?.text, outputParser)
             }
         } else {
             throw new Error(`Please provide Prompt Values for: ${seen.join(', ')}`)
@@ -195,26 +174,12 @@ const runPrediction = async (
         if (isStreaming) {
             const handler = new CustomChainHandler(socketIO, socketIOClientId)
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
-            return runOutputParser(res, outputParser)
+            return applyOutputParser(res, outputParser)
         } else {
             const res = await chain.run(input, [loggerHandler, ...callbacks])
-            return runOutputParser(res, outputParser)
+            return applyOutputParser(res, outputParser)
         }
     }
-}
-
-const runOutputParser = async (response: string, outputParser: BaseOutputParser | undefined): Promise<string> => {
-    if (outputParser) {
-        const parsedResponse = await outputParser.parse(response)
-        // eslint-disable-next-line no-console
-        console.log('**** parsedResponse ****', parsedResponse)
-        if (typeof parsedResponse === 'object') {
-            return JSON.stringify(parsedResponse)
-        } else {
-            return parsedResponse as string
-        }
-    }
-    return response
 }
 
 module.exports = { nodeClass: LLMChain_Chains }

@@ -1,6 +1,7 @@
 import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { CustomListOutputParser as LangchainCustomListOutputParser } from 'langchain/output_parsers'
+import { CATEGORY } from '../OutputParserHelpers'
 
 class CustomListOutputParser implements INode {
     label: string
@@ -21,7 +22,7 @@ class CustomListOutputParser implements INode {
         this.type = 'CustomListOutputParser'
         this.description = 'Parse the output of an LLM call as a list of values.'
         this.icon = 'list.png'
-        this.category = 'Output Parser'
+        this.category = CATEGORY
         this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
         this.inputs = [
             {

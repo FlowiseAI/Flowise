@@ -1,6 +1,7 @@
 import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
+import { CATEGORY } from '../OutputParserHelpers'
 
 class StructuredOutputParser implements INode {
     label: string
@@ -21,8 +22,9 @@ class StructuredOutputParser implements INode {
         this.type = 'StructuredOutputParser'
         this.description = 'Parse the output of an LLM call into a given (JSON) structure.'
         this.icon = 'structure.png'
-        this.category = 'Output Parser'
+        this.category = CATEGORY
         this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
+        //TODO: To extend the structureType to ZodSchema
         this.inputs = [
             {
                 label: 'Structure Type',
@@ -32,10 +34,6 @@ class StructuredOutputParser implements INode {
                     {
                         label: 'Names And Descriptions',
                         name: 'fromNamesAndDescriptions'
-                    },
-                    {
-                        label: 'Zod Schema',
-                        name: 'fromZodSchema'
                     }
                 ],
                 default: 'fromNamesAndDescriptions'
@@ -59,18 +57,15 @@ class StructuredOutputParser implements INode {
         const structureType = nodeData.inputs?.structureType as string
         const structure = nodeData.inputs?.structure as string
         let parsedStructure: any | undefined = undefined
-        if (structure) {
+        if (structure && structureType === 'fromNamesAndDescriptions') {
             try {
                 parsedStructure = JSON.parse(structure)
-                if (structureType === 'fromZodSchema') {
-                    return LangchainStructuredOutputParser.fromZodSchema(parsedStructure)
-                } else {
-                    return LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
-                }
+                return LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
             } catch (exception) {
                 throw new Error('Invalid JSON in StructuredOutputParser: ' + exception)
             }
         }
+        throw new Error('Error creating OutputParser.')
     }
 }
 

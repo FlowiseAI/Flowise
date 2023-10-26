@@ -1,6 +1,7 @@
 import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { CommaSeparatedListOutputParser } from 'langchain/output_parsers'
+import { CATEGORY } from '../OutputParserHelpers'
 
 class CSVListOutputParser implements INode {
     label: string
@@ -21,7 +22,7 @@ class CSVListOutputParser implements INode {
         this.type = 'CSVListOutputParser'
         this.description = 'Parse the output of an LLM call as a comma-separated list of values'
         this.icon = 'csv.png'
-        this.category = 'Output Parser'
+        this.category = CATEGORY
         this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
         this.inputs = []
     }
