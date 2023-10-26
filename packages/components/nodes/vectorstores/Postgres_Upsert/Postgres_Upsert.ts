@@ -15,7 +15,6 @@ class PostgresUpsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
-    sslOption: boolean
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -63,14 +62,6 @@ class PostgresUpsert_VectorStores implements INode {
                 name: 'port',
                 type: 'number',
                 placeholder: '6432',
-                optional: true
-            },
-            {
-                label: 'SSL Mode',
-                name: 'sslMode',
-                type: 'string',
-                placeholder: 'disable, allow, prefer, require, verify-ca, verify-full',
-                description: 'Choose the SSL mode for the Postgres connection.',
                 optional: true
             },
             {
@@ -134,20 +125,6 @@ class PostgresUpsert_VectorStores implements INode {
             }
         }
         
-        let sslOption: boolean
-        const sslMode = nodeData.inputs?.sslMode?.toLowerCase();  // default to 'prefer' if undefined or empty
-        switch (sslMode) {
-            case 'disable':
-                sslOption = false;
-                break;
-            case 'require':
-            case 'verify-ca':
-            case 'verify-full':
-                sslOption = true;  // for simplicity, just using boolean. In real-world scenarios, you might need more advanced SSL options for 'verify-ca' and 'verify-full'.
-                break;
-            default:
-                sslOption = true;  // default to SSL enabled for any other value or in case of a typo
-        }
 
         const postgresConnectionOptions = {
             ...additionalConfiguration,
@@ -157,7 +134,7 @@ class PostgresUpsert_VectorStores implements INode {
             username: user,
             password: password,
             database: nodeData.inputs?.database as string,
-            ssl: sslOption as boolean
+            ssl: true
         }
 
         const args = {
@@ -196,7 +173,7 @@ class PostgresUpsert_VectorStores implements INode {
                 user: postgresConnectionOptions.username,
                 password: postgresConnectionOptions.password,
                 database: postgresConnectionOptions.database,
-                ssl: sslOption as boolean
+                ssl: true
 
             }
             const pool = new Pool(poolOptions)
