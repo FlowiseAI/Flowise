@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 // material-ui
 import { useTheme } from '@mui/material/styles'
 import { Box, Drawer, useMediaQuery } from '@mui/material'
+import { useEffect, useState } from 'react'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -11,17 +12,28 @@ import { BrowserView, MobileView } from 'react-device-detect'
 // project imports
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
-import { drawerWidth } from 'store/constant'
+import { drawerIconWidth } from 'store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
-const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
+const SidebarStatic = (props) => {
     const theme = useTheme()
     const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
 
-    const toggleSettingsPopperCallBack = () => {
-        toggleSettingsPopper()
+    const toggleDetailSliderCallback2 = () => {
+        props.toggleDetailSlider3()
     }
+    const [trigger, setTrigger] = useState(0)
+
+    const togglePopper = () => {
+        setTrigger((trigger) => trigger + 1)
+    }
+
+    useEffect(() => {
+        if (props.trigger) {
+            togglePopper()
+        }
+    }, [props.trigger])
 
     const drawer = (
         <>
@@ -34,37 +46,35 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
                 <PerfectScrollbar
                     component='div'
                     style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-                        paddingLeft: '16px',
-                        paddingRight: '16px',
-                        marginTop: '49px'
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)'
                     }}
                 >
-                    <MenuList toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                    <MenuList trigger={trigger} toggleDetailSlider2={toggleDetailSliderCallback2} />
                 </PerfectScrollbar>
             </BrowserView>
             <MobileView>
                 <Box sx={{ px: 2 }}>
-                    <MenuList toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                    <MenuList trigger={trigger} toggleDetailSlider2={toggleDetailSliderCallback2} />
                 </Box>
             </MobileView>
         </>
     )
 
-    const container = window !== undefined ? () => window.document.body : undefined
+    const container = props.window !== undefined ? () => props.window.document.body : undefined
 
     return (
-        <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label='mailbox folders'>
+        <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerIconWidth : 'auto' }} aria-label='mailbox folders'>
             <Drawer
                 container={container}
                 variant={matchUpMd ? 'persistent' : 'temporary'}
                 anchor='left'
-                open={drawerOpen}
+                open={true}
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: drawerWidth,
+                        width: drawerIconWidth,
                         background: 'linear-gradient(180.16deg, #02a84b, #016841)',
-                        backgroundColor: '#EDF0F3',
+                        backgroundColor: '#02A54B',
+                        color: '#FFFFFF',
                         borderRight: 'none'
                     }
                 }}
@@ -77,10 +87,10 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
     )
 }
 
-Sidebar.propTypes = {
-    drawerOpen: PropTypes.bool,
+SidebarStatic.propTypes = {
     window: PropTypes.object,
-    toggleSettingsPopper: PropTypes.func
+    toggleDetailSlider3: PropTypes.func,
+    trigger: PropTypes.number
 }
 
-export default Sidebar
+export default SidebarStatic

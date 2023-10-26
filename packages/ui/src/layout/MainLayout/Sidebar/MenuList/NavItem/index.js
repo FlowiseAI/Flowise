@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { Avatar, Chip, ListItemButton, ListItemText, Typography, useMediaQuery } from '@mui/material'
 
 // project imports
 import { MENU_OPEN, SET_MENU } from 'store/actions'
@@ -42,8 +42,15 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
 
     let listItemProps = {
         component: forwardRef(function ListItemPropsComponent(props, ref) {
-            return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
+            if (item?.url) {
+                return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
+            } else {
+                return <Link ref={ref} {...props} target={itemTarget} />
+            }
         })
+    }
+    if (item.id === 'settings') {
+        listItemProps = { component: 'a', target: itemTarget }
     }
     if (item?.external) {
         listItemProps = { component: 'a', href: item.url, target: itemTarget }
@@ -69,7 +76,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     }
 
     const itemHandler = (id) => {
-        if (navType === 'SETTINGS' && id !== 'loadChatflow') {
+        if ((navType === 'SETTINGS' && id !== 'loadChatflow') || (navType === 'MENU' && id === 'settings')) {
             onClick(id)
         } else {
             dispatch({ type: MENU_OPEN, id })
@@ -100,21 +107,16 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             {...listItemProps}
             disabled={item.disabled}
             sx={{
-                borderRadius: `${customization.borderRadius}px`,
-                mb: 0.5,
-                alignItems: 'flex-start',
-                backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-                py: level > 1 ? 1 : 1.25,
-                pl: `${level * 24}px`
+                ml: 5,
+                alignItems: 'flex-start'
             }}
             selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
             onClick={() => itemHandler(item.id)}
         >
             {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
-            <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
             <ListItemText
                 primary={
-                    <Typography variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'} color='inherit'>
+                    <Typography variant='body2' color='white'>
                         {item.title}
                     </Typography>
                 }

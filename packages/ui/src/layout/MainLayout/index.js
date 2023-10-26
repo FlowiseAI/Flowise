@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
@@ -7,10 +7,11 @@ import { styled, useTheme } from '@mui/material/styles'
 import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 
 // project imports
-import Header from './Header'
 import Sidebar from './Sidebar'
-import { drawerWidth } from 'store/constant'
+import { drawerIconWidth } from 'store/constant'
 import { SET_MENU } from 'store/actions'
+import SidebarStatic from './SidebarStatic'
+import Header from './Header'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
@@ -23,17 +24,17 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
             duration: theme.transitions.duration.leavingScreen
         }),
         [theme.breakpoints.up('md')]: {
-            marginLeft: -(drawerWidth - 20),
-            width: `calc(100% - ${drawerWidth}px)`
+            marginLeft: -(drawerIconWidth - 20),
+            width: `calc(100% - ${drawerIconWidth}px)`
         },
         [theme.breakpoints.down('md')]: {
             marginLeft: '20px',
-            width: `calc(100% - ${drawerWidth}px)`,
+            width: `calc(100% - ${drawerIconWidth}px)`,
             padding: '16px'
         },
         [theme.breakpoints.down('sm')]: {
             marginLeft: '10px',
-            width: `calc(100% - ${drawerWidth}px)`,
+            width: `calc(100% - ${drawerIconWidth}px)`,
             padding: '16px',
             marginRight: '10px'
         }
@@ -46,7 +47,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         marginLeft: 0,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
-        width: `calc(100% - ${drawerWidth}px)`,
+        width: `calc(100% - ${drawerIconWidth}px)`,
         [theme.breakpoints.down('md')]: {
             marginLeft: '20px'
         },
@@ -61,6 +62,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
+    const [trigger, setTrigger] = useState(0)
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
@@ -89,12 +91,18 @@ const MainLayout = () => {
                 }}
             >
                 <Toolbar>
-                    <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
+                    <Header toggleDetailSlider3={handleLeftDrawerToggle} />
                 </Toolbar>
             </AppBar>
 
             {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
+            <Sidebar
+                drawerOpen={leftDrawerOpened}
+                toggleSettingsPopper={() => {
+                    setTrigger((trigger) => trigger + 1)
+                }}
+            />
+            <SidebarStatic trigger={trigger} toggleDetailSlider3={handleLeftDrawerToggle} drawerOpen={leftDrawerOpened} />
 
             {/* main content */}
             <Main theme={theme} open={leftDrawerOpened}>
