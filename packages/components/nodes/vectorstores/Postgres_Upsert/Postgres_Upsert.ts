@@ -133,8 +133,8 @@ class PostgresUpsert_VectorStores implements INode {
             }
         }
         
-        let sslOption;
-        const sslMode = nodeData.inputs?.sslMode?.toLowerCase() || 'prefer';  // default to 'prefer' if undefined or empty
+        let sslOption
+        const sslMode = nodeData.inputs?.sslMode?.toLowerCase();  // default to 'prefer' if undefined or empty
         switch (sslMode) {
             case 'disable':
                 sslOption = false;
@@ -156,7 +156,7 @@ class PostgresUpsert_VectorStores implements INode {
             username: user,
             password: password,
             database: nodeData.inputs?.database as string,
-            ssl: sslOption
+            ssl: sslOption as string
         }
 
         const args = {
