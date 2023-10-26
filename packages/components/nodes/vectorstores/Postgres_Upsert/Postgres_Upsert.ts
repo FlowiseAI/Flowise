@@ -65,6 +65,21 @@ class PostgresUpsert_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'SSL Mode',
+                name: 'sslMode',
+                type: 'dropdown',
+                options: [
+                    { label: 'Disable', value: 'disable' },
+                    { label: 'Allow', value: 'allow' },
+                    { label: 'Prefer', value: 'prefer' },
+                    { label: 'Require', value: 'require' },
+                    { label: 'Verify-CA', value: 'verify-ca' },
+                    { label: 'Verify-Full', value: 'verify-full' }
+                ],
+                default: 'prefer',  // default value
+                description: 'Choose the SSL mode for the Postgres connection.'
+            },
+            {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
@@ -124,7 +139,20 @@ class PostgresUpsert_VectorStores implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
-
+        let sslOption;
+        const sslMode = nodeData.inputs?.sslMode as string;
+        switch (sslMode) {
+            case 'disable':
+                sslOption = false;
+                break;
+            case 'require':
+            case 'verify-ca':
+            case 'verify-full':
+                sslOption = true;  // for simplicity, just using boolean. In real-world, might need more advanced SSL options for 'verify-ca' and 'verify-full'.
+                break;
+            default:
+                sslOption = true;  // default to SSL enabled
+        }
         const postgresConnectionOptions = {
             ...additionalConfiguration,
             type: 'postgres',
@@ -133,7 +161,7 @@ class PostgresUpsert_VectorStores implements INode {
             username: user,
             password: password,
             database: nodeData.inputs?.database as string,
-            ssl: true  // <-- Added this line
+            ssl: sslOption
         }
 
         const args = {
@@ -172,7 +200,7 @@ class PostgresUpsert_VectorStores implements INode {
                 user: postgresConnectionOptions.username,
                 password: postgresConnectionOptions.password,
                 database: postgresConnectionOptions.database,
-                ssl: true  // <-- Added this line
+                ssl: sslOption
 
             }
             const pool = new Pool(poolOptions)
