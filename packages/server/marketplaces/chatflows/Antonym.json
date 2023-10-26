@@ -45,7 +45,7 @@
                         "id": "fewShotPromptTemplate_1-input-suffix-string"
                     },
                     {
-                        "label": "Example Seperator",
+                        "label": "Example Separator",
                         "name": "exampleSeparator",
                         "type": "string",
                         "placeholder": "\n\n",
