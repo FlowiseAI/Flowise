@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material/styles'
 
 // assets
 import colors from 'assets/scss/_themes-vars.module.scss'
+import symphonyColors from 'assets/scss/logi-symphony.scss'
 
 // project imports
 import componentStyleOverrides from './compStyleOverride'
@@ -14,7 +15,7 @@ import themeTypography from './typography'
  */
 
 export const theme = (customization) => {
-    const color = colors
+    const color = { ...colors, ...symphonyColors }
 
     const themeOption = customization.isDarkMode
         ? {
