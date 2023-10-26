@@ -133,7 +133,7 @@ class PostgresUpsert_VectorStores implements INode {
             username: user,
             password: password,
             database: nodeData.inputs?.database as string,
-            ssl: true
+            ssl: 'require'
         }
 
         const args = {
@@ -172,7 +172,7 @@ class PostgresUpsert_VectorStores implements INode {
                 user: postgresConnectionOptions.username,
                 password: postgresConnectionOptions.password,
                 database: postgresConnectionOptions.database,
-                ssl: true
+                ssl: 'require'
 
             }
             const pool = new Pool(poolOptions)
