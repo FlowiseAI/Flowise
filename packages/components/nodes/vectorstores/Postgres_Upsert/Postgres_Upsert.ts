@@ -67,17 +67,10 @@ class PostgresUpsert_VectorStores implements INode {
             {
                 label: 'SSL Mode',
                 name: 'sslMode',
-                type: 'dropdown',
-                options: [
-                    { label: 'Disable', value: 'disable' },
-                    { label: 'Allow', value: 'allow' },
-                    { label: 'Prefer', value: 'prefer' },
-                    { label: 'Require', value: 'require' },
-                    { label: 'Verify-CA', value: 'verify-ca' },
-                    { label: 'Verify-Full', value: 'verify-full' }
-                ],
-                default: 'prefer',  // default value
-                description: 'Choose the SSL mode for the Postgres connection.'
+                type: 'string',
+                placeholder: 'disable, allow, prefer, require, verify-ca, verify-full',
+                description: 'Choose the SSL mode for the Postgres connection.',
+                optional: true
             },
             {
                 label: 'Table Name',
@@ -139,8 +132,9 @@ class PostgresUpsert_VectorStores implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
+        
         let sslOption;
-        const sslMode = nodeData.inputs?.sslMode as string;
+        const sslMode = nodeData.inputs?.sslMode?.toLowerCase() || 'prefer';  // default to 'prefer' if undefined or empty
         switch (sslMode) {
             case 'disable':
                 sslOption = false;
@@ -148,11 +142,12 @@ class PostgresUpsert_VectorStores implements INode {
             case 'require':
             case 'verify-ca':
             case 'verify-full':
-                sslOption = true;  // for simplicity, just using boolean. In real-world, might need more advanced SSL options for 'verify-ca' and 'verify-full'.
+                sslOption = true;  // for simplicity, just using boolean. In real-world scenarios, you might need more advanced SSL options for 'verify-ca' and 'verify-full'.
                 break;
             default:
-                sslOption = true;  // default to SSL enabled
+                sslOption = true;  // default to SSL enabled for any other value or in case of a typo
         }
+
         const postgresConnectionOptions = {
             ...additionalConfiguration,
             type: 'postgres',
