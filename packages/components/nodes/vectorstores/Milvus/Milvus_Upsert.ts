@@ -252,7 +252,7 @@ class MilvusUpsert extends Milvus {
             collection_name: this.collectionName
         })
 
-        if (descIndexResp.status.error_code === ErrorCode.INDEX_NOT_EXIST) {
+        if (descIndexResp.status.error_code === ErrorCode.IndexNotExist) {
             const resp = await this.client.createIndex({
                 collection_name: this.collectionName,
                 field_name: this.vectorField,
