@@ -25,7 +25,7 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
 
     const drawer = (
         <>
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <Box sx={{ display: { xs: 'none', md: 'none' } }}>
                 <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                     <LogoSection />
                 </Box>
@@ -44,9 +44,17 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
                 </PerfectScrollbar>
             </BrowserView>
             <MobileView>
-                <Box sx={{ px: 2 }}>
+                <PerfectScrollbar
+                    component='div'
+                    style={{
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
+                        paddingLeft: '16px',
+                        paddingRight: '16px',
+                        marginTop: '49px'
+                    }}
+                >
                     <MenuList toggleSettingsPopper={toggleSettingsPopperCallBack} />
-                </Box>
+                </PerfectScrollbar>
             </MobileView>
         </>
     )
@@ -56,6 +64,7 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
     return (
         <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label='mailbox folders'>
             <Drawer
+                hideBackdrop
                 container={container}
                 variant={matchUpMd ? 'persistent' : 'temporary'}
                 anchor='left'

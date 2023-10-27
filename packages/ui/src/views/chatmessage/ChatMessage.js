@@ -477,7 +477,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                         ) : (
                                             // Send icon SVG in input field
                                             <IconSend
-                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
                                             />
                                         )}
                                     </IconButton>
