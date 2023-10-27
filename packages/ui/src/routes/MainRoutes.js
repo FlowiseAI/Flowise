@@ -30,11 +30,11 @@ const MainRoutes = {
             element: <Chatflows />
         },
         {
-            path: '/chatflows',
+            path: '/list',
             element: <Chatflows />
         },
         {
-            path: '/marketplaces',
+            path: '/templates',
             element: <Marketplaces />
         },
         {

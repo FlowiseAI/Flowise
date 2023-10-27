@@ -87,7 +87,7 @@ const Marketplace = () => {
     }
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+        navigate(`/template/${selectedChatflow.id}`, { state: selectedChatflow })
     }
 
     const handleChange = (event, newValue) => {
@@ -137,7 +137,7 @@ const Marketplace = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>Marketplace</h1>
+                    <h1>Templates</h1>
                 </Stack>
                 <Tabs sx={{ mb: 2 }} variant='fullWidth' value={value} onChange={handleChange} aria-label='tabs'>
                     {tabItems.map((item, index) => (
@@ -185,7 +185,7 @@ const Marketplace = () => {
                                 alt='WorkflowEmptySVG'
                             />
                         </Box>
-                        <div>No Marketplace Yet</div>
+                        <div>No Templates Yet</div>
                     </Stack>
                 )}
             </MainCard>
