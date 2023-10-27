@@ -65,14 +65,14 @@ const dashboard = {
             icon: icons.IconVariable,
             breadcrumbs: true
         },
-        {
-            id: 'apikey',
-            // title: 'API Keys',
-            type: 'item',
-            url: '/apikey',
-            icon: icons.IconKey,
-            breadcrumbs: true
-        },
+        // {
+        //     id: 'apikey',
+        //     // title: 'API Keys',
+        //     type: 'item',
+        //     url: '/apikey',
+        //     icon: icons.IconKey,
+        //     breadcrumbs: true
+        // },
         {
             id: 'settings',
             type: 'item',

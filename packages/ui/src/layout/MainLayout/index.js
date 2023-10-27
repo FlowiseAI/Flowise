@@ -72,7 +72,7 @@ const MainLayout = () => {
     }
 
     useEffect(() => {
-        setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
+        //setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchDownMd])
 
