@@ -43,6 +43,8 @@ $neutrals-secondary-to-utility-state-blue: saturate(8) brightness(0.97) hue-rota
 :export {
     // primary
     primaryMain: $primary-green;
+    primaryLight: $neutrals-white;
+    primary200: $neutrals-secondary;
 
     // secondary
     secondaryLight: $neutrals-white;
