@@ -24,12 +24,29 @@ class CSVListOutputParser implements INode {
         this.icon = 'csv.png'
         this.category = CATEGORY
         this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
-        this.inputs = []
+        this.inputs = [
+            {
+                label: 'Autofix',
+                name: 'autofixParser',
+                type: 'boolean',
+                rows: 4,
+                description: 'In the event that the first call fails, will make another call to the model to fix any errors.'
+            }
+        ]
     }
 
     // eslint-disable-next-line unused-imports/no-unused-vars
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return new CommaSeparatedListOutputParser()
+        const autoFix = nodeData.inputs?.autofixParser as boolean
+
+        const commaSeparatedListOutputParser = new CommaSeparatedListOutputParser()
+        Object.defineProperty(commaSeparatedListOutputParser, 'autoFix', {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: autoFix
+        })
+        return commaSeparatedListOutputParser
     }
 }
 

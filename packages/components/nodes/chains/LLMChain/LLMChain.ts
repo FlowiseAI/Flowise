@@ -6,6 +6,7 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
+import { OutputFixingParser } from 'langchain/output_parsers'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -18,6 +19,7 @@ class LLMChain_Chains implements INode {
     description: string
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    outputParser: BaseOutputParser
 
     constructor() {
         this.label = 'LLM Chain'
@@ -72,15 +74,26 @@ class LLMChain_Chains implements INode {
         const prompt = nodeData.inputs?.prompt
         const output = nodeData.outputs?.output as string
         const promptValues = prompt.promptValues as ICommonObject
-        const llmOutputParser = nodeData.inputs?.outputParser as BaseLLMOutputParser<string | object>
-
+        const llmOutputParser = nodeData.inputs?.outputParser as BaseOutputParser
+        this.outputParser = llmOutputParser
+        if (llmOutputParser) {
+            let autoFix = (llmOutputParser as any).autoFix
+            if (autoFix === true) {
+                this.outputParser = OutputFixingParser.fromLLM(model, llmOutputParser)
+            }
+        }
         if (output === this.name) {
-            const chain = new LLMChain({ llm: model, outputParser: llmOutputParser, prompt, verbose: process.env.DEBUG === 'true' })
+            const chain = new LLMChain({
+                llm: model,
+                outputParser: this.outputParser as BaseLLMOutputParser<string | object>,
+                prompt,
+                verbose: process.env.DEBUG === 'true'
+            })
             return chain
         } else if (output === 'outputPrediction') {
             const chain = new LLMChain({
                 llm: model,
-                outputParser: llmOutputParser,
+                outputParser: this.outputParser as BaseLLMOutputParser<string | object>,
                 prompt,
                 verbose: process.env.DEBUG === 'true'
             })
@@ -104,7 +117,10 @@ class LLMChain_Chains implements INode {
         const chain = nodeData.instance as LLMChain
         let promptValues: ICommonObject | undefined = nodeData.inputs?.prompt.promptValues as ICommonObject
         const outputParser = nodeData.inputs?.outputParser as BaseOutputParser
-        promptValues = injectOutputParser(outputParser, chain, promptValues)
+        if (!this.outputParser && outputParser) {
+            this.outputParser = outputParser
+        }
+        promptValues = injectOutputParser(this.outputParser, chain, promptValues)
         const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')

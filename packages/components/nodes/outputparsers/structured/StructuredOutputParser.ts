@@ -48,6 +48,13 @@ class StructuredOutputParser implements INode {
                     '  answer: "answer to the question",\n' +
                     '  source: "source used to answer the question, should be a website.",\n' +
                     '}'
+            },
+            {
+                label: 'Autofix',
+                name: 'autofixParser',
+                type: 'boolean',
+                rows: 4,
+                description: 'In the event that the first call fails, will make another call to the model to fix any errors.'
             }
         ]
     }
@@ -56,11 +63,22 @@ class StructuredOutputParser implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const structureType = nodeData.inputs?.structureType as string
         const structure = nodeData.inputs?.structure as string
+        const autoFix = nodeData.inputs?.autofixParser as boolean
+
         let parsedStructure: any | undefined = undefined
         if (structure && structureType === 'fromNamesAndDescriptions') {
             try {
                 parsedStructure = JSON.parse(structure)
-                return LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
+
+                // NOTE: When we change Flowise to return a json response, the following has to be changed to: JsonStructuredOutputParser
+                let structuredOutputParser = LangchainStructuredOutputParser.fromNamesAndDescriptions(parsedStructure)
+                Object.defineProperty(structuredOutputParser, 'autoFix', {
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                    value: autoFix
+                })
+                return structuredOutputParser
             } catch (exception) {
                 throw new Error('Invalid JSON in StructuredOutputParser: ' + exception)
             }

@@ -39,6 +39,13 @@ class CustomListOutputParser implements INode {
                 type: 'string',
                 description: 'Separator between values',
                 default: ','
+            },
+            {
+                label: 'Autofix',
+                name: 'autofixParser',
+                type: 'boolean',
+                rows: 4,
+                description: 'In the event that the first call fails, will make another call to the model to fix any errors.'
             }
         ]
     }
@@ -47,9 +54,17 @@ class CustomListOutputParser implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const separator = nodeData.inputs?.separator as string
         const lengthStr = nodeData.inputs?.length as string
+        const autoFix = nodeData.inputs?.autofixParser as boolean
         let length = 5
         if (lengthStr) length = parseInt(lengthStr, 10)
-        return new LangchainCustomListOutputParser({ length: length, separator: separator })
+        const parser = new LangchainCustomListOutputParser({ length: length, separator: separator })
+        Object.defineProperty(parser, 'autoFix', {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: autoFix
+        })
+        return parser
     }
 }
 
