@@ -152,13 +152,15 @@ export class CustomChainHandler extends BaseCallbackHandler {
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
     cachedResponse = true
+    isOutputParser = false
 
-    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
+    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean, isOutputParser?: boolean) {
         super()
         this.socketIO = socketIO
         this.socketIOClientId = socketIOClientId
         this.skipK = skipK ?? this.skipK
         this.returnSourceDocuments = returnSourceDocuments ?? this.returnSourceDocuments
+        this.isOutputParser = isOutputParser ?? this.isOutputParser
     }
 
     handleLLMStart() {
@@ -171,12 +173,14 @@ export class CustomChainHandler extends BaseCallbackHandler {
             if (!this.isLLMStarted) {
                 this.isLLMStarted = true
                 this.socketIO.to(this.socketIOClientId).emit('start', token)
+                if (this.isOutputParser) this.socketIO.to(this.socketIOClientId).emit('token', '```json')
             }
             this.socketIO.to(this.socketIOClientId).emit('token', token)
         }
     }
 
     handleLLMEnd() {
+        //if (this.isOutputParser) this.socketIO.to(this.socketIOClientId).emit('token', '\\n\`\`\`')
         this.socketIO.to(this.socketIOClientId).emit('end')
     }
 

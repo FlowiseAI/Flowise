@@ -3,6 +3,8 @@ import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { BaseOutputParser } from 'langchain/schema/output_parser'
+import { applyOutputParser, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -19,7 +21,7 @@ class LLMChain_Chains implements INode {
     constructor() {
         this.label = 'LLM Chain'
         this.name = 'llmChain'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'LLMChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
@@ -35,6 +37,12 @@ class LLMChain_Chains implements INode {
                 label: 'Prompt',
                 name: 'prompt',
                 type: 'BasePromptTemplate'
+            },
+            {
+                label: 'Output Parser',
+                name: 'outputParser',
+                type: 'BaseLLMOutputParser',
+                optional: true
             },
             {
                 label: 'Chain Name',
@@ -84,11 +92,14 @@ class LLMChain_Chains implements INode {
         }
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const inputVariables = nodeData.instance.prompt.inputVariables as string[] // ["product"]
         const chain = nodeData.instance as LLMChain
-        const promptValues = nodeData.inputs?.prompt.promptValues as ICommonObject
-        const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
+        let promptValues: ICommonObject | undefined = nodeData.inputs?.prompt.promptValues as ICommonObject
+        const outputParser = nodeData.inputs?.outputParser as BaseOutputParser
+        promptValues = injectOutputParser(outputParser, chain, promptValues)
+        const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData, outputParser)
+
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
@@ -99,11 +110,12 @@ class LLMChain_Chains implements INode {
 
 const runPrediction = async (
     inputVariables: string[],
-    chain: LLMChain,
+    chain: any,
     input: string,
-    promptValuesRaw: ICommonObject,
+    promptValuesRaw: ICommonObject | undefined,
     options: ICommonObject,
-    nodeData: INodeData
+    nodeData: INodeData,
+    outputParser: BaseOutputParser | undefined = undefined
 ) => {
     const loggerHandler = new ConsoleCallbackHandler(options.logger)
     const callbacks = await additionalCallbacks(nodeData, options)
@@ -133,12 +145,12 @@ const runPrediction = async (
             // All inputVariables have fixed values specified
             const options = { ...promptValues }
             if (isStreaming) {
-                const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                const handler = new CustomChainHandler(socketIO, socketIOClientId, undefined, undefined, outputParser ? true : undefined)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
-                return res?.text
+                return applyOutputParser(res?.text, outputParser)
             } else {
                 const res = await chain.call(options, [loggerHandler, ...callbacks])
-                return res?.text
+                return applyOutputParser(res?.text, outputParser)
             }
         } else if (seen.length === 1) {
             // If one inputVariable is not specify, use input (user's question) as value
@@ -149,24 +161,24 @@ const runPrediction = async (
                 [lastValue]: input
             }
             if (isStreaming) {
-                const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                const handler = new CustomChainHandler(socketIO, socketIOClientId, undefined, undefined, outputParser ? true : undefined)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
-                return res?.text
+                return applyOutputParser(res?.text, outputParser)
             } else {
                 const res = await chain.call(options, [loggerHandler, ...callbacks])
-                return res?.text
+                return applyOutputParser(res?.text, outputParser)
             }
         } else {
             throw new Error(`Please provide Prompt Values for: ${seen.join(', ')}`)
         }
     } else {
         if (isStreaming) {
-            const handler = new CustomChainHandler(socketIO, socketIOClientId)
+            const handler = new CustomChainHandler(socketIO, socketIOClientId, undefined, undefined, outputParser ? true : undefined)
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
-            return res
+            return applyOutputParser(res, outputParser)
         } else {
             const res = await chain.run(input, [loggerHandler, ...callbacks])
-            return res
+            return applyOutputParser(res, outputParser)
         }
     }
 }

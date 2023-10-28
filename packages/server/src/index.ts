@@ -984,7 +984,7 @@ export class App {
 
             if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
 
-            const result = isStreamValid
+            let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       socketIO,
@@ -1001,6 +1001,8 @@ export class App {
                       databaseEntities,
                       analytic: chatflow.analytic
                   })
+
+            result = typeof result === 'string' ? { text: result } : result
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             return res.json(result)
