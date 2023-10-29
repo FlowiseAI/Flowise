@@ -6,16 +6,9 @@ import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessag
 
 export const CATEGORY = 'Output Parser (Experimental)'
 
-export const applyOutputParser = async (response: string, outputParser: BaseOutputParser | undefined): Promise<string> => {
-    if (outputParser) {
-        const parsedResponse = await outputParser.parse(response)
-        // eslint-disable-next-line no-console
-        console.log('**** parsedResponse ****', parsedResponse)
-        if (typeof parsedResponse === 'object') {
-            return JSON.stringify(parsedResponse)
-        } else {
-            return parsedResponse as string
-        }
+export const formatResponse = (response: string | object): string | object => {
+    if (typeof response === 'object') {
+        return { json: response }
     }
     return response
 }

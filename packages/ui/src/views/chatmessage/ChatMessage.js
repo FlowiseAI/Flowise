@@ -165,6 +165,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         ])
                     }
                     addChatMessage(data.text, 'apiMessage', data.sourceDocuments)
+                } else if (typeof data === 'object' && data.json) {
+                    const text = '```json' + JSON.stringify(data.json, null, 2)
+                    if (!isChatFlowAvailableToStream) {
+                        setMessages((prevMessages) => [...prevMessages, { message: text, type: 'apiMessage' }])
+                    }
+                    addChatMessage(text, 'apiMessage')
                 } else {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
