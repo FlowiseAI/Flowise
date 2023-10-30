@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
 
 // project imports
 import { MENU_OPEN, SET_MENU } from 'store/actions'
@@ -42,7 +42,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
 
     let listItemProps = {
         component: forwardRef(function ListItemPropsComponent(props, ref) {
-            if (item?.url) {
+            if (item?.url || navType === 'SETTINGS') {
                 return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
             } else {
                 return <Link ref={ref} {...props} target={itemTarget} />
@@ -102,43 +102,88 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navType])
 
-    return (
-        <ListItemButton
-            {...listItemProps}
-            disabled={item.disabled}
-            sx={{
-                ml: 5,
-                alignItems: 'flex-start'
-            }}
-            selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
-            onClick={() => itemHandler(item.id)}
-        >
-            {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
-            <ListItemText
-                primary={
-                    <Typography variant='body2' color='white'>
-                        {item.title}
-                    </Typography>
-                }
-                secondary={
-                    item.caption && (
-                        <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
-                            {item.caption}
+    if (navType === 'SETTINGS') {
+        return (
+            <ListItemButton
+                {...listItemProps}
+                disabled={item.disabled}
+                sx={{
+                    borderRadius: `${customization.borderRadius}px`,
+                    mb: 0.5,
+                    alignItems: 'flex-start',
+                    backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
+                    py: level > 1 ? 1 : 1.25,
+                    pl: `${level * 24}px`
+                }}
+                selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
+                onClick={() => itemHandler(item.id)}
+            >
+                {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
+                <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
+                <ListItemText
+                    primary={
+                        <Typography variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'} color='inherit'>
+                            {item.title}
                         </Typography>
-                    )
-                }
-            />
-            {item.chip && (
-                <Chip
-                    color={item.chip.color}
-                    variant={item.chip.variant}
-                    size={item.chip.size}
-                    label={item.chip.label}
-                    avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
+                    }
+                    secondary={
+                        item.caption && (
+                            <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
+                                {item.caption}
+                            </Typography>
+                        )
+                    }
                 />
-            )}
-        </ListItemButton>
-    )
+                {item.chip && (
+                    <Chip
+                        color={item.chip.color}
+                        variant={item.chip.variant}
+                        size={item.chip.size}
+                        label={item.chip.label}
+                        avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
+                    />
+                )}
+            </ListItemButton>
+        )
+    } else {
+        return (
+            <ListItemButton
+                {...listItemProps}
+                disabled={item.disabled}
+                sx={{
+                    ml: 5,
+                    alignItems: 'flex-start'
+                }}
+                selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
+                onClick={() => itemHandler(item.id)}
+            >
+                {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
+                <ListItemText
+                    primary={
+                        <Typography variant='body2' color='white'>
+                            {item.title}
+                        </Typography>
+                    }
+                    secondary={
+                        item.caption && (
+                            <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
+                                {item.caption}
+                            </Typography>
+                        )
+                    }
+                />
+                {item.chip && (
+                    <Chip
+                        color={item.chip.color}
+                        variant={item.chip.variant}
+                        size={item.chip.size}
+                        label={item.chip.label}
+                        avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
+                    />
+                )}
+            </ListItemButton>
+        )
+    }
 }
 
 NavItem.propTypes = {

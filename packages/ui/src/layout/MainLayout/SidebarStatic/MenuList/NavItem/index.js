@@ -37,13 +37,12 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import databaseApi from 'api/database'
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
-const NavItem = ({ item, level, navType, onClick, onUploadFile, username, handleLogout, trigger }) => {
+const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigger }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
     const [open, setOpen] = useState(false)
-    const prevOpen = useRef(open)
     const [loading, setLoading] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
@@ -167,10 +166,6 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile, username, handle
     // active menu item on page load
     useEffect(() => {
         if (navType === 'MENU') {
-            const currentIndex = document.location.pathname
-                .toString()
-                .split('/')
-                .findIndex((id) => id === item.id)
             if (!document.location.pathname.toString().split('/')[1]) {
                 itemHandler('chatflows')
             }
