@@ -13,7 +13,7 @@ const dashboard = {
     children: [
         {
             id: 'chatflows',
-            title: 'Chatflows',
+            title: 'Чаты',
             type: 'item',
             url: '/chatflows',
             icon: icons.IconHierarchy,
@@ -21,7 +21,7 @@ const dashboard = {
         },
         {
             id: 'marketplaces',
-            title: 'Marketplaces',
+            title: 'Торговые площадки',
             type: 'item',
             url: '/marketplaces',
             icon: icons.IconBuildingStore,
@@ -29,7 +29,7 @@ const dashboard = {
         },
         {
             id: 'tools',
-            title: 'Tools',
+            title: 'Инструменты',
             type: 'item',
             url: '/tools',
             icon: icons.IconTool,
@@ -37,7 +37,7 @@ const dashboard = {
         },
         {
             id: 'credentials',
-            title: 'Credentials',
+            title: 'Реквизиты для входа',
             type: 'item',
             url: '/credentials',
             icon: icons.IconLock,
@@ -45,7 +45,7 @@ const dashboard = {
         },
         {
             id: 'apikey',
-            title: 'API Keys',
+            title: 'API-ключи',
             type: 'item',
             url: '/apikey',
             icon: icons.IconKey,
