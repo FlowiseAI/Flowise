@@ -32,14 +32,14 @@ class LLMChain_Chains implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(LLMChain)]
         this.inputs = [
             {
-                label: 'Prompt',
-                name: 'prompt',
-                type: 'BasePromptTemplate'
-            },
-            {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel'
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'BasePromptTemplate'
             },
             {
                 label: 'Output Parser',
