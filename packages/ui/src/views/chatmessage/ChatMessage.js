@@ -164,20 +164,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
                         ])
                     }
-                    console.log('here1=', data.text)
                     addChatMessage(data.text, 'apiMessage', data.sourceDocuments)
                 } else if (typeof data === 'object' && data.json) {
                     const text = '```json\n' + JSON.stringify(data.json, null, 2)
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [...prevMessages, { message: text, type: 'apiMessage' }])
                     }
-                    console.log('here2=', text)
                     addChatMessage(text, 'apiMessage')
                 } else {
                     if (!isChatFlowAvailableToStream) {
                         setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
                     }
-                    console.log('here3=', data)
                     addChatMessage(data, 'apiMessage')
                 }
                 setLoading(false)

@@ -980,7 +980,7 @@ export class App {
 
             if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
 
-            let result = isStreamValid
+            const result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       socketIO,

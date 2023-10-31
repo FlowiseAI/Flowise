@@ -187,7 +187,6 @@ const runPrediction = async (
                 return formatResponse(res?.text)
             } else {
                 const res = await chain.call(options, [loggerHandler, ...callbacks])
-                console.log('formatResponse=', formatResponse(res?.text))
                 return formatResponse(res?.text)
             }
         } else {
