@@ -512,7 +512,7 @@ export const getUserHome = (): string => {
 
 /**
  * Map incoming chat history to ChatMessageHistory
- * @param {options} ICommonObject
+ * @param {ICommonObject} options
  * @returns {ChatMessageHistory}
  */
 export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
@@ -550,12 +550,12 @@ export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string =
 
 /**
  * Convert schema to zod schema
- * @param {string} schema
+ * @param {string | object} schema
  * @returns {ICommonObject}
  */
-export const convertSchemaToZod = (schema: string) => {
+export const convertSchemaToZod = (schema: string | object): ICommonObject => {
     try {
-        const parsedSchema = JSON.parse(schema)
+        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
         const zodObj: ICommonObject = {}
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
