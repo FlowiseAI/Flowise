@@ -131,7 +131,7 @@ json.dumps(my_dict)`
                 const code = `import pandas as pd\n${pythonCode}`
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {
-                throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`)
+                throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using following code: "${pythonCode}"`)
             }
         }
 

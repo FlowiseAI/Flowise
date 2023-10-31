@@ -301,7 +301,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 }
 
 /**
- * Prep URL before passing into recursive carwl function
+ * Prep URL before passing into recursive crawl function
  * @param {string} stringURL
  * @param {number} limit
  * @returns {Promise<string[]>}
@@ -445,7 +445,7 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
 
         if (!credential) return {}
 
-        // Decrpyt credentialData
+        // Decrypt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
 
         return decryptedCredentialData
