@@ -14,7 +14,7 @@
                 "id": "recursiveCharacterTextSplitter_1",
                 "label": "Recursive Character Text Splitter",
                 "name": "recursiveCharacterTextSplitter",
-                "version": 1,
+                "version": 2,
                 "type": "RecursiveCharacterTextSplitter",
                 "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
                 "category": "Text Splitters",
@@ -34,6 +34,17 @@
                         "type": "number",
                         "optional": true,
                         "id": "recursiveCharacterTextSplitter_1-input-chunkOverlap-number"
+                    },
+                    {
+                        "label": "Custom Separators",
+                        "name": "separators",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Array of custom separators to determine when to split the text, will override the default separators",
+                        "placeholder": "[\"|\", \"##\", \">\", \"-\"]",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_1-input-separators-string"
                     }
                 ],
                 "inputAnchors": [],
@@ -72,7 +83,7 @@
                 "id": "textFile_0",
                 "label": "Text File",
                 "name": "textFile",
-                "version": 1,
+                "version": 3,
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -82,7 +93,7 @@
                         "label": "Txt File",
                         "name": "txtFile",
                         "type": "file",
-                        "fileType": ".txt",
+                        "fileType": ".txt, .html, .aspx, .asp, .cpp, .c, .cs, .css, .go, .h, .java, .js, .less, .ts, .php, .proto, .python, .py, .rst, .ruby, .rb, .rs, .scala, .sc, .scss, .sol, .sql, .swift, .markdown, .md, .tex, .ltx, .vb, .xml",
                         "id": "textFile_0-input-txtFile-file"
                     },
                     {
