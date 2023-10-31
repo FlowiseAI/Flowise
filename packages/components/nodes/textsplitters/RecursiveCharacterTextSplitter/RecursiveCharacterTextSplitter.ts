@@ -43,6 +43,7 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
                 rows: 4,
                 description: 'Array of custom separators to determine when to split the text, will override the default separators',
                 placeholder: `["|", "##", ">", "-"]`,
+                additionalParams: true,
                 optional: true
             }
         ]
