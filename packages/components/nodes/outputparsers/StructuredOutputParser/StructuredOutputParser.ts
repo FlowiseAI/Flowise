@@ -1,4 +1,4 @@
-import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
@@ -53,14 +53,13 @@ class StructuredOutputParser implements INode {
                 label: 'Autofix',
                 name: 'autofixParser',
                 type: 'boolean',
-                rows: 4,
+                optional: true,
                 description: 'In the event that the first call fails, will make another call to the model to fix any errors.'
             }
         ]
     }
 
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData): Promise<any> {
         const structureType = nodeData.inputs?.structureType as string
         const structure = nodeData.inputs?.structure as string
         const autoFix = nodeData.inputs?.autofixParser as boolean

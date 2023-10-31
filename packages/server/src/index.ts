@@ -998,10 +998,7 @@ export class App {
                       analytic: chatflow.analytic
                   })
 
-            result = typeof result === 'string' ? { text: result } : result
-
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)

@@ -804,7 +804,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent
+    // If no output parser, flow is available to stream
+    let isOutputParserExist = false
+    for (const flowNode of reactFlowNodes) {
+        const data = flowNode.data
+        if (data.category.includes('Output Parser')) {
+            isOutputParserExist = true
+        }
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isOutputParserExist
 }
 
 /**
