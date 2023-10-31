@@ -12,13 +12,6 @@ const settings = {
     type: 'group',
     children: [
         {
-            id: 'duplicateChatflow',
-            title: 'Duplicate Chatflow',
-            type: 'item',
-            url: '',
-            icon: icons.IconCopy
-        },
-        {
             id: 'loadChatflow',
             title: 'Load Chatflow',
             type: 'item',
