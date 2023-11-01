@@ -53,5 +53,8 @@
     },
     "engines": {
         "node": ">=18.15.0"
+    },
+    "dependencies": {
+        "sonix-speech-recognition": "^2.1.1"
     }
 }

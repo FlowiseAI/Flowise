@@ -2,6 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 import { SonixAudioTranscriptionLoader } from "langchain/document_loaders/web/sonix_audio";
+import {SupportedLanguage}  from 'sonix-speech-recognition/lib/types'
 import { BaseCache } from 'langchain/schema'
 import { BaseLLMParams } from 'langchain/llms/base'
 
@@ -75,12 +76,12 @@ class SonixAi implements INode {
             request: {
               audioFilePath?: string,
               fileName?:string,
-              language?: string,
+              language?: SupportedLanguage,
               
         }}
         const audiofilepath = nodeData.inputs?.audio_File as string
         const audiofilename = nodeData.inputs?.audio_File_name as string
-        const language = nodeData.inputs?.language as string
+        const language = nodeData.inputs?.language as SupportedLanguage
 
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
