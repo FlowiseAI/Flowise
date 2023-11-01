@@ -49,9 +49,11 @@ class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            const document = new Document(flattenDocs[i])
-            escapeAllStrings(document.metadata)
-            finalDocs.push(document)
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                const document = new Document(flattenDocs[i])
+                escapeAllStrings(document.metadata)
+                finalDocs.push(document)
+            }
         }
 
         return super.init(nodeData, _, options, flattenDocs)
