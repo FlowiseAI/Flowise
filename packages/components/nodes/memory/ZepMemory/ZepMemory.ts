@@ -60,7 +60,7 @@ class ZepMemory_Memory implements INode {
                 name: 'k',
                 type: 'number',
                 default: '10',
-                description: 'Window of size k to surface the last k back-and-forths to use as memory.'
+                description: 'Window of size k to surface the last k back-and-forth to use as memory.'
             },
             {
                 label: 'Auto Summary Template',

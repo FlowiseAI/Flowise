@@ -55,7 +55,7 @@ class FewShotPromptTemplate_Prompts implements INode {
                 placeholder: `Word: {input}\nAntonym:`
             },
             {
-                label: 'Example Seperator',
+                label: 'Example Separator',
                 name: 'exampleSeparator',
                 type: 'string',
                 placeholder: `\n\n`
