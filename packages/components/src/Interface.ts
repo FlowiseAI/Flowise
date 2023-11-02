@@ -70,6 +70,7 @@ export interface INodeParams {
     fileType?: string
     additionalParams?: boolean
     loadMethod?: string
+    lookupTargets?: string[]
 }
 
 export interface INodeExecutionData {

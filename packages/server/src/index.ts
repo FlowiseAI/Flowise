@@ -787,6 +787,22 @@ export class App {
             }
         })
 
+        // load prompt from lang-smith hub
+        this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
+            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                id: req.body.credential
+            })
+
+            if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
+
+            // Decrypt credentialData
+            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
+            //TODO: call lang-smith hub to get prompt (key and url from credentialData)
+            //TODO: Should we roll our own implementation (axios call) or use the langchainhub library ?
+            //TODO: return the whole prompt and let the front end extract the templates ? or return only the templates ?
+            return res.json({ text: 'loaded' })
+        })
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------

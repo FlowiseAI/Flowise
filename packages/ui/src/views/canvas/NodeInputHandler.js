@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconCodeDots } from '@tabler/icons'
 
 // project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
@@ -29,6 +29,7 @@ import { getInputVariables } from 'utils/genericHelper'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+import promptApi from 'api/prompt'
 
 const EDITABLE_TOOLS = ['selectedTool']
 
@@ -94,6 +95,26 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
         data.inputs[inputParamName] = newValue
+    }
+
+    const onLoadPrompt = async (newValue, inputParam) => {
+        const inputParamName = inputParam.name
+        data.inputs[inputParamName] = newValue
+        //raise error if either of the above is empty
+        if (!data.inputs[inputParamName] || !data.inputs[FLOWISE_CREDENTIAL_ID]) {
+            alert('Please enter both credential and prompt name')
+        } else {
+            const createResp = await promptApi.loadPromptFromHub({
+                credential: data.inputs[FLOWISE_CREDENTIAL_ID],
+                promptName: data.inputs[inputParamName],
+                targetField: inputParam.lookupTargets[0]
+            })
+            if (createResp.data) {
+                //TODO: update the node with the new prompt (how do make this reusable for all prompt types (e.g. PromptTemplate, ChatPromptTemplate, etc.)
+                //TODO: need to avoid hardcoding the node fields that need to be populated with the new prompt fetched from hub
+                alert('Prompt loaded successfully ' + JSON.stringify(createResp.data, undefined, 2))
+            }
+        }
     }
 
     const editAsyncOption = (inputParamName, inputValue) => {
@@ -250,6 +271,29 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
+                        )}
+                        {inputParam.type === 'promptLookup' && (
+                            <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Input
+                                    key={data.inputs[inputParam.name]}
+                                    disabled={disabled}
+                                    inputParam={inputParam}
+                                    onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                    showDialog={showExpandDialog}
+                                    dialogProps={expandDialogProps}
+                                    onDialogCancel={() => setShowExpandDialog(false)}
+                                    onDialogConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
+                                />
+                                <IconButton
+                                    title='Load'
+                                    color='primary'
+                                    size='small'
+                                    onClick={() => onLoadPrompt(data.inputs[inputParam.name], inputParam)}
+                                >
+                                    <IconCodeDots />
+                                </IconButton>
+                            </div>
                         )}
                         {inputParam.type === 'boolean' && (
                             <SwitchInput
