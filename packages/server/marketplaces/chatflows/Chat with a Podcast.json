@@ -16,11 +16,7 @@
                 "version": 1,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": [
-                    "ConversationalRetrievalQAChain",
-                    "BaseChain",
-                    "Runnable"
-                ],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
@@ -130,11 +126,7 @@
                 "version": 1,
                 "name": "memoryVectorStore",
                 "type": "Memory",
-                "baseClasses": [
-                    "Memory",
-                    "VectorStoreRetriever",
-                    "BaseRetriever"
-                ],
+                "baseClasses": ["Memory", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
                 "description": "In-memory vectorstore that stores embeddings and does an exact, linear search for the most similar embeddings.",
                 "inputParams": [
@@ -164,11 +156,7 @@
                     }
                 ],
                 "inputs": {
-                    "document": [
-                        "{{searchApi_0.data.instance}}",
-                        "{{searchApi_0.data.instance}}",
-                        "{{searchApi_0.data.instance}}"
-                    ],
+                    "document": ["{{searchApi_0.data.instance}}", "{{searchApi_0.data.instance}}", "{{searchApi_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "topK": ""
                 },
@@ -221,12 +209,7 @@
                 "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": [
-                    "ChatOpenAI",
-                    "BaseChatModel",
-                    "BaseLanguageModel",
-                    "Runnable"
-                ],
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -234,9 +217,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
@@ -406,12 +387,7 @@
                 "version": 1,
                 "name": "characterTextSplitter",
                 "type": "CharacterTextSplitter",
-                "baseClasses": [
-                    "CharacterTextSplitter",
-                    "TextSplitter",
-                    "BaseDocumentTransformer",
-                    "Runnable"
-                ],
+                "baseClasses": ["CharacterTextSplitter", "TextSplitter", "BaseDocumentTransformer", "Runnable"],
                 "category": "Text Splitters",
                 "description": "splits only on one type of character (defaults to \"\\n\\n\").",
                 "inputParams": [
@@ -479,10 +455,7 @@
                 "version": 1,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
-                "baseClasses": [
-                    "OpenAIEmbeddings",
-                    "Embeddings"
-                ],
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
                 "description": "OpenAI API to generate embeddings for a given text",
                 "inputParams": [
@@ -490,9 +463,7 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": [
-                            "openAIApi"
-                        ],
+                        "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
                     },
                     {
@@ -568,9 +539,7 @@
                 "version": 1,
                 "name": "searchApi",
                 "type": "Document",
-                "baseClasses": [
-                    "Document"
-                ],
+                "baseClasses": ["Document"],
                 "category": "Document Loaders",
                 "description": "Load data from real-time search results",
                 "inputParams": [
@@ -579,9 +548,7 @@
                         "name": "credential",
                         "type": "credential",
                         "optional": false,
-                        "credentialNames": [
-                            "searchApi"
-                        ],
+                        "credentialNames": ["searchApi"],
                         "id": "searchApi_0-input-credential-credential"
                     },
                     {

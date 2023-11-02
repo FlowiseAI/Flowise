@@ -74,17 +74,17 @@ class SearchAPI_DocumentLoaders implements INode {
         const searchApiKey = getCredentialParam('searchApiKey', credentialData, nodeData)
 
         // Check and parse custom parameters (should be JSON or object)
-        const parsedParameters = typeof customParameters === 'object' ? customParameters : JSON.parse(customParameters || '{}');
+        const parsedParameters = typeof customParameters === 'object' ? customParameters : JSON.parse(customParameters || '{}')
 
         // Prepare the configuration for the SearchApiLoader
         const loaderConfig = {
             q: query,
             apiKey: searchApiKey,
             ...parsedParameters
-        };
+        }
 
         // Initialize the loader with the given configuration
-        const loader = new SearchApiLoader(loaderConfig);
+        const loader = new SearchApiLoader(loaderConfig)
 
         // Fetch documents, split if a text splitter is provided
         const docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
