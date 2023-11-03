@@ -73,6 +73,13 @@ class PostgresUpsert_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Additional Configuration',
+                name: 'additionalConfig',
+                type: 'json',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -104,11 +111,22 @@ class PostgresUpsert_VectorStores implements INode {
         const tableName = _tableName ? _tableName : 'documents'
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const additionalConfig = nodeData.inputs?.additionalConfig as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
+        let additionalConfiguration = {}
+        if (additionalConfig) {
+            try {
+                additionalConfiguration = typeof additionalConfig === 'object' ? additionalConfig : JSON.parse(additionalConfig)
+            } catch (exception) {
+                throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
+            }
+        }
+
         const postgresConnectionOptions = {
+            ...additionalConfiguration,
             type: 'postgres',
             host: nodeData.inputs?.host as string,
             port: nodeData.inputs?.port as number,
@@ -125,7 +143,9 @@ class PostgresUpsert_VectorStores implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         const vectorStore = await TypeORMVectorStore.fromDocuments(finalDocs, embeddings, args)

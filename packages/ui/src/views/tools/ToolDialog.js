@@ -213,7 +213,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 delete toolData.id
                 delete toolData.createdDate
                 delete toolData.updatedDate
-                let dataStr = JSON.stringify(toolData)
+                let dataStr = JSON.stringify(toolData, null, 2)
                 let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
                 let exportFileDefaultName = `${toolName}-CustomTool.json`

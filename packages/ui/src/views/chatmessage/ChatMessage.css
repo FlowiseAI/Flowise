@@ -134,3 +134,13 @@
     justify-content: center;
     align-items: center;
 }
+
+.cloud-message {
+    width: 100%;
+    height: calc(100vh - 260px);
+    overflow-y: scroll;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

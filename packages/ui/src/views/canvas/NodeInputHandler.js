@@ -275,6 +275,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                                edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                                nodeId={data.id}
                                 showDialog={showExpandDialog}
                                 dialogProps={expandDialogProps}
                                 onDialogCancel={() => setShowExpandDialog(false)}
