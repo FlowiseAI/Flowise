@@ -8,14 +8,16 @@ import menuItem from 'menu-items'
 
 // ==============================|| SIDEBAR MENU LIST ||============================== //
 
-const MenuList = ({ toggleSettingsPopper }) => {
+const MenuList = ({ drawerToggle, toggleSettingsPopper }) => {
     const toggleSettingsPopperCallBack = () => {
         toggleSettingsPopper()
     }
-    const navItems = menuItem.itemsInDetail.map((item) => {
+    const navItems = menuItem.items.map((item) => {
         switch (item.type) {
             case 'group':
-                return <NavGroup key={item.id} item={item} toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                return (
+                    <NavGroup key={item.id} item={item} drawerToggle={drawerToggle} toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                )
             default:
                 return (
                     <Typography key={item.id} variant='h6' color='error' align='center'>
@@ -28,6 +30,7 @@ const MenuList = ({ toggleSettingsPopper }) => {
     return <>{navItems}</>
 }
 MenuList.propTypes = {
+    drawerToggle: PropTypes.func,
     toggleSettingsPopper: PropTypes.func
 }
 

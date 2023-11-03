@@ -10,7 +10,6 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 import Sidebar from './Sidebar'
 import { drawerIconWidth } from 'store/constant'
 import { SET_MENU } from 'store/actions'
-import SidebarStatic from './SidebarStatic'
 import Header from './Header'
 
 // styles
@@ -91,18 +90,18 @@ const MainLayout = () => {
                 }}
             >
                 <Toolbar>
-                    <Header toggleDetailSlider3={handleLeftDrawerToggle} />
+                    <Header />
                 </Toolbar>
             </AppBar>
 
             {/* drawer */}
             <Sidebar
                 drawerOpen={leftDrawerOpened}
+                drawerToggle={handleLeftDrawerToggle}
                 toggleSettingsPopper={() => {
                     setTrigger((trigger) => trigger + 1)
                 }}
             />
-            <SidebarStatic trigger={trigger} toggleDetailSlider3={handleLeftDrawerToggle} drawerOpen={leftDrawerOpened} />
 
             {/* main content */}
             <Main theme={theme} open={leftDrawerOpened}>

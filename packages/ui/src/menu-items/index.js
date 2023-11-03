@@ -1,11 +1,9 @@
 import dashboard from './dashboard'
-import dashboardDetail from './dashboardDetail'
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [dashboard],
-    itemsInDetail: [dashboardDetail]
+    items: [dashboard]
 }
 
 export default menuItems

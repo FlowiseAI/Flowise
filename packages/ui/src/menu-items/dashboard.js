@@ -19,7 +19,7 @@ const dashboard = {
         },
         {
             id: 'chatflows',
-            // title: 'Chatflows',
+            title: 'Chatflows',
             type: 'item',
             url: '/chatflows',
             icon: icons.IconHierarchy,
@@ -27,7 +27,7 @@ const dashboard = {
         },
         {
             id: 'marketplaces',
-            // title: 'Marketplaces',
+            title: 'Marketplaces',
             type: 'item',
             url: '/marketplaces',
             icon: icons.IconBuildingStore,
@@ -35,7 +35,7 @@ const dashboard = {
         },
         {
             id: 'tools',
-            // title: 'Tools',
+            title: 'Tools',
             type: 'item',
             url: '/tools',
             icon: icons.IconTool,
@@ -51,7 +51,7 @@ const dashboard = {
         },
         {
             id: 'credentials',
-            // title: 'Credentials',
+            title: 'Credentials',
             type: 'item',
             url: '/credentials',
             icon: icons.IconLock,
@@ -75,6 +75,7 @@ const dashboard = {
         // },
         {
             id: 'settings',
+            title: 'Settings',
             type: 'item',
             icon: icons.IconSettings,
             breadcrumbs: true

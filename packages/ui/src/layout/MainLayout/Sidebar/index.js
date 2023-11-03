@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Box, Drawer, useMediaQuery } from '@mui/material'
+import { styled, useTheme } from '@mui/material/styles'
+import { Box, useMediaQuery } from '@mui/material'
+import MuiDrawer from '@mui/material/Drawer'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -11,17 +12,50 @@ import { BrowserView, MobileView } from 'react-device-detect'
 // project imports
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
-import { drawerWidth } from 'store/constant'
+import { drawerWidth, drawerIconWidth } from 'store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
-const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
+const Sidebar = ({ drawerOpen, drawerToggle, window, toggleSettingsPopper }) => {
     const theme = useTheme()
     const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
 
     const toggleSettingsPopperCallBack = () => {
         toggleSettingsPopper()
     }
+
+    const openedMixin = (theme) => ({
+        width: drawerWidth,
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen
+        }),
+        overflowX: 'hidden'
+    })
+
+    const closedMixin = (theme) => ({
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen
+        }),
+        overflowX: 'hidden',
+        width: drawerIconWidth
+    })
+
+    const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+        width: drawerWidth,
+        flexShrink: 0,
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
+        ...(open && {
+            ...openedMixin(theme),
+            '& .MuiDrawer-paper': openedMixin(theme)
+        }),
+        ...(!open && {
+            ...closedMixin(theme),
+            '& .MuiDrawer-paper': closedMixin(theme)
+        })
+    }))
 
     const drawer = (
         <>
@@ -34,26 +68,20 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
                 <PerfectScrollbar
                     component='div'
                     style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-                        paddingLeft: '16px',
-                        paddingRight: '16px',
-                        marginTop: '49px'
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)'
                     }}
                 >
-                    <MenuList toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                    <MenuList drawerToggle={drawerToggle} toggleSettingsPopper={toggleSettingsPopperCallBack} />
                 </PerfectScrollbar>
             </BrowserView>
             <MobileView>
                 <PerfectScrollbar
                     component='div'
                     style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-                        paddingLeft: '16px',
-                        paddingRight: '16px',
-                        marginTop: '49px'
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)'
                     }}
                 >
-                    <MenuList toggleSettingsPopper={toggleSettingsPopperCallBack} />
+                    <MenuList drawerToggle={drawerToggle} toggleSettingsPopper={toggleSettingsPopperCallBack} />
                 </PerfectScrollbar>
             </MobileView>
         </>
@@ -66,12 +94,11 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
             <Drawer
                 hideBackdrop
                 container={container}
-                variant={matchUpMd ? 'persistent' : 'temporary'}
+                variant='permanent'
                 anchor='left'
                 open={drawerOpen}
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: drawerWidth,
                         background: 'linear-gradient(180.16deg, #02a84b, #016841)',
                         backgroundColor: '#EDF0F3',
                         borderRight: 'none'
@@ -88,6 +115,7 @@ const Sidebar = ({ drawerOpen, window, toggleSettingsPopper }) => {
 
 Sidebar.propTypes = {
     drawerOpen: PropTypes.bool,
+    drawerToggle: PropTypes.func,
     window: PropTypes.object,
     toggleSettingsPopper: PropTypes.func
 }
