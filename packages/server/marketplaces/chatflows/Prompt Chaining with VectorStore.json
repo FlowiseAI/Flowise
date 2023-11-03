@@ -661,168 +661,6 @@
         },
         {
             "width": 300,
-            "height": 405,
-            "id": "llmChain_0",
-            "position": {
-                "x": 747.1299875516488,
-                "y": -267.01184813798244
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_0-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "prompt": "{{promptTemplate_0.data.instance}}",
-                    "chainName": "RephraseQuestion"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_0-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "outputPrediction"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 747.1299875516488,
-                "y": -267.01184813798244
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 405,
-            "id": "llmChain_1",
-            "position": {
-                "x": 2694.8707655351186,
-                "y": -308.59150355411236
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_1",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_1-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_1-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_1.data.instance}}",
-                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
-                    "chainName": "FinalResponse"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_1-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "llmChain"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2694.8707655351186,
-                "y": -308.59150355411236
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 454,
             "id": "vectorStoreToDocument_0",
             "position": {
@@ -870,7 +708,7 @@
                 ],
                 "inputs": {
                     "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
-                    "query": "{{llmChain_0.data.instance}}",
+                    "query": "{{llmChain_2.data.instance}}",
                     "minScore": ""
                 },
                 "outputAnchors": [
@@ -906,6 +744,184 @@
                 "y": -157.0046189166955
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_2",
+            "position": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_2",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_2-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_2-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_2-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_2-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "RephraseQuestion"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_2-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_2-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "outputPrediction"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_1",
+            "position": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_1-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "FinalResponse"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -916,50 +932,6 @@
             "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
             "type": "buttonedge",
             "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "promptTemplate_0",
-            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
-            "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chatPromptTemplate_0",
-            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-            "target": "llmChain_1",
-            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
-            "type": "buttonedge",
-            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chatOpenAI_1",
-            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "llmChain_1",
-            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
@@ -987,12 +959,56 @@
             }
         },
         {
-            "source": "llmChain_0",
-            "sourceHandle": "llmChain_0-output-outputPrediction-string|json",
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_2-llmChain_2-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_2-llmChain_2-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "llmChain_2",
+            "sourceHandle": "llmChain_2-output-outputPrediction-string|json",
             "target": "vectorStoreToDocument_0",
             "targetHandle": "vectorStoreToDocument_0-input-query-string",
             "type": "buttonedge",
-            "id": "llmChain_0-llmChain_0-output-outputPrediction-string|json-vectorStoreToDocument_0-vectorStoreToDocument_0-input-query-string",
+            "id": "llmChain_2-llmChain_2-output-outputPrediction-string|json-vectorStoreToDocument_0-vectorStoreToDocument_0-input-query-string",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_1",
+            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }
