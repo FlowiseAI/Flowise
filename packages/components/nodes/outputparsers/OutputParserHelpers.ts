@@ -4,7 +4,7 @@ import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject } from '../../src'
 import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
 
-export const CATEGORY = 'Output Parser (Experimental)'
+export const CATEGORY = 'Output Parsers'
 
 export const formatResponse = (response: string | object): string | object => {
     if (typeof response === 'object') {
