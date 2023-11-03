@@ -9,7 +9,7 @@
         "dev": "tsc --watch"
     },
     "keywords": [],
-    "homepage": "https://flowiseai.com",
+    "homepage": "/aichatbot",
     "author": {
         "name": "Henry Heng",
         "email": "henryheng@flowiseai.com"

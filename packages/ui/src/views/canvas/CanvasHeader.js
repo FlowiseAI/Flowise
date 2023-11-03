@@ -26,7 +26,7 @@ import useApi from 'hooks/useApi'
 
 // utils
 import { generateExportFlowData } from 'utils/genericHelper'
-import { uiBaseURL } from 'store/constant'
+import { baseURL } from 'store/constant'
 import { SET_CHATFLOW } from 'store/actions'
 
 // ==============================|| CANVAS HEADER ||============================== //
@@ -80,7 +80,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
         } else if (setting === 'duplicateChatflow') {
             try {
                 localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-                window.open(`${uiBaseURL}/canvas`, '_blank')
+                window.open(`${baseURL}/canvas`, '_blank')
             } catch (e) {
                 console.error(e)
             }

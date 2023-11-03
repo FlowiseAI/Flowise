@@ -35,7 +35,7 @@
         "version": "oclif readme && git add README.md"
     },
     "keywords": [],
-    "homepage": "https://flowiseai.com",
+    "homepage": "/aichatbot",
     "author": {
         "name": "Henry Heng",
         "email": "henryheng@flowiseai.com"
