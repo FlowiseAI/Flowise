@@ -30,7 +30,7 @@ import { baseURL, maxScroll } from 'store/constant'
 
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
-import { isValidURL } from 'utils/genericHelper'
+import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -53,7 +53,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const [chatId, setChatId] = useState(undefined)
 
     const inputRef = useRef(null)
-    const getChatmessageApi = useApi(chatmessageApi.getChatmessageFromChatflow)
+    const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
 
     const onSourceDialogClick = (data) => {
@@ -63,21 +63,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     const onURLClick = (data) => {
         window.open(data, '_blank')
-    }
-
-    const removeDuplicateURL = (message) => {
-        const visitedURLs = []
-        const newSourceDocuments = []
-
-        message.sourceDocuments.forEach((source) => {
-            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
-                visitedURLs.push(source.metadata.source)
-                newSourceDocuments.push(source)
-            } else if (!isValidURL(source.metadata.source)) {
-                newSourceDocuments.push(source)
-            }
-        })
-        return newSourceDocuments
     }
 
     const scrollToBottom = () => {

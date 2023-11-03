@@ -18,7 +18,7 @@ const StyledPopper = styled(Popper)({
     }
 })
 
-export const MultiDropdown = ({ name, value, options, onSelect, disabled = false, disableClearable = false }) => {
+export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = {}, disabled = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], internalValue) => {
         let values = []
@@ -30,7 +30,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, disabled = false
     let [internalValue, setInternalValue] = useState(value ?? [])
 
     return (
-        <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
+        <FormControl sx={{ mt: 1, width: '100%', ...formControlSx }} size='small'>
             <Autocomplete
                 id={name}
                 disabled={disabled}
@@ -75,5 +75,6 @@ MultiDropdown.propTypes = {
     options: PropTypes.array,
     onSelect: PropTypes.func,
     disabled: PropTypes.bool,
+    formControlSx: PropTypes.object,
     disableClearable: PropTypes.bool
 }

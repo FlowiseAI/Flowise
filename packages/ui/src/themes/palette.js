@@ -80,6 +80,9 @@ export default function themePalette(theme) {
         asyncSelect: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50
         },
+        timeMessage: {
+            main: theme.customization.isDarkMode ? theme.colors?.darkLevel2 : theme.colors?.grey200
+        },
         canvasHeader: {
             deployLight: theme.colors?.primaryLight,
             deployDark: theme.colors?.primaryDark,

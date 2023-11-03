@@ -86,7 +86,7 @@ export const ChatPopUp = ({ chatflowid }) => {
         if (isConfirmed) {
             try {
                 const chatId = localStorage.getItem(`${chatflowid}_INTERNAL`)
-                await chatmessageApi.deleteChatmessage(chatId)
+                await chatmessageApi.deleteChatmessage(chatflowid, { chatId, chatType: 'INTERNAL' })
                 localStorage.removeItem(`${chatflowid}_INTERNAL`)
                 resetChatDialog()
                 enqueueSnackbar({
