@@ -20,6 +20,18 @@ export class ChatMessage implements IChatMessage {
     @Column({ nullable: true, type: 'text' })
     sourceDocuments?: string
 
+    @Column()
+    chatType: string
+
+    @Column()
+    chatId: string
+
+    @Column({ nullable: true })
+    memoryType?: string
+
+    @Column({ nullable: true })
+    sessionId?: string
+
     @CreateDateColumn()
     createdDate: Date
 }

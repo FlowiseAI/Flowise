@@ -415,6 +415,23 @@ export const getInputVariables = (paramValue) => {
     return inputVariables
 }
 
+export const removeDuplicateURL = (message) => {
+    const visitedURLs = []
+    const newSourceDocuments = []
+
+    if (!message.sourceDocuments) return newSourceDocuments
+
+    message.sourceDocuments.forEach((source) => {
+        if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+            visitedURLs.push(source.metadata.source)
+            newSourceDocuments.push(source)
+        } else if (!isValidURL(source.metadata.source)) {
+            newSourceDocuments.push(source)
+        }
+    })
+    return newSourceDocuments
+}
+
 export const isValidURL = (url) => {
     try {
         return new URL(url)
