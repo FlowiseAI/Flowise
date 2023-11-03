@@ -43,6 +43,7 @@ export const initNode = (nodeData, newNodeId) => {
         'asyncOptions',
         'options',
         'multiOptions',
+        'datagrid',
         'string',
         'number',
         'boolean',
@@ -437,5 +438,19 @@ export const isValidURL = (url) => {
         return new URL(url)
     } catch (err) {
         return undefined
+    }
+}
+
+export const formatDataGridRows = (rows) => {
+    try {
+        const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows
+        return parsedRows.map((sch, index) => {
+            return {
+                ...sch,
+                id: index
+            }
+        })
+    } catch (e) {
+        return []
     }
 }

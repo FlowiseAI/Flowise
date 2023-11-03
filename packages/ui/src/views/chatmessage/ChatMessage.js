@@ -125,16 +125,20 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
             if (response.data) {
-                let data = response.data
-
+                const data = response.data
                 if (!chatId) {
                     setChatId(data.chatId)
                     localStorage.setItem(`${chatflowid}_INTERNAL`, data.chatId)
                 }
                 if (!isChatFlowAvailableToStream) {
+                    let text = ''
+                    if (data.text) text = data.text
+                    else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
+                    else text = JSON.stringify(data, null, 2)
+
                     setMessages((prevMessages) => [
                         ...prevMessages,
-                        { message: data.text, sourceDocuments: data?.sourceDocuments, type: 'apiMessage' }
+                        { message: text, sourceDocuments: data?.sourceDocuments, type: 'apiMessage' }
                     ])
                 }
 

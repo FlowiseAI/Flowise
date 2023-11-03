@@ -1145,9 +1145,14 @@ export class App {
             }
             await this.addChatMessage(userMessage)
 
+            let resultText = ''
+            if (result.text) resultText = result.text
+            else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+            else resultText = JSON.stringify(result, null, 2)
+
             const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
                 role: 'apiMessage',
-                content: result.text,
+                content: resultText,
                 chatflowid,
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
