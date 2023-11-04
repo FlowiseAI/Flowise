@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 
 import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material'
 import { StyledButton } from 'ui-component/button/StyledButton'
-import { Input } from 'ui-component/input/Input'
 
 const LoginDialog = ({ show, dialogProps, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -23,38 +22,52 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
     const [passwordVal, setPasswordVal] = useState('')
 
     const component = show ? (
-        <Dialog
-            onKeyUp={(e) => {
-                if (e.key === 'Enter') {
-                    onConfirm(usernameVal, passwordVal)
-                }
-            }}
-            open={show}
-            fullWidth
-            maxWidth='xs'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
+        // <Dialog
+        //     onKeyUp={(e) => {
+        //         if (e.key === 'Enter') {
+        //             onConfirm(usernameVal, passwordVal)
+        //         }
+        //     }}
+        //     open={show}
+        //     fullWidth
+        //     maxWidth='xs'
+        //     aria-labelledby='alert-dialog-title'
+        //     aria-describedby='alert-dialog-description'
+        // >
+        //     <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+        //         {dialogProps.title}
+        //     </DialogTitle>
+        //     <DialogContent>
+        //         <Typography>Username</Typography>
+        //         <Input
+        //             inputParam={usernameInput}
+        //             onChange={(newValue) => setUsernameVal(newValue)}
+        //             value={usernameVal}
+        //             showDialog={false}
+        //         />
+        //         <div style={{ marginTop: 20 }}></div>
+        //         <Typography>Password</Typography>
+        //         <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
+        //     </DialogContent>
+        //     <DialogActions>
+        //         <StyledButton variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
+        //             {dialogProps.confirmButtonName}
+        //         </StyledButton>
+        //     </DialogActions>
+        // </Dialog>
+        <Dialog open={show} fullWidth maxWidth='xs' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title}
+                <Typography>Not authorized</Typography>
             </DialogTitle>
             <DialogContent>
-                <Typography>Username</Typography>
-                <Input
-                    inputParam={usernameInput}
-                    onChange={(newValue) => setUsernameVal(newValue)}
-                    value={usernameVal}
-                    showDialog={false}
-                />
+                <Typography>The AI chatbot module is not available until you login as an authorized user.</Typography>
                 <div style={{ marginTop: 20 }}></div>
-                <Typography>Password</Typography>
-                <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
+                <DialogActions>
+                    <StyledButton variant='contained' onClick={() => (window.location.href = '/?returnurl=/aichatbot')}>
+                        Login
+                    </StyledButton>
+                </DialogActions>
             </DialogContent>
-            <DialogActions>
-                <StyledButton variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
         </Dialog>
     ) : null
 
