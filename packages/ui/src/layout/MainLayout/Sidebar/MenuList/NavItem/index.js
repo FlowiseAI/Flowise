@@ -19,7 +19,6 @@ import {
     Paper,
     Box,
     ClickAwayListener,
-    Divider,
     List
 } from '@mui/material'
 // third-party
@@ -290,16 +289,8 @@ const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigge
                         <Paper>
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    {username && (
-                                        <Box sx={{ p: 2 }}>
-                                            <Typography component='span' variant='h4'>
-                                                {username}
-                                            </Typography>
-                                        </Box>
-                                    )}
                                     <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
                                         <Box sx={{ p: 2 }}>
-                                            <Divider />
                                             <List
                                                 component='nav'
                                                 sx={{
