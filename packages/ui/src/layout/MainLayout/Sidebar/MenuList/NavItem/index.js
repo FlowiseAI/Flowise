@@ -67,7 +67,7 @@ const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigge
 
     let listItemProps = {
         component: forwardRef(function ListItemPropsComponent(props, ref) {
-            if (item?.url) {
+            if (item?.url || navType === 'SETTINGS') {
                 return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
             } else {
                 return <Link ref={ref} {...props} target={itemTarget} />
@@ -183,29 +183,40 @@ const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigge
                 {...listItemProps}
                 disabled={item.disabled}
                 sx={{
-                    color: 'white',
-                    height: '49px',
-                    '&$selected': {
-                        backgroundColor: 'inherit',
+                    color: 'inherit',
+                    ...(navType == 'MENU' && {
                         color: 'white',
-                        '& .MuiListItemIcon-root': {
-                            color: 'white'
+                        height: '49px',
+                        '&$selected': {
+                            backgroundColor: 'inherit',
+                            color: 'white',
+                            '& .MuiListItemIcon-root': {
+                                color: 'white'
+                            }
+                        },
+                        '&$selected:hover': {
+                            backgroundColor: 'inherit',
+                            color: 'white',
+                            '& .MuiListItemIcon-root': {
+                                color: 'white'
+                            }
+                        },
+                        '&:hover': {
+                            backgroundColor: 'inherit',
+                            color: 'white',
+                            '& .MuiListItemIcon-root': {
+                                color: 'white'
+                            }
                         }
-                    },
-                    '&$selected:hover': {
-                        backgroundColor: 'inherit',
-                        color: 'white',
-                        '& .MuiListItemIcon-root': {
-                            color: 'white'
-                        }
-                    },
-                    '&:hover': {
-                        backgroundColor: 'inherit',
-                        color: 'white',
-                        '& .MuiListItemIcon-root': {
-                            color: 'white'
-                        }
-                    }
+                    }),
+                    ...(navType != 'MENU' && {
+                        borderRadius: `${customization.borderRadius}px`,
+                        mb: 0.5,
+                        alignItems: 'flex-start',
+                        backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
+                        py: level > 1 ? 1 : 1.25,
+                        pl: `${level * 24}px`
+                    })
                 }}
                 selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
                 onClick={() => {
@@ -217,7 +228,9 @@ const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigge
                     sx={{
                         my: 'auto',
                         minWidth: !item?.icon ? 18 : 44,
-                        color: 'white'
+                        ...(navType == 'MENU' && {
+                            color: 'white'
+                        })
                     }}
                 >
                     {itemIcon}
