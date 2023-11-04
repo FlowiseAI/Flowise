@@ -7,10 +7,12 @@
         "packages/*",
         "flowise",
         "ui",
-        "components"
+        "components",
+        "plugins/*"
     ],
     "scripts": {
         "build": "turbo run build",
+        "build-nocache": "turbo --no-cache run build",
         "build-force": "turbo run build --force",
         "dev": "turbo run dev --parallel",
         "start": "run-script-os",

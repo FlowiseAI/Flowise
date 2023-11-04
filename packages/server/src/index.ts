@@ -6,6 +6,7 @@ import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
+import { loadPlugins } from './Plugin'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
@@ -212,11 +213,15 @@ export class App {
 
         // Returns specific component node icon via name
         this.app.get('/api/v1/node-icon/:name', (req: Request, res: Response) => {
+            logger.info(`Node ${req.params.name} icon requested`)
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
+                logger.info(`Node ${req.params.name} found`)
                 const nodeInstance = this.nodesPool.componentNodes[req.params.name]
                 if (nodeInstance.icon === undefined) {
                     throw new Error(`Node ${req.params.name} icon not found`)
                 }
+                logger.info(`Node ${req.params.name} icon found`)
+                logger.info(`Node ${req.params.name} icon path: ${nodeInstance.icon}`)
 
                 if (nodeInstance.icon.endsWith('.svg') || nodeInstance.icon.endsWith('.png') || nodeInstance.icon.endsWith('.jpg')) {
                     const filepath = nodeInstance.icon
@@ -1219,8 +1224,10 @@ export async function start(): Promise<void> {
         }
     })
 
+    const plugins = await loadPlugins()
     await serverApp.initDatabase()
     await serverApp.config(io)
+    plugins.initialize()
 
     server.listen(port, () => {
         logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)

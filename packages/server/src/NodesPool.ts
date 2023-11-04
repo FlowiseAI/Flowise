@@ -4,11 +4,39 @@ import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
 import { ICommonObject } from 'flowise-components'
+import { hooks } from './utils/hooks'
+
+/**
+ * Available hooks for NodesPool
+ */
+export enum NodesPoolHooks {
+    /**
+     * Action after nodes pool is initialized.
+     * @param {NodesPool} nodesPool
+     */
+    OnInitialize = 'flowise:on-initialize-nodes-pool',
+
+    /**
+     * Allows to add an additional (components) nodes path.
+     * Typically within a plugin
+     * @returns {string}
+     */
+    GetAdditionalNodesPath = 'flowise:get-additional-nodes-path',
+
+    /**
+     * Allows to add an additional credentials path.
+     * Typically within a plugin
+     * @returns {string}
+     */
+    GetAdditionalCredentialsPath = 'flowise:get-additional-credentials-path'
+}
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
     componentCredentials: IComponentCredentials = {}
     private credentialIconPath: ICommonObject = {}
+
+    constructor() {}
 
     /**
      * Initialize to get all nodes & credentials
@@ -16,6 +44,7 @@ export class NodesPool {
     async initialize() {
         await this.initializeNodes()
         await this.initializeCredentials()
+        hooks.emit(NodesPoolHooks.OnInitialize, this)
     }
 
     /**
@@ -24,7 +53,15 @@ export class NodesPool {
     private async initializeNodes() {
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
-        const nodeFiles = await this.getFiles(nodesPath)
+        let nodeFiles = await this.getFiles(nodesPath)
+
+        // Load additional nodes via hook (usually from within plugins)
+        const additionalNodesPathes = await hooks.call(NodesPoolHooks.GetAdditionalNodesPath)
+        for (const additionalNodesPath of additionalNodesPathes) {
+            const _nodeFiles = await this.getFiles(additionalNodesPath as string)
+            nodeFiles.push(..._nodeFiles)
+        }
+
         return Promise.all(
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.js')) {
@@ -64,6 +101,8 @@ export class NodesPool {
         )
     }
 
+    public async addNode() {}
+
     /**
      * Initialize credentials
      */
@@ -71,6 +110,14 @@ export class NodesPool {
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'credentials')
         const nodeFiles = await this.getFiles(nodesPath)
+
+        // Load additional nodes via hook (usually from within plugins)
+        const additionalCredentialsPathes = await hooks.call(NodesPoolHooks.GetAdditionalCredentialsPath)
+        for (const additionalCredentialsPath of additionalCredentialsPathes) {
+            const _nodeFiles = await this.getFiles(additionalCredentialsPath as string)
+            nodeFiles.push(..._nodeFiles)
+        }
+
         return Promise.all(
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.credential.js')) {
