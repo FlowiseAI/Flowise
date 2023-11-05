@@ -51,7 +51,7 @@ class ChatPromptTemplate_Prompts implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const humanMessagePrompt = nodeData.inputs?.humanMessagePrompt as string
-        const promptValuesStr = nodeData.inputs?.promptValues as string
+        const promptValuesStr = nodeData.inputs?.promptValues
 
         const prompt = ChatPromptTemplate.fromMessages([
             SystemMessagePromptTemplate.fromTemplate(systemMessagePrompt),
@@ -60,7 +60,11 @@ class ChatPromptTemplate_Prompts implements INode {
 
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
-            promptValues = JSON.parse(promptValuesStr)
+            try {
+                promptValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatPromptTemplate's promptValues: " + exception)
+            }
         }
         // @ts-ignore
         prompt.promptValues = promptValues

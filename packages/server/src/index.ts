@@ -8,7 +8,8 @@ import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
-
+import { v4 as uuidv4 } from 'uuid'
+import { Between, IsNull, FindOptionsWhere } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -16,7 +17,10 @@ import {
     IReactFlowObject,
     INodeData,
     IDatabaseExport,
-    ICredentialReturnResponse
+    ICredentialReturnResponse,
+    chatType,
+    IChatMessage,
+    IReactFlowEdge
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -40,10 +44,11 @@ import {
     getApiKey,
     transformToCredentialEntity,
     decryptCredentialData,
-    clearSessionMemory,
+    clearAllSessionMemory,
     replaceInputsWithConfig,
     getEncryptionKey,
-    checkMemorySessionId
+    checkMemorySessionId,
+    clearSessionMemoryFromViewMessageDialog
 } from './utils'
 import { cloneDeep, omit } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -395,45 +400,92 @@ export class App {
 
         // Get all chatmessages from chatflowid
         this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find({
-                where: {
-                    chatflowid: req.params.id
-                },
-                order: {
-                    createdDate: 'ASC'
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            let chatTypeFilter = req.query?.chatType as chatType | undefined
+
+            if (chatTypeFilter) {
+                try {
+                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
+                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = undefined
+                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
+                        chatTypeFilter = chatType.EXTERNAL
+                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = chatType.INTERNAL
+                    }
+                } catch (e) {
+                    return res.status(500).send(e)
                 }
-            })
+            }
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatTypeFilter,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate
+            )
+            return res.json(chatmessages)
+        })
+
+        // Get internal chatmessages from chatflowid
+        this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
+            const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
             return res.json(chatmessages)
         })
 
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const body = req.body
-            const newChatMessage = new ChatMessage()
-            Object.assign(newChatMessage, body)
-
-            const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-            const results = await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-
+            const results = await this.addChatMessage(body)
             return res.json(results)
         })
 
-        // Delete all chatmessages from chatflowid
+        // Delete all chatmessages from chatId
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
+                id: chatflowid
             })
             if (!chatflow) {
-                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                res.status(404).send(`Chatflow ${chatflowid} not found`)
                 return
             }
+            const chatId = (req.query?.chatId as string) ?? (await getChatId(chatflowid))
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const chatType = req.query?.chatType as string | undefined
+            const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
+
             const flowData = chatflow.flowData
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
-            let chatId = await getChatId(chatflow.id)
-            if (!chatId) chatId = chatflow.id
-            clearSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, req.query.sessionId as string)
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
+
+            if (isClearFromViewMessageDialog)
+                clearSessionMemoryFromViewMessageDialog(
+                    nodes,
+                    this.nodesPool.componentNodes,
+                    chatId,
+                    this.AppDataSource,
+                    sessionId,
+                    memoryType
+                )
+            else clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+
+            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
+            if (memoryType) deleteOptions.memoryType = memoryType
+            if (sessionId) deleteOptions.sessionId = sessionId
+            if (chatType) deleteOptions.chatType = chatType
+
+            const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
         })
 
@@ -827,13 +879,87 @@ export class App {
     }
 
     /**
+     * Method that get chat messages.
+     * @param {string} chatflowid
+     * @param {chatType} chatType
+     * @param {string} sortOrder
+     * @param {string} chatId
+     * @param {string} memoryType
+     * @param {string} sessionId
+     * @param {string} startDate
+     * @param {string} endDate
+     */
+    async getChatMessage(
+        chatflowid: string,
+        chatType: chatType | undefined,
+        sortOrder: string = 'ASC',
+        chatId?: string,
+        memoryType?: string,
+        sessionId?: string,
+        startDate?: string,
+        endDate?: string
+    ): Promise<ChatMessage[]> {
+        let fromDate
+        if (startDate) fromDate = new Date(startDate)
+
+        let toDate
+        if (endDate) toDate = new Date(endDate)
+
+        return await this.AppDataSource.getRepository(ChatMessage).find({
+            where: {
+                chatflowid,
+                chatType,
+                chatId,
+                memoryType: memoryType ?? (chatId ? IsNull() : undefined),
+                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
+                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
+        })
+    }
+
+    /**
+     * Method that add chat messages.
+     * @param {Partial<IChatMessage>} chatMessage
+     */
+    async addChatMessage(chatMessage: Partial<IChatMessage>): Promise<ChatMessage> {
+        const newChatMessage = new ChatMessage()
+        Object.assign(newChatMessage, chatMessage)
+
+        const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+        return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    }
+
+    /**
+     * Method that find memory label that is connected within chatflow
+     * In a chatflow, there should only be 1 memory node
+     * @param {IReactFlowNode[]} nodes
+     * @param {IReactFlowEdge[]} edges
+     * @returns {string | undefined}
+     */
+    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): string | undefined {
+        const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
+        const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
+
+        for (const edge of edges) {
+            if (memoryNodeIds.includes(edge.source)) {
+                const memoryNode = nodes.find((node) => node.data.id === edge.source)
+                return memoryNode ? memoryNode.data.label : undefined
+            }
+        }
+        return undefined
+    }
+
+    /**
      * Process Prediction
      * @param {Request} req
      * @param {Response} res
      * @param {Server} socketIO
      * @param {boolean} isInternal
      */
-    async processPrediction(req: Request, res: Response, socketIO?: Server, isInternal = false) {
+    async processPrediction(req: Request, res: Response, socketIO?: Server, isInternal: boolean = false) {
         try {
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
@@ -845,8 +971,8 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
-            let chatId = await getChatId(chatflow.id)
-            if (!chatId) chatId = chatflowid
+            const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
+            const userMessageDateTime = new Date()
 
             if (!isInternal) {
                 const isKeyValidated = await this.validateKey(req, chatflow)
@@ -982,9 +1108,12 @@ export class App {
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
-            if (nodeToExecuteData.instance) checkMemorySessionId(nodeToExecuteData.instance, chatId)
+            let sessionId = undefined
+            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
 
-            const result = isStreamValid
+            const memoryType = this.findMemoryLabel(nodes, edges)
+
+            let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       socketIO,
@@ -1002,7 +1131,42 @@ export class App {
                       analytic: chatflow.analytic
                   })
 
+            result = typeof result === 'string' ? { text: result } : result
+
+            const userMessage: Omit<IChatMessage, 'id'> = {
+                role: 'userMessage',
+                content: incomingInput.question,
+                chatflowid,
+                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatId,
+                memoryType,
+                sessionId,
+                createdDate: userMessageDateTime
+            }
+            await this.addChatMessage(userMessage)
+
+            let resultText = ''
+            if (result.text) resultText = result.text
+            else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+            else resultText = JSON.stringify(result, null, 2)
+
+            const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+                role: 'apiMessage',
+                content: resultText,
+                chatflowid,
+                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatId,
+                memoryType,
+                sessionId
+            }
+            if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
+            await this.addChatMessage(apiMessage)
+
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+
+            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
+            if (incomingInput.chatId || isInternal) result.chatId = chatId
+
             return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
@@ -1025,7 +1189,7 @@ export class App {
  * @param {string} chatflowid
  * @returns {string}
  */
-export async function getChatId(chatflowid: string) {
+export async function getChatId(chatflowid: string): Promise<string> {
     // first chatmessage id as the unique chat id
     const firstChatMessage = await getDataSource()
         .getRepository(ChatMessage)

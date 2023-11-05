@@ -1,8 +1,8 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch } from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -11,6 +11,13 @@ const settings = {
     title: '',
     type: 'group',
     children: [
+        {
+            id: 'viewMessages',
+            title: 'View Messages',
+            type: 'item',
+            url: '',
+            icon: icons.IconMessage
+        },
         {
             id: 'duplicateChatflow',
             title: 'Duplicate Chatflow',

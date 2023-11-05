@@ -3,120 +3,11 @@
     "nodes": [
         {
             "width": 300,
-            "height": 503,
-            "id": "pineconeExistingIndex_0",
-            "position": {
-                "x": 1062.7418678410986,
-                "y": -109.27680365777141
-            },
-            "type": "customNode",
-            "data": {
-                "id": "pineconeExistingIndex_0",
-                "label": "Pinecone Load Existing Index",
-                "version": 1,
-                "name": "pineconeExistingIndex",
-                "type": "Pinecone",
-                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["pineconeApi"],
-                        "id": "pineconeExistingIndex_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
-                        "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
-                    },
-                    {
-                        "label": "Pinecone Namespace",
-                        "name": "pineconeNamespace",
-                        "type": "string",
-                        "placeholder": "my-first-namespace",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Pinecone Metadata Filter",
-                        "name": "pineconeMetadataFilter",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Default to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeExistingIndex_0-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
-                    }
-                ],
-                "inputs": {
-                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
-                    "pineconeIndex": "newindex",
-                    "pineconeNamespace": "",
-                    "pineconeMetadataFilter": "{}",
-                    "topK": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Pinecone Retriever",
-                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Pinecone Vector Store",
-                                "type": "Pinecone | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": {
-                    "output": "vectorStore"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1062.7418678410986,
-                "y": -109.27680365777141
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 327,
+            "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 711.3971966563331,
-                "y": 7.7184225021727
+                "x": 1198.6643452533754,
+                "y": -584.4233173804803
             },
             "type": "customNode",
             "data": {
@@ -189,18 +80,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 711.3971966563331,
-                "y": 7.7184225021727
+                "x": 1198.6643452533754,
+                "y": -584.4233173804803
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 473,
+            "height": 475,
             "id": "promptTemplate_0",
             "position": {
-                "x": 348.2881107399286,
-                "y": -97.74510214137423
+                "x": 354.2706973608643,
+                "y": -122.34815000085804
             },
             "type": "customNode",
             "data": {
@@ -249,18 +140,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 348.2881107399286,
-                "y": -97.74510214137423
+                "x": 354.2706973608643,
+                "y": -122.34815000085804
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 522,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 335.7621848973805,
-                "y": -721.7411273245009
+                "x": 353.5672832154869,
+                "y": -730.6436764835541
             },
             "type": "customNode",
             "data": {
@@ -396,7 +287,7 @@
                 ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": 0.9,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -418,17 +309,17 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 335.7621848973805,
-                "y": -721.7411273245009
+                "x": 353.5672832154869,
+                "y": -730.6436764835541
             }
         },
         {
             "width": 300,
-            "height": 522,
+            "height": 574,
             "id": "chatOpenAI_1",
             "position": {
-                "x": 1765.2801848172305,
-                "y": -737.9261054149061
+                "x": 2281.9246645710673,
+                "y": -778.8379360672121
             },
             "type": "customNode",
             "data": {
@@ -564,7 +455,7 @@
                 ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": 0.9,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -586,36 +477,153 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 1765.2801848172305,
-                "y": -737.9261054149061
+                "x": 2281.9246645710673,
+                "y": -778.8379360672121
             }
         },
         {
             "width": 300,
-            "height": 473,
-            "id": "promptTemplate_1",
+            "height": 505,
+            "id": "pineconeExistingIndex_0",
             "position": {
-                "x": 1773.720934090435,
-                "y": -116.71323227575395
+                "x": 1544.4998097474581,
+                "y": -628.8477510577202
             },
             "type": "customNode",
             "data": {
-                "id": "promptTemplate_1",
-                "label": "Prompt Template",
+                "id": "pineconeExistingIndex_0",
+                "label": "Pinecone Load Existing Index",
                 "version": 1,
-                "name": "promptTemplate",
-                "type": "PromptTemplate",
-                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate", "Runnable"],
-                "category": "Prompts",
-                "description": "Schema to represent a basic prompt for an LLM",
+                "name": "pineconeExistingIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
                 "inputParams": [
                     {
-                        "label": "Template",
-                        "name": "template",
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeExistingIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "pineconeMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store",
+                                "type": "Pinecone | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1544.4998097474581,
+                "y": -628.8477510577202
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 652,
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 2290.8365353040026,
+                "y": -168.49082887954518
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 1,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
                         "type": "string",
                         "rows": 4,
-                        "placeholder": "What is a good name for a company that makes {product}?",
-                        "id": "promptTemplate_1-input-template-string"
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
                     },
                     {
                         "label": "Format Prompt Values",
@@ -624,20 +632,21 @@
                         "optional": true,
                         "acceptVariable": true,
                         "list": true,
-                        "id": "promptTemplate_1-input-promptValues-json"
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "template": "Use the following pieces of context to answer the question at the end.\n\n{context}\n\nQuestion: {question}\nHelpful Answer:",
-                    "promptValues": "{\"context\":\"{{vectorStoreToDocument_0.data.instance}}\",\"question\":\"{{llmChain_0.data.instance}}\"}"
+                    "systemMessagePrompt": "Using the provided context, answer the user's question to the best of your ability using the resources provided. If there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n\nAnything between the following \\`context\\`  html blocks is retrieved from a knowledge bank, not part of the conversation with the user.\n\n<context>\n    {context}\n<context/>\n\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer. Anything between the preceding 'context' html blocks is retrieved from a knowledge bank, not part of the conversation with the user.",
+                    "humanMessagePrompt": "{text}",
+                    "promptValues": "{\"context\":\"{{vectorStoreToDocument_0.data.instance}}\",\"text\":\"{{question}}\"}"
                 },
                 "outputAnchors": [
                     {
-                        "id": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-                        "name": "promptTemplate",
-                        "label": "PromptTemplate",
-                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate | Runnable"
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -645,192 +654,39 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1773.720934090435,
-                "y": -116.71323227575395
+                "x": 2290.8365353040026,
+                "y": -168.49082887954518
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 404,
-            "id": "llmChain_0",
-            "position": {
-                "x": 756.1670091985342,
-                "y": -592.5151355056942
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_0-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "prompt": "{{promptTemplate_0.data.instance}}",
-                    "chainName": "QuestionChain"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_0-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "outputPrediction"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 756.1670091985342,
-                "y": -592.5151355056942
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 404,
-            "id": "llmChain_1",
-            "position": {
-                "x": 2200.1274896215496,
-                "y": -144.29167974642334
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_1",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_1-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_1-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_1.data.instance}}",
-                    "prompt": "{{promptTemplate_1.data.instance}}",
-                    "chainName": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_1-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "llmChain"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2200.1274896215496,
-                "y": -144.29167974642334
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 353,
+            "height": 454,
             "id": "vectorStoreToDocument_0",
             "position": {
-                "x": 1407.7038120189868,
-                "y": -26.16468811205081
+                "x": 1906.6871314089658,
+                "y": -157.0046189166955
             },
             "type": "customNode",
             "data": {
                 "id": "vectorStoreToDocument_0",
                 "label": "VectorStore To Document",
-                "version": 1,
+                "version": 2,
                 "name": "vectorStoreToDocument",
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
                 "description": "Search documents with scores from vector store",
                 "inputParams": [
+                    {
+                        "label": "Query",
+                        "name": "query",
+                        "type": "string",
+                        "description": "Query to retrieve documents from vector database. If not specified, user question will be used",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "id": "vectorStoreToDocument_0-input-query-string"
+                    },
                     {
                         "label": "Minimum Score (%)",
                         "name": "minScore",
@@ -852,6 +708,7 @@
                 ],
                 "inputs": {
                     "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
+                    "query": "{{llmChain_2.data.instance}}",
                     "minScore": ""
                 },
                 "outputAnchors": [
@@ -883,8 +740,186 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1407.7038120189868,
-                "y": -26.16468811205081
+                "x": 1906.6871314089658,
+                "y": -157.0046189166955
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_2",
+            "position": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_2",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_2-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_2-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_2-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_2-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "RephraseQuestion"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_2-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_2-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "outputPrediction"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_1",
+            "position": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_1-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "FinalResponse"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
             },
             "dragging": false
         }
@@ -915,10 +950,10 @@
         {
             "source": "vectorStoreToDocument_0",
             "sourceHandle": "vectorStoreToDocument_0-output-text-string|json",
-            "target": "promptTemplate_1",
-            "targetHandle": "promptTemplate_1-input-promptValues-json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
             "type": "buttonedge",
-            "id": "vectorStoreToDocument_0-vectorStoreToDocument_0-output-text-string|json-promptTemplate_1-promptTemplate_1-input-promptValues-json",
+            "id": "vectorStoreToDocument_0-vectorStoreToDocument_0-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json",
             "data": {
                 "label": ""
             }
@@ -926,10 +961,10 @@
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_2-llmChain_2-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
@@ -937,21 +972,21 @@
         {
             "source": "promptTemplate_0",
             "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_2-llmChain_2-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "llmChain_0",
-            "sourceHandle": "llmChain_0-output-outputPrediction-string|json",
-            "target": "promptTemplate_1",
-            "targetHandle": "promptTemplate_1-input-promptValues-json",
+            "source": "llmChain_2",
+            "sourceHandle": "llmChain_2-output-outputPrediction-string|json",
+            "target": "vectorStoreToDocument_0",
+            "targetHandle": "vectorStoreToDocument_0-input-query-string",
             "type": "buttonedge",
-            "id": "llmChain_0-llmChain_0-output-outputPrediction-string|json-promptTemplate_1-promptTemplate_1-input-promptValues-json",
+            "id": "llmChain_2-llmChain_2-output-outputPrediction-string|json-vectorStoreToDocument_0-vectorStoreToDocument_0-input-query-string",
             "data": {
                 "label": ""
             }
@@ -968,12 +1003,12 @@
             }
         },
         {
-            "source": "promptTemplate_1",
-            "sourceHandle": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
             "target": "llmChain_1",
             "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "promptTemplate_1-promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }

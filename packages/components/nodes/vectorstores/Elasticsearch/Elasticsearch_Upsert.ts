@@ -38,7 +38,9 @@ class ElasicsearchUpsert_VectorStores extends ElasticSearchBase implements INode
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         // The following code is a workaround for a bug (Langchain Issue #1589) in the underlying library.

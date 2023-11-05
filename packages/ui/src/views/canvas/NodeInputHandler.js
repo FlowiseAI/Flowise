@@ -14,6 +14,7 @@ import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
 import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import { Input } from 'ui-component/input/Input'
+import { DataGrid } from 'ui-component/grid/DataGrid'
 import { File } from 'ui-component/file/File'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
@@ -258,6 +259,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
+                        {inputParam.type === 'datagrid' && (
+                            <DataGrid
+                                disabled={disabled}
+                                columns={inputParam.datagrid}
+                                hideFooter={true}
+                                rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                            />
+                        )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 key={data.inputs[inputParam.name]}
@@ -265,6 +275,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                                edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                                nodeId={data.id}
                                 showDialog={showExpandDialog}
                                 dialogProps={expandDialogProps}
                                 onDialogCancel={() => setShowExpandDialog(false)}
