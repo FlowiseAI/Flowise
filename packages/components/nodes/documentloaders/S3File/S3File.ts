@@ -148,7 +148,7 @@ class S3_DocumentLoaders implements INode {
             bucket: bucketName,
             key: keyName,
             s3Config: {
-                region,
+                region: region,
                 credentials: {
                     accessKeyId,
                     secretAccessKey
