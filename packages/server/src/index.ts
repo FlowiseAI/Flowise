@@ -9,7 +9,6 @@ import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
-import OpenAI from 'openai'
 import { Between, IsNull, FindOptionsWhere } from 'typeorm'
 import {
     IChatFlow,
@@ -56,7 +55,6 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
-import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
@@ -1853,11 +1851,6 @@ export class App {
                   })
 
             result = typeof result === 'string' ? { text: result } : result
-
-            // Retrieve threadId from assistant if exists
-            if (typeof result === 'object' && result.assistant) {
-                sessionId = result.assistant.threadId
-            }
 
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',
