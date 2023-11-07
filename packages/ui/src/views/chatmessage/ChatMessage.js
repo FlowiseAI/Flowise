@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
 import { cloneDeep } from 'lodash'
 import rehypeMathjax from 'rehype-mathjax'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
@@ -287,7 +288,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                 {/* Messages are being rendered in Markdown format */}
                                                 <MemoizedReactMarkdown
                                                     remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeMathjax]}
+                                                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
                                                     components={{
                                                         code({ inline, className, children, ...props }) {
                                                             const match = /language-(\w+)/.exec(className || '')

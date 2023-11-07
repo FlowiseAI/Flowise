@@ -9,6 +9,7 @@ import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
+import OpenAI from 'openai'
 import { Between, IsNull, FindOptionsWhere } from 'typeorm'
 import {
     IChatFlow,
@@ -57,6 +58,7 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
+import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
@@ -469,8 +471,8 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
 
-            if (isClearFromViewMessageDialog)
-                clearSessionMemoryFromViewMessageDialog(
+            if (isClearFromViewMessageDialog) {
+                await clearSessionMemoryFromViewMessageDialog(
                     nodes,
                     this.nodesPool.componentNodes,
                     chatId,
@@ -478,7 +480,9 @@ export class App {
                     sessionId,
                     memoryType
                 )
-            else clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+            } else {
+                await clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+            }
 
             const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
             if (memoryType) deleteOptions.memoryType = memoryType
@@ -629,6 +633,224 @@ export class App {
         this.app.delete('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Tool).delete({ id: req.params.id })
             return res.json(results)
+        })
+
+        // ----------------------------------------
+        // Assistant
+        // ----------------------------------------
+
+        // Get all assistants
+        this.app.get('/api/v1/assistants', async (req: Request, res: Response) => {
+            const assistants = await this.AppDataSource.getRepository(Assistant).find()
+            return res.json(assistants)
+        })
+
+        // Get specific assistant
+        this.app.get('/api/v1/assistants/:id', async (req: Request, res: Response) => {
+            const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
+                id: req.params.id
+            })
+            return res.json(assistant)
+        })
+
+        // Get assistant object
+        this.app.get('/api/v1/openai-assistants/:id', async (req: Request, res: Response) => {
+            const credentialId = req.query.credential as string
+            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                id: credentialId
+            })
+
+            if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
+
+            // Decrpyt credentialData
+            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+            const openAIApiKey = decryptedCredentialData['openAIApiKey']
+            if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+
+            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
+
+            return res.json(retrievedAssistant)
+        })
+
+        // List available assistants
+        this.app.get('/api/v1/openai-assistants', async (req: Request, res: Response) => {
+            const credentialId = req.query.credential as string
+            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                id: credentialId
+            })
+
+            if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
+
+            // Decrpyt credentialData
+            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+            const openAIApiKey = decryptedCredentialData['openAIApiKey']
+            if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+
+            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const retrievedAssistants = await openai.beta.assistants.list()
+
+            return res.json(retrievedAssistants.data)
+        })
+
+        // Add assistant
+        this.app.post('/api/v1/assistants', async (req: Request, res: Response) => {
+            const body = req.body
+
+            if (!body.details) return res.status(500).send(`Invalid request body`)
+
+            const assistantDetails = JSON.parse(body.details)
+
+            if (!assistantDetails.id) {
+                try {
+                    const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                        id: body.credential
+                    })
+
+                    if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
+
+                    // Decrpyt credentialData
+                    const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+                    const openAIApiKey = decryptedCredentialData['openAIApiKey']
+                    if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+
+                    const openai = new OpenAI({ apiKey: openAIApiKey })
+
+                    let tools = []
+                    if (assistantDetails.tools) {
+                        for (const tool of assistantDetails.tools ?? []) {
+                            tools.push({
+                                type: tool
+                            })
+                        }
+                    }
+                    const newAssistant = await openai.beta.assistants.create({
+                        name: assistantDetails.name,
+                        description: assistantDetails.description,
+                        instructions: assistantDetails.instructions,
+                        model: assistantDetails.model,
+                        tools
+                    })
+
+                    const newAssistantDetails = {
+                        ...assistantDetails,
+                        id: newAssistant.id
+                    }
+
+                    body.details = JSON.stringify(newAssistantDetails)
+                } catch (error) {
+                    return res.status(500).send(`Error creating new assistant: ${error}`)
+                }
+            }
+
+            const newAssistant = new Assistant()
+            Object.assign(newAssistant, body)
+
+            const assistant = this.AppDataSource.getRepository(Assistant).create(newAssistant)
+            const results = await this.AppDataSource.getRepository(Assistant).save(assistant)
+
+            return res.json(results)
+        })
+
+        // Update assistant
+        this.app.put('/api/v1/assistants/:id', async (req: Request, res: Response) => {
+            const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
+                id: req.params.id
+            })
+
+            if (!assistant) {
+                res.status(404).send(`Assistant ${req.params.id} not found`)
+                return
+            }
+
+            try {
+                const openAIAssistantId = JSON.parse(assistant.details)?.id
+
+                const body = req.body
+                const assistantDetails = JSON.parse(body.details)
+
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: body.credential
+                })
+
+                if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
+
+                // Decrpyt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+                const openAIApiKey = decryptedCredentialData['openAIApiKey']
+                if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+
+                const openai = new OpenAI({ apiKey: openAIApiKey })
+
+                let tools = []
+                if (assistantDetails.tools) {
+                    for (const tool of assistantDetails.tools ?? []) {
+                        tools.push({
+                            type: tool
+                        })
+                    }
+                }
+                await openai.beta.assistants.update(openAIAssistantId, {
+                    name: assistantDetails.name,
+                    description: assistantDetails.description,
+                    instructions: assistantDetails.instructions,
+                    model: assistantDetails.model,
+                    tools
+                })
+
+                const newAssistantDetails = {
+                    ...assistantDetails,
+                    id: openAIAssistantId
+                }
+
+                const updateAssistant = new Assistant()
+                body.details = JSON.stringify(newAssistantDetails)
+                Object.assign(updateAssistant, body)
+
+                this.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
+                const result = await this.AppDataSource.getRepository(Assistant).save(assistant)
+
+                return res.json(result)
+            } catch (error) {
+                return res.status(500).send(`Error updating assistant: ${error}`)
+            }
+        })
+
+        // Delete assistant
+        this.app.delete('/api/v1/assistants/:id', async (req: Request, res: Response) => {
+            const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
+                id: req.params.id
+            })
+
+            if (!assistant) {
+                res.status(404).send(`Assistant ${req.params.id} not found`)
+                return
+            }
+
+            try {
+                const body = req.body
+                const assistantDetails = JSON.parse(body.details)
+
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: body.credential
+                })
+
+                if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
+
+                // Decrpyt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+                const openAIApiKey = decryptedCredentialData['openAIApiKey']
+                if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+
+                const openai = new OpenAI({ apiKey: openAIApiKey })
+
+                await openai.beta.assistants.del(assistantDetails.id)
+
+                const results = await this.AppDataSource.getRepository(Assistant).delete({ id: req.params.id })
+                return res.json(results)
+            } catch (error) {
+                return res.status(500).send(`Error deleting assistant: ${error}`)
+            }
         })
 
         // ----------------------------------------
@@ -1121,17 +1343,24 @@ export class App {
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic
+                      analytic: chatflow.analytic,
+                      chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic
+                      analytic: chatflow.analytic,
+                      chatId
                   })
 
             result = typeof result === 'string' ? { text: result } : result
+
+            // Retrieve threadId from assistant if exists
+            if (typeof result === 'object' && result.assistant) {
+                sessionId = result.assistant.threadId
+            }
 
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',
