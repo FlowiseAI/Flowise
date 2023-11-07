@@ -34,6 +34,7 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
+import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 
@@ -41,7 +42,13 @@ const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
+export const databaseEntities: IDatabaseEntity = {
+    ChatFlow: ChatFlow,
+    ChatMessage: ChatMessage,
+    Tool: Tool,
+    Credential: Credential,
+    Assistant: Assistant
+}
 
 /**
  * Returns the home folder path of the user if
@@ -313,12 +320,14 @@ export const clearAllSessionMemory = async (
     sessionId?: string
 ) => {
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory') continue
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
 
-        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+        if (sessionId && node.data.inputs) {
+            node.data.inputs.sessionId = sessionId
+        }
 
         if (newNodeInstance.clearSessionMemory) {
             await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
@@ -345,8 +354,8 @@ export const clearSessionMemoryFromViewMessageDialog = async (
 ) => {
     if (!sessionId) return
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory') continue
-        if (node.data.label !== memoryType) continue
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
+        if (memoryType && node.data.label !== memoryType) continue
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
@@ -912,6 +921,8 @@ export const decryptCredentialData = async (
 ): Promise<ICredentialDataDecrypted> => {
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const decryptedDataStr = decryptedData.toString(enc.Utf8)
+    if (!decryptedDataStr) return {}
     try {
         if (componentCredentialName && componentCredentials) {
             const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))

@@ -6,6 +6,7 @@ import { ModifyTool1693997339912 } from './1693997339912-ModifyTool'
 import { AddApiConfig1694099183389 } from './1694099183389-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
 import { AddChatHistory1694658756136 } from './1694658756136-AddChatHistory'
+import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -15,5 +16,6 @@ export const postgresMigrations = [
     ModifyTool1693997339912,
     AddApiConfig1694099183389,
     AddAnalytic1694432361423,
-    AddChatHistory1694658756136
+    AddChatHistory1694658756136,
+    AddAssistantEntity1699325775451
 ]
