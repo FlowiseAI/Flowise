@@ -36,6 +36,7 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
+import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
@@ -918,6 +919,8 @@ export const decryptCredentialData = async (
 ): Promise<ICredentialDataDecrypted> => {
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const decryptedDataStr = decryptedData.toString(enc.Utf8)
+    if (!decryptedDataStr) return {}
     try {
         if (componentCredentialName && componentCredentials) {
             const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))

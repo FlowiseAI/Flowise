@@ -4,6 +4,7 @@ import { useState, useEffect, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import rehypeMathjax from 'rehype-mathjax'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
@@ -270,9 +271,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const transformChatPKToParams = (chatPK) => {
-        const chatId = chatPK.split('_')[0]
-        const memoryType = chatPK.split('_')[1]
-        const sessionId = chatPK.split('_')[2]
+        let [c1, c2, ...rest] = chatPK.split('_')
+        const chatId = c1
+        const memoryType = c2
+        const sessionId = rest.join('_')
 
         const params = { chatId }
         if (memoryType !== 'null') params.memoryType = memoryType
@@ -646,7 +648,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                     {/* Messages are being rendered in Markdown format */}
                                                                     <MemoizedReactMarkdown
                                                                         remarkPlugins={[remarkGfm, remarkMath]}
-                                                                        rehypePlugins={[rehypeMathjax]}
+                                                                        rehypePlugins={[rehypeMathjax, rehypeRaw]}
                                                                         components={{
                                                                             code({ inline, className, children, ...props }) {
                                                                                 const match = /language-(\w+)/.exec(className || '')
