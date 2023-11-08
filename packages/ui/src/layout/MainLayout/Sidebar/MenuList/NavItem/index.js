@@ -22,7 +22,7 @@ import {
     List
 } from '@mui/material'
 // third-party
-import { IconLogout, IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
+import { IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
@@ -36,7 +36,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import databaseApi from 'api/database'
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
-const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigger }) => {
+const NavItem = ({ item, level, navType, onClick, trigger }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -340,17 +340,6 @@ const NavItem = ({ item, level, navType, onClick, username, handleLogout, trigge
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
                                                 </ListItemButton>
-                                                {localStorage.getItem('username') && localStorage.getItem('password') && (
-                                                    <ListItemButton
-                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        onClick={handleLogout}
-                                                    >
-                                                        <ListItemIcon>
-                                                            <IconLogout stroke={1.5} size='1.3rem' />
-                                                        </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
-                                                    </ListItemButton>
-                                                )}
                                             </List>
                                         </Box>
                                     </PerfectScrollbar>
@@ -373,8 +362,6 @@ NavItem.propTypes = {
     navType: PropTypes.string,
     onClick: PropTypes.func,
     onUploadFile: PropTypes.func,
-    username: PropTypes.string,
-    handleLogout: PropTypes.func,
     trigger: PropTypes.number
 }
 

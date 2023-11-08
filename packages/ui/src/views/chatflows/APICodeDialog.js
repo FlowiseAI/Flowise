@@ -20,6 +20,7 @@ import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // Project import
+import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
 import Configuration from './Configuration'
@@ -572,7 +573,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             ))}
                         </Tabs>
                     </div>
-                    {/* <div style={{ flex: 20 }}>
+                    <div style={{ display: 'none', flex: 20 }}>
                         <Dropdown
                             name='SelectKey'
                             disableClearable={true}
@@ -580,7 +581,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             onSelect={(newValue) => onApiKeySelected(newValue)}
                             value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
                         />
-                    </div> */}
+                    </div>
                 </div>
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (

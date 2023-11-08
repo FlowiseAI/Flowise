@@ -10,7 +10,6 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 import Sidebar from './Sidebar'
 import { drawerIconWidth } from 'store/constant'
 import { SET_MENU } from 'store/actions'
-import Header from './Header'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
@@ -61,7 +60,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
-    const [trigger, setTrigger] = useState(0)
+    const [setTrigger] = useState(0)
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
@@ -89,9 +88,7 @@ const MainLayout = () => {
                     transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
                 }}
             >
-                <Toolbar>
-                    <Header />
-                </Toolbar>
+                <Toolbar />
             </AppBar>
 
             {/* drawer */}

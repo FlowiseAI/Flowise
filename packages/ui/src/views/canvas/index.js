@@ -28,6 +28,7 @@ import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 import { ChatPopUp } from 'views/chatmessage/ChatPopUp'
 import { VectorStorePopUp } from 'views/vectorstore/VectorStorePopUp'
 import { flowContext } from 'store/context/ReactFlowContext'
+import NoAccessDialog from 'ui-component/dialog/NoAccessDialog'
 
 // API
 import nodesApi from 'api/nodes'
@@ -68,6 +69,7 @@ const Canvas = () => {
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
+    const [noAccessDialogOpen, setNoAccessDialogOpenOpen] = useState(false)
 
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
@@ -360,8 +362,12 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
             const error = getSpecificChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to retrieve chatflow: ${errorData}`)
+            if (error.response?.status === 401) {
+                setNoAccessDialogOpenOpen(true)
+            } else {
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                errorFailed(`Failed to retrieve chatflow: ${errorData}`)
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -546,6 +552,7 @@ const Canvas = () => {
                     </div>
                 </Box>
                 <ConfirmDialog />
+                <NoAccessDialog show={noAccessDialogOpen} />
             </Box>
         </>
     )
