@@ -49,7 +49,8 @@ import {
     replaceInputsWithConfig,
     getEncryptionKey,
     checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog
+    clearSessionMemoryFromViewMessageDialog,
+    getUserHome
 } from './utils'
 import { cloneDeep, omit } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -670,6 +671,15 @@ export class App {
             const openai = new OpenAI({ apiKey: openAIApiKey })
             const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
 
+            if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
+                const files = []
+                for (const file_id of retrievedAssistant.file_ids) {
+                    const file = await openai.files.retrieve(file_id)
+                    files.push(file)
+                }
+                ;(retrievedAssistant as any).files = files
+            }
+
             return res.json(retrievedAssistant)
         })
 
@@ -701,46 +711,87 @@ export class App {
 
             const assistantDetails = JSON.parse(body.details)
 
-            if (!assistantDetails.id) {
-                try {
-                    const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                        id: body.credential
-                    })
+            try {
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: body.credential
+                })
 
-                    if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
+                if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
 
-                    // Decrpyt credentialData
-                    const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-                    const openAIApiKey = decryptedCredentialData['openAIApiKey']
-                    if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+                // Decrpyt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+                const openAIApiKey = decryptedCredentialData['openAIApiKey']
+                if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
 
-                    const openai = new OpenAI({ apiKey: openAIApiKey })
+                const openai = new OpenAI({ apiKey: openAIApiKey })
 
-                    let tools = []
-                    if (assistantDetails.tools) {
-                        for (const tool of assistantDetails.tools ?? []) {
-                            tools.push({
-                                type: tool
-                            })
-                        }
+                let tools = []
+                if (assistantDetails.tools) {
+                    for (const tool of assistantDetails.tools ?? []) {
+                        tools.push({
+                            type: tool
+                        })
                     }
+                }
+
+                if (assistantDetails.uploadFiles) {
+                    // Base64 strings
+                    let files: string[] = []
+                    const fileBase64 = assistantDetails.uploadFiles
+                    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                        files = JSON.parse(fileBase64)
+                    } else {
+                        files = [fileBase64]
+                    }
+
+                    const uploadedFiles = []
+                    for (const file of files) {
+                        const splitDataURI = file.split(',')
+                        const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+                        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                        const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
+                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
+
+                        const createdFile = await openai.files.create({
+                            file: fs.createReadStream(filePath),
+                            purpose: 'assistants'
+                        })
+                        uploadedFiles.push(createdFile)
+
+                        fs.unlinkSync(filePath)
+                    }
+                    assistantDetails.files = [...assistantDetails.files, ...uploadedFiles]
+                }
+
+                if (!assistantDetails.id) {
                     const newAssistant = await openai.beta.assistants.create({
                         name: assistantDetails.name,
                         description: assistantDetails.description,
                         instructions: assistantDetails.instructions,
                         model: assistantDetails.model,
-                        tools
+                        tools,
+                        file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
                     })
-
-                    const newAssistantDetails = {
-                        ...assistantDetails,
-                        id: newAssistant.id
-                    }
-
-                    body.details = JSON.stringify(newAssistantDetails)
-                } catch (error) {
-                    return res.status(500).send(`Error creating new assistant: ${error}`)
+                    assistantDetails.id = newAssistant.id
+                } else {
+                    await openai.beta.assistants.update(assistantDetails.id, {
+                        name: assistantDetails.name,
+                        description: assistantDetails.description,
+                        instructions: assistantDetails.instructions,
+                        model: assistantDetails.model,
+                        tools,
+                        file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
+                    })
                 }
+
+                const newAssistantDetails = {
+                    ...assistantDetails
+                }
+                if (newAssistantDetails.uploadFiles) delete newAssistantDetails.uploadFiles
+
+                body.details = JSON.stringify(newAssistantDetails)
+            } catch (error) {
+                return res.status(500).send(`Error creating new assistant: ${error}`)
             }
 
             const newAssistant = new Assistant()
@@ -790,18 +841,50 @@ export class App {
                         })
                     }
                 }
+
+                if (assistantDetails.uploadFiles) {
+                    // Base64 strings
+                    let files: string[] = []
+                    const fileBase64 = assistantDetails.uploadFiles
+                    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                        files = JSON.parse(fileBase64)
+                    } else {
+                        files = [fileBase64]
+                    }
+
+                    const uploadedFiles = []
+                    for (const file of files) {
+                        const splitDataURI = file.split(',')
+                        const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+                        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                        const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
+                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
+
+                        const createdFile = await openai.files.create({
+                            file: fs.createReadStream(filePath),
+                            purpose: 'assistants'
+                        })
+                        uploadedFiles.push(createdFile)
+
+                        fs.unlinkSync(filePath)
+                    }
+                    assistantDetails.files = [...assistantDetails.files, ...uploadedFiles]
+                }
+
                 await openai.beta.assistants.update(openAIAssistantId, {
                     name: assistantDetails.name,
                     description: assistantDetails.description,
                     instructions: assistantDetails.instructions,
                     model: assistantDetails.model,
-                    tools
+                    tools,
+                    file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
                 })
 
                 const newAssistantDetails = {
                     ...assistantDetails,
                     id: openAIAssistantId
                 }
+                if (newAssistantDetails.uploadFiles) delete newAssistantDetails.uploadFiles
 
                 const updateAssistant = new Assistant()
                 body.details = JSON.stringify(newAssistantDetails)
@@ -828,14 +911,13 @@ export class App {
             }
 
             try {
-                const body = req.body
-                const assistantDetails = JSON.parse(body.details)
+                const assistantDetails = JSON.parse(assistant.details)
 
                 const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: body.credential
+                    id: assistant.credential
                 })
 
-                if (!credential) return res.status(404).send(`Credential ${body.credential} not found`)
+                if (!credential) return res.status(404).send(`Credential ${assistant.credential} not found`)
 
                 // Decrpyt credentialData
                 const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
@@ -844,11 +926,13 @@ export class App {
 
                 const openai = new OpenAI({ apiKey: openAIApiKey })
 
+                const results = await this.AppDataSource.getRepository(Assistant).delete({ id: req.params.id })
+
                 await openai.beta.assistants.del(assistantDetails.id)
 
-                const results = await this.AppDataSource.getRepository(Assistant).delete({ id: req.params.id })
                 return res.json(results)
-            } catch (error) {
+            } catch (error: any) {
+                if (error.status === 404 && error.type === 'invalid_request_error') return res.send('OK')
                 return res.status(500).send(`Error deleting assistant: ${error}`)
             }
         })
@@ -990,6 +1074,7 @@ export class App {
                     id: index,
                     name: file.split('.json')[0],
                     flowData: fileData.toString(),
+                    badge: fileDataObj?.badge,
                     description: fileDataObj?.description || ''
                 }
                 templates.push(template)
@@ -1389,6 +1474,7 @@ export class App {
                 sessionId
             }
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
+            if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)

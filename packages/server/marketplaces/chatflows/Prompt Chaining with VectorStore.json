@@ -1,5 +1,6 @@
 {
     "description": "Use chat history to rephrase user question, and answer the rephrased question using retrieved docs from vector store",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

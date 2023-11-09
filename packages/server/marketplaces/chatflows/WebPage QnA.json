@@ -1,5 +1,6 @@
 {
     "description": "Scrape web pages for QnA with long term memory Motorhead and return source documents",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

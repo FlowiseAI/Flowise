@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
 import { v4 as uuidv4 } from 'uuid'
 
-import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import { Box, Typography, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 
 import { StyledButton } from 'ui-component/button/StyledButton'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
@@ -13,6 +13,8 @@ import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
 import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
+import { File } from 'ui-component/file/File'
+import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
 
 // Icons
 import { IconX } from '@tabler/icons'
@@ -30,28 +32,20 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const assistantAvailableModels = [
     {
-        label: 'gpt-4',
-        name: 'gpt-4'
-    },
-    {
         label: 'gpt-4-1106-preview',
         name: 'gpt-4-1106-preview'
-    },
-    {
-        label: 'gpt-4-vision-preview',
-        name: 'gpt-4-vision-preview'
     },
     {
         label: 'gpt-4-0613',
         name: 'gpt-4-0613'
     },
     {
-        label: 'gpt-4-32k',
-        name: 'gpt-4-32k'
+        label: 'gpt-4-0314',
+        name: 'gpt-4-0314'
     },
     {
-        label: 'gpt-4-32k-0613',
-        name: 'gpt-4-32k-0613'
+        label: 'gpt-4',
+        name: 'gpt-4'
     },
     {
         label: 'gpt-3.5-turbo',
@@ -100,6 +94,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [assistantCredential, setAssistantCredential] = useState('')
     const [assistantInstructions, setAssistantInstructions] = useState('')
     const [assistantTools, setAssistantTools] = useState(['code_interpreter', 'retrieval'])
+    const [assistantFiles, setAssistantFiles] = useState([])
+    const [uploadAssistantFiles, setUploadAssistantFiles] = useState('')
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -120,6 +117,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setAssistantModel(assistantDetails.model)
             setAssistantInstructions(assistantDetails.instructions)
             setAssistantTools(assistantDetails.tools ?? [])
+            setAssistantFiles(assistantDetails.files ?? [])
         }
     }, [getSpecificAssistantApi.data])
 
@@ -130,6 +128,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setAssistantDesc(getAssistantObjApi.data.description)
             setAssistantModel(getAssistantObjApi.data.model)
             setAssistantInstructions(getAssistantObjApi.data.instructions)
+            setAssistantFiles(getAssistantObjApi.data.files ?? [])
 
             let tools = []
             if (getAssistantObjApi.data.tools && getAssistantObjApi.data.tools.length) {
@@ -155,6 +154,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setAssistantModel(assistantDetails.model)
             setAssistantInstructions(assistantDetails.instructions)
             setAssistantTools(assistantDetails.tools ?? [])
+            setAssistantFiles(assistantDetails.files ?? [])
         } else if (dialogProps.type === 'EDIT' && dialogProps.assistantId) {
             // When assistant dialog is opened from OpenAIAssistant node in canvas
             getSpecificAssistantApi.request(dialogProps.assistantId)
@@ -177,6 +177,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setAssistantModel('')
             setAssistantInstructions('')
             setAssistantTools(['code_interpreter', 'retrieval'])
+            setUploadAssistantFiles('')
+            setAssistantFiles([])
         }
 
         return () => {
@@ -190,11 +192,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setAssistantModel('')
             setAssistantInstructions('')
             setAssistantTools(['code_interpreter', 'retrieval'])
+            setUploadAssistantFiles('')
+            setAssistantFiles([])
+            setLoading(false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
 
     const addNewAssistant = async () => {
+        setLoading(true)
         try {
             const assistantDetails = {
                 id: openAIAssistantId,
@@ -202,7 +208,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 description: assistantDesc,
                 model: assistantModel,
                 instructions: assistantInstructions,
-                tools: assistantTools
+                tools: assistantTools,
+                files: assistantFiles,
+                uploadFiles: uploadAssistantFiles
             }
             const obj = {
                 details: JSON.stringify(assistantDetails),
@@ -226,6 +234,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 })
                 onConfirm(createResp.data.id)
             }
+            setLoading(false)
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
@@ -241,18 +250,22 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     )
                 }
             })
+            setLoading(false)
             onCancel()
         }
     }
 
     const saveAssistant = async () => {
+        setLoading(true)
         try {
             const assistantDetails = {
                 name: assistantName,
                 description: assistantDesc,
                 model: assistantModel,
                 instructions: assistantInstructions,
-                tools: assistantTools
+                tools: assistantTools,
+                files: assistantFiles,
+                uploadFiles: uploadAssistantFiles
             }
             const obj = {
                 details: JSON.stringify(assistantDetails),
@@ -275,6 +288,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 })
                 onConfirm(saveResp.data.id)
             }
+            setLoading(false)
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
@@ -290,6 +304,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     )
                 }
             })
+            setLoading(false)
             onCancel()
         }
     }
@@ -339,6 +354,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onCancel()
             }
         }
+    }
+
+    const onFileDeleteClick = async (fileId) => {
+        setAssistantFiles(assistantFiles.filter((file) => file.id !== fileId))
     }
 
     const component = show ? (
@@ -513,6 +532,49 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         value={assistantTools ?? 'choose an option'}
                     />
                 </Box>
+                <Box sx={{ p: 2 }}>
+                    <Stack sx={{ position: 'relative' }} direction='row'>
+                        <Typography variant='overline'>
+                            Knowledge Files
+                            <TooltipWithParser
+                                style={{ marginLeft: 10 }}
+                                title='Allow assistant to use the content from uploaded files for retrieval and code interpreter. MAX: 20 files'
+                            />
+                        </Typography>
+                    </Stack>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        {assistantFiles.map((file, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    width: 'max-content',
+                                    height: 'max-content',
+                                    borderRadius: 15,
+                                    background: 'rgb(254,252,191)',
+                                    paddingLeft: 15,
+                                    paddingRight: 15,
+                                    paddingTop: 5,
+                                    paddingBottom: 5,
+                                    marginRight: 10
+                                }}
+                            >
+                                <span style={{ color: 'rgb(116,66,16)', marginRight: 10 }}>{file.filename}</span>
+                                <IconButton sx={{ height: 15, width: 15, p: 0 }} onClick={() => onFileDeleteClick(file.id)}>
+                                    <IconX />
+                                </IconButton>
+                            </div>
+                        ))}
+                    </div>
+                    <File
+                        key={uploadAssistantFiles}
+                        fileType='*'
+                        onChange={(newValue) => setUploadAssistantFiles(newValue)}
+                        value={uploadAssistantFiles ?? 'Choose a file to upload'}
+                    />
+                </Box>
             </DialogContent>
             <DialogActions>
                 {dialogProps.type === 'EDIT' && (
@@ -529,6 +591,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </StyledButton>
             </DialogActions>
             <ConfirmDialog />
+            {loading && <BackdropLoader open={loading} />}
         </Dialog>
     ) : null
 
