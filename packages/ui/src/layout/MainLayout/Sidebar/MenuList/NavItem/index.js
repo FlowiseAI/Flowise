@@ -3,7 +3,6 @@ import { useState, useRef, forwardRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
-import AboutDialog from 'ui-component/dialog/AboutDialog'
 // material-ui
 
 import { useTheme } from '@mui/material/styles'
@@ -22,7 +21,7 @@ import {
     List
 } from '@mui/material'
 // third-party
-import { IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
+import { IconFileExport, IconFileDownload } from '@tabler/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
@@ -44,7 +43,6 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const Icon = item.icon
     const itemIcon = item?.icon ? (
@@ -328,18 +326,6 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Export Database</Typography>} />
                                                 </ListItemButton>
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
-                                                </ListItemButton>
                                             </List>
                                         </Box>
                                     </PerfectScrollbar>
@@ -351,7 +337,6 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
             </Popper>
             <input ref={uploadRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
             <BackdropLoader open={loading} />
-            <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
         </>
     )
 }
