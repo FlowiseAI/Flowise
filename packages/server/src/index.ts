@@ -1074,6 +1074,7 @@ export class App {
                     id: index,
                     name: file.split('.json')[0],
                     flowData: fileData.toString(),
+                    badge: fileDataObj?.badge,
                     description: fileDataObj?.description || ''
                 }
                 templates.push(template)
