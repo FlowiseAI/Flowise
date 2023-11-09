@@ -750,7 +750,12 @@ export class App {
                         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                         const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
+                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
+                            fs.mkdirSync(path.dirname(filePath), { recursive: true })
+                        }
+                        if (!fs.existsSync(filePath)) {
+                            fs.writeFileSync(filePath, bf)
+                        }
 
                         const createdFile = await openai.files.create({
                             file: fs.createReadStream(filePath),
@@ -858,7 +863,12 @@ export class App {
                         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                         const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
+                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
+                            fs.mkdirSync(path.dirname(filePath), { recursive: true })
+                        }
+                        if (!fs.existsSync(filePath)) {
+                            fs.writeFileSync(filePath, bf)
+                        }
 
                         const createdFile = await openai.files.create({
                             file: fs.createReadStream(filePath),
