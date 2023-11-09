@@ -253,9 +253,10 @@ class OpenAIAssistant_Agents implements INode {
                     const content = assistantMessages[0].content[i] as MessageContentImageFile
                     const fileId = content.image_file.file_id
                     const fileObj = await openai.files.retrieve(fileId)
+                    const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
                     const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', `${fileObj.filename}.png`)
 
-                    await downloadFile(fileObj, filePath, openAIApiKey)
+                    await downloadFile(fileObj, filePath, dirPath, openAIApiKey)
 
                     const bitmap = fsDefault.readFileSync(filePath)
                     const base64String = Buffer.from(bitmap).toString('base64')
@@ -276,7 +277,7 @@ class OpenAIAssistant_Agents implements INode {
     }
 }
 
-const downloadFile = async (fileObj: any, filePath: string, openAIApiKey: string) => {
+const downloadFile = async (fileObj: any, filePath: string, dirPath: string, openAIApiKey: string) => {
     try {
         const response = await fetch(`https://api.openai.com/v1/files/${fileObj.id}/content`, {
             method: 'GET',
@@ -288,6 +289,9 @@ const downloadFile = async (fileObj: any, filePath: string, openAIApiKey: string
         }
 
         await new Promise<void>((resolve, reject) => {
+            if (!fsDefault.existsSync(dirPath)) {
+                fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+            }
             const dest = fsDefault.createWriteStream(filePath)
             response.body.pipe(dest)
             response.body.on('end', () => resolve())
