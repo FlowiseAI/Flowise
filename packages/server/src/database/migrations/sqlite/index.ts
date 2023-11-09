@@ -7,6 +7,7 @@ import { AddApiConfig1694090982460 } from './1694090982460-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
 import { AddChatHistory1694657778173 } from './1694657778173-AddChatHistory'
 import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
+import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -17,5 +18,6 @@ export const sqliteMigrations = [
     AddApiConfig1694090982460,
     AddAnalytic1694432361423,
     AddChatHistory1694657778173,
-    AddAssistantEntity1699325775451
+    AddAssistantEntity1699325775451,
+    AddUsedToolsToChatMessage1699481607341
 ]

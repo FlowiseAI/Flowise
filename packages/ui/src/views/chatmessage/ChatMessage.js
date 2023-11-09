@@ -57,8 +57,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
 
-    const onSourceDialogClick = (data) => {
-        setSourceDialogProps({ data })
+    const onSourceDialogClick = (data, title) => {
+        setSourceDialogProps({ data, title })
         setSourceDialogOpen(true)
     }
 
@@ -139,7 +139,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
                     setMessages((prevMessages) => [
                         ...prevMessages,
-                        { message: text, sourceDocuments: data?.sourceDocuments, type: 'apiMessage' }
+                        { message: text, sourceDocuments: data?.sourceDocuments, usedTools: data?.usedTools, type: 'apiMessage' }
                     ])
                 }
 
@@ -182,6 +182,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     type: message.role
                 }
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
+                if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -284,6 +285,24 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
                                         )}
                                         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                            {message.usedTools && (
+                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                    {message.usedTools.map((tool, index) => {
+                                                        return (
+                                                            <Chip
+                                                                size='small'
+                                                                key={index}
+                                                                label={tool.tool}
+                                                                component='a'
+                                                                sx={{ mr: 1, mt: 1 }}
+                                                                variant='outlined'
+                                                                clickable
+                                                                onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                            />
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
                                             <div className='markdownanswer'>
                                                 {/* Messages are being rendered in Markdown format */}
                                                 <MemoizedReactMarkdown

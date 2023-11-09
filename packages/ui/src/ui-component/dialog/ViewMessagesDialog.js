@@ -129,6 +129,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 time: chatmsg.createdDate
             }
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
+            if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -251,6 +252,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 type: chatmsg.role
             }
             if (chatmsg.sourceDocuments) obj.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
+            if (chatmsg.usedTools) obj.usedTools = JSON.parse(chatmsg.usedTools)
+
             loadedMessages.push(obj)
         }
         setChatMessages(loadedMessages)
@@ -315,8 +318,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         window.open(data, '_blank')
     }
 
-    const onSourceDialogClick = (data) => {
-        setSourceDialogProps({ data })
+    const onSourceDialogClick = (data, title) => {
+        setSourceDialogProps({ data, title })
         setSourceDialogOpen(true)
     }
 
@@ -599,6 +602,24 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                     width: '100%'
                                                                 }}
                                                             >
+                                                                {message.usedTools && (
+                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                                        {message.usedTools.map((tool, index) => {
+                                                                            return (
+                                                                                <Chip
+                                                                                    size='small'
+                                                                                    key={index}
+                                                                                    label={tool.tool}
+                                                                                    component='a'
+                                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                                    variant='outlined'
+                                                                                    clickable
+                                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                                                />
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                                 <div className='markdownanswer'>
                                                                     {/* Messages are being rendered in Markdown format */}
                                                                     <MemoizedReactMarkdown
