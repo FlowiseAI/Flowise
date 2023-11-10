@@ -4,18 +4,19 @@ import PropTypes from 'prop-types'
 import { useTheme } from '@mui/material/styles'
 import { List, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+
 // project imports
 import NavItem from '../NavItem'
 import NavCollapse from '../NavCollapse'
 // ==============================|| SIDEBAR MENU LIST GROUP ||============================== //
 
-const NavGroup = (props) => {
+const NavGroup = ({ item, drawerToggle, trigger }) => {
     const theme = useTheme()
-    const [trigger, setTrigger] = useState(0)
+    const [setTrigger] = useState(0)
 
     const onClickCallback = (id) => {
         if (id === 'expand') {
-            props.drawerToggle()
+            drawerToggle()
         }
     }
     const togglePopper = () => {
@@ -23,13 +24,13 @@ const NavGroup = (props) => {
     }
 
     useEffect(() => {
-        if (props.trigger) {
+        if (trigger) {
             togglePopper()
         }
-    }, [props.trigger])
+    })
 
     // menu list collapse & items
-    const items = props.item.children?.map((menu) => {
+    const items = item.children?.map((menu) => {
         switch (menu.type) {
             case 'collapse':
                 return <NavCollapse key={menu.id} menu={menu} level={1} />
@@ -62,12 +63,12 @@ const NavGroup = (props) => {
                     }
                 }}
                 subheader={
-                    props.item.title && (
+                    item.title && (
                         <Typography variant='caption' sx={{ ...theme.typography.menuCaption }} display='block' gutterBottom>
-                            {props.item.title}
-                            {props.item.caption && (
+                            {item.title}
+                            {item.caption && (
                                 <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
-                                    {props.item.caption}
+                                    {item.caption}
                                 </Typography>
                             )}
                         </Typography>
@@ -76,9 +77,6 @@ const NavGroup = (props) => {
             >
                 {items}
             </List>
-
-            {/* group divider */}
-            {/* <Divider sx={{ mt: 0.25, mb: 1.25 }} /> */}
         </>
     )
 }
@@ -86,7 +84,6 @@ const NavGroup = (props) => {
 NavGroup.propTypes = {
     item: PropTypes.object,
     drawerToggle: PropTypes.func,
-    toggleSettingsPopper: PropTypes.func,
     trigger: PropTypes.number
 }
 
