@@ -6,7 +6,7 @@ import { MessageContentImageFile, MessageContentText } from 'openai/resources/be
 import * as fsDefault from 'node:fs'
 import * as path from 'node:path'
 import fetch from 'node-fetch'
-import { flatten } from 'lodash'
+import { flatten, uniqWith, isEqual } from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
 class OpenAIAssistant_Agents implements INode {
@@ -142,7 +142,9 @@ class OpenAIAssistant_Agents implements INode {
             const retrievedAssistant = await openai.beta.assistants.retrieve(openAIAssistantId)
 
             if (formattedTools.length) {
-                await openai.beta.assistants.update(openAIAssistantId, { tools: formattedTools })
+                let filteredTools = uniqWith([...retrievedAssistant.tools, ...formattedTools], isEqual)
+                filteredTools = filteredTools.filter((tool) => !(tool.type === 'function' && !(tool as any).function))
+                await openai.beta.assistants.update(openAIAssistantId, { tools: filteredTools })
             }
 
             const chatmessage = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({

@@ -52,7 +52,7 @@ import {
     clearSessionMemoryFromViewMessageDialog,
     getUserHome
 } from './utils'
-import { cloneDeep, omit } from 'lodash'
+import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -670,14 +670,11 @@ export class App {
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
             const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
+            const resp = await openai.files.list()
+            const existingFiles = resp.data ?? []
 
             if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
-                const files = []
-                for (const file_id of retrievedAssistant.file_ids) {
-                    const file = await openai.files.retrieve(file_id)
-                    files.push(file)
-                }
-                ;(retrievedAssistant as any).files = files
+                ;(retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
             }
 
             return res.json(retrievedAssistant)
@@ -779,13 +776,23 @@ export class App {
                     })
                     assistantDetails.id = newAssistant.id
                 } else {
+                    const retrievedAssistant = await openai.beta.assistants.retrieve(assistantDetails.id)
+                    let filteredTools = uniqWith([...retrievedAssistant.tools, ...tools], isEqual)
+                    filteredTools = filteredTools.filter((tool) => !(tool.type === 'function' && !(tool as any).function))
+
                     await openai.beta.assistants.update(assistantDetails.id, {
                         name: assistantDetails.name,
                         description: assistantDetails.description,
                         instructions: assistantDetails.instructions,
                         model: assistantDetails.model,
-                        tools,
-                        file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
+                        tools: filteredTools,
+                        file_ids: uniqWith(
+                            [
+                                ...retrievedAssistant.file_ids,
+                                ...(assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
+                            ],
+                            isEqual
+                        )
                     })
                 }
 
@@ -881,13 +888,20 @@ export class App {
                     assistantDetails.files = [...assistantDetails.files, ...uploadedFiles]
                 }
 
+                const retrievedAssistant = await openai.beta.assistants.retrieve(openAIAssistantId)
+                let filteredTools = uniqWith([...retrievedAssistant.tools, ...tools], isEqual)
+                filteredTools = filteredTools.filter((tool) => !(tool.type === 'function' && !(tool as any).function))
+
                 await openai.beta.assistants.update(openAIAssistantId, {
                     name: assistantDetails.name,
                     description: assistantDetails.description,
                     instructions: assistantDetails.instructions,
                     model: assistantDetails.model,
-                    tools,
-                    file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
+                    tools: filteredTools,
+                    file_ids: uniqWith(
+                        [...retrievedAssistant.file_ids, ...(assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)],
+                        isEqual
+                    )
                 })
 
                 const newAssistantDetails = {
