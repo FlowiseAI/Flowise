@@ -1,5 +1,6 @@
 {
     "description": "Agent optimized for vector retrieval during conversation and answering questions based on previous dialogue.",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

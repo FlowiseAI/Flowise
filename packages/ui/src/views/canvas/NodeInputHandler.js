@@ -14,6 +14,7 @@ import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
 import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import { Input } from 'ui-component/input/Input'
+import { DataGrid } from 'ui-component/grid/DataGrid'
 import { File } from 'ui-component/file/File'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { flowContext } from 'store/context/ReactFlowContext'
@@ -21,6 +22,7 @@ import { isValidConnection } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import ToolDialog from 'views/tools/ToolDialog'
+import AssistantDialog from 'views/assistants/AssistantDialog'
 import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
 import CredentialInputHandler from './CredentialInputHandler'
 
@@ -30,7 +32,7 @@ import { getInputVariables } from 'utils/genericHelper'
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
 
-const EDITABLE_TOOLS = ['selectedTool']
+const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -105,6 +107,14 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 confirmButtonName: 'Save',
                 toolId: inputValue
             })
+        } else if (inputParamName === 'selectedAssistant') {
+            setAsyncOptionEditDialogProps({
+                title: 'Edit Assistant',
+                type: 'EDIT',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Save',
+                assistantId: inputValue
+            })
         }
         setAsyncOptionEditDialog(inputParamName)
     }
@@ -113,6 +123,13 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
                 title: 'Add New Tool',
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add'
+            })
+        } else if (inputParamName === 'selectedAssistant') {
+            setAsyncOptionEditDialogProps({
+                title: 'Add New Assistant',
                 type: 'ADD',
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Add'
@@ -258,6 +275,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
+                        {inputParam.type === 'datagrid' && (
+                            <DataGrid
+                                disabled={disabled}
+                                columns={inputParam.datagrid}
+                                hideFooter={true}
+                                rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                            />
+                        )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 key={data.inputs[inputParam.name]}
@@ -265,6 +291,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                                edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                                nodeId={data.id}
                                 showDialog={showExpandDialog}
                                 dialogProps={expandDialogProps}
                                 onDialogCancel={() => setShowExpandDialog(false)}
@@ -327,11 +356,11 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         name={inputParam.name}
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                        isCreateNewOption={EDITABLE_TOOLS.includes(inputParam.name)}
+                                        isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
                                         onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                         onCreateNew={() => addAsyncOption(inputParam.name)}
                                     />
-                                    {EDITABLE_TOOLS.includes(inputParam.name) && data.inputs[inputParam.name] && (
+                                    {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
                                         <IconButton
                                             title='Edit'
                                             color='primary'
@@ -348,11 +377,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 </>
             )}
             <ToolDialog
-                show={EDITABLE_TOOLS.includes(showAsyncOptionDialog)}
+                show={showAsyncOptionDialog === 'selectedTool'}
                 dialogProps={asyncOptionEditDialogProps}
                 onCancel={() => setAsyncOptionEditDialog('')}
                 onConfirm={onConfirmAsyncOption}
             ></ToolDialog>
+            <AssistantDialog
+                show={showAsyncOptionDialog === 'selectedAssistant'}
+                dialogProps={asyncOptionEditDialogProps}
+                onCancel={() => setAsyncOptionEditDialog('')}
+                onConfirm={onConfirmAsyncOption}
+            ></AssistantDialog>
         </div>
     )
 }

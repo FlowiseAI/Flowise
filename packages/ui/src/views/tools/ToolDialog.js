@@ -28,7 +28,7 @@ import useApi from 'hooks/useApi'
 
 // utils
 import useNotifier from 'utils/useNotifier'
-import { generateRandomGradient } from 'utils/genericHelper'
+import { generateRandomGradient, formatDataGridRows } from 'utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const exampleAPIFunc = `/*
@@ -142,20 +142,6 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
         [deleteItem]
     )
 
-    const formatSchema = (schema) => {
-        try {
-            const parsedSchema = JSON.parse(schema)
-            return parsedSchema.map((sch, index) => {
-                return {
-                    ...sch,
-                    id: index
-                }
-            })
-        } catch (e) {
-            return []
-        }
-    }
-
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
         else dispatch({ type: HIDE_CANVAS_DIALOG })
@@ -167,7 +153,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             setToolId(getSpecificToolApi.data.id)
             setToolName(getSpecificToolApi.data.name)
             setToolDesc(getSpecificToolApi.data.description)
-            setToolSchema(formatSchema(getSpecificToolApi.data.schema))
+            setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema))
             if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func)
             else setToolFunc('')
         }
@@ -180,7 +166,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatSchema(dialogProps.data.schema))
+            setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'EDIT' && dialogProps.toolId) {
@@ -191,7 +177,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatSchema(dialogProps.data.schema))
+            setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'TEMPLATE' && dialogProps.data) {
@@ -199,7 +185,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatSchema(dialogProps.data.schema))
+            setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'ADD') {
@@ -227,7 +213,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 delete toolData.id
                 delete toolData.createdDate
                 delete toolData.updatedDate
-                let dataStr = JSON.stringify(toolData)
+                let dataStr = JSON.stringify(toolData, null, 2)
                 let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
                 let exportFileDefaultName = `${toolName}-CustomTool.json`

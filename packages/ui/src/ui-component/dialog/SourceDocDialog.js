@@ -29,7 +29,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Source Document
+                {dialogProps.title ?? 'Source Documents'}
             </DialogTitle>
             <DialogContent>
                 <ReactJson

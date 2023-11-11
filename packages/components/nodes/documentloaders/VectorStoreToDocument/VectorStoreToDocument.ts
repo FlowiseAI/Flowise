@@ -17,7 +17,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
     constructor() {
         this.label = 'VectorStore To Document'
         this.name = 'vectorStoreToDocument'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'vectorretriever.svg'
         this.category = 'Document Loaders'
@@ -28,6 +28,14 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
                 label: 'Vector Store',
                 name: 'vectorStore',
                 type: 'VectorStore'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from vector database. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Minimum Score (%)',
@@ -56,11 +64,12 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
     async init(nodeData: INodeData, input: string): Promise<any> {
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const minScore = nodeData.inputs?.minScore as number
+        const query = nodeData.inputs?.query as string
         const output = nodeData.outputs?.output as string
 
         const topK = (vectorStore as any)?.k ?? 4
 
-        const docs = await vectorStore.similaritySearchWithScore(input, topK)
+        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK)
         // eslint-disable-next-line no-console
         console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
