@@ -45,7 +45,7 @@ class ChatOpenAI_ChatModels implements INode {
                 options: [
                     {
                         label: 'gpt-4',
-                        name: 'gpt-4'
+                        name: 'gpt-4',
                     },
                     {
                         label: 'gpt-4-1106-preview',
@@ -53,29 +53,29 @@ class ChatOpenAI_ChatModels implements INode {
                     },
                     {
                         label: 'gpt-4-vision-preview',
-                        name: 'gpt-4-vision-preview'
+                        name: 'gpt-4-vision-preview',
                     },
                     {
                         label: 'gpt-4-0613',
-                        name: 'gpt-4-0613'
+                        name: 'gpt-4-0613',
                     },
                     {
                         label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
+                        name: 'gpt-4-32k',
                     },
                     
                     {
                         label: 'gpt-3.5-turbo',
-                        name: 'gpt-3.5-turbo'
+                        name: 'gpt-3.5-turbo',
                     },
                     {
                         label: 'gpt-3.5-turbo-1106',
-                        name: 'gpt-3.5-turbo-1106'
+                        name: 'gpt-3.5-turbo-1106',
                     },
                   
                     {
                         label: 'gpt-3.5-turbo-16k',
-                        name: 'gpt-3.5-turbo-16k'
+                        name: 'gpt-3.5-turbo-16k',
                     },
                     
                 ],
