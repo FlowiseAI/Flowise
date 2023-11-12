@@ -126,6 +126,12 @@ export interface IMessage {
     type: MessageType
 }
 
+export interface IUsedTool {
+    tool: string
+    toolInput: object
+    toolOutput: string | object
+}
+
 /**
  * Classes
  */

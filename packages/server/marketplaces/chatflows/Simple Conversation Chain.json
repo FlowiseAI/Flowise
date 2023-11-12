@@ -1,5 +1,6 @@
 {
     "description": "Basic example of Conversation Chain with built-in memory - works exactly like ChatGPT",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

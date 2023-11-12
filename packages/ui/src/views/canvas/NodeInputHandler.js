@@ -22,6 +22,7 @@ import { isValidConnection } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import ToolDialog from 'views/tools/ToolDialog'
+import AssistantDialog from 'views/assistants/AssistantDialog'
 import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
 import CredentialInputHandler from './CredentialInputHandler'
 
@@ -31,7 +32,7 @@ import { getInputVariables } from 'utils/genericHelper'
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
 
-const EDITABLE_TOOLS = ['selectedTool']
+const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -106,6 +107,14 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 confirmButtonName: 'Save',
                 toolId: inputValue
             })
+        } else if (inputParamName === 'selectedAssistant') {
+            setAsyncOptionEditDialogProps({
+                title: 'Edit Assistant',
+                type: 'EDIT',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Save',
+                assistantId: inputValue
+            })
         }
         setAsyncOptionEditDialog(inputParamName)
     }
@@ -114,6 +123,13 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
                 title: 'Add New Tool',
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add'
+            })
+        } else if (inputParamName === 'selectedAssistant') {
+            setAsyncOptionEditDialogProps({
+                title: 'Add New Assistant',
                 type: 'ADD',
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Add'
@@ -340,11 +356,11 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         name={inputParam.name}
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                        isCreateNewOption={EDITABLE_TOOLS.includes(inputParam.name)}
+                                        isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
                                         onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                         onCreateNew={() => addAsyncOption(inputParam.name)}
                                     />
-                                    {EDITABLE_TOOLS.includes(inputParam.name) && data.inputs[inputParam.name] && (
+                                    {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
                                         <IconButton
                                             title='Edit'
                                             color='primary'
@@ -361,11 +377,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 </>
             )}
             <ToolDialog
-                show={EDITABLE_TOOLS.includes(showAsyncOptionDialog)}
+                show={showAsyncOptionDialog === 'selectedTool'}
                 dialogProps={asyncOptionEditDialogProps}
                 onCancel={() => setAsyncOptionEditDialog('')}
                 onConfirm={onConfirmAsyncOption}
             ></ToolDialog>
+            <AssistantDialog
+                show={showAsyncOptionDialog === 'selectedAssistant'}
+                dialogProps={asyncOptionEditDialogProps}
+                onCancel={() => setAsyncOptionEditDialog('')}
+                onConfirm={onConfirmAsyncOption}
+            ></AssistantDialog>
         </div>
     )
 }

@@ -1,5 +1,6 @@
 {
     "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

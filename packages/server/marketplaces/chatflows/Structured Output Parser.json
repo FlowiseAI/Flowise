@@ -1,5 +1,6 @@
 {
     "description": "Return response as a specified JSON structure instead of a string/text",
+    "badge": "NEW",
     "nodes": [
         {
             "width": 300,
