@@ -7,6 +7,7 @@ import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
 import { OutputFixingParser } from 'langchain/output_parsers'
+import { checkInputs, Moderation, streamResponse } from '../../responsibleAI/ResponsibleAI'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -35,6 +36,14 @@ class LLMChain_Chains implements INode {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel'
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             },
             {
                 label: 'Prompt',
@@ -144,13 +153,23 @@ const runPrediction = async (
     const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
-
+    const moderations = nodeData.inputs?.inputModeration as Moderation[]
     /**
      * Apply string transformation to reverse converted special chars:
      * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
      * TO: { "value": "hello i am ben\n\n\thow are you?" }
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+
+    if (moderations && moderations.length > 0) {
+        try {
+            // Use the output of the moderation chain as input for the LLM chain
+            input = await checkInputs(moderations, chain.llm, input)
+        } catch (e) {
+            streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+            return formatResponse(e.message)
+        }
+    }
 
     if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []
