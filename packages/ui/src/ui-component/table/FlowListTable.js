@@ -37,6 +37,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
     const goToCanvas = (selectedChatflow) => {
         navigate(`/canvas/${selectedChatflow.id}`)
     }
+    let nodeCount = 0
     return (
         <>
             <TableContainer style={{ marginTop: '30', border: 1 }} component={Paper}>
@@ -53,7 +54,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                 Name
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '35%' }} key='1'>
-                                Nodes
+                                Nodes (Showing first 5)
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '30%' }} key='2'>
                                 Last Modified Date
@@ -84,7 +85,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                                 marginTop: 5
                                             }}
                                         >
-                                            {images[row.id].map((img) => (
+                                            {images[row.id].slice(0, images[row.id].length > 5 ? 5 : images[row.id].length).map((img) => (
                                                 <div
                                                     key={img}
                                                     style={{
@@ -103,6 +104,13 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                                     />
                                                 </div>
                                             ))}
+                                            {images[row.id].length > 5 && (
+                                                <Typography
+                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.8rem', fontWeight: 200 }}
+                                                >
+                                                    + {images[row.id].length - 5} More
+                                                </Typography>
+                                            )}
                                         </div>
                                     )}
                                 </TableCell>
