@@ -132,6 +132,7 @@ const Chatflows = () => {
                             size='small'
                             sx={{ width: 400 }}
                             variant='outlined'
+                            placeholder='Search Chatflows'
                             onChange={onSearchChange}
                             InputProps={{
                                 startAdornment: (
