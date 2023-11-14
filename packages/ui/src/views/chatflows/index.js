@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, Typography, InputAdornment, TextField } from '@mui/material'
+import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -123,14 +123,21 @@ const Chatflows = () => {
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
             <Stack flexDirection='column'>
                 <Box sx={{ flexGrow: 1 }}>
-                    <Toolbar style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                        <Typography edge='start' variant='h1' component='div' sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
-                            Chatflows
-                        </Typography>
-                        <Box sx={{ flexGrow: 1 }} />
+                    <Toolbar
+                        disableGutters={true}
+                        style={{
+                            margin: 1,
+                            padding: 1,
+                            paddingBottom: 10,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            width: '100%'
+                        }}
+                    >
+                        <h1>Chatflows</h1>
                         <TextField
                             size='small'
-                            sx={{ width: 400 }}
+                            sx={{ display: { xs: 'none', sm: 'block' }, marginLeft: 3 }}
                             variant='outlined'
                             placeholder='Search Chatflows'
                             onChange={onSearchChange}
@@ -144,7 +151,12 @@ const Chatflows = () => {
                         />
                         <Box sx={{ flexGrow: 1 }} />
                         <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                            <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                            <ButtonGroup
+                                sx={{ display: { xs: 'none', sm: 'block' } }}
+                                disableElevation
+                                variant='contained'
+                                aria-label='outlined primary button group'
+                            >
                                 <ToggleButtonGroup value={view} color='primary' exclusive onChange={handleChange}>
                                     <ToggleButton variant='contained' value='card' selectedColor='#00abc0'>
                                         <ViewModuleIcon />

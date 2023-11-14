@@ -37,26 +37,20 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
     const goToCanvas = (selectedChatflow) => {
         navigate(`/canvas/${selectedChatflow.id}`)
     }
-    let nodeCount = 0
+
     return (
         <>
             <TableContainer style={{ marginTop: '30', border: 1 }} component={Paper}>
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
                     <TableHead>
                         <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
-                            <StyledTableCell
-                                component='th'
-                                scope='row'
-                                sx={{ fontSize: '1.1rem', fontWeight: 200 }}
-                                style={{ width: '25%' }}
-                                key='0'
-                            >
+                            <StyledTableCell component='th' scope='row' style={{ width: '25%' }} key='0'>
                                 Name
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '35%' }} key='1'>
+                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '35%' }} key='1'>
                                 Nodes (Showing first 5)
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '30%' }} key='2'>
+                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
                                 Last Modified Date
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '10%' }} key='3'>
@@ -75,7 +69,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                     </Typography>
                                 </TableCell>
 
-                                <TableCell key='1'>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='1'>
                                     {images[row.id] && (
                                         <div
                                             style={{
@@ -114,7 +108,9 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell key='2'>{moment(row.updatedDate).format('dddd, MMMM Do, YYYY h:mm:ss A')}</TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='2'>
+                                    {moment(row.updatedDate).format('dddd, MMMM Do, YYYY h:mm:ss A')}
+                                </TableCell>
                                 <TableCell key='3'>
                                     <Button
                                         variant='outlined'
