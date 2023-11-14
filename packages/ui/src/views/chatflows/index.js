@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack } from '@mui/material'
+import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, Typography, InputAdornment, TextField } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -11,7 +11,6 @@ import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import { StyledButton } from 'ui-component/button/StyledButton'
 import LoginDialog from 'ui-component/dialog/LoginDialog'
 
 // API
@@ -24,7 +23,13 @@ import useApi from 'hooks/useApi'
 import { baseURL } from 'store/constant'
 
 // icons
-import { IconPlus } from '@tabler/icons'
+import { IconPlus, IconSearch } from '@tabler/icons'
+import * as React from 'react'
+import ViewListIcon from '@mui/icons-material/ViewList'
+import ViewModuleIcon from '@mui/icons-material/ViewModule'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import { FlowListTable } from '../../ui-component/table/FlowListTable'
+import { StyledButton } from '../../ui-component/button/StyledButton'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -35,10 +40,24 @@ const Chatflows = () => {
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
+    const [search, setSearch] = useState('')
     const [loginDialogOpen, setLoginDialogOpen] = useState(false)
     const [loginDialogProps, setLoginDialogProps] = useState({})
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
+    const [view, setView] = React.useState('card')
+
+    const handleChange = (event, nextView) => {
+        setView(nextView)
+    }
+
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
+    function filterFlows(data) {
+        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+    }
 
     const onLoginClick = (username, password) => {
         localStorage.setItem('username', username)
@@ -102,26 +121,61 @@ const Chatflows = () => {
 
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-            <Stack flexDirection='row'>
-                <h1>Chatflows</h1>
-                <Grid sx={{ mb: 1.25 }} container direction='row'>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <Grid item>
-                        <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                            Add New
-                        </StyledButton>
+            <Stack flexDirection='column'>
+                <Box sx={{ flexGrow: 1 }}>
+                    <Toolbar style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                        <Typography edge='start' variant='h1' component='div' sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+                            Chatflows
+                        </Typography>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <TextField
+                            size='small'
+                            sx={{ width: 400 }}
+                            variant='outlined'
+                            onChange={onSearchChange}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position='start'>
+                                        <IconSearch />
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                        <Box sx={{ flexGrow: 1 }} />
+                        <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                            <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                                <ToggleButtonGroup value={view} color='primary' exclusive onChange={handleChange}>
+                                    <ToggleButton variant='contained' value='card' selectedColor='#00abc0'>
+                                        <ViewModuleIcon />
+                                    </ToggleButton>
+                                    <ToggleButton variant='contained' value='list'>
+                                        <ViewListIcon />
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </ButtonGroup>
+                            <Box sx={{ width: 5 }} />
+                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />}>
+                                    Add New
+                                </StyledButton>
+                            </ButtonGroup>
+                        </ButtonGroup>
+                    </Toolbar>
+                </Box>
+                {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
+                    <Grid container spacing={gridSpacing}>
+                        {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (
+                            <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
+                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                            </Grid>
+                        ))}
                     </Grid>
-                </Grid>
+                )}
+                {!isLoading && view === 'list' && getAllChatflowsApi.data && (
+                    <FlowListTable sx={{ mt: 20 }} data={getAllChatflowsApi.data} images={images} filterFunction={filterFlows} />
+                )}
             </Stack>
-            <Grid container spacing={gridSpacing}>
-                {!isLoading &&
-                    getAllChatflowsApi.data &&
-                    getAllChatflowsApi.data.map((data, index) => (
-                        <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                            <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                        </Grid>
-                    ))}
-            </Grid>
+
             {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
                 <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                     <Box sx={{ p: 2, height: 'auto' }}>
