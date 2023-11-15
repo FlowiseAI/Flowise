@@ -14,7 +14,9 @@
         "strictPropertyInitialization": false,
         "useUnknownInCatchVariables": false,
         "declaration": true,
-        "module": "commonjs"
+        "module": "commonjs",
+        "allowJs": true /* Allow for JS files in nodes for SDK references */,
+        "moduleResolution": "node"
     },
     "include": ["src", "nodes", "credentials"]
 }
