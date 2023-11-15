@@ -1,10 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
 import { Embeddings } from 'langchain/embeddings/base'
-import { handleEscapeCharacters, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { Client } from '@opensearch-project/opensearch'
+import { handleEscapeCharacters, getBaseClasses } from '../../../src/utils'
 
-class Pinecone_Existing_VectorStores implements INode {
+class OpenSearch_Existing_VectorStores implements INode {
     label: string
     name: string
     version: number
@@ -14,24 +14,17 @@ class Pinecone_Existing_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Pinecone Load Existing Index - V2'
-        this.name = 'pineconeExistingIndexV2'
+        this.label = 'OpenSearch Load Existing Index - V2'
+        this.name = 'openSearchExistingIndex-v2'
         this.version = 1.0
-        this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.type = 'OpenSearch'
+        this.icon = 'opensearch.png'
         this.category = 'Vector Stores'
-        this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
+        this.description = 'Load existing index from OpenSearch (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.credential = {
-            label: 'Connect Credential',
-            name: 'credential',
-            type: 'credential',
-            credentialNames: ['pineconeApi']
-        }
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -39,24 +32,27 @@ class Pinecone_Existing_VectorStores implements INode {
                 type: 'Embeddings'
             },
             {
-                label: 'Pinecone Index',
-                name: 'pineconeIndex',
-                type: 'string'
-            },
-            {
-                label: 'Pinecone Namespace',
-                name: 'pineconeNamespace',
+                label: 'OpenSearch URL (without https/http)',
+                name: 'opensearchURL',
                 type: 'string',
-                placeholder: 'my-first-namespace',
-                additionalParams: true,
-                optional: true
+                placeholder: '127.0.0.1'
             },
             {
-                label: 'Pinecone Metadata Filter',
-                name: 'pineconeMetadataFilter',
-                type: 'json',
-                optional: true,
-                additionalParams: true
+                label: 'OpenSearch Username',
+                name: 'opensearchUsername',
+                type: 'string',
+                placeholder: 'admin'
+            },
+            {
+                label: 'OpenSearch Password',
+                name: 'opensearchPassword',
+                type: 'string',
+                placeholder: 'admin'
+            },
+            {
+                label: 'Index Name',
+                name: 'indexName',
+                type: 'string'
             },
             {
                 label: 'Top K',
@@ -77,7 +73,7 @@ class Pinecone_Existing_VectorStores implements INode {
                 description: 'Minumum score for embeddings documents to be included'
             },
             {
-                label: 'Pinecone Metadata Filter',
+                label: 'OpenSearch Metadata Filter',
                 name: 'values',
                 type: 'json',
                 optional: true,
@@ -87,14 +83,14 @@ class Pinecone_Existing_VectorStores implements INode {
         ]
         this.outputs = [
             {
-                label: 'Pinecone Retriever',
+                label: 'OpenSearch Retriever',
                 name: 'retriever',
                 baseClasses: this.baseClasses
             },
             {
-                label: 'Pinecone Vector Store',
+                label: 'OpenSearch Vector Store',
                 name: 'vectorStore',
-                baseClasses: [this.type, ...getBaseClasses(PineconeStore)]
+                baseClasses: [this.type, ...getBaseClasses(OpenSearchVectorStore)]
             },
             {
                 label: 'Document',
@@ -109,37 +105,17 @@ class Pinecone_Existing_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData): Promise<any> {
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
         const minScore = nodeData.inputs?.minScore as number
         const values = nodeData.inputs?.values
-        const index = nodeData.inputs?.pineconeIndex as string
-        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
-        const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const opensearchURL = nodeData.inputs?.opensearchURL as string
+        const opensearchUsername = nodeData.inputs?.opensearchUsername as string
+        const opensearchPassword = nodeData.inputs?.opensearchPassword as string
+        const indexName = nodeData.inputs?.indexName as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
-
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
-
-        const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
-        })
-
-        const pineconeIndex = client.Index(index)
-
-        const obj: PineconeLibArgs = {
-            pineconeIndex
-        }
-
-        if (pineconeNamespace) obj.namespace = pineconeNamespace
-        if (pineconeMetadataFilter) {
-            const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
-            obj.filter = metadatafilter
-        }
 
         let nodeValues = JSON.parse(values)
 
@@ -151,14 +127,20 @@ class Pinecone_Existing_VectorStores implements INode {
             }
         }
 
-        obj.filter = nodeValues.query.filter
-        obj.textKey = nodeValues.question
+        const client = new Client({
+            nodes: ['https://' + opensearchUsername + ':' + opensearchPassword + '@' + opensearchURL]
+        })
 
-        if (nodeValues.query.skip_search === 'true') {
-            return ''
-        }
+        // const vectorStore = new OpenSearchVectorStore(embeddings, {
+        //     client,
+        //     indexName
+        // })
 
-        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+        const vectorStore = await OpenSearchVectorStore.fromExistingIndex(embeddings, {
+            client,
+            indexName
+        })
+
         const docs = await vectorStore.similaritySearchWithScore(nodeValues.question, k)
 
         // eslint-disable-next-line no-console
@@ -184,4 +166,4 @@ class Pinecone_Existing_VectorStores implements INode {
     }
 }
 
-module.exports = { nodeClass: Pinecone_Existing_VectorStores }
+module.exports = { nodeClass: OpenSearch_Existing_VectorStores }

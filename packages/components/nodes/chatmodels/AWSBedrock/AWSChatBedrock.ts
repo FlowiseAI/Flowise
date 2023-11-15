@@ -135,7 +135,6 @@ class AWSChatBedrock_ChatModels implements INode {
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
             temperature: parseFloat(iTemperature)
         }
-
         /**
          * Long-term credentials specified in LLM configuration are optional.
          * Bedrock's credential provider falls back to the AWS SDK to fetch
