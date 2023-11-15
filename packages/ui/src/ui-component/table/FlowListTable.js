@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { IconEdit } from '@tabler/icons'
 import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table'
@@ -10,7 +9,8 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
-import { Button, Typography } from '@mui/material'
+import { Button, Stack, Typography } from '@mui/material'
+import FlowListMenu from '../button/FlowListMenu'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -32,7 +32,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     }
 }))
 
-export const FlowListTable = ({ data, images, filterFunction }) => {
+export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) => {
     const navigate = useNavigate()
     const goToCanvas = (selectedChatflow) => {
         navigate(`/canvas/${selectedChatflow.id}`)
@@ -44,7 +44,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
                     <TableHead>
                         <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
-                            <StyledTableCell component='th' scope='row' style={{ width: '25%' }} key='0'>
+                            <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 Name
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '35%' }} key='1'>
@@ -53,7 +53,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
                                 Last Modified Date
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '10%' }} key='3'>
+                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '15%' }} key='3'>
                                 Actions
                             </StyledTableCell>
                         </TableRow>
@@ -65,7 +65,7 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                     <Typography
                                         sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                     >
-                                        {row.templateName || row.name}
+                                        <Button onClick={() => goToCanvas(row)}>{row.templateName || row.name}</Button>
                                     </Typography>
                                 </TableCell>
 
@@ -111,15 +111,13 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
                                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='2'>
                                     {moment(row.updatedDate).format('dddd, MMMM Do, YYYY h:mm:ss A')}
                                 </TableCell>
-                                <TableCell key='3'>
-                                    <Button
-                                        variant='outlined'
-                                        sx={{ marginRight: '10px' }}
-                                        onClick={() => goToCanvas(row)}
-                                        startIcon={<IconEdit />}
-                                    >
-                                        Open
-                                    </Button>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='3'>
+                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
+                                        {/*<Button sx={{ marginRight: '10px' }} onClick={() => goToCanvas(row)}>*/}
+                                        {/*    OPEN*/}
+                                        {/*</Button>*/}
+                                        <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
+                                    </Stack>
                                 </TableCell>
                             </StyledTableRow>
                         ))}
@@ -133,5 +131,6 @@ export const FlowListTable = ({ data, images, filterFunction }) => {
 FlowListTable.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
-    filterFunction: PropTypes.func
+    filterFunction: PropTypes.func,
+    updateFlowsApi: PropTypes.object
 }

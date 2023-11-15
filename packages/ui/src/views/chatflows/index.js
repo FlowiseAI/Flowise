@@ -23,10 +23,8 @@ import useApi from 'hooks/useApi'
 import { baseURL } from 'store/constant'
 
 // icons
-import { IconPlus, IconSearch } from '@tabler/icons'
+import { IconPlus, IconSearch, IconLayoutCards, IconLayoutColumns } from '@tabler/icons'
 import * as React from 'react'
-import ViewListIcon from '@mui/icons-material/ViewList'
-import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { FlowListTable } from '../../ui-component/table/FlowListTable'
 import { StyledButton } from '../../ui-component/button/StyledButton'
@@ -159,10 +157,10 @@ const Chatflows = () => {
                             >
                                 <ToggleButtonGroup value={view} color='primary' exclusive onChange={handleChange}>
                                     <ToggleButton variant='contained' value='card' selectedColor='#00abc0'>
-                                        <ViewModuleIcon />
+                                        <IconLayoutCards />
                                     </ToggleButton>
                                     <ToggleButton variant='contained' value='list'>
-                                        <ViewListIcon />
+                                        <IconLayoutColumns />
                                     </ToggleButton>
                                 </ToggleButtonGroup>
                             </ButtonGroup>
@@ -185,7 +183,13 @@ const Chatflows = () => {
                     </Grid>
                 )}
                 {!isLoading && view === 'list' && getAllChatflowsApi.data && (
-                    <FlowListTable sx={{ mt: 20 }} data={getAllChatflowsApi.data} images={images} filterFunction={filterFlows} />
+                    <FlowListTable
+                        sx={{ mt: 20 }}
+                        data={getAllChatflowsApi.data}
+                        images={images}
+                        filterFunction={filterFlows}
+                        updateFlowsApi={getAllChatflowsApi}
+                    />
                 )}
             </Stack>
 
