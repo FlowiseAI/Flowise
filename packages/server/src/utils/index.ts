@@ -222,7 +222,9 @@ export const buildLangchain = async (
     chatflowid: string,
     appDataSource: DataSource,
     overrideConfig?: ICommonObject,
-    cachePool?: CachePool
+    cachePool?: CachePool,
+    isUpsert?: boolean,
+    stopNodeId?: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -254,16 +256,33 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
-            logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-            flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
-                chatId,
-                chatflowid,
-                appDataSource,
-                databaseEntities,
-                logger,
-                cachePool
-            })
-            logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+            if (
+                isUpsert &&
+                ((stopNodeId && reactFlowNodeData.id === stopNodeId) || (!stopNodeId && reactFlowNodeData.category === 'Vector Stores'))
+            ) {
+                logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
+                    chatId,
+                    chatflowid,
+                    appDataSource,
+                    databaseEntities,
+                    logger,
+                    cachePool
+                })
+                logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                break
+            } else {
+                logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
+                    chatId,
+                    chatflowid,
+                    appDataSource,
+                    databaseEntities,
+                    logger,
+                    cachePool
+                })
+                logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+            }
         } catch (e: any) {
             logger.error(e)
             throw new Error(e)

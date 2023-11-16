@@ -31,7 +31,7 @@ import { baseURL, maxScroll } from 'store/constant'
 
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
-import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
+import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -127,10 +127,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             if (response.data) {
                 const data = response.data
-                if (!chatId) {
-                    setChatId(data.chatId)
-                    localStorage.setItem(`${chatflowid}_INTERNAL`, data.chatId)
-                }
+
+                if (!chatId) setChatId(data.chatId)
+
                 if (!isChatFlowAvailableToStream) {
                     let text = ''
                     if (data.text) text = data.text
@@ -142,7 +141,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         { message: text, sourceDocuments: data?.sourceDocuments, usedTools: data?.usedTools, type: 'apiMessage' }
                     ])
                 }
-
+                setLocalStorageChatflow(chatflowid, data.chatId, messages)
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -175,7 +174,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (getChatmessageApi.data?.length) {
             const chatId = getChatmessageApi.data[0]?.chatId
             setChatId(chatId)
-            localStorage.setItem(`${chatflowid}_INTERNAL`, chatId)
             const loadedMessages = getChatmessageApi.data.map((message) => {
                 const obj = {
                     message: message.content,
@@ -186,6 +184,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
+            setLocalStorageChatflow(chatflowid, chatId, messages)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

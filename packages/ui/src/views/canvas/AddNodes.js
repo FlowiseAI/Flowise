@@ -21,7 +21,8 @@ import {
     Paper,
     Popper,
     Stack,
-    Typography
+    Typography,
+    Chip
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
@@ -301,7 +302,37 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                 </ListItemAvatar>
                                                                                 <ListItemText
                                                                                     sx={{ ml: 1 }}
-                                                                                    primary={node.label}
+                                                                                    primary={
+                                                                                        <div
+                                                                                            style={{
+                                                                                                display: 'flex',
+                                                                                                flexDirection: 'row',
+                                                                                                alignItems: 'center'
+                                                                                            }}
+                                                                                        >
+                                                                                            <span>{node.label}</span>
+                                                                                            &nbsp;
+                                                                                            {node.badge && (
+                                                                                                <Chip
+                                                                                                    sx={{
+                                                                                                        width: 'max-content',
+                                                                                                        fontWeight: 700,
+                                                                                                        fontSize: '0.65rem',
+                                                                                                        background:
+                                                                                                            node.badge === 'DEPRECATING'
+                                                                                                                ? theme.palette.warning.main
+                                                                                                                : theme.palette.teal.main,
+                                                                                                        color:
+                                                                                                            node.badge !== 'DEPRECATING'
+                                                                                                                ? 'white'
+                                                                                                                : 'inherit'
+                                                                                                    }}
+                                                                                                    size='small'
+                                                                                                    label={node.badge}
+                                                                                                />
+                                                                                            )}
+                                                                                        </div>
+                                                                                    }
                                                                                     secondary={node.description}
                                                                                 />
                                                                             </ListItem>
