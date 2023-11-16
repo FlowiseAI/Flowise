@@ -11,6 +11,7 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import { Button, Stack, Typography } from '@mui/material'
 import FlowListMenu from '../button/FlowListMenu'
+import Chip from '@mui/material/Chip'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -47,13 +48,16 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 Name
                             </StyledTableCell>
-                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '35%' }} key='1'>
-                                Nodes (Showing first 5)
+                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '25%' }} key='1'>
+                                Category
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
-                                Last Modified Date
+                                Nodes (Showing first 5)
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '15%' }} key='3'>
+                                Last Modified Date
+                            </StyledTableCell>
+                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '10%' }} key='4'>
                                 Actions
                             </StyledTableCell>
                         </TableRow>
@@ -68,8 +72,25 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                         <Button onClick={() => goToCanvas(row)}>{row.templateName || row.name}</Button>
                                     </Typography>
                                 </TableCell>
-
                                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='1'>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            marginTop: 5
+                                        }}
+                                    >
+                                        &nbsp;
+                                        {row.category &&
+                                            row.category
+                                                .split(';')
+                                                .map((tag, index) => (
+                                                    <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
+                                                ))}
+                                    </div>
+                                </TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='2'>
                                     {images[row.id] && (
                                         <div
                                             style={{
@@ -108,10 +129,10 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='2'>
-                                    {moment(row.updatedDate).format('dddd, MMMM Do, YYYY h:mm:ss A')}
-                                </TableCell>
                                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='3'>
+                                    {moment(row.updatedDate).format('MMMM Do, YYYY')}
+                                </TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                         {/*<Button sx={{ marginRight: '10px' }} onClick={() => goToCanvas(row)}>*/}
                                         {/*    OPEN*/}

@@ -54,7 +54,10 @@ const Chatflows = () => {
     }
 
     function filterFlows(data) {
-        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1)
+        )
     }
 
     const onLoginClick = (username, password) => {
@@ -137,7 +140,7 @@ const Chatflows = () => {
                             size='small'
                             sx={{ display: { xs: 'none', sm: 'block' }, marginLeft: 3 }}
                             variant='outlined'
-                            placeholder='Search Chatflows'
+                            placeholder='Search name or category'
                             onChange={onSearchChange}
                             InputProps={{
                                 startAdornment: (

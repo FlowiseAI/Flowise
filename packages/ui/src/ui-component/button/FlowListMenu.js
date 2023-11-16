@@ -7,6 +7,7 @@ import Divider from '@mui/material/Divider'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FileDownloadIcon from '@mui/icons-material/Downloading'
 import FileDeleteIcon from '@mui/icons-material/Delete'
+import FileCategoryIcon from '@mui/icons-material/Category'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import PropTypes from 'prop-types'
@@ -22,6 +23,7 @@ import ConfirmDialog from '../dialog/ConfirmDialog'
 import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
 import { useState } from 'react'
 import useApi from '../../hooks/useApi'
+import TagDialog from '../dialog/TagDialog'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -64,13 +66,15 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
+    const [categoryValues, setCategoryValues] = useState([])
+
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
     const [anchorEl, setAnchorEl] = React.useState(null)
     const open = Boolean(anchorEl)
     const handleClick = (event) => {
@@ -79,12 +83,10 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const handleClose = () => {
         setAnchorEl(null)
     }
-
     const handleFlowRename = () => {
         setAnchorEl(null)
         setFlowDialogOpen(true)
     }
-
     const saveFlowRename = async (chatflowName) => {
         const updateBody = {
             name: chatflowName,
@@ -110,7 +112,39 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             })
         }
     }
-
+    const handleFlowCategory = () => {
+        setAnchorEl(null)
+        if (chatflow.category) setCategoryValues(chatflow.category.split(';'))
+        else setCategoryValues([])
+        setCategoryDialogOpen(true)
+    }
+    const saveFlowCategory = async (categories) => {
+        // save categories as string
+        const categoryTags = categories.join(';')
+        const updateBody = {
+            category: categoryTags,
+            chatflow
+        }
+        try {
+            await updateChatflowApi.request(chatflow.id, updateBody)
+            await updateFlowsApi.request()
+        } catch (error) {
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            enqueueSnackbar({
+                message: errorData,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
@@ -143,7 +177,6 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             }
         }
     }
-
     const handleDuplicate = () => {
         setAnchorEl(null)
         try {
@@ -206,6 +239,11 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     Export
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
+                <MenuItem onClick={handleFlowCategory} disableRipple>
+                    <FileCategoryIcon />
+                    Update Category
+                </MenuItem>
+                <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleDelete} disableRipple>
                     <FileDeleteIcon />
                     Delete
@@ -221,6 +259,13 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={saveFlowRename}
+            />
+            <TagDialog
+                isOpen={categoryDialogOpen}
+                onClose={() => setCategoryDialogOpen(false)}
+                tags={categoryValues}
+                setTags={setCategoryValues}
+                onSubmit={saveFlowCategory}
             />
         </div>
     )
