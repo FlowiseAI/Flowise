@@ -1,7 +1,7 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
-import { Embeddings } from 'langchain/embeddings/base'
 import { Client } from '@opensearch-project/opensearch'
+import { Embeddings } from 'langchain/embeddings/base'
 import { handleEscapeCharacters, getBaseClasses } from '../../../src/utils'
 
 class OpenSearch_Existing_VectorStores implements INode {
@@ -14,16 +14,17 @@ class OpenSearch_Existing_VectorStores implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'OpenSearch Load Existing Index - V2'
-        this.name = 'openSearchExistingIndex-v2'
+        this.name = 'openSearchExistingIndexV2'
         this.version = 1.0
         this.type = 'OpenSearch'
         this.icon = 'opensearch.png'
         this.category = 'Vector Stores'
-        this.description = 'Load existing index from OpenSearch (i.e: Document has been upserted)'
+        this.description = 'Load existing index from OpenSearch'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.inputs = [
             {
@@ -55,6 +56,14 @@ class OpenSearch_Existing_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'OpenSearch Metadata Filter',
+                name: 'values',
+                type: 'json',
+                optional: true,
+                acceptVariable: true,
+                list: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -71,14 +80,6 @@ class OpenSearch_Existing_VectorStores implements INode {
                 placeholder: '75',
                 step: 1,
                 description: 'Minumum score for embeddings documents to be included'
-            },
-            {
-                label: 'OpenSearch Metadata Filter',
-                name: 'values',
-                type: 'json',
-                optional: true,
-                acceptVariable: true,
-                list: true
             }
         ]
         this.outputs = [
@@ -105,14 +106,14 @@ class OpenSearch_Existing_VectorStores implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const minScore = nodeData.inputs?.minScore as number
         const values = nodeData.inputs?.values
+        const indexName = nodeData.inputs?.indexName as string
         const opensearchURL = nodeData.inputs?.opensearchURL as string
         const opensearchUsername = nodeData.inputs?.opensearchUsername as string
         const opensearchPassword = nodeData.inputs?.opensearchPassword as string
-        const indexName = nodeData.inputs?.indexName as string
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
@@ -127,21 +128,20 @@ class OpenSearch_Existing_VectorStores implements INode {
             }
         }
 
+        if (nodeValues.query.skip_search === 'true') {
+            return ''
+        }
+
+        const AOS_URL = 'https://' + opensearchUsername + ':' + opensearchPassword + '@' + opensearchURL
         const client = new Client({
-            nodes: ['https://' + opensearchUsername + ':' + opensearchPassword + '@' + opensearchURL]
+            nodes: [AOS_URL]
         })
 
-        // const vectorStore = new OpenSearchVectorStore(embeddings, {
-        //     client,
-        //     indexName
-        // })
-
-        const vectorStore = await OpenSearchVectorStore.fromExistingIndex(embeddings, {
+        const vectorStore = new OpenSearchVectorStore(embeddings, {
             client,
             indexName
         })
-
-        const docs = await vectorStore.similaritySearchWithScore(nodeValues.question, k)
+        const docs = await vectorStore.similaritySearchWithScore(nodeValues.question, k, nodeValues.query.filter)
 
         // eslint-disable-next-line no-console
         console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m')
@@ -161,6 +161,7 @@ class OpenSearch_Existing_VectorStores implements INode {
                 if (minScore && doc[1] < minScore / 100) continue
                 finaltext += `${doc[0].metadata.text}\n`
             }
+            console.log(finaltext)
             return handleEscapeCharacters(finaltext, false)
         }
     }
