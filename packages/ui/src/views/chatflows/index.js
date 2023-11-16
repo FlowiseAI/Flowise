@@ -23,7 +23,7 @@ import useApi from 'hooks/useApi'
 import { baseURL } from 'store/constant'
 
 // icons
-import { IconPlus, IconSearch, IconLayoutCards, IconLayoutColumns } from '@tabler/icons'
+import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons'
 import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { FlowListTable } from '../../ui-component/table/FlowListTable'
@@ -138,7 +138,7 @@ const Chatflows = () => {
                         <h1>Chatflows</h1>
                         <TextField
                             size='small'
-                            sx={{ display: { xs: 'none', sm: 'block' }, marginLeft: 3 }}
+                            sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
                             variant='outlined'
                             placeholder='Search name or category'
                             onChange={onSearchChange}
@@ -151,19 +151,30 @@ const Chatflows = () => {
                             }}
                         />
                         <Box sx={{ flexGrow: 1 }} />
-                        <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                        <ButtonGroup sx={{ maxHeight: 40 }} disableElevation variant='contained' aria-label='outlined primary button group'>
                             <ButtonGroup
                                 sx={{ display: { xs: 'none', sm: 'block' } }}
                                 disableElevation
                                 variant='contained'
                                 aria-label='outlined primary button group'
                             >
-                                <ToggleButtonGroup value={view} color='primary' exclusive onChange={handleChange}>
-                                    <ToggleButton variant='contained' value='card' selectedColor='#00abc0'>
-                                        <IconLayoutCards />
+                                <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
+                                    <ToggleButton
+                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        variant='contained'
+                                        value='card'
+                                        title='Card View'
+                                        selectedColor='#00abc0'
+                                    >
+                                        <IconLayoutGrid />
                                     </ToggleButton>
-                                    <ToggleButton variant='contained' value='list'>
-                                        <IconLayoutColumns />
+                                    <ToggleButton
+                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
+                                        <IconList />
                                     </ToggleButton>
                                 </ToggleButtonGroup>
                             </ButtonGroup>

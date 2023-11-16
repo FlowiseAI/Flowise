@@ -52,7 +52,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                 Category
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
-                                Nodes (Showing first 5)
+                                Nodes
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '15%' }} key='3'>
                                 Last Modified Date
@@ -134,9 +134,6 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                 </TableCell>
                                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
-                                        {/*<Button sx={{ marginRight: '10px' }} onClick={() => goToCanvas(row)}>*/}
-                                        {/*    OPEN*/}
-                                        {/*</Button>*/}
                                         <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
                                     </Stack>
                                 </TableCell>
