@@ -1,6 +1,6 @@
-# Flowise Docker Hub Image
+# SAIA Docker Hub Image
 
-Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/flowiseai/flowise/general)
+Starts SAIA from [DockerHub Image](https://hub.docker.com/repository/docker/SAIAai/SAIA/general)
 
 ## Usage
 
@@ -11,13 +11,13 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/f
 
 ## 🔒 Authentication
 
-1. Create `.env` file and specify the `PORT`, `FLOWISE_USERNAME`, and `FLOWISE_PASSWORD` (refer to `.env.example`)
-2. Pass `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `docker-compose.yml` file:
+1. Create `.env` file and specify the `PORT`, `SAIA_USERNAME`, and `SAIA_PASSWORD` (refer to `.env.example`)
+2. Pass `SAIA_USERNAME` and `SAIA_PASSWORD` to the `docker-compose.yml` file:
     ```
     environment:
         - PORT=${PORT}
-        - FLOWISE_USERNAME=${FLOWISE_USERNAME}
-        - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+        - SAIA_USERNAME=${SAIA_USERNAME}
+        - SAIA_PASSWORD=${SAIA_PASSWORD}
     ```
 3. `docker-compose up -d`
 4. Open [http://localhost:3000](http://localhost:3000)
@@ -27,9 +27,9 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/f
 
 If you like to persist your data (flows, logs, apikeys, credentials), set these variables in the `.env` file inside `docker` folder:
 
--   DATABASE_PATH=/root/.flowise
--   APIKEY_PATH=/root/.flowise
--   LOG_PATH=/root/.flowise/logs
--   SECRETKEY_PATH=/root/.flowise
+-   DATABASE_PATH=/root/.SAIA
+-   APIKEY_PATH=/root/.SAIA
+-   LOG_PATH=/root/.SAIA/logs
+-   SECRETKEY_PATH=/root/.SAIA
 
-Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/environment-variables)
+SAIA also support different environment variables to configure your instance. Read [more](https://docs.SAIAai.com/environment-variables)

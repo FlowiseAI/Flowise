@@ -1,8 +1,8 @@
 # Build local monorepo image
-# docker build --no-cache -t  flowise .
+# docker build --no-cache -t  SAIA .
 
 # Run image
-# docker run -d -p 3000:3000 flowise
+# docker run -d -p 3000:3000 SAIA
 
 FROM node:18-alpine
 RUN apk add --update libc6-compat python3 make g++

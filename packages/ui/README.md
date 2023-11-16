@@ -1,12 +1,12 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise UI
+# SAIA UI
 
 English | [中文](./README-ZH.md)
 
-React frontend ui for Flowise.
+React frontend ui for SAIA.
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+![SAIA](https://github.com/SAIAAI/SAIA/blob/main/images/SAIA.gif?raw=true)
 
 Install:
 
@@ -16,4 +16,4 @@ npm i flowise-ui
 
 ## License
 
-Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/SAIAAI/SAIA/blob/master/LICENSE.md).

@@ -4,9 +4,9 @@
 
 [English](./README.md) | 中文
 
-Flowise 的 React 前端界面。
+SAIA 的 React 前端界面。
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+![SAIA](https://github.com/SAIAAI/SAIA/blob/main/images/SAIA.gif?raw=true)
 
 安装：
 
@@ -16,4 +16,4 @@ npm i flowise-ui
 
 ## 许可证
 
-本仓库中的源代码在[Apache License Version 2.0 许可证](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md)下提供。
+本仓库中的源代码在[Apache License Version 2.0 许可证](https://github.com/SAIAAI/SAIA/blob/master/LICENSE.md)下提供。

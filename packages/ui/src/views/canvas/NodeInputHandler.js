@@ -30,7 +30,7 @@ import CredentialInputHandler from './CredentialInputHandler'
 import { getInputVariables } from 'utils/genericHelper'
 
 // const
-import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+import { SAIA_CREDENTIAL_ID } from 'store/constant'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -256,7 +256,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 inputParam={inputParam}
                                 onSelect={(newValue) => {
                                     data.credential = newValue
-                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                    data.inputs[SAIA_CREDENTIAL_ID] = newValue // in case data.credential is not updated
                                 }}
                             />
                         )}

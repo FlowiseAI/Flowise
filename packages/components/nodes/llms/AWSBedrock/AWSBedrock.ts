@@ -8,7 +8,7 @@ import { BaseLLMParams } from 'langchain/llms/base'
 /**
  * I had to run the following to build the component
  * and get the icon copied over to the dist directory
- * Flowise/packages/components > yarn build
+ * SAIA/packages/components > yarn build
  *
  * @author Michael Connor <mlconnor@yahoo.com>
  */

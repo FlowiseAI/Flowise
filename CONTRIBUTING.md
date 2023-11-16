@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD030 -->
 
-# Contributing to Flowise
+# Contributing to SAIA
 
 English | [中文](./CONTRIBUTING-ZH.md)
 
@@ -8,23 +8,23 @@ We appreciate any form of contributions.
 
 ## ⭐ Star
 
-Star and share the [Github Repo](https://github.com/FlowiseAI/Flowise).
+Star and share the [Github Repo](https://github.com/SAIAAI/SAIA).
 
 ## 🙋 Q&A
 
-Search up for any questions in [Q&A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
+Search up for any questions in [Q&A section](https://github.com/SAIAAI/SAIA/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
 
 ## 🙌 Share Chatflow
 
-Yes! Sharing how you use Flowise is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/FlowiseAI/Flowise/discussions/categories/show-and-tell).
+Yes! Sharing how you use SAIA is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/SAIAAI/SAIA/discussions/categories/show-and-tell).
 
 ## 💡 Ideas
 
-Ideas are welcome such as new feature, apps integration, and blockchain networks. Submit in [Ideas section](https://github.com/FlowiseAI/Flowise/discussions/categories/ideas).
+Ideas are welcome such as new feature, apps integration, and blockchain networks. Submit in [Ideas section](https://github.com/SAIAAI/SAIA/discussions/categories/ideas).
 
 ## 🐞 Report Bugs
 
-Found an issue? [Report it](https://github.com/FlowiseAI/Flowise/issues/new/choose).
+Found an issue? [Report it](https://github.com/SAIAAI/SAIA/issues/new/choose).
 
 ## 👨‍💻 Contribute to Code
 
@@ -36,7 +36,7 @@ Not sure what to contribute? Some ideas:
 
 ### Developers
 
-Flowise has 3 different modules in a single mono repository.
+SAIA has 3 different modules in a single mono repository.
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
@@ -51,7 +51,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Step by step
 
-1. Fork the official [Flowise Github Repository](https://github.com/FlowiseAI/Flowise).
+1. Fork the official [SAIA Github Repository](https://github.com/SAIAAI/SAIA).
 
 2. Clone your forked repository.
 
@@ -65,7 +65,7 @@ Flowise has 3 different modules in a single mono repository.
 5. Go into repository folder
 
     ```bash
-    cd Flowise
+    cd SAIA
     ```
 
 6. Install all dependencies of all modules:
@@ -114,47 +114,47 @@ Flowise has 3 different modules in a single mono repository.
 
     to make sure everything works fine in production.
 
-11. Commit code and submit Pull Request from forked branch pointing to [Flowise master](https://github.com/FlowiseAI/Flowise/tree/master).
+11. Commit code and submit Pull Request from forked branch pointing to [SAIA master](https://github.com/SAIAAI/SAIA/tree/master).
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
+SAIA support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.SAIAai.com/environment-variables)
 
-| Variable                    | Description                                                                  | Type                                             | Default                             |
-| --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
-| PORT                        | The HTTP port Flowise runs on                                                | Number                                           | 3000                                |
-| FLOWISE_USERNAME            | Username to login                                                            | String                                           |                                     |
-| FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
-| DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |
-| LOG_PATH                    | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
-| LOG_LEVEL                   | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
-| APIKEY_PATH                 | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |
-| TOOL_FUNCTION_BUILTIN_DEP   | NodeJS built-in modules to be used for Tool Function                         | String                                           |                                     |
-| TOOL_FUNCTION_EXTERNAL_DEP  | External modules to be used for Tool Function                                | String                                           |                                     |
-| DATABASE_TYPE               | Type of database to store the flowise data                                   | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
-| DATABASE_PATH               | Location where database is saved (When DATABASE_TYPE is sqlite)              | String                                           | `your-home-dir/.flowise`            |
-| DATABASE_HOST               | Host URL or IP address (When DATABASE_TYPE is not sqlite)                    | String                                           |                                     |
-| DATABASE_PORT               | Database port (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
-| DATABASE_USER               | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
-| DATABASE_PASSWORD           | Database password (When DATABASE_TYPE is not sqlite)                         | String                                           |                                     |
-| DATABASE_NAME               | Database name (When DATABASE_TYPE is not sqlite)                             | String                                           |                                     |
-| SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
-| FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
+| Variable                   | Description                                                                  | Type                                             | Default                          |
+| -------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------- |
+| PORT                       | The HTTP port SAIA runs on                                                   | Number                                           | 3000                             |
+| SAIA_USERNAME              | Username to login                                                            | String                                           |                                  |
+| SAIA_PASSWORD              | Password to login                                                            | String                                           |                                  |
+| DEBUG                      | Print logs from components                                                   | Boolean                                          |                                  |
+| LOG_PATH                   | Location where log files are stored                                          | String                                           | `your-path/SAIA/logs`            |
+| LOG_LEVEL                  | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                           |
+| APIKEY_PATH                | Location where api keys are saved                                            | String                                           | `your-path/SAIA/packages/server` |
+| TOOL_FUNCTION_BUILTIN_DEP  | NodeJS built-in modules to be used for Tool Function                         | String                                           |                                  |
+| TOOL_FUNCTION_EXTERNAL_DEP | External modules to be used for Tool Function                                | String                                           |                                  |
+| DATABASE_TYPE              | Type of database to store the SAIA data                                      | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                         |
+| DATABASE_PATH              | Location where database is saved (When DATABASE_TYPE is sqlite)              | String                                           | `your-home-dir/.SAIA`            |
+| DATABASE_HOST              | Host URL or IP address (When DATABASE_TYPE is not sqlite)                    | String                                           |                                  |
+| DATABASE_PORT              | Database port (When DATABASE_TYPE is not sqlite)                             | String                                           |                                  |
+| DATABASE_USER              | Database username (When DATABASE_TYPE is not sqlite)                         | String                                           |                                  |
+| DATABASE_PASSWORD          | Database password (When DATABASE_TYPE is not sqlite)                         | String                                           |                                  |
+| DATABASE_NAME              | Database name (When DATABASE_TYPE is not sqlite)                             | String                                           |                                  |
+| SECRETKEY_PATH             | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/SAIA/packages/server` |
+| SAIA_SECRETKEY_OVERWRITE   | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
 
 You can also specify the env variables when using `npx`. For example:
 
 ```
-npx flowise start --PORT=3000 --DEBUG=true
+npx SAIA start --PORT=3000 --DEBUG=true
 ```
 
 ## 📖 Contribute to Docs
 
-[Flowise Docs](https://github.com/FlowiseAI/FlowiseDocs)
+[SAIA Docs](https://github.com/SAIAAI/SAIADocs)
 
 ## 🏷️ Pull Request process
 
-A member of the FlowiseAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/jbaHfsRVBW).
+A member of the SAIAAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/jbaHfsRVBW).
 
 ## 📜 Code of Conduct
 
-This project and everyone participating in it are governed by the Code of Conduct which can be found in the [file](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to hello@flowiseai.com.
+This project and everyone participating in it are governed by the Code of Conduct which can be found in the [file](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to hello@SAIAai.com.

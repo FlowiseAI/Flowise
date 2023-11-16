@@ -7,7 +7,7 @@ let pyodideInstance: PyodideInterface | undefined
 export async function LoadPyodide(): Promise<PyodideInterface> {
     if (pyodideInstance === undefined) {
         const { loadPyodide } = await import('pyodide')
-        const obj: any = { packageCacheDir: path.join(getUserHome(), '.flowise', 'pyodideCacheDir') }
+        const obj: any = { packageCacheDir: path.join(getUserHome(), '.SAIA', 'pyodideCacheDir') }
         pyodideInstance = await loadPyodide(obj)
         await pyodideInstance.loadPackage(['pandas', 'numpy'])
     }

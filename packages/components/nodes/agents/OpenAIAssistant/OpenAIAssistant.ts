@@ -255,8 +255,8 @@ class OpenAIAssistant_Agents implements INode {
                     const content = assistantMessages[0].content[i] as MessageContentImageFile
                     const fileId = content.image_file.file_id
                     const fileObj = await openai.files.retrieve(fileId)
-                    const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
-                    const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', `${fileObj.filename}.png`)
+                    const dirPath = path.join(getUserHome(), '.SAIA', 'openai-assistant')
+                    const filePath = path.join(getUserHome(), '.SAIA', 'openai-assistant', `${fileObj.filename}.png`)
 
                     await downloadFile(fileObj, filePath, dirPath, openAIApiKey)
 

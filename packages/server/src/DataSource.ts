@@ -13,7 +13,7 @@ export const init = async (): Promise<void> => {
     let homePath
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.SAIA')
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
@@ -53,7 +53,7 @@ export const init = async (): Promise<void> => {
             })
             break
         default:
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.SAIA')
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),

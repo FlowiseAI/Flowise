@@ -106,7 +106,7 @@ class LLMChain_Chains implements INode {
             /**
              * Apply string transformation to convert special chars:
              * FROM: hello i am ben\n\n\thow are you?
-             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             * TO: hello i am benSAIA_NEWLINESAIA_NEWLINESAIA_TABhow are you?
              */
             return handleEscapeCharacters(res, false)
         }
@@ -147,7 +147,7 @@ const runPrediction = async (
 
     /**
      * Apply string transformation to reverse converted special chars:
-     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
+     * FROM: { "value": "hello i am benSAIA_NEWLINESAIA_NEWLINESAIA_TABhow are you?" }
      * TO: { "value": "hello i am ben\n\n\thow are you?" }
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)

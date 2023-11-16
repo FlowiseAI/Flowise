@@ -17,4 +17,4 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - run: docker build --no-cache -t flowise .
+            - run: docker build --no-cache -t SAIA .

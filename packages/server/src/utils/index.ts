@@ -40,7 +40,7 @@ import { CachePool } from '../CachePool'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
-const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
+const REDACTED_CREDENTIAL_VALUE = '_SAIA_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
 export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
@@ -407,7 +407,7 @@ export const getVariableValue = (
             /**
              * Apply string transformation to convert special chars:
              * FROM: hello i am ben\n\n\thow are you?
-             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             * TO: hello i am benSAIA_NEWLINESAIA_NEWLINESAIA_TABhow are you?
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
@@ -885,8 +885,8 @@ export const generateEncryptKey = (): string => {
  * @returns {Promise<string>}
  */
 export const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    if (process.env.SAIA_SECRETKEY_OVERWRITE !== undefined && process.env.SAIA_SECRETKEY_OVERWRITE !== '') {
+        return process.env.SAIA_SECRETKEY_OVERWRITE
     }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')

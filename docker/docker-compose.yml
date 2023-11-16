@@ -1,13 +1,13 @@
 version: '3.1'
 
 services:
-    flowise:
-        image: flowiseai/flowise
+    SAIA:
+        image: SAIAai/SAIA
         restart: always
         environment:
             - PORT=${PORT}
-            - FLOWISE_USERNAME=${FLOWISE_USERNAME}
-            - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+            - SAIA_USERNAME=${SAIA_USERNAME}
+            - SAIA_PASSWORD=${SAIA_PASSWORD}
             - DEBUG=${DEBUG}
             - DATABASE_PATH=${DATABASE_PATH}
             - DATABASE_TYPE=${DATABASE_TYPE}
@@ -18,11 +18,11 @@ services:
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
             - APIKEY_PATH=${APIKEY_PATH}
             - SECRETKEY_PATH=${SECRETKEY_PATH}
-            - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            - SAIA_SECRETKEY_OVERWRITE=${SAIA_SECRETKEY_OVERWRITE}
             - LOG_LEVEL=${LOG_LEVEL}
             - LOG_PATH=${LOG_PATH}
         ports:
             - '${PORT}:${PORT}'
         volumes:
-            - ~/.flowise:/root/.flowise
-        command: /bin/sh -c "sleep 3; flowise start"
+            - ~/.SAIA:/root/.SAIA
+        command: /bin/sh -c "sleep 3; SAIA start"

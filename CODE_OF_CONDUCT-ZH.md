@@ -2,7 +2,7 @@
 
 # 贡献者公约行为准则
 
-[English](<./CODE_OF_CONDUCT.md>) | 中文
+[English](./CODE_OF_CONDUCT.md) | 中文
 
 ## 我们的承诺
 
@@ -38,12 +38,12 @@
 
 ## 执法
 
-可以通过联系项目团队 hello@flowiseai.com 来报告滥用、骚扰或其他不可接受的行为。所有投诉将经过审核和调查，并将得出视情况认为必要和适当的回应。项目团队有义务对事件举报人保持机密。具体执行政策的更多细节可能会单独发布。
+可以通过联系项目团队 hello@SAIAai.com 来报告滥用、骚扰或其他不可接受的行为。所有投诉将经过审核和调查，并将得出视情况认为必要和适当的回应。项目团队有义务对事件举报人保持机密。具体执行政策的更多细节可能会单独发布。
 
 如果项目维护者不诚信地遵守或执行行为准则，可能会面临其他项目领导成员决定的临时或永久的后果。
 
 ## 归属
 
-该行为准则的内容来自于[贡献者公约](http://contributor-covenant.org/)1.4版，可在[http://contributor-covenant.org/version/1/4](http://contributor-covenant.org/version/1/4)上获取。
+该行为准则的内容来自于[贡献者公约](http://contributor-covenant.org/)1.4 版，可在[http://contributor-covenant.org/version/1/4](http://contributor-covenant.org/version/1/4)上获取。
 
 [主页]: http://contributor-covenant.org

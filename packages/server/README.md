@@ -1,67 +1,67 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - Low-Code LLM apps builder
+# SAIA - Low-Code LLM apps builder
 
 English | [中文](./README-ZH.md)
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+![SAIA](https://github.com/SAIAAI/SAIA/blob/main/images/SAIA.gif?raw=true)
 
 Drag & drop UI to build your customized LLM flow
 
 ## ⚡Quick Start
 
-1. Install Flowise
+1. Install SAIA
     ```bash
-    npm install -g flowise
+    npm install -g SAIA
     ```
-2. Start Flowise
+2. Start SAIA
 
     ```bash
-    npx flowise start
+    npx SAIA start
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
 
 ## 🔒 Authentication
 
-To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file:
+To enable app level authentication, add `SAIA_USERNAME` and `SAIA_PASSWORD` to the `.env` file:
 
 ```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
+SAIA_USERNAME=user
+SAIA_PASSWORD=1234
 ```
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+SAIA support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/SAIAAI/SAIA/blob/main/CONTRIBUTING.md#-env-variables)
 
 You can also specify the env variables when using `npx`. For example:
 
 ```
-npx flowise start --PORT=3000 --DEBUG=true
+npx SAIA start --PORT=3000 --DEBUG=true
 ```
 
 ## 📖 Documentation
 
-[Flowise Docs](https://docs.flowiseai.com/)
+[SAIA Docs](https://docs.SAIAai.com/)
 
 ## 🌐 Self Host
 
-### [Railway](https://docs.flowiseai.com/deployment/railway)
+### [Railway](https://docs.SAIAai.com/deployment/railway)
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/YK7J0v)
 
-### [Render](https://docs.flowiseai.com/deployment/render)
+### [Render](https://docs.SAIAai.com/deployment/render)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.SAIAai.com/deployment/render)
 
-### [AWS](https://docs.flowiseai.com/deployment/aws)
+### [AWS](https://docs.SAIAai.com/deployment/aws)
 
-### [Azure](https://docs.flowiseai.com/deployment/azure)
+### [Azure](https://docs.SAIAai.com/deployment/azure)
 
-### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
+### [DigitalOcean](https://docs.SAIAai.com/deployment/digital-ocean)
 
-### [GCP](https://docs.flowiseai.com/deployment/gcp)
+### [GCP](https://docs.SAIAai.com/deployment/gcp)
 
 ## 💻 Cloud Hosted
 
@@ -69,12 +69,12 @@ Coming Soon
 
 ## 🙋 Support
 
-Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/FlowiseAI/Flowise/discussions)
+Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/SAIAAI/SAIA/discussions)
 
 ## 🙌 Contributing
 
-See [contributing guide](https://github.com/FlowiseAI/Flowise/blob/master/CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
+See [contributing guide](https://github.com/SAIAAI/SAIA/blob/master/CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
 
 ## 📄 License
 
-Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/SAIAAI/SAIA/blob/master/LICENSE.md).

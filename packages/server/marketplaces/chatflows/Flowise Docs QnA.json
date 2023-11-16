@@ -1,5 +1,5 @@
 {
-    "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
+    "description": "SAIA Docs Github QnA using conversational retrieval QA chain",
     "badge": "POPULAR",
     "nodes": [
         {
@@ -285,7 +285,7 @@
                         "label": "Repo Link",
                         "name": "repoLink",
                         "type": "string",
-                        "placeholder": "https://github.com/FlowiseAI/Flowise",
+                        "placeholder": "https://github.com/SAIAAI/SAIA",
                         "id": "github_0-input-repoLink-string"
                     },
                     {
@@ -350,7 +350,7 @@
                     }
                 ],
                 "inputs": {
-                    "repoLink": "https://github.com/FlowiseAI/FlowiseDocs",
+                    "repoLink": "https://github.com/SAIAAI/SAIADocs",
                     "branch": "main",
                     "recursive": true,
                     "textSplitter": "{{markdownTextSplitter_0.data.instance}}",

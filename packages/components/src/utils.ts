@@ -398,8 +398,8 @@ const getEncryptionKeyPath = (): string => {
  * @returns {Promise<string>}
  */
 const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    if (process.env.SAIA_SECRETKEY_OVERWRITE !== undefined && process.env.SAIA_SECRETKEY_OVERWRITE !== '') {
+        return process.env.SAIA_SECRETKEY_OVERWRITE
     }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
@@ -462,13 +462,13 @@ export const getCredentialParam = (paramName: string, credentialData: ICommonObj
 
 // reference https://www.freeformatter.com/json-escape.html
 const jsonEscapeCharacters = [
-    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
-    { escape: '\n', value: 'FLOWISE_NEWLINE' },
-    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
-    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
-    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
-    { escape: '\t', value: 'FLOWISE_TAB' },
-    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
+    { escape: '"', value: 'SAIA_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'SAIA_NEWLINE' },
+    { escape: '\b', value: 'SAIA_BACKSPACE' },
+    { escape: '\f', value: 'SAIA_FORM_FEED' },
+    { escape: '\r', value: 'SAIA_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'SAIA_TAB' },
+    { escape: '\\', value: 'SAIA_BACKSLASH' }
 ]
 
 function handleEscapesJSONParse(input: string, reverse: Boolean): string {

@@ -124,9 +124,9 @@ export class App {
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)
 
-        if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
-            const username = process.env.FLOWISE_USERNAME
-            const password = process.env.FLOWISE_PASSWORD
+        if (process.env.SAIA_USERNAME && process.env.SAIA_PASSWORD) {
+            const username = process.env.SAIA_USERNAME
+            const password = process.env.SAIA_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
@@ -155,7 +155,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
+                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.SAIAai.com/deployment#rate-limit-setup-guide for more information.'
             })
         })
 
@@ -746,8 +746,8 @@ export class App {
                         const splitDataURI = file.split(',')
                         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                        const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
+                        const filePath = path.join(getUserHome(), '.SAIA', 'openai-assistant', filename)
+                        if (!fs.existsSync(path.join(getUserHome(), '.SAIA', 'openai-assistant'))) {
                             fs.mkdirSync(path.dirname(filePath), { recursive: true })
                         }
                         if (!fs.existsSync(filePath)) {
@@ -869,8 +869,8 @@ export class App {
                         const splitDataURI = file.split(',')
                         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                        const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
+                        const filePath = path.join(getUserHome(), '.SAIA', 'openai-assistant', filename)
+                        if (!fs.existsSync(path.join(getUserHome(), '.SAIA', 'openai-assistant'))) {
                             fs.mkdirSync(path.dirname(filePath), { recursive: true })
                         }
                         if (!fs.existsSync(filePath)) {
@@ -1103,11 +1103,11 @@ export class App {
                 }
                 templates.push(template)
             })
-            const FlowiseDocsQnA = templates.find((tmp) => tmp.name === 'Flowise Docs QnA')
-            const FlowiseDocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'Flowise Docs QnA')
-            if (FlowiseDocsQnA && FlowiseDocsQnAIndex > 0) {
-                templates.splice(FlowiseDocsQnAIndex, 1)
-                templates.unshift(FlowiseDocsQnA)
+            const SAIADocsQnA = templates.find((tmp) => tmp.name === 'SAIA Docs QnA')
+            const SAIADocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'SAIA Docs QnA')
+            if (SAIADocsQnA && SAIADocsQnAIndex > 0) {
+                templates.splice(SAIADocsQnAIndex, 1)
+                templates.unshift(SAIADocsQnA)
             }
             return res.json(templates)
         })
@@ -1518,7 +1518,7 @@ export class App {
             const removePromises: any[] = []
             await Promise.all(removePromises)
         } catch (e) {
-            logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
+            logger.error(`❌[server]: SAIA Server shut down error: ${e}`)
         }
     }
 }
@@ -1562,7 +1562,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
+        logger.info(`⚡️ [server]: SAIA Server is listening at ${port}`)
     })
 }
 

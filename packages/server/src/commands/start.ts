@@ -16,13 +16,13 @@ let processExitCode = EXIT_CODE.SUCCESS
 export default class Start extends Command {
     static args = []
     static flags = {
-        FLOWISE_USERNAME: Flags.string(),
-        FLOWISE_PASSWORD: Flags.string(),
+        SAIA_USERNAME: Flags.string(),
+        SAIA_PASSWORD: Flags.string(),
         PORT: Flags.string(),
         DEBUG: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
-        FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
+        SAIA_SECRETKEY_OVERWRITE: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
@@ -42,11 +42,11 @@ export default class Start extends Command {
     }
 
     async stopProcess() {
-        logger.info('Shutting down Flowise...')
+        logger.info('Shutting down SAIA...')
         try {
             // Shut down the app after timeout if it ever stuck removing pools
             setTimeout(() => {
-                logger.info('Flowise was forced to shut down after 30 secs')
+                logger.info('SAIA was forced to shut down after 30 secs')
                 process.exit(processExitCode)
             }, 30000)
 
@@ -54,7 +54,7 @@ export default class Start extends Command {
             const serverApp = Server.getInstance()
             if (serverApp) await serverApp.stopApp()
         } catch (error) {
-            logger.error('There was an error shutting down Flowise...', error)
+            logger.error('There was an error shutting down SAIA...', error)
         }
         process.exit(processExitCode)
     }
@@ -80,13 +80,13 @@ export default class Start extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
 
         // Authorization
-        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
-        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+        if (flags.SAIA_USERNAME) process.env.SAIA_USERNAME = flags.SAIA_USERNAME
+        if (flags.SAIA_PASSWORD) process.env.SAIA_PASSWORD = flags.SAIA_PASSWORD
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
 
         // Credentials
         if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
-        if (flags.FLOWISE_SECRETKEY_OVERWRITE) process.env.FLOWISE_SECRETKEY_OVERWRITE = flags.FLOWISE_SECRETKEY_OVERWRITE
+        if (flags.SAIA_SECRETKEY_OVERWRITE) process.env.SAIA_SECRETKEY_OVERWRITE = flags.SAIA_SECRETKEY_OVERWRITE
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
@@ -113,11 +113,11 @@ export default class Start extends Command {
 
         await (async () => {
             try {
-                logger.info('Starting Flowise...')
+                logger.info('Starting SAIA...')
                 await DataSource.init()
                 await Server.start()
             } catch (error) {
-                logger.error('There was an error starting Flowise...', error)
+                logger.error('There was an error starting SAIA...', error)
                 processExitCode = EXIT_CODE.FAILED
                 // @ts-ignore
                 process.emit('SIGINT')
