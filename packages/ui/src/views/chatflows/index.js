@@ -152,12 +152,7 @@ const Chatflows = () => {
                         />
                         <Box sx={{ flexGrow: 1 }} />
                         <ButtonGroup sx={{ maxHeight: 40 }} disableElevation variant='contained' aria-label='outlined primary button group'>
-                            <ButtonGroup
-                                sx={{ display: { xs: 'none', sm: 'block' } }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
-                            >
+                            <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
                                 <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
                                     <ToggleButton
                                         sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}

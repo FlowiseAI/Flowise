@@ -51,13 +51,13 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                             <StyledTableCell style={{ width: '25%' }} key='1'>
                                 Category
                             </StyledTableCell>
-                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
+                            <StyledTableCell style={{ width: '30%' }} key='2'>
                                 Nodes
                             </StyledTableCell>
-                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '15%' }} key='3'>
+                            <StyledTableCell style={{ width: '15%' }} key='3'>
                                 Last Modified Date
                             </StyledTableCell>
-                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '10%' }} key='4'>
+                            <StyledTableCell style={{ width: '10%' }} key='4'>
                                 Actions
                             </StyledTableCell>
                         </TableRow>
@@ -90,7 +90,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                                 ))}
                                     </div>
                                 </TableCell>
-                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='2'>
+                                <TableCell key='2'>
                                     {images[row.id] && (
                                         <div
                                             style={{
@@ -129,10 +129,8 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='3'>
-                                    {moment(row.updatedDate).format('MMMM Do, YYYY')}
-                                </TableCell>
-                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='4'>
+                                <TableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</TableCell>
+                                <TableCell key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                         <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
                                     </Stack>
