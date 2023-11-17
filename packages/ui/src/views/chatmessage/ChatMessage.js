@@ -32,6 +32,7 @@ import { baseURL, maxScroll } from 'store/constant'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
+import StarterConversationCard from '../../ui-component/cards/StarterConversationCard'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -103,9 +104,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }, 100)
     }
 
+    const handlePromptClick = async (prompt) => {
+        setUserInput(prompt)
+        await handleSubmit()
+    }
+
     // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault()
+        if (e) e.preventDefault()
 
         if (userInput.trim() === '') {
             return
@@ -369,6 +375,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             <div className='center'>
                 <div style={{ width: '100%' }}>
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+                        {messages && messages.length === 1 && (
+                            <StarterConversationCard
+                                chipsData={['prompt 1', 'prompt 2', 'prompt 3']}
+                                onChipClick={handlePromptClick}
+                                isGrid={isDialog}
+                            />
+                        )}
                         <OutlinedInput
                             inputRef={inputRef}
                             // eslint-disable-next-line
