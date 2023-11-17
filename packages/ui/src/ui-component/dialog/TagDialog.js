@@ -5,7 +5,7 @@ import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import Chip from '@mui/material/Chip'
 import PropTypes from 'prop-types'
-import { DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 
 const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
     const [inputValue, setInputValue] = useState('')
@@ -30,6 +30,9 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
 
     const handleSubmit = (event) => {
         event.preventDefault()
+        if (inputValue.trim() && !tags.includes(inputValue)) {
+            setTags([...tags, inputValue])
+        }
         onSubmit(tags)
         onClose()
     }
@@ -67,6 +70,9 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
                             label='Add a tag'
                             variant='outlined'
                         />
+                        <Typography variant='body2' sx={{ fontStyle: 'italic' }} color='text.secondary'>
+                            Enter a tag and press enter to add it to the list. You can add as many tags as you want.
+                        </Typography>
                     </form>
                 </Box>
             </DialogContent>

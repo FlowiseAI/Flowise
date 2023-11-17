@@ -355,8 +355,12 @@ export class App {
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
-            // Update chatflowpool inSync to false, to build Langchain again because data has been changed
-            this.chatflowPool.updateInSync(chatflow.id, false)
+            // chatFlowPool is initialized only when a flow is opened
+            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+            if (this.chatflowPool) {
+                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                this.chatflowPool.updateInSync(chatflow.id, false)
+            }
 
             return res.json(result)
         })
