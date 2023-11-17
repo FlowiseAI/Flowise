@@ -48,7 +48,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 Name
                             </StyledTableCell>
-                            <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '25%' }} key='1'>
+                            <StyledTableCell style={{ width: '25%' }} key='1'>
                                 Category
                             </StyledTableCell>
                             <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} style={{ width: '30%' }} key='2'>
@@ -72,7 +72,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                         <Button onClick={() => goToCanvas(row)}>{row.templateName || row.name}</Button>
                                     </Typography>
                                 </TableCell>
-                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }} key='1'>
+                                <TableCell key='1'>
                                     <div
                                         style={{
                                             display: 'flex',
