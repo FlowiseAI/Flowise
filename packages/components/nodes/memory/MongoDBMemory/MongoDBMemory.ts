@@ -1,6 +1,7 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BaseMessage, mapStoredMessageToChatMessage } from 'langchain/schema'
 import { MongoClient } from 'mongodb'
 
 class MongoDB_Memory implements INode {
@@ -44,11 +45,13 @@ class MongoDB_Memory implements INode {
                 type: 'string'
             },
             {
-                label: 'Session ID',
+                label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
-                default: '5f9cf7c08d5b1a06b80fae61',
-                description: 'Must be an Hex String of 24 chars. This will be the objectId of the document in MongoDB Atlas'
+                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
+                default: '',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Memory Key',
@@ -67,9 +70,10 @@ class MongoDB_Memory implements INode {
     async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
         const mongodbMemory = await initializeMongoDB(nodeData, options)
         const sessionId = nodeData.inputs?.sessionId as string
-        options.logger.info(`Clearing MongoDB memory session ${sessionId}`)
+        const chatId = options?.chatId as string
+        options.logger.info(`Clearing MongoDB memory session ${sessionId ? sessionId : chatId}`)
         await mongodbMemory.clear()
-        options.logger.info(`Successfully cleared MongoDB memory session ${sessionId}`)
+        options.logger.info(`Successfully cleared MongoDB memory session ${sessionId ? sessionId : chatId}`)
     }
 }
 
@@ -78,6 +82,10 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const collectionName = nodeData.inputs?.collectionName as string
     const sessionId = nodeData.inputs?.sessionId as string
     const memoryKey = nodeData.inputs?.memoryKey as string
+    const chatId = options?.chatId as string
+
+    let isSessionIdUsingChatMessageId = false
+    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
@@ -88,14 +96,37 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
 
     const mongoDBChatMessageHistory = new MongoDBChatMessageHistory({
         collection,
-        sessionId: sessionId
+        sessionId: sessionId ? sessionId : chatId
     })
+
+    mongoDBChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
+        const document = await collection.findOne({
+            sessionId: (mongoDBChatMessageHistory as any).sessionId
+        })
+        const messages = document?.messages || []
+        return messages.map(mapStoredMessageToChatMessage)
+    }
+
+    mongoDBChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
+        const messages = [message].map((msg) => msg.toDict())
+        await collection.updateOne(
+            { sessionId: (mongoDBChatMessageHistory as any).sessionId },
+            {
+                $push: { messages: { $each: messages } }
+            },
+            { upsert: true }
+        )
+    }
+
+    mongoDBChatMessageHistory.clear = async (): Promise<void> => {
+        await collection.deleteOne({ sessionId: (mongoDBChatMessageHistory as any).sessionId })
+    }
 
     return new BufferMemoryExtended({
         memoryKey,
         chatHistory: mongoDBChatMessageHistory,
         returnMessages: true,
-        isSessionIdUsingChatMessageId: false
+        isSessionIdUsingChatMessageId
     })
 }
 
