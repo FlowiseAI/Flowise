@@ -1,11 +1,10 @@
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
+import { Collection } from 'mongodb'
+import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
 import { Embeddings } from 'langchain/embeddings/base'
 import { VectorStore } from 'langchain/vectorstores/base'
 import { Document } from 'langchain/document'
-
 import { MongoDBSearchBase } from './MongoDBSearchBase'
-import { Collection } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
+import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 
 class MongoDBExisting_VectorStores extends MongoDBSearchBase implements INode {
     constructor() {
@@ -20,7 +19,7 @@ class MongoDBExisting_VectorStores extends MongoDBSearchBase implements INode {
         return super.init(nodeData, _, options, undefined)
     }
 
-    constructVectorStore(
+    async constructVectorStore(
         embeddings: Embeddings,
         collection: Collection,
         indexName: string,
@@ -28,13 +27,12 @@ class MongoDBExisting_VectorStores extends MongoDBSearchBase implements INode {
         embeddingKey: string,
         _: Document<Record<string, any>>[] | undefined
     ): Promise<VectorStore> {
-        const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
+        return new MongoDBAtlasVectorSearch(embeddings, {
             collection: collection,
             indexName: indexName,
             textKey: textKey,
             embeddingKey: embeddingKey
         })
-        return Promise.resolve(mongoDBAtlasVectorSearch)
     }
 }
 

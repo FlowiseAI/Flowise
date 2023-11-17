@@ -1,12 +1,11 @@
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
+import { flatten } from 'lodash'
+import { Collection } from 'mongodb'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-
-import { flatten } from 'lodash'
 import { VectorStore } from 'langchain/vectorstores/base'
-import { MongoDBSearchBase } from './MongoDBSearchBase'
-import { Collection } from 'mongodb'
 import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
+import { ICommonObject, INode, INodeData } from '../../../src/Interface'
+import { MongoDBSearchBase } from './MongoDBSearchBase'
 
 class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
     constructor() {
@@ -23,7 +22,7 @@ class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
         })
     }
 
-    constructVectorStore(
+    async constructVectorStore(
         embeddings: Embeddings,
         collection: Collection,
         indexName: string,
@@ -31,12 +30,14 @@ class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
         embeddingKey: string,
         docs: Document<Record<string, any>>[]
     ): Promise<VectorStore> {
-        return MongoDBAtlasVectorSearch.fromDocuments(docs, embeddings, {
+        const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
             collection: collection,
             indexName: indexName,
             textKey: textKey,
             embeddingKey: embeddingKey
         })
+        await mongoDBAtlasVectorSearch.addDocuments(docs)
+        return mongoDBAtlasVectorSearch
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -51,7 +52,7 @@ class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
             }
         }
 
-        return super.init(nodeData, _, options, flattenDocs)
+        return super.init(nodeData, _, options, finalDocs)
     }
 }
 
