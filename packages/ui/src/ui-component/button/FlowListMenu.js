@@ -1,4 +1,7 @@
-import * as React from 'react'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import PropTypes from 'prop-types'
+
 import { styled, alpha } from '@mui/material/styles'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
@@ -10,20 +13,21 @@ import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileCategoryIcon from '@mui/icons-material/Category'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import PropTypes from 'prop-types'
-import { uiBaseURL } from '../../store/constant'
-import { generateExportFlowData } from '../../utils/genericHelper'
-import chatflowsApi from 'api/chatflows'
-import useConfirm from 'hooks/useConfirm'
-import useNotifier from '../../utils/useNotifier'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
 import { IconX } from '@tabler/icons'
-import { useDispatch } from 'react-redux'
+
+import chatflowsApi from 'api/chatflows'
+
+import useApi from '../../hooks/useApi'
+import useConfirm from 'hooks/useConfirm'
+import { uiBaseURL } from '../../store/constant'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
+
 import ConfirmDialog from '../dialog/ConfirmDialog'
 import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
-import { useState } from 'react'
-import useApi from '../../hooks/useApi'
 import TagDialog from '../dialog/TagDialog'
+
+import { generateExportFlowData } from '../../utils/genericHelper'
+import useNotifier from '../../utils/useNotifier'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -64,28 +68,31 @@ const StyledMenu = styled((props) => (
 export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
-    const [flowDialogOpen, setFlowDialogOpen] = useState(false)
-    const [categoryValues, setCategoryValues] = useState([])
-
-    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-    // ==============================|| Snackbar ||============================== //
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-    const [anchorEl, setAnchorEl] = React.useState(null)
+
+    const [flowDialogOpen, setFlowDialogOpen] = useState(false)
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+    const [categoryDialogProps, setCategoryDialogProps] = useState({})
+    const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
     }
+
     const handleClose = () => {
         setAnchorEl(null)
     }
+
     const handleFlowRename = () => {
         setAnchorEl(null)
         setFlowDialogOpen(true)
     }
+
     const saveFlowRename = async (chatflowName) => {
         const updateBody = {
             name: chatflowName,
@@ -111,13 +118,19 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             })
         }
     }
+
     const handleFlowCategory = () => {
         setAnchorEl(null)
-        if (chatflow.category) setCategoryValues(chatflow.category.split(';'))
-        else setCategoryValues([])
+        if (chatflow.category) {
+            setCategoryDialogProps({
+                category: chatflow.category.split(';')
+            })
+        }
         setCategoryDialogOpen(true)
     }
+
     const saveFlowCategory = async (categories) => {
+        setCategoryDialogOpen(false)
         // save categories as string
         const categoryTags = categories.join(';')
         const updateBody = {
@@ -144,6 +157,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             })
         }
     }
+
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
@@ -176,6 +190,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             }
         }
     }
+
     const handleDuplicate = () => {
         setAnchorEl(null)
         try {
@@ -185,6 +200,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             console.error(e)
         }
     }
+
     const handleExport = () => {
         setAnchorEl(null)
         try {
@@ -261,9 +277,8 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             />
             <TagDialog
                 isOpen={categoryDialogOpen}
+                dialogProps={categoryDialogProps}
                 onClose={() => setCategoryDialogOpen(false)}
-                tags={categoryValues}
-                setTags={setCategoryValues}
                 onSubmit={saveFlowCategory}
             />
         </div>

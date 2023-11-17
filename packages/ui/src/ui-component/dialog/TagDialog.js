@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Dialog from '@mui/material/Dialog'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -7,8 +7,9 @@ import Chip from '@mui/material/Chip'
 import PropTypes from 'prop-types'
 import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 
-const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
+const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
     const [inputValue, setInputValue] = useState('')
+    const [categoryValues, setCategoryValues] = useState([])
 
     const handleInputChange = (event) => {
         setInputValue(event.target.value)
@@ -17,25 +18,35 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
     const handleInputKeyDown = (event) => {
         if (event.key === 'Enter' && inputValue.trim()) {
             event.preventDefault()
-            if (!tags.includes(inputValue)) {
-                setTags([...tags, inputValue])
+            if (!categoryValues.includes(inputValue)) {
+                setCategoryValues([...categoryValues, inputValue])
                 setInputValue('')
             }
         }
     }
 
-    const handleDeleteTag = (tagToDelete) => {
-        setTags(tags.filter((tag) => tag !== tagToDelete))
+    const handleDeleteTag = (categoryToDelete) => {
+        setCategoryValues(categoryValues.filter((category) => category !== categoryToDelete))
     }
 
     const handleSubmit = (event) => {
         event.preventDefault()
-        if (inputValue.trim() && !tags.includes(inputValue)) {
-            setTags([...tags, inputValue])
+        let newCategories = [...categoryValues]
+        if (inputValue.trim() && !categoryValues.includes(inputValue)) {
+            newCategories = [...newCategories, inputValue]
+            setCategoryValues(newCategories)
         }
-        onSubmit(tags)
-        onClose()
+        onSubmit(newCategories)
     }
+
+    useEffect(() => {
+        if (dialogProps.category) setCategoryValues(dialogProps.category)
+
+        return () => {
+            setInputValue('')
+            setCategoryValues([])
+        }
+    }, [dialogProps])
 
     return (
         <Dialog
@@ -43,8 +54,8 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
             maxWidth='xs'
             open={isOpen}
             onClose={onClose}
-            aria-labelledby='tag-dialog-title'
-            aria-describedby='tag-dialog-description'
+            aria-labelledby='category-dialog-title'
+            aria-describedby='category-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 Set Chatflow Category Tags
@@ -52,17 +63,20 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
             <DialogContent>
                 <Box>
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: 20 }}>
-                            {tags.map((tag, index) => (
-                                <Chip
-                                    key={index}
-                                    label={tag}
-                                    onDelete={() => handleDeleteTag(tag)}
-                                    style={{ marginRight: 5, marginBottom: 5 }}
-                                />
-                            ))}
-                        </div>
+                        {categoryValues.length > 0 && (
+                            <div style={{ marginBottom: 10 }}>
+                                {categoryValues.map((category, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={category}
+                                        onDelete={() => handleDeleteTag(category)}
+                                        style={{ marginRight: 5, marginBottom: 5 }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                         <TextField
+                            sx={{ mt: 2 }}
                             fullWidth
                             value={inputValue}
                             onChange={handleInputChange}
@@ -70,7 +84,7 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
                             label='Add a tag'
                             variant='outlined'
                         />
-                        <Typography variant='body2' sx={{ fontStyle: 'italic' }} color='text.secondary'>
+                        <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
                             Enter a tag and press enter to add it to the list. You can add as many tags as you want.
                         </Typography>
                     </form>
@@ -88,9 +102,8 @@ const TagDialog = ({ isOpen, onClose, tags, setTags, onSubmit }) => {
 
 TagDialog.propTypes = {
     isOpen: PropTypes.bool,
+    dialogProps: PropTypes.object,
     onClose: PropTypes.func,
-    tags: PropTypes.array,
-    setTags: PropTypes.func,
     onSubmit: PropTypes.func
 }
 
