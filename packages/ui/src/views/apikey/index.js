@@ -6,6 +6,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import {
     Button,
     Box,
+    Chip,
     Stack,
     Table,
     TableBody,
@@ -37,7 +38,7 @@ import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
+import { IconTrash, IconEdit, IconCopy, IconCornerDownRight, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
 import APIEmptySVG from 'assets/images/api_empty.svg'
 
 // ==============================|| APIKey ||============================== //
@@ -106,7 +107,10 @@ const APIKey = () => {
     const deleteKey = async (key) => {
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete key ${key.keyName}?`,
+            description:
+                key.chatFlows.length === 0
+                    ? `Delete key [${key.keyName}] ? `
+                    : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -193,6 +197,7 @@ const APIKey = () => {
                                 <TableRow>
                                     <TableCell>Key Name</TableCell>
                                     <TableCell>API Key</TableCell>
+                                    <TableCell>Usage</TableCell>
                                     <TableCell>Created</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
@@ -200,65 +205,78 @@ const APIKey = () => {
                             </TableHead>
                             <TableBody>
                                 {apiKeys.map((key, index) => (
-                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell component='th' scope='row'>
-                                            {key.keyName}
-                                        </TableCell>
-                                        <TableCell>
-                                            {showApiKeys.includes(key.apiKey)
-                                                ? key.apiKey
-                                                : `${key.apiKey.substring(0, 2)}${'•'.repeat(18)}${key.apiKey.substring(
-                                                      key.apiKey.length - 5
-                                                  )}`}
-                                            <IconButton
-                                                title='Copy'
-                                                color='success'
-                                                onClick={(event) => {
-                                                    navigator.clipboard.writeText(key.apiKey)
-                                                    setAnchorEl(event.currentTarget)
-                                                    setTimeout(() => {
-                                                        handleClosePopOver()
-                                                    }, 1500)
-                                                }}
-                                            >
-                                                <IconCopy />
-                                            </IconButton>
-                                            <IconButton title='Show' color='inherit' onClick={() => onShowApiKeyClick(key.apiKey)}>
-                                                {showApiKeys.includes(key.apiKey) ? <IconEyeOff /> : <IconEye />}
-                                            </IconButton>
-                                            <Popover
-                                                open={openPopOver}
-                                                anchorEl={anchorEl}
-                                                onClose={handleClosePopOver}
-                                                anchorOrigin={{
-                                                    vertical: 'top',
-                                                    horizontal: 'right'
-                                                }}
-                                                transformOrigin={{
-                                                    vertical: 'top',
-                                                    horizontal: 'left'
-                                                }}
-                                            >
-                                                <Typography
-                                                    variant='h6'
-                                                    sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}
+                                    <>
+                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell component='th' scope='row'>
+                                                {key.keyName}
+                                            </TableCell>
+                                            <TableCell>
+                                                {showApiKeys.includes(key.apiKey)
+                                                    ? key.apiKey
+                                                    : `${key.apiKey.substring(0, 2)}${'•'.repeat(18)}${key.apiKey.substring(
+                                                          key.apiKey.length - 5
+                                                      )}`}
+                                                <IconButton
+                                                    title='Copy'
+                                                    color='success'
+                                                    onClick={(event) => {
+                                                        navigator.clipboard.writeText(key.apiKey)
+                                                        setAnchorEl(event.currentTarget)
+                                                        setTimeout(() => {
+                                                            handleClosePopOver()
+                                                        }, 1500)
+                                                    }}
                                                 >
-                                                    Copied!
-                                                </Typography>
-                                            </Popover>
-                                        </TableCell>
-                                        <TableCell>{key.createdAt}</TableCell>
-                                        <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(key)}>
-                                                <IconEdit />
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteKey(key)}>
-                                                <IconTrash />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
+                                                    <IconCopy />
+                                                </IconButton>
+                                                <IconButton title='Show' color='inherit' onClick={() => onShowApiKeyClick(key.apiKey)}>
+                                                    {showApiKeys.includes(key.apiKey) ? <IconEyeOff /> : <IconEye />}
+                                                </IconButton>
+                                                <Popover
+                                                    open={openPopOver}
+                                                    anchorEl={anchorEl}
+                                                    onClose={handleClosePopOver}
+                                                    anchorOrigin={{
+                                                        vertical: 'top',
+                                                        horizontal: 'right'
+                                                    }}
+                                                    transformOrigin={{
+                                                        vertical: 'top',
+                                                        horizontal: 'left'
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        variant='h6'
+                                                        sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}
+                                                    >
+                                                        Copied!
+                                                    </Typography>
+                                                </Popover>
+                                            </TableCell>
+                                            <TableCell>{key.chatFlows.length}</TableCell>
+                                            <TableCell>{key.createdAt}</TableCell>
+                                            <TableCell>
+                                                <IconButton title='Edit' color='primary' onClick={() => edit(key)}>
+                                                    <IconEdit />
+                                                </IconButton>
+                                            </TableCell>
+                                            <TableCell>
+                                                <IconButton title='Delete' color='error' onClick={() => deleteKey(key)}>
+                                                    <IconTrash />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                        {key.chatFlows.length > 0 && (
+                                            <TableRow sx={{ verticalAlign: 'middle' }}>
+                                                <TableCell colSpan={6}>
+                                                    <IconCornerDownRight />{' '}
+                                                    {key.chatFlows.map((flow, index) => (
+                                                        <Chip key={index} label={flow.flowName} />
+                                                    ))}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </>
                                 ))}
                             </TableBody>
                         </Table>
