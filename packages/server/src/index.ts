@@ -64,6 +64,8 @@ import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
+import { Client } from 'langchainhub'
+import { parsePrompt } from './utils/hub'
 
 export class App {
     app: express.Application
@@ -1180,10 +1182,11 @@ export class App {
 
             // Decrypt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-            //TODO: call lang-smith hub to get prompt (key and url from credentialData)
-            //TODO: Should we roll our own implementation (axios call) or use the langchainhub library ?
-            //TODO: return the whole prompt and let the front end extract the templates ? or return only the templates ?
-            return res.json({ text: 'loaded' })
+            let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
+            const prompt = await hub.pull(req.body.promptName)
+            const templates = parsePrompt(prompt)
+
+            return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
         })
 
         // ----------------------------------------

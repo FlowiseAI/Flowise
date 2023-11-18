@@ -73,7 +73,6 @@ export interface INodeParams {
     additionalParams?: boolean
     loadMethod?: string
     hidden?: boolean
-    lookupTargets?: string[]
 }
 
 export interface INodeExecutionData {

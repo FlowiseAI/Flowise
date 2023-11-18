@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconCodeDots } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconArrowBigRightLine } from '@tabler/icons'
 
 // project import
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
@@ -103,18 +103,23 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         const inputParamName = inputParam.name
         data.inputs[inputParamName] = newValue
         //raise error if either of the above is empty
-        if (!data.inputs[inputParamName] || !data.inputs[FLOWISE_CREDENTIAL_ID]) {
+        if (!data.inputs[inputParamName] || !data.credential) {
             alert('Please enter both credential and prompt name')
         } else {
             const createResp = await promptApi.loadPromptFromHub({
-                credential: data.inputs[FLOWISE_CREDENTIAL_ID],
-                promptName: data.inputs[inputParamName],
-                targetField: inputParam.lookupTargets[0]
+                credential: data.credential,
+                promptName: data.inputs[inputParamName]
             })
             if (createResp.data) {
-                //TODO: update the node with the new prompt (how do make this reusable for all prompt types (e.g. PromptTemplate, ChatPromptTemplate, etc.)
-                //TODO: need to avoid hardcoding the node fields that need to be populated with the new prompt fetched from hub
-                alert('Prompt loaded successfully ' + JSON.stringify(createResp.data, undefined, 2))
+                const responseData = createResp.data
+                if (responseData.status === 'OK') {
+                    const templates = responseData.templates
+                    for (const t of templates) {
+                        if (Object.prototype.hasOwnProperty.call(data.inputs, t.type)) {
+                            data.inputs[t.type] = t.template
+                        }
+                    }
+                }
             }
         }
     }
@@ -308,7 +313,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     size='small'
                                     onClick={() => onLoadPrompt(data.inputs[inputParam.name], inputParam)}
                                 >
-                                    <IconCodeDots />
+                                    <IconArrowBigRightLine />
                                 </IconButton>
                             </div>
                         )}

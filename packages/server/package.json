@@ -56,6 +56,7 @@
         "express-rate-limit": "^6.9.0",
         "flowise-components": "*",
         "flowise-ui": "*",
+        "langchainhub": "^0.0.6",
         "moment-timezone": "^0.5.34",
         "multer": "^1.4.5-lts.1",
         "mysql": "^2.18.1",

@@ -36,8 +36,7 @@ class LsHubPromptTemplate_Prompts implements INode {
                 name: 'promptName',
                 type: 'promptLookup',
                 description: 'Use the format {owner}/{repo}:{commit}. If no commit is specified, the latest commit will be used.',
-                placeholder: 'hwchase17/my-first-prompt',
-                lookupTargets: ['template']
+                placeholder: 'hwchase17/my-first-prompt'
             },
             {
                 label: 'Template',
