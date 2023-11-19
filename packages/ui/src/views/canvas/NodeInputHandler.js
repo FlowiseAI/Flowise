@@ -119,6 +119,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                             data.inputs[t.type] = t.template
                         }
                     }
+                } else {
+                    //TODO: Change the alert to a proper error dialog
+                    alert(responseData.error)
                 }
             }
         }

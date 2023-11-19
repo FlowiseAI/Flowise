@@ -1174,19 +1174,23 @@ export class App {
 
         // load prompt from lang-smith hub
         this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
-            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                id: req.body.credential
-            })
+            try {
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: req.body.credential
+                })
 
-            if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
+                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
 
-            // Decrypt credentialData
-            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-            let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
-            const prompt = await hub.pull(req.body.promptName)
-            const templates = parsePrompt(prompt)
+                // Decrypt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
+                let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
+                const prompt = await hub.pull(req.body.promptName)
+                const templates = parsePrompt(prompt)
 
-            return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
+                return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
+            } catch (e: any) {
+                return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
+            }
         })
 
         // ----------------------------------------
