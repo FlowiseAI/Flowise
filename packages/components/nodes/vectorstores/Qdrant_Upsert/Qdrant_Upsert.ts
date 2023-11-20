@@ -5,6 +5,9 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
+import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
+
+type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
 
 class QdrantUpsert_VectorStores implements INode {
     label: string
@@ -22,7 +25,7 @@ class QdrantUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Upsert Document'
         this.name = 'qdrantUpsert'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -60,11 +63,48 @@ class QdrantUpsert_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'Vector Dimension',
+                name: 'qdrantVectorDimension',
+                type: 'number',
+                default: 1536,
+                additionalParams: true
+            },
+            {
+                label: 'Similarity',
+                name: 'qdrantSimilarity',
+                description: 'Similarity measure used in Qdrant.',
+                type: 'options',
+                default: 'Cosine',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'Cosine'
+                    },
+                    {
+                        label: 'Euclid',
+                        name: 'Euclid'
+                    },
+                    {
+                        label: 'Dot',
+                        name: 'Dot'
+                    }
+                ],
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Qdrant Search Filter',
+                name: 'qdrantFilter',
+                description: 'Only return points which satisfy the conditions',
+                type: 'json',
                 additionalParams: true,
                 optional: true
             }
@@ -88,9 +128,13 @@ class QdrantUpsert_VectorStores implements INode {
         const collectionName = nodeData.inputs?.qdrantCollection as string
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        let queryFilter = nodeData.inputs?.qdrantFilter
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -103,18 +147,35 @@ class QdrantUpsert_VectorStores implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         const dbConfig: QdrantLibArgs = {
             client,
             url: qdrantServerUrl,
-            collectionName
+            collectionName,
+            collectionConfig: {
+                vectors: {
+                    size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                    distance: qdrantSimilarity ?? 'Cosine'
+                }
+            }
         }
+
+        const retrieverConfig: RetrieverConfig = {
+            k
+        }
+
+        if (queryFilter) {
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
+        }
+
         const vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
+            const retriever = vectorStore.asRetriever(retrieverConfig)
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k

@@ -5,7 +5,7 @@ import { ConversationalRetrievalQAChain, QAChainParams } from 'langchain/chains'
 import { BaseRetriever } from 'langchain/schema/retriever'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import {
     default_map_reduce_template,
     default_qa_template,
@@ -179,10 +179,15 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const obj = { question: input }
 
         if (options && options.chatHistory && chain.memory) {
-            ;(chain.memory as any).chatHistory = mapChatHistory(options)
+            const chatHistoryClassName = (chain.memory as any).chatHistory.constructor.name
+            // Only replace when its In-Memory
+            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
+                ;(chain.memory as any).chatHistory = mapChatHistory(options)
+            }
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(
@@ -191,7 +196,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 chainOption === 'refine' ? 4 : undefined,
                 returnSourceDocuments
             )
-            const res = await chain.call(obj, [loggerHandler, handler])
+            const res = await chain.call(obj, [loggerHandler, handler, ...callbacks])
             if (chainOption === 'refine') {
                 if (res.output_text && res.sourceDocuments) {
                     return {
@@ -204,7 +209,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             if (res.text && res.sourceDocuments) return res
             return res?.text
         } else {
-            const res = await chain.call(obj, [loggerHandler])
+            const res = await chain.call(obj, [loggerHandler, ...callbacks])
             if (res.text && res.sourceDocuments) return res
             return res?.text
         }

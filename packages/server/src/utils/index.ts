@@ -28,19 +28,27 @@ import {
     convertChatHistoryToText
 } from 'flowise-components'
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
-import { lib, PBKDF2, AES, enc } from 'crypto-js'
+import { AES, enc } from 'crypto-js'
 
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
+import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-export const databaseEntities: IDatabaseEntity = { ChatFlow: ChatFlow, ChatMessage: ChatMessage, Tool: Tool, Credential: Credential }
+export const databaseEntities: IDatabaseEntity = {
+    ChatFlow: ChatFlow,
+    ChatMessage: ChatMessage,
+    Tool: Tool,
+    Credential: Credential,
+    Assistant: Assistant
+}
 
 /**
  * Returns the home folder path of the user if
@@ -197,8 +205,10 @@ export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeD
  * @param {IComponentNodes} componentNodes
  * @param {string} question
  * @param {string} chatId
+ * @param {string} chatflowid
  * @param {DataSource} appDataSource
  * @param {ICommonObject} overrideConfig
+ * @param {CachePool} cachePool
  */
 export const buildLangchain = async (
     startingNodeIds: string[],
@@ -209,8 +219,10 @@ export const buildLangchain = async (
     question: string,
     chatHistory: IMessage[],
     chatId: string,
+    chatflowid: string,
     appDataSource: DataSource,
-    overrideConfig?: ICommonObject
+    overrideConfig?: ICommonObject,
+    cachePool?: CachePool
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -245,9 +257,11 @@ export const buildLangchain = async (
             logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                 chatId,
+                chatflowid,
                 appDataSource,
                 databaseEntities,
-                logger
+                logger,
+                cachePool
             })
             logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
         } catch (e: any) {
@@ -291,14 +305,14 @@ export const buildLangchain = async (
 }
 
 /**
- * Clear memory
+ * Clear all session memories on the canvas
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {IComponentNodes} componentNodes
  * @param {string} chatId
  * @param {DataSource} appDataSource
  * @param {string} sessionId
  */
-export const clearSessionMemory = async (
+export const clearAllSessionMemory = async (
     reactFlowNodes: IReactFlowNode[],
     componentNodes: IComponentNodes,
     chatId: string,
@@ -306,13 +320,52 @@ export const clearSessionMemory = async (
     sessionId?: string
 ) => {
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory') continue
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
-        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
-        if (newNodeInstance.clearSessionMemory)
+
+        if (sessionId && node.data.inputs) {
+            node.data.inputs.sessionId = sessionId
+        }
+
+        if (newNodeInstance.clearSessionMemory) {
             await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        }
+    }
+}
+
+/**
+ * Clear specific session memory from View Message Dialog UI
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IComponentNodes} componentNodes
+ * @param {string} chatId
+ * @param {DataSource} appDataSource
+ * @param {string} sessionId
+ * @param {string} memoryType
+ */
+export const clearSessionMemoryFromViewMessageDialog = async (
+    reactFlowNodes: IReactFlowNode[],
+    componentNodes: IComponentNodes,
+    chatId: string,
+    appDataSource: DataSource,
+    sessionId?: string,
+    memoryType?: string
+) => {
+    if (!sessionId) return
+    for (const node of reactFlowNodes) {
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
+        if (memoryType && node.data.label !== memoryType) continue
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newNodeInstance = new nodeModule.nodeClass()
+
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+
+        if (newNodeInstance.clearSessionMemory) {
+            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+            return
+        }
     }
 }
 
@@ -448,9 +501,10 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
             // If overrideConfig[key] is object
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
-                if (!nodeIds.includes(flowNodeData.id)) continue
-                else paramsObj[config] = overrideConfig[config][flowNodeData.id]
-                continue
+                if (nodeIds.includes(flowNodeData.id)) {
+                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
+                    continue
+                }
             }
 
             let paramValue = overrideConfig[config] ?? paramsObj[config]
@@ -476,6 +530,7 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
+        if (node.data.category === 'Cache') return true
         for (const inputName in node.data.inputs) {
             const inputVariables = getInputVariables(node.data.inputs[inputName])
             if (inputVariables.length > 0) return true
@@ -770,8 +825,8 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic'],
-        LLMs: ['azureOpenAI', 'openAI']
+        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama'],
+        LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
     let isChatOrLLMsExist = false
@@ -795,7 +850,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent
+    // If no output parser, flow is available to stream
+    let isOutputParserExist = false
+    for (const flowNode of reactFlowNodes) {
+        const data = flowNode.data
+        if (data.category.includes('Output Parser')) {
+            isOutputParserExist = true
+        }
+    }
+
+    return isChatOrLLMsExist && isValidChainOrAgent && !isOutputParserExist
 }
 
 /**
@@ -813,12 +877,7 @@ export const getEncryptionKeyPath = (): string => {
  * @returns {string}
  */
 export const generateEncryptKey = (): string => {
-    const salt = lib.WordArray.random(128 / 8)
-    const key256Bits = PBKDF2(process.env.PASSPHRASE || 'MYPASSPHRASE', salt, {
-        keySize: 256 / 32,
-        iterations: 1000
-    })
-    return key256Bits.toString()
+    return randomBytes(24).toString('base64')
 }
 
 /**
@@ -826,6 +885,9 @@ export const generateEncryptKey = (): string => {
  * @returns {Promise<string>}
  */
 export const getEncryptionKey = async (): Promise<string> => {
+    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
+        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
@@ -859,6 +921,8 @@ export const decryptCredentialData = async (
 ): Promise<ICredentialDataDecrypted> => {
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const decryptedDataStr = decryptedData.toString(enc.Utf8)
+    if (!decryptedDataStr) return {}
     try {
         if (componentCredentialName && componentCredentials) {
             const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))
@@ -867,7 +931,7 @@ export const decryptCredentialData = async (
         return JSON.parse(decryptedData.toString(enc.Utf8))
     } catch (e) {
         console.error(e)
-        throw new Error('Credentials could not be decrypted.')
+        return {}
     }
 }
 
@@ -877,12 +941,14 @@ export const decryptCredentialData = async (
  * @returns {Credential}
  */
 export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
-    const encryptedData = await encryptCredentialData(body.plainDataObj)
-
-    const credentialBody = {
+    const credentialBody: ICommonObject = {
         name: body.name,
-        credentialName: body.credentialName,
-        encryptedData
+        credentialName: body.credentialName
+    }
+
+    if (body.plainDataObj) {
+        const encryptedData = await encryptCredentialData(body.plainDataObj)
+        credentialBody.encryptedData = encryptedData
     }
 
     const newCredential = new Credential()
@@ -919,8 +985,10 @@ export const redactCredentialWithPasswordType = (
  * @param {any} instance
  * @param {string} chatId
  */
-export const checkMemorySessionId = (instance: any, chatId: string) => {
+export const checkMemorySessionId = (instance: any, chatId: string): string => {
     if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
         instance.memory.sessionId = chatId
+        instance.memory.chatHistory.sessionId = chatId
     }
+    return instance.memory ? instance.memory.sessionId ?? instance.memory.chatHistory.sessionId : undefined
 }

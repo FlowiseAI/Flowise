@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Grid, Box, Stack, Tabs, Tab } from '@mui/material'
+import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconHierarchy, IconTool } from '@tabler/icons'
 
@@ -157,7 +157,22 @@ const Marketplace = () => {
                                     getAllChatflowsMarketplacesApi.data &&
                                     getAllChatflowsMarketplacesApi.data.map((data, index) => (
                                         <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                            <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                            {data.badge && (
+                                                <Badge
+                                                    sx={{
+                                                        '& .MuiBadge-badge': {
+                                                            right: 20
+                                                        }
+                                                    }}
+                                                    badgeContent={data.badge}
+                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                >
+                                                    <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                </Badge>
+                                            )}
+                                            {!data.badge && (
+                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                            )}
                                         </Grid>
                                     ))}
                             </Grid>
@@ -168,26 +183,28 @@ const Marketplace = () => {
                                     getAllToolsMarketplacesApi.data &&
                                     getAllToolsMarketplacesApi.data.map((data, index) => (
                                         <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                            <ItemCard data={data} onClick={() => goToTool(data)} />
+                                            {data.badge && (
+                                                <Badge
+                                                    sx={{
+                                                        '& .MuiBadge-badge': {
+                                                            right: 20
+                                                        }
+                                                    }}
+                                                    badgeContent={data.badge}
+                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                >
+                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                </Badge>
+                                            )}
+                                            {!data.badge && <ItemCard data={data} onClick={() => goToTool(data)} />}
                                         </Grid>
                                     ))}
                             </Grid>
                         )}
                     </TabPanel>
                 ))}
-                {!isChatflowsLoading && (!getAllChatflowsMarketplacesApi.data || getAllChatflowsMarketplacesApi.data.length === 0) && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img
-                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={WorkflowEmptySVG}
-                                alt='WorkflowEmptySVG'
-                            />
-                        </Box>
-                        <div>No Marketplace Yet</div>
-                    </Stack>
-                )}
-                {!isToolsLoading && (!getAllToolsMarketplacesApi.data || getAllToolsMarketplacesApi.data.length === 0) && (
+                {((!isChatflowsLoading && (!getAllChatflowsMarketplacesApi.data || getAllChatflowsMarketplacesApi.data.length === 0)) ||
+                    (!isToolsLoading && (!getAllToolsMarketplacesApi.data || getAllToolsMarketplacesApi.data.length === 0))) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img

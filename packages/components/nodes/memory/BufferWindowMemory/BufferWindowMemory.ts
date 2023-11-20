@@ -20,7 +20,7 @@ class BufferWindowMemory_Memory implements INode {
         this.type = 'BufferWindowMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
-        this.description = 'Uses a window of size k to surface the last k back-and-forths to use as memory'
+        this.description = 'Uses a window of size k to surface the last k back-and-forth to use as memory'
         this.baseClasses = [this.type, ...getBaseClasses(BufferWindowMemory)]
         this.inputs = [
             {
@@ -40,7 +40,7 @@ class BufferWindowMemory_Memory implements INode {
                 name: 'k',
                 type: 'number',
                 default: '4',
-                description: 'Window of size k to surface the last k back-and-forths to use as memory.'
+                description: 'Window of size k to surface the last k back-and-forth to use as memory.'
             }
         ]
     }

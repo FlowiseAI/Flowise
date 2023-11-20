@@ -39,7 +39,21 @@ export const initNode = (nodeData, newNodeId) => {
     const incoming = nodeData.inputs ? nodeData.inputs.length : 0
     const outgoing = 1
 
-    const whitelistTypes = ['asyncOptions', 'options', 'string', 'number', 'boolean', 'password', 'json', 'code', 'date', 'file', 'folder']
+    const whitelistTypes = [
+        'asyncOptions',
+        'options',
+        'multiOptions',
+        'datagrid',
+        'string',
+        'number',
+        'boolean',
+        'password',
+        'json',
+        'code',
+        'date',
+        'file',
+        'folder'
+    ]
 
     // Inputs
     for (let i = 0; i < incoming; i += 1) {
@@ -402,10 +416,41 @@ export const getInputVariables = (paramValue) => {
     return inputVariables
 }
 
+export const removeDuplicateURL = (message) => {
+    const visitedURLs = []
+    const newSourceDocuments = []
+
+    if (!message.sourceDocuments) return newSourceDocuments
+
+    message.sourceDocuments.forEach((source) => {
+        if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+            visitedURLs.push(source.metadata.source)
+            newSourceDocuments.push(source)
+        } else if (!isValidURL(source.metadata.source)) {
+            newSourceDocuments.push(source)
+        }
+    })
+    return newSourceDocuments
+}
+
 export const isValidURL = (url) => {
     try {
         return new URL(url)
     } catch (err) {
         return undefined
+    }
+}
+
+export const formatDataGridRows = (rows) => {
+    try {
+        const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows
+        return parsedRows.map((sch, index) => {
+            return {
+                ...sch,
+                id: index
+            }
+        })
+    } catch (e) {
+        return []
     }
 }

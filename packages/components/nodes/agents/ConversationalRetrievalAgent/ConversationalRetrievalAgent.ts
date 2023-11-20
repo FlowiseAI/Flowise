@@ -3,7 +3,7 @@ import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/age
 import { getBaseClasses, mapChatHistory } from '../../../src/utils'
 import { flatten } from 'lodash'
 import { BaseChatMemory } from 'langchain/memory'
-import { ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 const defaultMessage = `Do your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary.`
 
@@ -82,17 +82,22 @@ class ConversationalRetrievalAgent_Agents implements INode {
         if (executor.memory) {
             ;(executor.memory as any).memoryKey = 'chat_history'
             ;(executor.memory as any).outputKey = 'output'
-            ;(executor.memory as any).chatHistory = mapChatHistory(options)
+            const chatHistoryClassName = (executor.memory as any).chatHistory.constructor.name
+            // Only replace when its In-Memory
+            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
+                ;(executor.memory as any).chatHistory = mapChatHistory(options)
+            }
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const callbacks = await additionalCallbacks(nodeData, options)
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            const result = await executor.call({ input }, [loggerHandler, handler])
+            const result = await executor.call({ input }, [loggerHandler, handler, ...callbacks])
             return result?.output
         } else {
-            const result = await executor.call({ input }, [loggerHandler])
+            const result = await executor.call({ input }, [loggerHandler, ...callbacks])
             return result?.output
         }
     }

@@ -5,6 +5,8 @@
 export type NodeParamsType =
     | 'asyncOptions'
     | 'options'
+    | 'multiOptions'
+    | 'datagrid'
     | 'string'
     | 'number'
     | 'boolean'
@@ -59,6 +61,7 @@ export interface INodeParams {
     description?: string
     warning?: string
     options?: Array<INodeOptionsValue>
+    datagrid?: Array<ICommonObject>
     credentialNames?: Array<string>
     optional?: boolean | INodeDisplay
     step?: number
@@ -69,6 +72,7 @@ export interface INodeParams {
     fileType?: string
     additionalParams?: boolean
     loadMethod?: string
+    hidden?: boolean
 }
 
 export interface INodeExecutionData {
@@ -121,6 +125,12 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+}
+
+export interface IUsedTool {
+    tool: string
+    toolInput: object
+    toolOutput: string | object
 }
 
 /**

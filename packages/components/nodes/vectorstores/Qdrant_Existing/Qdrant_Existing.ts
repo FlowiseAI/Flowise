@@ -3,6 +3,9 @@ import { QdrantClient } from '@qdrant/js-client-rest'
 import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
 import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
+
+type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
 
 class Qdrant_Existing_VectorStores implements INode {
     label: string
@@ -20,7 +23,7 @@ class Qdrant_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Load Existing Index'
         this.name = 'qdrantExistingIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -52,8 +55,39 @@ class Qdrant_Existing_VectorStores implements INode {
                 type: 'string'
             },
             {
-                label: 'Qdrant Collection Cofiguration',
-                name: 'qdrantCollectionCofiguration',
+                label: 'Vector Dimension',
+                name: 'qdrantVectorDimension',
+                type: 'number',
+                default: 1536,
+                additionalParams: true
+            },
+            {
+                label: 'Similarity',
+                name: 'qdrantSimilarity',
+                description: 'Similarity measure used in Qdrant.',
+                type: 'options',
+                default: 'Cosine',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'Cosine'
+                    },
+                    {
+                        label: 'Euclid',
+                        name: 'Euclid'
+                    },
+                    {
+                        label: 'Dot',
+                        name: 'Dot'
+                    }
+                ],
+                additionalParams: true
+            },
+            {
+                label: 'Additional Collection Cofiguration',
+                name: 'qdrantCollectionConfiguration',
+                description:
+                    'Refer to <a target="_blank" href="https://qdrant.tech/documentation/concepts/collections">collection docs</a> for more reference',
                 type: 'json',
                 optional: true,
                 additionalParams: true
@@ -64,6 +98,14 @@ class Qdrant_Existing_VectorStores implements INode {
                 description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Qdrant Search Filter',
+                name: 'qdrantFilter',
+                description: 'Only return points which satisfy the conditions',
+                type: 'json',
                 additionalParams: true,
                 optional: true
             }
@@ -85,10 +127,14 @@ class Qdrant_Existing_VectorStores implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
         const collectionName = nodeData.inputs?.qdrantCollection as string
-        let qdrantCollectionCofiguration = nodeData.inputs?.qdrantCollectionCofiguration
+        let qdrantCollectionConfiguration = nodeData.inputs?.qdrantCollectionConfiguration
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
+        let queryFilter = nodeData.inputs?.queryFilter
+
         const k = topK ? parseFloat(topK) : 4
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -104,16 +150,33 @@ class Qdrant_Existing_VectorStores implements INode {
             collectionName
         }
 
-        if (qdrantCollectionCofiguration) {
-            qdrantCollectionCofiguration =
-                typeof qdrantCollectionCofiguration === 'object' ? qdrantCollectionCofiguration : JSON.parse(qdrantCollectionCofiguration)
-            dbConfig.collectionConfig = qdrantCollectionCofiguration
+        const retrieverConfig: RetrieverConfig = {
+            k
+        }
+
+        if (qdrantCollectionConfiguration) {
+            qdrantCollectionConfiguration =
+                typeof qdrantCollectionConfiguration === 'object'
+                    ? qdrantCollectionConfiguration
+                    : JSON.parse(qdrantCollectionConfiguration)
+            dbConfig.collectionConfig = {
+                ...qdrantCollectionConfiguration,
+                vectors: {
+                    ...qdrantCollectionConfiguration.vectors,
+                    size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                    distance: qdrantSimilarity ?? 'Cosine'
+                }
+            }
+        }
+
+        if (queryFilter) {
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
         }
 
         const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, dbConfig)
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
+            const retriever = vectorStore.asRetriever(retrieverConfig)
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
