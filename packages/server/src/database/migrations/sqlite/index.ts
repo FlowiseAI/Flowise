@@ -9,6 +9,7 @@ import { AddChatHistory1694657778173 } from './1694657778173-AddChatHistory'
 import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
 import { AddCategoryToChatFlow1699900910291 } from './1699900910291-AddCategoryToChatFlow'
+import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-AddFileAnnotationsToChatMessage'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -21,5 +22,6 @@ export const sqliteMigrations = [
     AddChatHistory1694657778173,
     AddAssistantEntity1699325775451,
     AddUsedToolsToChatMessage1699481607341,
-    AddCategoryToChatFlow1699900910291
+    AddCategoryToChatFlow1699900910291,
+    AddFileAnnotationsToChatMessage1700271021237
 ]

@@ -56,7 +56,7 @@ class RedisUpsert_VectorStores extends RedisSearchBase implements INode {
             }
         }
 
-        return super.init(nodeData, _, options, flattenDocs)
+        return super.init(nodeData, _, options, finalDocs)
     }
 }
 
