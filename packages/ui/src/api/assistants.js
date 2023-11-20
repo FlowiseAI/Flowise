@@ -12,7 +12,8 @@ const createNewAssistant = (body) => client.post(`/assistants`, body)
 
 const updateAssistant = (id, body) => client.put(`/assistants/${id}`, body)
 
-const deleteAssistant = (id) => client.delete(`/assistants/${id}`)
+const deleteAssistant = (id, isDeleteBoth) =>
+    isDeleteBoth ? client.delete(`/assistants/${id}?isDeleteBoth=true`) : client.delete(`/assistants/${id}`)
 
 export default {
     getAllAssistants,

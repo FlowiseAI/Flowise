@@ -6,6 +6,6 @@ export class AddUsedToolsToChatMessage1699481607341 implements MigrationInterfac
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "chat_flow" DROP COLUMN "usedTools";`)
+        await queryRunner.query(`ALTER TABLE "chat_message" DROP COLUMN "usedTools";`)
     }
 }
