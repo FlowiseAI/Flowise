@@ -35,7 +35,7 @@ export abstract class ElasticSearchBase {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['elasticsearchApi', 'elasticSearchUserPassword']
+            credentialNames: ['elasticsearchApi', 'elasticSearchUserPassword', 'elasticSearchURLUserPassword']
         }
         this.inputs = [
             {
@@ -106,6 +106,7 @@ export abstract class ElasticSearchBase {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
         const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
+        const customURL = getCredentialParam('customURL', credentialData, nodeData)
         const indexName = nodeData.inputs?.indexName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const topK = nodeData.inputs?.topK as string
@@ -113,7 +114,7 @@ export abstract class ElasticSearchBase {
         const k = topK ? parseFloat(topK) : 4
         const output = nodeData.outputs?.output as string
 
-        const elasticSearchClientArgs = this.prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName)
+        const elasticSearchClientArgs = this.prepareClientArgs(endPoint, cloudId, customURL, credentialData, nodeData, similarityMeasure, indexName)
 
         const vectorStore = await this.constructVectorStore(embeddings, elasticSearchClientArgs, docs)
 
@@ -129,6 +130,7 @@ export abstract class ElasticSearchBase {
     protected prepareConnectionOptions(
         endPoint: string | undefined,
         cloudId: string | undefined,
+        customURL: string | undefined,
         credentialData: ICommonObject,
         nodeData: INodeData
     ) {
@@ -153,6 +155,19 @@ export abstract class ElasticSearchBase {
                     password: password
                 }
             }
+        } else if (customURL) {
+            let username = getCredentialParam('username', credentialData, nodeData)
+            let password = getCredentialParam('password', credentialData, nodeData)
+            elasticSearchClientOptions = {
+                node: customURL,
+                auth: {
+                    username: username,
+                    password: password
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            }
         }
         return elasticSearchClientOptions
     }
@@ -160,12 +175,13 @@ export abstract class ElasticSearchBase {
     protected prepareClientArgs(
         endPoint: string | undefined,
         cloudId: string | undefined,
+        customURL: string | undefined,
         credentialData: ICommonObject,
         nodeData: INodeData,
         similarityMeasure: string,
         indexName: string
     ) {
-        let elasticSearchClientOptions = this.prepareConnectionOptions(endPoint, cloudId, credentialData, nodeData)
+        let elasticSearchClientOptions = this.prepareConnectionOptions(endPoint, cloudId, customURL, credentialData, nodeData)
         let vectorSearchOptions = {}
         switch (similarityMeasure) {
             case 'dot_product':
