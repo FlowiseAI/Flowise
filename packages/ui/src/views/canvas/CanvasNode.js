@@ -207,9 +207,11 @@ const CanvasNode = ({ data }) => {
                         {data.inputAnchors.map((inputAnchor, index) => (
                             <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
                         ))}
-                        {data.inputParams.map((inputParam, index) => (
-                            <NodeInputHandler key={index} inputParam={inputParam} data={data} />
-                        ))}
+                        {data.inputParams
+                            .filter((inputParam) => !inputParam.hidden)
+                            .map((inputParam, index) => (
+                                <NodeInputHandler key={index} inputParam={inputParam} data={data} />
+                            ))}
                         {data.inputParams.find((param) => param.additionalParams) && (
                             <div
                                 style={{
@@ -222,7 +224,7 @@ const CanvasNode = ({ data }) => {
                                 }}
                             >
                                 <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
-                                    Additional Parameters
+                                    Дополнительные параметры
                                 </Button>
                             </div>
                         )}

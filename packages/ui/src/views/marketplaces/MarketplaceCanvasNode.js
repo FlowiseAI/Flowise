@@ -113,7 +113,7 @@ const MarketplaceCanvasNode = ({ data }) => {
                     {data.inputParams.find((param) => param.additionalParams) && (
                         <div style={{ textAlign: 'center' }}>
                             <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
-                                Additional Parameters
+                                Дополнительные параметры
                             </Button>
                         </div>
                     )}
