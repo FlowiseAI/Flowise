@@ -121,8 +121,9 @@ export abstract class ElasticSearchBase {
             credentialData,
             nodeData,
             similarityMeasure,
-            indexName)
-            
+            indexName
+        )
+
         const vectorStore = await this.constructVectorStore(embeddings, elasticSearchClientArgs, docs)
 
         if (output === 'retriever') {
