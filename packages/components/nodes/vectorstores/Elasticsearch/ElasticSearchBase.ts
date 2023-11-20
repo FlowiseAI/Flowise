@@ -114,7 +114,15 @@ export abstract class ElasticSearchBase {
         const k = topK ? parseFloat(topK) : 4
         const output = nodeData.outputs?.output as string
 
-        const elasticSearchClientArgs = this.prepareClientArgs(endPoint, cloudId, customURL, credentialData, nodeData, similarityMeasure, indexName)
+        const elasticSearchClientArgs = this.prepareClientArgs(
+                                                                endPoint, 
+                                                                cloudId, 
+                                                                customURL, 
+                                                                credentialData, 
+                                                                nodeData, 
+                                                                similarityMeasure, 
+                                                                indexName
+                                                                )
 
         const vectorStore = await this.constructVectorStore(embeddings, elasticSearchClientArgs, docs)
 

@@ -11,8 +11,7 @@ class ElasticSearchURLUserPassword implements INodeCredential {
         this.label = 'ElasticSearch Custom URL User Password'
         this.name = 'elasticSearchURLUserPassword'
         this.version = 1.0
-        this.description =
-            'Allow to connect to a custom Elastic index'
+        this.description = 'Allow to connect to a custom Elastic index'
         this.inputs = [
             {
                 label: 'Custom URL',
