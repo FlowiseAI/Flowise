@@ -69,6 +69,10 @@ export default class Start extends Command {
             logger.error('uncaughtException: ', err)
         })
 
+        process.on('unhandledRejection', (err) => {
+            logger.error('unhandledRejection: ', err)
+        })
+
         const { flags } = await this.parse(Start)
 
         if (flags.PORT) process.env.PORT = flags.PORT

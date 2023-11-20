@@ -5,6 +5,9 @@ import { ModifyCredential1693923551694 } from './1693923551694-ModifyCredential'
 import { ModifyTool1693924207475 } from './1693924207475-ModifyTool'
 import { AddApiConfig1694090982460 } from './1694090982460-AddApiConfig'
 import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
+import { AddChatHistory1694657778173 } from './1694657778173-AddChatHistory'
+import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
+import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -13,5 +16,8 @@ export const sqliteMigrations = [
     ModifyCredential1693923551694,
     ModifyTool1693924207475,
     AddApiConfig1694090982460,
-    AddAnalytic1694432361423
+    AddAnalytic1694432361423,
+    AddChatHistory1694657778173,
+    AddAssistantEntity1699325775451,
+    AddUsedToolsToChatMessage1699481607341
 ]
