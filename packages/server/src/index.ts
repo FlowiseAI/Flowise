@@ -1147,7 +1147,8 @@ export class App {
                     const linkedChatFlows: any[] = []
                     chatflows.map((cf) => {
                         linkedChatFlows.push({
-                            flowName: cf.name
+                            flowName: cf.name,
+                            updatedDate: cf.updatedDate
                         })
                     })
                     key.chatFlows = linkedChatFlows

@@ -6,7 +6,6 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import {
     Button,
     Box,
-    Chip,
     Stack,
     Table,
     TableBody,
@@ -17,7 +16,8 @@ import {
     Paper,
     IconButton,
     Popover,
-    Typography
+    Typography,
+    Collapse
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -38,11 +38,118 @@ import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconCornerDownRight, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
+import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
 import APIEmptySVG from 'assets/images/api_empty.svg'
+import * as PropTypes from 'prop-types'
 
 // ==============================|| APIKey ||============================== //
 
+function APIKeyRow(props) {
+    const [open, setOpen] = useState(false)
+    return (
+        <>
+            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                <TableCell component='th' scope='row'>
+                    {props.apiKey.keyName}
+                </TableCell>
+                <TableCell>
+                    {props.showApiKeys.includes(props.apiKey.apiKey)
+                        ? props.apiKey.apiKey
+                        : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
+                              props.apiKey.apiKey.length - 5
+                          )}`}
+                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
+                        <IconCopy />
+                    </IconButton>
+                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
+                        {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
+                    </IconButton>
+                    <Popover
+                        open={props.open}
+                        anchorEl={props.anchorEl}
+                        onClose={props.onClose}
+                        anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right'
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left'
+                        }}
+                    >
+                        <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
+                            Copied!
+                        </Typography>
+                    </Popover>
+                </TableCell>
+                <TableCell>
+                    {props.apiKey.chatFlows.length}{' '}
+                    {props.apiKey.chatFlows.length > 0 && (
+                        <IconButton aria-label='expand row' size='small' onClick={() => setOpen(!open)}>
+                            {props.apiKey.chatFlows.length > 0 && open ? <IconChevronsUp /> : <IconChevronsDown />}
+                        </IconButton>
+                    )}
+                </TableCell>
+                <TableCell>{props.apiKey.createdAt}</TableCell>
+                <TableCell>
+                    <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
+                        <IconEdit />
+                    </IconButton>
+                </TableCell>
+                <TableCell>
+                    <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
+                        <IconTrash />
+                    </IconButton>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={open} timeout='auto' unmountOnExit>
+                        <Box sx={{ margin: 1 }}>
+                            <Table
+                                sx={{ '&:last-child td, &:last-child th': { border: 1 }, borderColor: 'gray' }}
+                                size='small'
+                                aria-label='flows'
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Chatflow Name</TableCell>
+                                        <TableCell>Modified On</TableCell>
+                                        <TableCell>Category</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {props.apiKey.chatFlows.map((flow, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell component='th' scope='row'>
+                                                {flow.flowName}
+                                            </TableCell>
+                                            <TableCell>{flow.updatedDate} </TableCell>
+                                            <TableCell> </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </>
+    )
+}
+
+APIKeyRow.propTypes = {
+    apiKey: PropTypes.any,
+    showApiKeys: PropTypes.arrayOf(PropTypes.any),
+    onCopyClick: PropTypes.func,
+    onShowAPIClick: PropTypes.func,
+    open: PropTypes.bool,
+    anchorEl: PropTypes.any,
+    onClose: PropTypes.func,
+    theme: PropTypes.any,
+    onEditClick: PropTypes.func,
+    onDeleteClick: PropTypes.func
+}
 const APIKey = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -205,78 +312,25 @@ const APIKey = () => {
                             </TableHead>
                             <TableBody>
                                 {apiKeys.map((key, index) => (
-                                    <>
-                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell component='th' scope='row'>
-                                                {key.keyName}
-                                            </TableCell>
-                                            <TableCell>
-                                                {showApiKeys.includes(key.apiKey)
-                                                    ? key.apiKey
-                                                    : `${key.apiKey.substring(0, 2)}${'•'.repeat(18)}${key.apiKey.substring(
-                                                          key.apiKey.length - 5
-                                                      )}`}
-                                                <IconButton
-                                                    title='Copy'
-                                                    color='success'
-                                                    onClick={(event) => {
-                                                        navigator.clipboard.writeText(key.apiKey)
-                                                        setAnchorEl(event.currentTarget)
-                                                        setTimeout(() => {
-                                                            handleClosePopOver()
-                                                        }, 1500)
-                                                    }}
-                                                >
-                                                    <IconCopy />
-                                                </IconButton>
-                                                <IconButton title='Show' color='inherit' onClick={() => onShowApiKeyClick(key.apiKey)}>
-                                                    {showApiKeys.includes(key.apiKey) ? <IconEyeOff /> : <IconEye />}
-                                                </IconButton>
-                                                <Popover
-                                                    open={openPopOver}
-                                                    anchorEl={anchorEl}
-                                                    onClose={handleClosePopOver}
-                                                    anchorOrigin={{
-                                                        vertical: 'top',
-                                                        horizontal: 'right'
-                                                    }}
-                                                    transformOrigin={{
-                                                        vertical: 'top',
-                                                        horizontal: 'left'
-                                                    }}
-                                                >
-                                                    <Typography
-                                                        variant='h6'
-                                                        sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}
-                                                    >
-                                                        Copied!
-                                                    </Typography>
-                                                </Popover>
-                                            </TableCell>
-                                            <TableCell>{key.chatFlows.length}</TableCell>
-                                            <TableCell>{key.createdAt}</TableCell>
-                                            <TableCell>
-                                                <IconButton title='Edit' color='primary' onClick={() => edit(key)}>
-                                                    <IconEdit />
-                                                </IconButton>
-                                            </TableCell>
-                                            <TableCell>
-                                                <IconButton title='Delete' color='error' onClick={() => deleteKey(key)}>
-                                                    <IconTrash />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                        {key.chatFlows.length > 0 && (
-                                            <TableRow sx={{ verticalAlign: 'middle' }}>
-                                                <TableCell colSpan={6}>
-                                                    <IconCornerDownRight />{' '}
-                                                    {key.chatFlows.map((flow, index) => (
-                                                        <Chip key={index} label={flow.flowName} />
-                                                    ))}
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </>
+                                    <APIKeyRow
+                                        key={index}
+                                        apiKey={key}
+                                        showApiKeys={showApiKeys}
+                                        onCopyClick={(event) => {
+                                            navigator.clipboard.writeText(key.apiKey)
+                                            setAnchorEl(event.currentTarget)
+                                            setTimeout(() => {
+                                                handleClosePopOver()
+                                            }, 1500)
+                                        }}
+                                        onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
+                                        open={openPopOver}
+                                        anchorEl={anchorEl}
+                                        onClose={handleClosePopOver}
+                                        theme={theme}
+                                        onEditClick={() => edit(key)}
+                                        onDeleteClick={() => deleteKey(key)}
+                                    />
                                 ))}
                             </TableBody>
                         </Table>
