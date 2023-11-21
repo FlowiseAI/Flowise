@@ -15,7 +15,7 @@ class ElasticSearchUserPassword implements INodeCredential {
             'Refer to <a target="_blank" href="https://www.elastic.co/guide/en/kibana/current/tutorial-secure-access-to-kibana.html">official guide</a> on how to get User Password from ElasticSearch'
         this.inputs = [
             {
-                label: 'Cloud ID',
+                label: 'Cloud ID or custom server URL',
                 name: 'cloudId',
                 type: 'string'
             },
