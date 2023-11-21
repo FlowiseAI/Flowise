@@ -11,8 +11,7 @@ class ElasticSearchUserPassword implements INodeCredential {
         this.label = 'ElasticSearch User Password'
         this.name = 'elasticSearchUserPassword'
         this.version = 1.0
-        this.description =
-        `Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance.
+        this.description = `Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance.
         Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.`
         this.inputs = [
             {
