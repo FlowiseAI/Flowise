@@ -5,6 +5,35 @@ import { Document } from 'langchain/document'
 import { VectaraStore } from 'langchain/vectorstores/vectara'
 import fetch from 'node-fetch'
 
+// functionality based on https://github.com/vectara/vectara-answer
+const reorderCitations = (unorderedSummary: string) => {
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
+
+    const uniqueCitations = [...new Set(allCitations)]
+    const citationToReplacement: { [key: string]: string } = {}
+    uniqueCitations.forEach((citation, index) => {
+        citationToReplacement[citation] = `[${index + 1}]`
+    })
+
+    return unorderedSummary.replace(/\[\d+\]/g, (match) => citationToReplacement[match])
+}
+const applyCitationOrder = (searchResults: any[], unorderedSummary: string) => {
+    const orderedSearchResults: any[] = []
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
+
+    const addedIndices = new Set<number>()
+    for (let i = 0; i < allCitations.length; i++) {
+        const citation = allCitations[i]
+        const index = Number(citation.slice(1, citation.length - 1)) - 1
+
+        if (addedIndices.has(index)) continue
+        orderedSearchResults.push(searchResults[index])
+        addedIndices.add(index)
+    }
+
+    return orderedSearchResults
+}
+
 class VectaraChain_Chains implements INode {
     label: string
     name: string
@@ -254,7 +283,7 @@ class VectaraChain_Chains implements INode {
             const result = await response.json()
             const responses = result.responseSet[0].response
             const documents = result.responseSet[0].document
-            let summarizedText = ''
+            let rawSummarizedText = ''
 
             for (let i = 0; i < responses.length; i += 1) {
                 const responseMetadata = responses[i].metadata
@@ -287,9 +316,12 @@ class VectaraChain_Chains implements INode {
                 throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`)
             }
 
-            summarizedText = result.responseSet[0].summary[0]?.text
+            rawSummarizedText = result.responseSet[0].summary[0]?.text
 
-            const sourceDocuments: Document[] = responses.map(
+            let summarizedText = reorderCitations(rawSummarizedText)
+            let summaryResponses = applyCitationOrder(responses, rawSummarizedText)
+
+            const sourceDocuments: Document[] = summaryResponses.map(
                 (response: { text: string; metadata: Record<string, unknown>; score: number }) =>
                     new Document({
                         pageContent: response.text,
