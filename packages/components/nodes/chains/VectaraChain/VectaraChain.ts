@@ -27,9 +27,168 @@ class VectaraChain_Chains implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(VectorDBQAChain)]
         this.inputs = [
             {
-                label: 'Vectara Vector Store',
+                label: 'Vectara Store',
                 name: 'vectaraStore',
                 type: 'VectorStore'
+            },
+            {
+                label: 'Summarizer Prompt Name',
+                name: 'summarizerPromptName',
+                description:
+                    'Summarize the results fetched from Vectara. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer">more</a>',
+                type: 'options',
+                options: [
+                    {
+                        label: 'vectara-summary-ext-v1.2.0 (gpt-3.5-turbo)',
+                        name: 'vectara-summary-ext-v1.2.0'
+                    },
+                    {
+                        label: 'vectara-experimental-summary-ext-2023-10-23-small (gpt-3.5-turbo)',
+                        name: 'vectara-experimental-summary-ext-2023-10-23-small',
+                        description: 'In beta, available to both Growth and Scale Vectara users'
+                    },
+                    {
+                        label: 'vectara-summary-ext-v1.3.0 (gpt-4.0)',
+                        name: 'vectara-summary-ext-v1.3.0',
+                        description: 'Only available to paying Scale Vectara users'
+                    },
+                    {
+                        label: 'vectara-experimental-summary-ext-2023-10-23-med (gpt-4.0)',
+                        name: 'vectara-experimental-summary-ext-2023-10-23-med',
+                        description: 'In beta, only available to paying Scale Vectara users'
+                    }
+                ],
+                default: 'vectara-summary-ext-v1.2.0'
+            },
+            {
+                label: 'Response Language',
+                name: 'responseLang',
+                description:
+                    'Return the response in specific language. If not selected, Vectara will automatically detects the language. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages">more</a>',
+                type: 'options',
+                options: [
+                    {
+                        label: 'English',
+                        name: 'eng'
+                    },
+                    {
+                        label: 'German',
+                        name: 'deu'
+                    },
+                    {
+                        label: 'French',
+                        name: 'fra'
+                    },
+                    {
+                        label: 'Chinese',
+                        name: 'zho'
+                    },
+                    {
+                        label: 'Korean',
+                        name: 'kor'
+                    },
+                    {
+                        label: 'Arabic',
+                        name: 'ara'
+                    },
+                    {
+                        label: 'Russian',
+                        name: 'rus'
+                    },
+                    {
+                        label: 'Thai',
+                        name: 'tha'
+                    },
+                    {
+                        label: 'Dutch',
+                        name: 'nld'
+                    },
+                    {
+                        label: 'Italian',
+                        name: 'ita'
+                    },
+                    {
+                        label: 'Portuguese',
+                        name: 'por'
+                    },
+                    {
+                        label: 'Spanish',
+                        name: 'spa'
+                    },
+                    {
+                        label: 'Japanese',
+                        name: 'jpn'
+                    },
+                    {
+                        label: 'Polish',
+                        name: 'pol'
+                    },
+                    {
+                        label: 'Turkish',
+                        name: 'tur'
+                    },
+                    {
+                        label: 'Vietnamese',
+                        name: 'vie'
+                    },
+                    {
+                        label: 'Indonesian',
+                        name: 'ind'
+                    },
+                    {
+                        label: 'Czech',
+                        name: 'ces'
+                    },
+                    {
+                        label: 'Ukrainian',
+                        name: 'ukr'
+                    },
+                    {
+                        label: 'Greek',
+                        name: 'ell'
+                    },
+                    {
+                        label: 'Hebrew',
+                        name: 'heb'
+                    },
+                    {
+                        label: 'Farsi/Persian',
+                        name: 'fas'
+                    },
+                    {
+                        label: 'Hindi',
+                        name: 'hin'
+                    },
+                    {
+                        label: 'Urdu',
+                        name: 'urd'
+                    },
+                    {
+                        label: 'Swedish',
+                        name: 'swe'
+                    },
+                    {
+                        label: 'Bengali',
+                        name: 'ben'
+                    },
+                    {
+                        label: 'Malay',
+                        name: 'msa'
+                    },
+                    {
+                        label: 'Romanian',
+                        name: 'ron'
+                    }
+                ],
+                optional: true,
+                default: 'eng'
+            },
+            {
+                label: 'Max Summarized Results',
+                name: 'maxSummarizedResults',
+                description: 'Maximum results used to build the summarized response',
+                type: 'number',
+                default: 7
             }
         ]
     }
@@ -40,7 +199,12 @@ class VectaraChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string): Promise<object> {
         const vectorStore = nodeData.inputs?.vectaraStore as VectaraStore
-        const topK = (vectorStore as any)?.k ?? 4
+        const responseLang = (nodeData.inputs?.responseLang as string) ?? 'auto'
+        const summarizerPromptName = nodeData.inputs?.summarizerPromptName as string
+        const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults as string
+        const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7
+
+        const topK = (vectorStore as any)?.k ?? 10
 
         const headers = await vectorStore.getJsonHeader()
         const vectaraFilter = (vectorStore as any).vectaraFilter ?? {}
@@ -53,10 +217,6 @@ class VectaraChain_Chains implements INode {
             metadataFilter: vectaraFilter?.filter ?? '',
             lexicalInterpolationConfig: { lambda: vectaraFilter?.lambda ?? 0.025 }
         }))
-
-        let summarizerPromptName = 'vectara-experimental-summary-ext-2023-10-23-med' // can let user select
-        let responseLang = 'en' // can let user select
-        let maxSummarizedResults = 5 // can let user specify
 
         const data = {
             query: [
