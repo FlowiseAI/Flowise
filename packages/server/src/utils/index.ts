@@ -985,10 +985,14 @@ export const redactCredentialWithPasswordType = (
  * @param {any} instance
  * @param {string} chatId
  */
-export const checkMemorySessionId = (instance: any, chatId: string): string => {
+export const checkMemorySessionId = (instance: any, chatId: string): string | undefined => {
     if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
         instance.memory.sessionId = chatId
         instance.memory.chatHistory.sessionId = chatId
     }
-    return instance.memory ? instance.memory.sessionId ?? instance.memory.chatHistory.sessionId : undefined
+
+    if (instance.memory && instance.memory.sessionId) return instance.memory.sessionId
+    else if (instance.memory && instance.memory.chatHistory && instance.memory.chatHistory.sessionId)
+        return instance.memory.chatHistory.sessionId
+    return undefined
 }
