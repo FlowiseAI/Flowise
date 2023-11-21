@@ -1161,6 +1161,7 @@ export class App {
                     chatflows.map((cf) => {
                         linkedChatFlows.push({
                             flowName: cf.name,
+                            category: cf.category,
                             updatedDate: cf.updatedDate
                         })
                     })

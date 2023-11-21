@@ -6,6 +6,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import {
     Button,
     Box,
+    Chip,
     Stack,
     Table,
     TableBody,
@@ -56,6 +57,7 @@ import {
 } from '@tabler/icons'
 import APIEmptySVG from 'assets/images/api_empty.svg'
 import * as PropTypes from 'prop-types'
+import moment from 'moment/moment'
 
 // ==============================|| APIKey ||============================== //
 
@@ -63,10 +65,8 @@ function APIKeyRow(props) {
     const [open, setOpen] = useState(false)
     return (
         <>
-            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-                <TableCell component='th' scope='row'>
-                    {props.apiKey.keyName}
-                </TableCell>
+            <TableRow sx={{ '& td': { border: 0 } }}>
+                <TableCell scope='row'>{props.apiKey.keyName}</TableCell>
                 <TableCell>
                     {props.showApiKeys.includes(props.apiKey.apiKey)
                         ? props.apiKey.apiKey
@@ -118,19 +118,15 @@ function APIKeyRow(props) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>
                     <Collapse in={open} timeout='auto' unmountOnExit>
                         <Box sx={{ margin: 1 }}>
-                            <Table
-                                sx={{ '&:last-child td, &:last-child th': { border: 1 }, borderColor: 'gray' }}
-                                size='small'
-                                aria-label='flows'
-                            >
+                            <Table size='small' aria-label='flows'>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Chatflow Name</TableCell>
-                                        <TableCell>Modified On</TableCell>
-                                        <TableCell>Category</TableCell>
+                                        <TableCell sx={{ width: '30%' }}>Chatflow Name</TableCell>
+                                        <TableCell sx={{ width: '20%' }}>Modified On</TableCell>
+                                        <TableCell sx={{ width: '50%' }}>Category</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -139,8 +135,16 @@ function APIKeyRow(props) {
                                             <TableCell component='th' scope='row'>
                                                 {flow.flowName}
                                             </TableCell>
-                                            <TableCell>{flow.updatedDate} </TableCell>
-                                            <TableCell> </TableCell>
+                                            <TableCell>{moment(flow.updatedDate).format('DD-MMM-YY')}</TableCell>
+                                            <TableCell>
+                                                &nbsp;
+                                                {flow.category &&
+                                                    flow.category
+                                                        .split(';')
+                                                        .map((tag, index) => (
+                                                            <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
+                                                        ))}
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -375,7 +379,7 @@ const APIKey = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {apiKeys.map((key, index) => (
+                                {apiKeys.filter(filterKeys).map((key, index) => (
                                     <APIKeyRow
                                         key={index}
                                         apiKey={key}
