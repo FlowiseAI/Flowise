@@ -145,8 +145,6 @@ export abstract class ElasticSearchBase {
             let username = getCredentialParam('username', credentialData, nodeData)
             let password = getCredentialParam('password', credentialData, nodeData)
             if (cloudId.startsWith('http')) {
-                let username = getCredentialParam('username', credentialData, nodeData)
-                let password = getCredentialParam('password', credentialData, nodeData)
                 elasticSearchClientOptions = {
                     node: cloudId,
                     auth: {
@@ -157,7 +155,7 @@ export abstract class ElasticSearchBase {
                         rejectUnauthorized: false
                     }
                 }
-            } else{
+            } else {
                 elasticSearchClientOptions = {
                     cloud: {
                         id: cloudId
@@ -167,7 +165,7 @@ export abstract class ElasticSearchBase {
                         password: password
                     }
                 }
-            } 
+            }
         }
         return elasticSearchClientOptions
     }
