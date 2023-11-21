@@ -4,10 +4,6 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import PropTypes from 'prop-types'
 
 import { Box, Typography, Button, OutlinedInput } from '@mui/material'
-import Accordion from '@mui/material/Accordion'
-import AccordionSummary from '@mui/material/AccordionSummary'
-import AccordionDetails from '@mui/material/AccordionDetails'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // Project import
 import { StyledButton } from 'ui-component/button/StyledButton'
@@ -36,10 +32,6 @@ const Configuration = () => {
     const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '')
     const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '')
     const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
-    const [prompt1, setPrompt1] = useState(apiConfig?.prompt?.prompt1 ?? '')
-    const [prompt2, setPrompt2] = useState(apiConfig?.prompt?.prompt2 ?? '')
-    const [prompt3, setPrompt3] = useState(apiConfig?.prompt?.prompt3 ?? '')
-    const [prompt4, setPrompt4] = useState(apiConfig?.prompt?.prompt4 ?? '')
 
     const formatObj = () => {
         const obj = {
@@ -119,7 +111,7 @@ const Configuration = () => {
         return (
             <Box sx={{ pt: 2, pb: 2 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    {fieldLabel && <Typography sx={{ mb: 1 }}>{fieldLabel}</Typography>}
+                    <Typography sx={{ mb: 1 }}>{fieldLabel}</Typography>
                     <OutlinedInput
                         id={fieldName}
                         type={fieldType}
@@ -138,41 +130,20 @@ const Configuration = () => {
 
     return (
         <>
-            <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                    <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                        Rate Limit{' '}
-                        <TooltipWithParser
-                            style={{ mb: 1, mt: 2, marginLeft: 10 }}
-                            title={
-                                'Visit <a target="_blank" href="https://docs.flowiseai.com/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
-                            }
-                        />
-                    </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Typography>
-                        {/*Rate Limit*/}
-                        {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number')}
-                        {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number')}
-                        {textField(limitMsg, 'limitMsg', 'Limit Message', 'string')}
-                    </Typography>
-                </AccordionDetails>
-            </Accordion>
+            {/*Rate Limit*/}
+            <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
+                Rate Limit{' '}
+                <TooltipWithParser
+                    style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                    title={
+                        'Visit <a target="_blank" href="https://docs.flowiseai.com/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
+                    }
+                />
+            </Typography>
+            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number')}
+            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number')}
+            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string')}
 
-            <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel2a-content' id='panel2a-header'>
-                    <Typography variant={'h4'}>Conversation Starters</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Typography>
-                        {textField(prompt1, 'prompt1', 'Starter Prompts', 'string')}
-                        {textField(prompt2, 'prompt2', '', 'string')}
-                        {textField(prompt3, 'prompt3', '', 'string')}
-                        {textField(prompt4, 'prompt4', '', 'string')}
-                    </Typography>
-                </AccordionDetails>
-            </Accordion>
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
                 Save Changes
             </StyledButton>

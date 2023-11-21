@@ -57,6 +57,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
+    const getChatflowConfig = useApi(chatflowsApi.getSpecificChatflow)
+
+    const [starterPrompts, setStarterPrompts] = useState([])
 
     const onSourceDialogClick = (data, title) => {
         setSourceDialogProps({ data, title })
@@ -104,14 +107,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }, 100)
     }
 
-    const handlePromptClick = async (prompt) => {
+    const handlePromptClick = async (prompt, e) => {
         setUserInput(prompt)
-        await handleSubmit()
+        await handleSubmit(e)
     }
 
     // Handle form submission
     const handleSubmit = async (e) => {
-        if (e) e.preventDefault()
+        e.preventDefault()
 
         if (userInput.trim() === '') {
             return
@@ -202,9 +205,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (getIsChatflowStreamingApi.data) {
             setIsChatFlowAvailableToStream(getIsChatflowStreamingApi.data?.isStreaming ?? false)
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getIsChatflowStreamingApi.data])
+
+    useEffect(() => {
+        if (getChatflowConfig.data) {
+            if (getChatflowConfig.data?.starterPrompt && JSON.parse(getChatflowConfig.data?.starterPrompt)) {
+                setStarterPrompts(JSON.parse(getChatflowConfig.data?.starterPrompt))
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getChatflowConfig.data])
 
     // Auto scroll chat to bottom
     useEffect(() => {
@@ -224,6 +235,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (open && chatflowid) {
             getChatmessageApi.request(chatflowid)
             getIsChatflowStreamingApi.request(chatflowid)
+            getChatflowConfig.request(chatflowid)
             scrollToBottom()
 
             socket = socketIOClient(baseURL)
@@ -377,8 +389,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                         {messages && messages.length === 1 && (
                             <StarterConversationCard
-                                chipsData={['prompt 1', 'prompt 2', 'prompt 3']}
-                                onChipClick={handlePromptClick}
+                                starterPrompts={starterPrompts || []}
+                                onPromptClick={handlePromptClick}
                                 isGrid={isDialog}
                             />
                         )}
