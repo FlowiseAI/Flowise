@@ -4,7 +4,23 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import moment from 'moment'
 
 // material-ui
-import { Button, Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material'
+import {
+    Button,
+    Box,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    IconButton,
+    Toolbar,
+    TextField,
+    InputAdornment,
+    ButtonGroup
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -25,7 +41,7 @@ import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons'
+import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons'
 import CredentialEmptySVG from 'assets/images/credential_empty.svg'
 
 // const
@@ -55,6 +71,14 @@ const Credentials = () => {
 
     const getAllCredentialsApi = useApi(credentialsApi.getAllCredentials)
     const getAllComponentsCredentialsApi = useApi(credentialsApi.getAllComponentsCredentials)
+
+    const [search, setSearch] = useState('')
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+    function filterCredentials(data) {
+        return data.credentialName.toLowerCase().indexOf(search.toLowerCase()) > -1
+    }
 
     const listCredential = () => {
         const dialogProp = {
@@ -168,17 +192,53 @@ const Credentials = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>Credentials&nbsp;</h1>
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <StyledButton
-                        variant='contained'
-                        sx={{ color: 'white', mr: 1, height: 37 }}
-                        onClick={listCredential}
-                        startIcon={<IconPlus />}
-                    >
-                        Add Credential
-                    </StyledButton>
+                    <Box sx={{ flexGrow: 1 }}>
+                        <Toolbar
+                            disableGutters={true}
+                            style={{
+                                margin: 1,
+                                padding: 1,
+                                paddingBottom: 10,
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                width: '100%'
+                            }}
+                        >
+                            <h1>Credentials&nbsp;</h1>
+                            <TextField
+                                size='small'
+                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
+                                variant='outlined'
+                                placeholder='Search credential name'
+                                onChange={onSearchChange}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <IconSearch />
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                            <Box sx={{ flexGrow: 1 }} />
+                            <ButtonGroup
+                                sx={{ maxHeight: 40 }}
+                                disableElevation
+                                variant='contained'
+                                aria-label='outlined primary button group'
+                            >
+                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                    <StyledButton
+                                        variant='contained'
+                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        onClick={listCredential}
+                                        startIcon={<IconPlus />}
+                                    >
+                                        Add Credential
+                                    </StyledButton>
+                                </ButtonGroup>
+                            </ButtonGroup>
+                        </Toolbar>
+                    </Box>
                 </Stack>
                 {credentials.length <= 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
@@ -205,7 +265,7 @@ const Credentials = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {credentials.map((credential, index) => (
+                                {credentials.filter(filterCredentials).map((credential, index) => (
                                     <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell component='th' scope='row'>
                                             <div

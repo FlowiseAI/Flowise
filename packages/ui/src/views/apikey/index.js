@@ -16,8 +16,12 @@ import {
     Paper,
     IconButton,
     Popover,
+    Collapse,
     Typography,
-    Collapse
+    Toolbar,
+    TextField,
+    InputAdornment,
+    ButtonGroup
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -38,7 +42,18 @@ import useConfirm from 'hooks/useConfirm'
 import useNotifier from 'utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
+import {
+    IconTrash,
+    IconEdit,
+    IconCopy,
+    IconChevronsUp,
+    IconChevronsDown,
+    IconX,
+    IconSearch,
+    IconPlus,
+    IconEye,
+    IconEyeOff
+} from '@tabler/icons'
 import APIEmptySVG from 'assets/images/api_empty.svg'
 import * as PropTypes from 'prop-types'
 
@@ -167,6 +182,14 @@ const APIKey = () => {
     const [showApiKeys, setShowApiKeys] = useState([])
     const openPopOver = Boolean(anchorEl)
 
+    const [search, setSearch] = useState('')
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+    function filterKeys(data) {
+        return data.keyName.toLowerCase().indexOf(search.toLowerCase()) > -1
+    }
+
     const { confirm } = useConfirm()
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
@@ -282,12 +305,53 @@ const APIKey = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>API Keys&nbsp;</h1>
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <StyledButton variant='contained' sx={{ color: 'white', mr: 1, height: 37 }} onClick={addNew} startIcon={<IconPlus />}>
-                        Create Key
-                    </StyledButton>
+                    <Box sx={{ flexGrow: 1 }}>
+                        <Toolbar
+                            disableGutters={true}
+                            style={{
+                                margin: 1,
+                                padding: 1,
+                                paddingBottom: 10,
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                width: '100%'
+                            }}
+                        >
+                            <h1>API Keys&nbsp;</h1>
+                            <TextField
+                                size='small'
+                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
+                                variant='outlined'
+                                placeholder='Search key name'
+                                onChange={onSearchChange}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <IconSearch />
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                            <Box sx={{ flexGrow: 1 }} />
+                            <ButtonGroup
+                                sx={{ maxHeight: 40 }}
+                                disableElevation
+                                variant='contained'
+                                aria-label='outlined primary button group'
+                            >
+                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                    <StyledButton
+                                        variant='contained'
+                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        onClick={addNew}
+                                        startIcon={<IconPlus />}
+                                    >
+                                        Create Key
+                                    </StyledButton>
+                                </ButtonGroup>
+                            </ButtonGroup>
+                        </Toolbar>
+                    </Box>
                 </Stack>
                 {apiKeys.length <= 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
