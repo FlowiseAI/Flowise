@@ -88,7 +88,6 @@ const CanvasNode = ({ data }) => {
             }
         }
     }, [canvas.componentNodes, data.name, data.version])
-
     return (
         <>
             <CardWrapper
@@ -198,7 +197,7 @@ const CanvasNode = ({ data }) => {
                                             textAlign: 'center'
                                         }}
                                     >
-                                        Inputs
+                                        Входные данные
                                     </Typography>
                                 </Box>
                                 <Divider />
@@ -236,7 +235,7 @@ const CanvasNode = ({ data }) => {
                                     textAlign: 'center'
                                 }}
                             >
-                                Output
+                                Выходные данные
                             </Typography>
                         </Box>
                         <Divider />

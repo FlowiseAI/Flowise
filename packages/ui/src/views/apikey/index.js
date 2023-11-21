@@ -82,7 +82,7 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New API Key',
+            title: 'Добавить новый ключ API',
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add'
@@ -93,7 +93,7 @@ const APIKey = () => {
 
     const edit = (key) => {
         const dialogProp = {
-            title: 'Edit API Key',
+            title: 'Изменить API ключ',
             type: 'EDIT',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
@@ -106,7 +106,7 @@ const APIKey = () => {
     const deleteKey = async (key) => {
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete key ${key.keyName}?`,
+            description: `Удалить ключ ${key.keyName}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -117,7 +117,7 @@ const APIKey = () => {
                 const deleteResp = await apiKeyApi.deleteAPI(key.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'API key deleted',
+                        message: 'API ключ удален',
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -133,7 +133,7 @@ const APIKey = () => {
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete API key: ${errorData}`,
+                    message: `Ошибка удаления API ключа: ${errorData}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -171,11 +171,11 @@ const APIKey = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>API Keys&nbsp;</h1>
+                    <h1>API ключи&nbsp;</h1>
                     <Box sx={{ flexGrow: 1 }} />
 
                     <StyledButton variant='contained' sx={{ color: 'white', mr: 1, height: 37 }} onClick={addNew} startIcon={<IconPlus />}>
-                        Create Key
+                        Добавить новый ключ
                     </StyledButton>
                 </Stack>
                 {apiKeys.length <= 0 && (
@@ -183,7 +183,7 @@ const APIKey = () => {
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
                         </Box>
-                        <div>No API Keys Yet</div>
+                        <div>Пока API ключей нет</div>
                     </Stack>
                 )}
                 {apiKeys.length > 0 && (
@@ -191,9 +191,9 @@ const APIKey = () => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Key Name</TableCell>
-                                    <TableCell>API Key</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>Название</TableCell>
+                                    <TableCell>API ключ</TableCell>
+                                    <TableCell>Дата создания</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
                                 </TableRow>
@@ -211,7 +211,7 @@ const APIKey = () => {
                                                       key.apiKey.length - 5
                                                   )}`}
                                             <IconButton
-                                                title='Copy'
+                                                title='Скопировать'
                                                 color='success'
                                                 onClick={(event) => {
                                                     navigator.clipboard.writeText(key.apiKey)
@@ -223,7 +223,7 @@ const APIKey = () => {
                                             >
                                                 <IconCopy />
                                             </IconButton>
-                                            <IconButton title='Show' color='inherit' onClick={() => onShowApiKeyClick(key.apiKey)}>
+                                            <IconButton title='Посмотреть' color='inherit' onClick={() => onShowApiKeyClick(key.apiKey)}>
                                                 {showApiKeys.includes(key.apiKey) ? <IconEyeOff /> : <IconEye />}
                                             </IconButton>
                                             <Popover
@@ -243,18 +243,18 @@ const APIKey = () => {
                                                     variant='h6'
                                                     sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}
                                                 >
-                                                    Copied!
+                                                    Скопировано!
                                                 </Typography>
                                             </Popover>
                                         </TableCell>
                                         <TableCell>{key.createdAt}</TableCell>
                                         <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(key)}>
+                                            <IconButton title='Изменить' color='primary' onClick={() => edit(key)}>
                                                 <IconEdit />
                                             </IconButton>
                                         </TableCell>
                                         <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteKey(key)}>
+                                            <IconButton title='Удалить' color='error' onClick={() => deleteKey(key)}>
                                                 <IconTrash />
                                             </IconButton>
                                         </TableCell>

@@ -206,7 +206,9 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconFileDownload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Load Database</Typography>} />
+                                                    <ListItemText
+                                                        primary={<Typography variant='body2'>Загрузить базу данных</Typography>}
+                                                    />
                                                 </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
@@ -215,7 +217,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export Database</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Экспорт базы данных</Typography>} />
                                                 </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
@@ -227,7 +229,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconInfoCircle stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>О Start.AI</Typography>} />
                                                 </ListItemButton>
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
