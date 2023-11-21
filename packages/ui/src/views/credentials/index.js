@@ -168,7 +168,7 @@ const Credentials = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>Credentials&nbsp;</h1>
+                    <h1>Учетные данные&nbsp;</h1>
                     <Box sx={{ flexGrow: 1 }} />
 
                     <StyledButton
@@ -177,7 +177,7 @@ const Credentials = () => {
                         onClick={listCredential}
                         startIcon={<IconPlus />}
                     >
-                        Add Credential
+                        Добавить учетную запись
                     </StyledButton>
                 </Stack>
                 {credentials.length <= 0 && (
@@ -189,7 +189,7 @@ const Credentials = () => {
                                 alt='CredentialEmptySVG'
                             />
                         </Box>
-                        <div>No Credentials Yet</div>
+                        <div>Учетных записей пока нет</div>
                     </Stack>
                 )}
                 {credentials.length > 0 && (
@@ -197,9 +197,9 @@ const Credentials = () => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Last Updated</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>Название</TableCell>
+                                    <TableCell>Дата обновления</TableCell>
+                                    <TableCell>Дата создания</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
                                 </TableRow>

@@ -103,12 +103,12 @@ const Chatflows = () => {
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
             <Stack flexDirection='row'>
-                <h1>Чаты</h1>
+                <h1>Проекты</h1>
                 <Grid sx={{ mb: 1.25 }} container direction='row'>
                     <Box sx={{ flexGrow: 1 }} />
                     <Grid item>
                         <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                            Добавить новое
+                            Создать
                         </StyledButton>
                     </Grid>
                 </Grid>

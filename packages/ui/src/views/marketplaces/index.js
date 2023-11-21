@@ -56,7 +56,7 @@ const Marketplace = () => {
     const [isChatflowsLoading, setChatflowsLoading] = useState(true)
     const [isToolsLoading, setToolsLoading] = useState(true)
     const [images, setImages] = useState({})
-    const tabItems = ['Chatflows', 'Tools']
+    const tabItems = ['Проекты', 'Инструменты']
     const [value, setValue] = useState(0)
     const [showToolDialog, setShowToolDialog] = useState(false)
     const [toolDialogProps, setToolDialogProps] = useState({})
@@ -151,7 +151,7 @@ const Marketplace = () => {
                 </Tabs>
                 {tabItems.map((item, index) => (
                     <TabPanel key={index} value={value} index={index}>
-                        {item === 'Chatflows' && (
+                        {item === 'Проекты' && (
                             <Grid container spacing={gridSpacing}>
                                 {!isChatflowsLoading &&
                                     getAllChatflowsMarketplacesApi.data &&
@@ -177,7 +177,7 @@ const Marketplace = () => {
                                     ))}
                             </Grid>
                         )}
-                        {item === 'Tools' && (
+                        {item === 'Инструменты' && (
                             <Grid container spacing={gridSpacing}>
                                 {!isToolsLoading &&
                                     getAllToolsMarketplacesApi.data &&
@@ -213,7 +213,7 @@ const Marketplace = () => {
                                 alt='WorkflowEmptySVG'
                             />
                         </Box>
-                        <div>No Marketplace Yet</div>
+                        <div>Пока нет Marketplace</div>
                     </Stack>
                 )}
             </MainCard>
