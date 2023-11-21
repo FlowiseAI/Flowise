@@ -699,7 +699,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                 {message.sourceDocuments && (
                                                                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                                         {removeDuplicateURL(message).map((source, index) => {
-                                                                            const URL = isValidURL(source.metadata.source)
+                                                                            const URL =
+                                                                                source.metadata && source.metadata.source
+                                                                                    ? isValidURL(source.metadata.source)
+                                                                                    : undefined
                                                                             return (
                                                                                 <Chip
                                                                                     size='small'
