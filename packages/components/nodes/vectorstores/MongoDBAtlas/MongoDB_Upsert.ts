@@ -10,7 +10,7 @@ import { MongoDBSearchBase } from './MongoDBSearchBase'
 class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
     constructor() {
         super()
-        this.label = 'MongoDB Upsert Document'
+        this.label = 'MongoDB Atlas Upsert Document'
         this.name = 'MongoDBUpsert'
         this.version = 1.0
         this.description = 'Upsert documents to MongoDB Atlas'

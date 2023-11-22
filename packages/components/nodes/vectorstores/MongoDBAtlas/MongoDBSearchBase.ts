@@ -22,6 +22,7 @@ export abstract class MongoDBSearchBase {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -33,6 +34,7 @@ export abstract class MongoDBSearchBase {
         this.icon = 'mongodb.png'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
