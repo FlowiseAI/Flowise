@@ -10,7 +10,6 @@ import {
     Stack,
     Table,
     TableBody,
-    TableCell,
     TableContainer,
     TableHead,
     TableRow,
@@ -24,7 +23,8 @@ import {
     InputAdornment,
     ButtonGroup
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import TableCell, { tableCellClasses } from '@mui/material/TableCell'
+import { useTheme, styled } from '@mui/material/styles'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
@@ -60,12 +60,24 @@ import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 
 // ==============================|| APIKey ||============================== //
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+        backgroundColor: theme.palette.action.hover
+    }
+}))
+
+const StyledTableRow = styled(TableRow)(() => ({
+    // hide last border
+    '&:last-child td, &:last-child th': {
+        border: 0
+    }
+}))
 
 function APIKeyRow(props) {
     const [open, setOpen] = useState(false)
     return (
         <>
-            <TableRow sx={{ '& td': { border: 0 } }}>
+            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell scope='row'>{props.apiKey.keyName}</TableCell>
                 <TableCell>
                     {props.showApiKeys.includes(props.apiKey.apiKey)
@@ -100,7 +112,7 @@ function APIKeyRow(props) {
                 <TableCell>
                     {props.apiKey.chatFlows.length}{' '}
                     {props.apiKey.chatFlows.length > 0 && (
-                        <IconButton aria-label='expand row' size='small' onClick={() => setOpen(!open)}>
+                        <IconButton aria-label='expand row' size='small' color='inherit' onClick={() => setOpen(!open)}>
                             {props.apiKey.chatFlows.length > 0 && open ? <IconChevronsUp /> : <IconChevronsDown />}
                         </IconButton>
                     )}
@@ -117,42 +129,44 @@ function APIKeyRow(props) {
                     </IconButton>
                 </TableCell>
             </TableRow>
-            <TableRow>
-                <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>
-                    <Collapse in={open} timeout='auto' unmountOnExit>
-                        <Box sx={{ margin: 1 }}>
-                            <Table size='small' aria-label='flows'>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={{ width: '30%' }}>Chatflow Name</TableCell>
-                                        <TableCell sx={{ width: '20%' }}>Modified On</TableCell>
-                                        <TableCell sx={{ width: '50%' }}>Category</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {props.apiKey.chatFlows.map((flow, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell component='th' scope='row'>
-                                                {flow.flowName}
-                                            </TableCell>
-                                            <TableCell>{moment(flow.updatedDate).format('DD-MMM-YY')}</TableCell>
-                                            <TableCell>
-                                                &nbsp;
-                                                {flow.category &&
-                                                    flow.category
-                                                        .split(';')
-                                                        .map((tag, index) => (
-                                                            <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
-                                                        ))}
-                                            </TableCell>
+            {open && (
+                <TableRow sx={{ '& td': { border: 0 } }}>
+                    <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>
+                        <Collapse in={open} timeout='auto' unmountOnExit>
+                            <Box sx={{ mt: 1, mb: 2, borderRadius: '15px', border: '1px solid' }}>
+                                <Table aria-label='chatflow table'>
+                                    <TableHead>
+                                        <TableRow>
+                                            <StyledTableCell sx={{ width: '30%', borderTopLeftRadius: '15px' }}>
+                                                Chatflow Name
+                                            </StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>Modified On</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '50%', borderTopRightRadius: '15px' }}>Category</StyledTableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    </Collapse>
-                </TableCell>
-            </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {props.apiKey.chatFlows.map((flow, index) => (
+                                            <StyledTableRow key={index}>
+                                                <TableCell>{flow.flowName}</TableCell>
+                                                <TableCell>{moment(flow.updatedDate).format('DD-MMM-YY')}</TableCell>
+                                                <TableCell>
+                                                    &nbsp;
+                                                    {flow.category &&
+                                                        flow.category
+                                                            .split(';')
+                                                            .map((tag, index) => (
+                                                                <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
+                                                            ))}
+                                                </TableCell>
+                                            </StyledTableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Box>
+                        </Collapse>
+                    </TableCell>
+                </TableRow>
+            )}
         </>
     )
 }
