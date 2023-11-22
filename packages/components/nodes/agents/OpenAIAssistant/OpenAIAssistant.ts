@@ -358,7 +358,7 @@ class OpenAIAssistant_Agents implements INode {
                     const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
                     const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', `${fileObj.filename}.png`)
 
-                    await downloadFile(fileObj, filePath, dirPath, openAIApiKey)
+                    await downloadImg(openai, fileId, filePath, dirPath)
 
                     const bitmap = fsDefault.readFileSync(filePath)
                     const base64String = Buffer.from(bitmap).toString('base64')
@@ -378,6 +378,22 @@ class OpenAIAssistant_Agents implements INode {
             throw new Error(error)
         }
     }
+}
+
+const downloadImg = async (openai: OpenAI, fileId: string, filePath: string, dirPath: string) => {
+    const response = await openai.files.content(fileId)
+
+    // Extract the binary data from the Response object
+    const image_data = await response.arrayBuffer()
+
+    // Convert the binary data to a Buffer
+    const image_data_buffer = Buffer.from(image_data)
+
+    // Save the image to a specific location
+    if (!fsDefault.existsSync(dirPath)) {
+        fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+    }
+    fsDefault.writeFileSync(filePath, image_data_buffer)
 }
 
 const downloadFile = async (fileObj: any, filePath: string, dirPath: string, openAIApiKey: string) => {
