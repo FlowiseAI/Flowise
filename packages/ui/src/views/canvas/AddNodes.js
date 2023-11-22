@@ -58,7 +58,7 @@ const AddNodes = ({ nodesData, node }) => {
     const ps = useRef()
 
     // Temporary method to handle Deprecating Vector Store and New ones
-    const categorizeVectorStores = (nodes) => {
+    const categorizeVectorStores = (nodes, accordianCategories, isFilter) => {
         const obj = { ...nodes }
         const vsNodes = obj['Vector Stores'] ?? []
         const deprecatingNodes = []
@@ -69,7 +69,9 @@ const AddNodes = ({ nodesData, node }) => {
         }
         delete obj['Vector Stores']
         obj['Vector Stores;DEPRECATING'] = deprecatingNodes
+        accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
         obj['Vector Stores;NEW'] = newNodes
+        accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
         setNodes(obj)
     }
 
@@ -112,7 +114,7 @@ const AddNodes = ({ nodesData, node }) => {
             return r
         }, Object.create(null))
         setNodes(result)
-        categorizeVectorStores(result)
+        categorizeVectorStores(result, accordianCategories, isFilter)
         setCategoryExpanded(accordianCategories)
     }
 
