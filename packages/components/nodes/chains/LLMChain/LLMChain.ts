@@ -38,14 +38,6 @@ class LLMChain_Chains implements INode {
                 type: 'BaseLanguageModel'
             },
             {
-                label: 'Input Moderation',
-                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
-                name: 'inputModeration',
-                type: 'Moderation',
-                optional: true,
-                list: true
-            },
-            {
                 label: 'Prompt',
                 name: 'prompt',
                 type: 'BasePromptTemplate'
@@ -55,6 +47,14 @@ class LLMChain_Chains implements INode {
                 name: 'outputParser',
                 type: 'BaseLLMOutputParser',
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             },
             {
                 label: 'Chain Name',
@@ -166,6 +166,7 @@ const runPrediction = async (
             // Use the output of the moderation chain as input for the LLM chain
             input = await checkInputs(moderations, chain.llm, input)
         } catch (e) {
+            await new Promise((resolve) => setTimeout(resolve, 500))
             streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
             return formatResponse(e.message)
         }

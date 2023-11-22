@@ -15,13 +15,13 @@ class SimplePromptModeration implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Moderation - Simple Prompt'
+        this.label = 'Simple Prompt Moderation'
         this.name = 'inputModerationSimple'
         this.version = 1.0
         this.type = 'Moderation'
         this.icon = 'simple_moderation.png'
         this.category = 'Responsible AI'
-        this.description = 'Detecting and mitigating prompt attacks'
+        this.description = 'Check whether input consists of any text from Deny list, and prevent being sent to LLM'
         this.baseClasses = [this.type, ...getBaseClasses(Moderation)]
         this.inputs = [
             {
@@ -44,7 +44,6 @@ class SimplePromptModeration implements INode {
         ]
     }
 
-    // eslint-disable-next-line unused-imports/no-unused-vars
     async init(nodeData: INodeData): Promise<any> {
         const denyList = nodeData.inputs?.denyList as string
         const moderationErrorMessage = nodeData.inputs?.moderationErrorMessage as string
