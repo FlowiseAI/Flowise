@@ -474,10 +474,14 @@ export const removeDuplicateURL = (message) => {
     if (!message.sourceDocuments) return newSourceDocuments
 
     message.sourceDocuments.forEach((source) => {
-        if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
-            visitedURLs.push(source.metadata.source)
-            newSourceDocuments.push(source)
-        } else if (!isValidURL(source.metadata.source)) {
+        if (source.metadata && source.metadata.source) {
+            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+                visitedURLs.push(source.metadata.source)
+                newSourceDocuments.push(source)
+            } else if (!isValidURL(source.metadata.source)) {
+                newSourceDocuments.push(source)
+            }
+        } else {
             newSourceDocuments.push(source)
         }
     })

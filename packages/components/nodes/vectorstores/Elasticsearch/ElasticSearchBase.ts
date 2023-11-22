@@ -146,13 +146,26 @@ export abstract class ElasticSearchBase {
         } else if (cloudId) {
             let username = getCredentialParam('username', credentialData, nodeData)
             let password = getCredentialParam('password', credentialData, nodeData)
-            elasticSearchClientOptions = {
-                cloud: {
-                    id: cloudId
-                },
-                auth: {
-                    username: username,
-                    password: password
+            if (cloudId.startsWith('http')) {
+                elasticSearchClientOptions = {
+                    node: cloudId,
+                    auth: {
+                        username: username,
+                        password: password
+                    },
+                    tls: {
+                        rejectUnauthorized: false
+                    }
+                }
+            } else {
+                elasticSearchClientOptions = {
+                    cloud: {
+                        id: cloudId
+                    },
+                    auth: {
+                        username: username,
+                        password: password
+                    }
                 }
             }
         }

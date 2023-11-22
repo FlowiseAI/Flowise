@@ -139,6 +139,7 @@ export class App {
                 '/api/v1/node-icon/',
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
+                '/api/v1/openai-assistants-file',
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
@@ -356,8 +357,12 @@ export class App {
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
-            // Update chatflowpool inSync to false, to build Langchain again because data has been changed
-            this.chatflowPool.updateInSync(chatflow.id, false)
+            // chatFlowPool is initialized only when a flow is opened
+            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+            if (this.chatflowPool) {
+                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                this.chatflowPool.updateInSync(chatflow.id, false)
+            }
 
             return res.json(result)
         })
@@ -783,8 +788,8 @@ export class App {
 
                     await openai.beta.assistants.update(assistantDetails.id, {
                         name: assistantDetails.name,
-                        description: assistantDetails.description,
-                        instructions: assistantDetails.instructions,
+                        description: assistantDetails.description ?? '',
+                        instructions: assistantDetails.instructions ?? '',
                         model: assistantDetails.model,
                         tools: filteredTools,
                         file_ids: uniqWith(
@@ -953,13 +958,21 @@ export class App {
 
                 const results = await this.AppDataSource.getRepository(Assistant).delete({ id: req.params.id })
 
-                await openai.beta.assistants.del(assistantDetails.id)
+                if (req.query.isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
 
                 return res.json(results)
             } catch (error: any) {
                 if (error.status === 404 && error.type === 'invalid_request_error') return res.send('OK')
                 return res.status(500).send(`Error deleting assistant: ${error}`)
             }
+        })
+
+        // Download file from assistant
+        this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
+            const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
+            res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
+            const fileStream = fs.createReadStream(filePath)
+            fileStream.pipe(res)
         })
 
         // ----------------------------------------
@@ -1524,6 +1537,7 @@ export class App {
             }
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
+            if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
             await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)

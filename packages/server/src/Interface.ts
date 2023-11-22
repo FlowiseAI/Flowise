@@ -30,6 +30,7 @@ export interface IChatMessage {
     chatflowid: string
     sourceDocuments?: string
     usedTools?: string
+    fileAnnotations?: string
     chatType: string
     chatId: string
     memoryType?: string

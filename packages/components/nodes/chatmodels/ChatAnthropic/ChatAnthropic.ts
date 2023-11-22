@@ -19,7 +19,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatAnthropic'
         this.icon = 'chatAnthropic.png'
         this.category = 'Chat Models'
@@ -47,6 +47,11 @@ class ChatAnthropic_ChatModels implements INode {
                         label: 'claude-2',
                         name: 'claude-2',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
+                    },
+                    {
+                        label: 'claude-2.1',
+                        name: 'claude-2.1',
+                        description: 'Claude 2 latest full version'
                     },
                     {
                         label: 'claude-instant-1',
