@@ -560,7 +560,7 @@
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Pinecone Vector Database",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -678,7 +678,7 @@
                 "type": "Chroma",
                 "baseClasses": ["Chroma", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Chroma Vector Database",
+                "description": "Upsert embedded data and perform similarity search upon query using Chroma, an open-source embedding database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -796,7 +796,7 @@
                 "type": "Supabase",
                 "baseClasses": ["Supabase", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Supabase using pgvector",
+                "description": "Upsert embedded data and perform similarity search upon query using Supabase via pgvector extension",
                 "inputParams": [
                     {
                         "label": "Connect Credential",

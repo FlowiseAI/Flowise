@@ -26,7 +26,7 @@ class Vectara_VectorStores implements INode {
         this.type = 'Vectara'
         this.icon = 'vectara.png'
         this.category = 'Vector Stores'
-        this.description = 'Upsert or Load data to Vectara Vector Database'
+        this.description = 'Upsert embedded data and perform similarity search upon query using Vectara, a LLM-powered search-as-a-service'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -65,6 +65,7 @@ class Vectara_VectorStores implements INode {
                 name: 'sentencesBefore',
                 description: 'Number of sentences to fetch before the matched sentence. Defaults to 2.',
                 type: 'number',
+                default: 2,
                 additionalParams: true,
                 optional: true
             },
@@ -73,6 +74,7 @@ class Vectara_VectorStores implements INode {
                 name: 'sentencesAfter',
                 description: 'Number of sentences to fetch after the matched sentence. Defaults to 2.',
                 type: 'number',
+                default: 2,
                 additionalParams: true,
                 optional: true
             },
@@ -189,7 +191,7 @@ class Vectara_VectorStores implements INode {
         const lambda = nodeData.inputs?.lambda as number
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseInt(topK, 10) : 4
+        const k = topK ? parseFloat(topK) : 4
 
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,

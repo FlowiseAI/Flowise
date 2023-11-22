@@ -792,7 +792,7 @@
                 "type": "SingleStore",
                 "baseClasses": ["SingleStore", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to SingleStore Vector Database",
+                "description": "Upsert embedded data and perform similarity search upon query using SingleStore, a fast and distributed cloud relational database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",

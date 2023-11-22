@@ -31,7 +31,7 @@ class Milvus_VectorStores implements INode {
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
-        this.description = 'Upsert or Load data to Milvus Vector Database'
+        this.description = `Upsert embedded data and perform similarity search upon query using Milvus, world's most advanced open-source vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -159,7 +159,7 @@ class Milvus_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
 
         // format data
-        const k = topK ? parseInt(topK, 10) : 4
+        const k = topK ? parseFloat(topK) : 4
 
         // credential
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)

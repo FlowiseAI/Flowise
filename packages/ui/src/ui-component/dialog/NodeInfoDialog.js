@@ -106,6 +106,32 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                         <span style={{ color: '#606c38', fontSize: '0.825rem' }}>version {dialogProps.data.version}</span>
                                     </div>
                                 )}
+                                {dialogProps.data.badge && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            width: 'max-content',
+                                            borderRadius: 15,
+                                            background: dialogProps.data.badge === 'DEPRECATING' ? '#ffe57f' : '#52b69a',
+                                            padding: 5,
+                                            paddingLeft: 10,
+                                            paddingRight: 10,
+                                            marginTop: 5,
+                                            marginLeft: 10,
+                                            marginBottom: 5
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                color: dialogProps.data.badge !== 'DEPRECATING' ? 'white' : 'inherit',
+                                                fontSize: '0.825rem'
+                                            }}
+                                        >
+                                            {dialogProps.data.badge}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

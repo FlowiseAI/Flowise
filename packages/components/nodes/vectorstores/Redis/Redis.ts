@@ -25,7 +25,8 @@ class Redis_VectorStores implements INode {
         this.label = 'Redis'
         this.name = 'redis'
         this.version = 1.0
-        this.description = 'Upsert or Load data to Redis'
+        this.description =
+            'Upsert embedded data and perform similarity search upon query using Redis, an open source, in-memory data structure store'
         this.type = 'Redis'
         this.icon = 'redis.svg'
         this.category = 'Vector Stores'

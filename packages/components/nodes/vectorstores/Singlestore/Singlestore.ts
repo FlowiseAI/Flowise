@@ -26,7 +26,8 @@ class SingleStore_VectorStores implements INode {
         this.type = 'SingleStore'
         this.icon = 'singlestore.svg'
         this.category = 'Vector Stores'
-        this.description = 'Upsert or Load data to SingleStore Vector Database'
+        this.description =
+            'Upsert embedded data and perform similarity search upon query using SingleStore, a fast and distributed cloud relational database'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -180,9 +181,7 @@ class SingleStore_VectorStores implements INode {
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
-        let vectorStore: SingleStoreVectorStore
-
-        vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
+        const vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)

@@ -83,8 +83,10 @@ const CanvasNode = ({ data }) => {
         if (componentNode) {
             if (!data.version) {
                 setWarningMessage(nodeVersionEmptyMessage(componentNode.version))
-            } else {
-                if (componentNode.version > data.version) setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
+            } else if (data.version && componentNode.version > data.version) {
+                setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
+            } else if (componentNode.badge === 'DEPRECATING') {
+                setWarningMessage('This node will be deprecated in the next release. Change to a new node tagged with NEW')
             }
         }
     }, [canvas.componentNodes, data.name, data.version])

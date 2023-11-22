@@ -634,7 +634,7 @@
                 "type": "Redis",
                 "baseClasses": ["Redis", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Redis",
+                "description": "Upsert embedded data and perform similarity search upon query using Redis, an open source, in-memory data structure store",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -776,7 +776,7 @@
                 "type": "Faiss",
                 "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Faiss Vector Store",
+                "description": "Upsert embedded data and perform similarity search upon query using Faiss library from Meta",
                 "inputParams": [
                     {
                         "label": "Base Path to load",

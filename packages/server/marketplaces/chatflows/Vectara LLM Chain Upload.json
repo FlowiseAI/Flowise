@@ -305,7 +305,7 @@
                 "type": "Vectara",
                 "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Vectara Vector Database",
+                "description": "Upsert embedded data and perform similarity search upon query using Vectara, a LLM-powered search-as-a-service",
                 "inputParams": [
                     {
                         "label": "Connect Credential",

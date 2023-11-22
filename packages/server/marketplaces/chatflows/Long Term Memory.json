@@ -351,7 +351,7 @@
                 "type": "Qdrant",
                 "baseClasses": ["Qdrant", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert or Load data to Qdrant Vector Database",
+                "description": "Upsert embedded data and perform similarity search upon query using Qdrant, a scalable open source vector database written in Rust",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
