@@ -13,7 +13,7 @@ const settings = {
     children: [
         {
             id: 'conversationStarters',
-            title: 'Set Starter Prompts',
+            title: 'Starter Prompts',
             type: 'item',
             url: '',
             icon: icons.IconPictureInPictureOff

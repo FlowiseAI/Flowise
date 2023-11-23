@@ -210,8 +210,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     useEffect(() => {
         if (getChatflowConfig.data) {
-            if (getChatflowConfig.data?.starterPrompt && JSON.parse(getChatflowConfig.data?.starterPrompt)) {
-                setStarterPrompts(JSON.parse(getChatflowConfig.data?.starterPrompt))
+            if (
+                getChatflowConfig.data?.chatbotConfig?.starterPrompts &&
+                JSON.parse(getChatflowConfig.data?.chatbotConfig?.starterPrompts)
+            ) {
+                setStarterPrompts(JSON.parse(getChatflowConfig.data?.chatbotConfig?.starterPrompts))
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

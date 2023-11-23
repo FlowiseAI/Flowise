@@ -57,7 +57,9 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
     const onSave = async () => {
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
-                starterPrompt: JSON.stringify(inputFields)
+                chatbotConfig: {
+                    starterPrompts: JSON.stringify(inputFields)
+                }
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -94,9 +96,9 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     useEffect(() => {
-        if (dialogProps.chatflow && dialogProps.chatflow.starterPrompt) {
+        if (dialogProps.chatflow && dialogProps.chatbotConfig.starterPrompts) {
             try {
-                setInputFields(JSON.parse(dialogProps.chatflow.starterPrompt))
+                setInputFields(JSON.parse(dialogProps.chatbotConfig.starterPrompts))
             } catch (e) {
                 setInputFields([
                     {
@@ -126,7 +128,7 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Set Conversation Starter Prompts
+                {dialogProps.title || 'Conversation Starter Prompts'}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ p: 2 }}>

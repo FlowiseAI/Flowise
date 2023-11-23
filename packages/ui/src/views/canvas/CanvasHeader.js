@@ -61,7 +61,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             handleDeleteFlow()
         } else if (setting === 'conversationStarters') {
             setConversationStartersDialogProps({
-                title: 'Set Conversation Starters - ' + chatflow.name,
+                title: 'Starter Prompts - ' + chatflow.name,
                 chatflow: chatflow
             })
             setConversationStartersDialogOpen(true)

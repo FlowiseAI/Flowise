@@ -8,7 +8,6 @@ import { AddAnalytic1694432361423 } from './1694432361423-AddAnalytic'
 import { AddChatHistory1694658767766 } from './1694658767766-AddChatHistory'
 import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEntity'
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
-import { AddStarterPrompt1700565042576 } from './1700565042576-AddStarterPromptsToChatFlow'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -20,6 +19,5 @@ export const mysqlMigrations = [
     AddAnalytic1694432361423,
     AddChatHistory1694658767766,
     AddAssistantEntity1699325775451,
-    AddUsedToolsToChatMessage1699481607341,
-    AddStarterPrompt1700565042576
+    AddUsedToolsToChatMessage1699481607341
 ]
