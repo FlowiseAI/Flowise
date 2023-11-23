@@ -3,123 +3,12 @@
     "nodes": [
         {
             "width": 300,
-            "height": 524,
-            "id": "vectaraUpload_0",
-            "position": { "x": 219.0098475967174, "y": 189.74396248534583 },
-            "type": "customNode",
-            "data": {
-                "id": "vectaraUpload_0",
-                "label": "Vectara Upload File",
-                "version": 1,
-                "name": "vectaraUpload",
-                "type": "Vectara",
-                "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Upload files to Vectara",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["vectaraApi"],
-                        "id": "vectaraUpload_0-input-credential-credential"
-                    },
-                    {
-                        "label": "File",
-                        "name": "file",
-                        "description": "File to upload to Vectara. Supported file types: https://docs.vectara.com/docs/api-reference/indexing-apis/file-upload/file-upload-filetypes",
-                        "type": "file",
-                        "id": "vectaraUpload_0-input-file-file"
-                    },
-                    {
-                        "label": "Metadata Filter",
-                        "name": "filter",
-                        "description": "Filter to apply to Vectara metadata. Refer to the <a target=\"_blank\" href=\"https://docs.flowiseai.com/vector-stores/vectara\">documentation</a> on how to use Vectara filters with Flowise.",
-                        "type": "string",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpload_0-input-filter-string"
-                    },
-                    {
-                        "label": "Sentences Before",
-                        "name": "sentencesBefore",
-                        "description": "Number of sentences to fetch before the matched sentence. Defaults to 2.",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpload_0-input-sentencesBefore-number"
-                    },
-                    {
-                        "label": "Sentences After",
-                        "name": "sentencesAfter",
-                        "description": "Number of sentences to fetch after the matched sentence. Defaults to 2.",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpload_0-input-sentencesAfter-number"
-                    },
-                    {
-                        "label": "Lambda",
-                        "name": "lambda",
-                        "description": "Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpload_0-input-lambda-number"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Defaults to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "vectaraUpload_0-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "filter": "",
-                    "sentencesBefore": "",
-                    "sentencesAfter": "",
-                    "lambda": "",
-                    "topK": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "vectaraUpload_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Vectara Retriever",
-                                "type": "Vectara | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "vectaraUpload_0-output-vectorStore-Vectara|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Vectara Vector Store",
-                                "type": "Vectara | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": { "output": "retriever" },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": { "x": 219.0098475967174, "y": 189.74396248534583 },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 525,
+            "height": 574,
             "id": "chatOpenAI_0",
-            "position": { "x": 669.6533996522251, "y": 177.86181519287192 },
+            "position": {
+                "x": 581.1784360612766,
+                "y": -229.3906666911439
+            },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
@@ -143,13 +32,34 @@
                         "name": "modelName",
                         "type": "options",
                         "options": [
-                            { "label": "gpt-4", "name": "gpt-4" },
-                            { "label": "gpt-4-0613", "name": "gpt-4-0613" },
-                            { "label": "gpt-4-32k", "name": "gpt-4-32k" },
-                            { "label": "gpt-4-32k-0613", "name": "gpt-4-32k-0613" },
-                            { "label": "gpt-3.5-turbo", "name": "gpt-3.5-turbo" },
-                            { "label": "gpt-3.5-turbo-0613", "name": "gpt-3.5-turbo-0613" },
-                            { "label": "gpt-3.5-turbo-16k", "name": "gpt-3.5-turbo-16k" },
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
                             {
                                 "label": "gpt-3.5-turbo-16k-0613",
                                 "name": "gpt-3.5-turbo-16k-0613"
@@ -241,7 +151,7 @@
                 ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
-                    "temperature": "0.5",
+                    "temperature": "0.6",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -262,14 +172,20 @@
                 "selected": false
             },
             "selected": false,
-            "positionAbsolute": { "x": 669.6533996522251, "y": 177.86181519287192 },
+            "positionAbsolute": {
+                "x": 581.1784360612766,
+                "y": -229.3906666911439
+            },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 481,
+            "height": 480,
             "id": "conversationalRetrievalQAChain_0",
-            "position": { "x": 1135.5490908971935, "y": 201.62146241822506 },
+            "position": {
+                "x": 979.9713511176517,
+                "y": 200.09513217589273
+            },
             "type": "customNode",
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
@@ -348,7 +264,7 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{vectaraUpload_0.data.instance}}",
+                    "vectorStoreRetriever": "{{vectara_0.data.instance}}",
                     "memory": "",
                     "returnSourceDocuments": true,
                     "systemMessagePrompt": "",
@@ -367,19 +283,146 @@
             },
             "selected": false,
             "dragging": false,
-            "positionAbsolute": { "x": 1135.5490908971935, "y": 201.62146241822506 }
+            "positionAbsolute": {
+                "x": 979.9713511176517,
+                "y": 200.09513217589273
+            }
+        },
+        {
+            "width": 300,
+            "height": 535,
+            "id": "vectara_0",
+            "position": {
+                "x": 199.28476672510158,
+                "y": 177.63260741741112
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectara_0",
+                "label": "Vectara",
+                "version": 1,
+                "name": "vectara",
+                "type": "Vectara",
+                "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Vectara, a LLM-powered search-as-a-service",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["vectaraApi"],
+                        "id": "vectara_0-input-credential-credential"
+                    },
+                    {
+                        "label": "File",
+                        "name": "file",
+                        "description": "File to upload to Vectara. Supported file types: https://docs.vectara.com/docs/api-reference/indexing-apis/file-upload/file-upload-filetypes",
+                        "type": "file",
+                        "optional": true,
+                        "id": "vectara_0-input-file-file"
+                    },
+                    {
+                        "label": "Metadata Filter",
+                        "name": "filter",
+                        "description": "Filter to apply to Vectara metadata. Refer to the <a target=\"_blank\" href=\"https://docs.flowiseai.com/vector-stores/vectara\">documentation</a> on how to use Vectara filters with Flowise.",
+                        "type": "string",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-filter-string"
+                    },
+                    {
+                        "label": "Sentences Before",
+                        "name": "sentencesBefore",
+                        "description": "Number of sentences to fetch before the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-sentencesBefore-number"
+                    },
+                    {
+                        "label": "Sentences After",
+                        "name": "sentencesAfter",
+                        "description": "Number of sentences to fetch after the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-sentencesAfter-number"
+                    },
+                    {
+                        "label": "Lambda",
+                        "name": "lambda",
+                        "description": "Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-lambda-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Defaults to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "vectara_0-input-document-Document"
+                    }
+                ],
+                "inputs": {
+                    "document": "",
+                    "filter": "",
+                    "sentencesBefore": "",
+                    "sentencesAfter": "",
+                    "lambda": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "vectara_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Vectara Retriever",
+                                "type": "Vectara | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "vectara_0-output-vectorStore-Vectara|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Vectara Vector Store",
+                                "type": "Vectara | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 199.28476672510158,
+                "y": 177.63260741741112
+            },
+            "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "vectaraUpload_0",
-            "sourceHandle": "vectaraUpload_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "type": "buttonedge",
-            "id": "vectaraUpload_0-vectaraUpload_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "data": { "label": "" }
-        },
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
@@ -387,7 +430,20 @@
             "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
-            "data": { "label": "" }
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "vectara_0",
+            "sourceHandle": "vectara_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "vectara_0-vectara_0-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
         }
     ]
 }
