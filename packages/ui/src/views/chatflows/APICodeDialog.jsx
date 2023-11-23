@@ -20,36 +20,36 @@ import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // Project import
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
 import Configuration from './Configuration'
 
 // Const
-import { baseURL } from 'store/constant'
-import { SET_CHATFLOW } from 'store/actions'
+import { baseURL } from '@/store/constant'
+import { SET_CHATFLOW } from '@/store/actions'
 
 // Images
-import pythonSVG from 'assets/images/python.svg'
-import javascriptSVG from 'assets/images/javascript.svg'
-import cURLSVG from 'assets/images/cURL.svg'
-import EmbedSVG from 'assets/images/embed.svg'
-import ShareChatbotSVG from 'assets/images/sharing.png'
-import settingsSVG from 'assets/images/settings.svg'
+import pythonSVG from '@/assets/images/python.svg'
+import javascriptSVG from '@/assets/images/javascript.svg'
+import cURLSVG from '@/assets/images/cURL.svg'
+import EmbedSVG from '@/assets/images/embed.svg'
+import ShareChatbotSVG from '@/assets/images/sharing.png'
+import settingsSVG from '@/assets/images/settings.svg'
 import { IconBulb } from '@tabler/icons'
 
 // API
-import apiKeyApi from 'api/apikey'
-import chatflowsApi from 'api/chatflows'
-import configApi from 'api/config'
+import apiKeyApi from '@/api/apikey'
+import chatflowsApi from '@/api/chatflows'
+import configApi from '@/api/config'
 
 // Hooks
-import useApi from 'hooks/useApi'
-import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
-import { TableViewOnly } from 'ui-component/table/Table'
+import useApi from '@/hooks/useApi'
+import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
+import { TableViewOnly } from '@/ui-component/table/Table'
 
 // Helpers
-import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from 'utils/genericHelper'
+import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from '@/utils/genericHelper'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props

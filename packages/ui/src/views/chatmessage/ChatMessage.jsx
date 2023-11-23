@@ -14,25 +14,25 @@ import { useTheme } from '@mui/material/styles'
 import { IconSend, IconDownload } from '@tabler/icons'
 
 // project import
-import { CodeBlock } from 'ui-component/markdown/CodeBlock'
-import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
-import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
+import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
+import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 import './ChatMessage.css'
 
 // api
-import chatmessageApi from 'api/chatmessage'
-import chatflowsApi from 'api/chatflows'
-import predictionApi from 'api/prediction'
+import chatmessageApi from '@/api/chatmessage'
+import chatflowsApi from '@/api/chatflows'
+import predictionApi from '@/api/prediction'
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from '@/hooks/useApi'
 
 // Const
-import { baseURL, maxScroll } from 'store/constant'
+import { baseURL, maxScroll } from '@/store/constant'
 
-import robotPNG from 'assets/images/robot.png'
-import userPNG from 'assets/images/account.png'
-import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
+import robotPNG from '@/assets/images/robot.png'
+import userPNG from '@/assets/images/account.png'
+import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from '@/utils/genericHelper'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
