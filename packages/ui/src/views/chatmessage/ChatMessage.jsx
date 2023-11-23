@@ -7,10 +7,11 @@ import rehypeMathjax from 'rehype-mathjax'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
+import axios from 'axios'
 
-import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip } from '@mui/material'
+import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconSend } from '@tabler/icons'
+import { IconSend, IconDownload } from '@tabler/icons'
 
 // project import
 import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
@@ -139,7 +140,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
                     setMessages((prevMessages) => [
                         ...prevMessages,
-                        { message: text, sourceDocuments: data?.sourceDocuments, usedTools: data?.usedTools, type: 'apiMessage' }
+                        {
+                            message: text,
+                            sourceDocuments: data?.sourceDocuments,
+                            usedTools: data?.usedTools,
+                            fileAnnotations: data?.fileAnnotations,
+                            type: 'apiMessage'
+                        }
                     ])
                 }
 
@@ -170,6 +177,26 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
     }
 
+    const downloadFile = async (fileAnnotation) => {
+        try {
+            const response = await axios.post(
+                `${baseURL}/api/v1/openai-assistants-file`,
+                { fileName: fileAnnotation.fileName },
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: response.headers['content-type'] })
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.download = fileAnnotation.fileName
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+        } catch (error) {
+            console.error('Download failed:', error)
+        }
+    }
+
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data?.length) {
@@ -183,6 +210,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 }
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
+                if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -331,10 +359,30 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                     {message.message}
                                                 </MemoizedReactMarkdown>
                                             </div>
+                                            {message.fileAnnotations && (
+                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                    {message.fileAnnotations.map((fileAnnotation, index) => {
+                                                        return (
+                                                            <Button
+                                                                sx={{ fontSize: '0.85rem', textTransform: 'none', mb: 1 }}
+                                                                key={index}
+                                                                variant='outlined'
+                                                                onClick={() => downloadFile(fileAnnotation)}
+                                                                endIcon={<IconDownload color={theme.palette.primary.main} />}
+                                                            >
+                                                                {fileAnnotation.fileName}
+                                                            </Button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                     {removeDuplicateURL(message).map((source, index) => {
-                                                        const URL = isValidURL(source.metadata.source)
+                                                        const URL =
+                                                            source.metadata && source.metadata.source
+                                                                ? isValidURL(source.metadata.source)
+                                                                : undefined
                                                         return (
                                                             <Chip
                                                                 size='small'

@@ -138,6 +138,7 @@ export class App {
                 '/api/v1/node-icon/',
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
+                '/api/v1/openai-assistants-file',
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
@@ -355,8 +356,12 @@ export class App {
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
-            // Update chatflowpool inSync to false, to build Langchain again because data has been changed
-            this.chatflowPool.updateInSync(chatflow.id, false)
+            // chatFlowPool is initialized only when a flow is opened
+            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+            if (this.chatflowPool) {
+                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                this.chatflowPool.updateInSync(chatflow.id, false)
+            }
 
             return res.json(result)
         })
@@ -782,8 +787,8 @@ export class App {
 
                     await openai.beta.assistants.update(assistantDetails.id, {
                         name: assistantDetails.name,
-                        description: assistantDetails.description,
-                        instructions: assistantDetails.instructions,
+                        description: assistantDetails.description ?? '',
+                        instructions: assistantDetails.instructions ?? '',
                         model: assistantDetails.model,
                         tools: filteredTools,
                         file_ids: uniqWith(
@@ -952,13 +957,21 @@ export class App {
 
                 const results = await this.AppDataSource.getRepository(Assistant).delete({ id: req.params.id })
 
-                await openai.beta.assistants.del(assistantDetails.id)
+                if (req.query.isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
 
                 return res.json(results)
             } catch (error: any) {
                 if (error.status === 404 && error.type === 'invalid_request_error') return res.send('OK')
                 return res.status(500).send(`Error deleting assistant: ${error}`)
             }
+        })
+
+        // Download file from assistant
+        this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
+            const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
+            res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
+            const fileStream = fs.createReadStream(filePath)
+            fileStream.pipe(res)
         })
 
         // ----------------------------------------
@@ -1135,28 +1148,52 @@ export class App {
         // API Keys
         // ----------------------------------------
 
+        const addChatflowsCount = async (keys: any, res: Response) => {
+            if (keys) {
+                const updatedKeys: any[] = []
+                //iterate through keys and get chatflows
+                for (const key of keys) {
+                    const chatflows = await this.AppDataSource.getRepository(ChatFlow)
+                        .createQueryBuilder('cf')
+                        .where('cf.apikeyid = :apikeyid', { apikeyid: key.id })
+                        .getMany()
+                    const linkedChatFlows: any[] = []
+                    chatflows.map((cf) => {
+                        linkedChatFlows.push({
+                            flowName: cf.name,
+                            category: cf.category,
+                            updatedDate: cf.updatedDate
+                        })
+                    })
+                    key.chatFlows = linkedChatFlows
+                    updatedKeys.push(key)
+                }
+                return res.json(updatedKeys)
+            }
+            return res.json(keys)
+        }
         // Get api keys
         this.app.get('/api/v1/apikey', async (req: Request, res: Response) => {
             const keys = await getAPIKeys()
-            return res.json(keys)
+            return addChatflowsCount(keys, res)
         })
 
         // Add new api key
         this.app.post('/api/v1/apikey', async (req: Request, res: Response) => {
             const keys = await addAPIKey(req.body.keyName)
-            return res.json(keys)
+            return addChatflowsCount(keys, res)
         })
 
         // Update api key
         this.app.put('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await updateAPIKey(req.params.id, req.body.keyName)
-            return res.json(keys)
+            return addChatflowsCount(keys, res)
         })
 
         // Delete new api key
         this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await deleteAPIKey(req.params.id)
-            return res.json(keys)
+            return addChatflowsCount(keys, res)
         })
 
         // Verify api key
@@ -1499,6 +1536,7 @@ export class App {
             }
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
+            if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
             await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
