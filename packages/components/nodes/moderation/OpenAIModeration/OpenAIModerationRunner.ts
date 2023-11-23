@@ -1,4 +1,4 @@
-import { Moderation } from '../ResponsibleAI'
+import { Moderation } from '../Moderation'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { OpenAIModerationChain } from 'langchain/chains'
 

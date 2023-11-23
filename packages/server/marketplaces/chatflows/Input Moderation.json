@@ -17,8 +17,8 @@
                 "version": 1,
                 "name": "inputModerationOpenAI",
                 "type": "Moderation",
-                "baseClasses": ["Moderation", "ResponsibleAI"],
-                "category": "Responsible AI",
+                "baseClasses": ["Moderation"],
+                "category": "Moderation",
                 "description": "Check whether content complies with OpenAI usage policies.",
                 "inputParams": [
                     {
@@ -37,10 +37,10 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|ResponsibleAI",
+                        "id": "inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|Moderation",
                         "name": "inputModerationOpenAI",
                         "label": "Moderation",
-                        "type": "Moderation | ResponsibleAI"
+                        "type": "Moderation"
                     }
                 ],
                 "outputs": {},
@@ -406,11 +406,11 @@
     "edges": [
         {
             "source": "inputModerationOpenAI_0",
-            "sourceHandle": "inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|ResponsibleAI",
+            "sourceHandle": "inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|Moderation",
             "target": "llmChain_0",
             "targetHandle": "llmChain_0-input-inputModeration-Moderation",
             "type": "buttonedge",
-            "id": "inputModerationOpenAI_0-inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|ResponsibleAI-llmChain_0-llmChain_0-input-inputModeration-Moderation",
+            "id": "inputModerationOpenAI_0-inputModerationOpenAI_0-output-inputModerationOpenAI-Moderation|Moderation-llmChain_0-llmChain_0-input-inputModeration-Moderation",
             "data": {
                 "label": ""
             }

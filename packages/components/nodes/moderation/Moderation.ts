@@ -1,9 +1,7 @@
 import { BaseLanguageModel } from 'langchain/base_language'
 import { Server } from 'socket.io'
 
-export abstract class ResponsibleAI {}
-
-export abstract class Moderation extends ResponsibleAI {
+export abstract class Moderation {
     abstract checkForViolations(llm: BaseLanguageModel, input: string): Promise<string>
 }
 

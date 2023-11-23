@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src'
-import { Moderation } from '../ResponsibleAI'
+import { Moderation } from '../Moderation'
 import { SimplePromptModerationRunner } from './SimplePromptModerationRunner'
 
 class SimplePromptModeration implements INode {
@@ -20,7 +20,7 @@ class SimplePromptModeration implements INode {
         this.version = 1.0
         this.type = 'Moderation'
         this.icon = 'simple_moderation.png'
-        this.category = 'Responsible AI'
+        this.category = 'Moderation'
         this.description = 'Check whether input consists of any text from Deny list, and prevent being sent to LLM'
         this.baseClasses = [this.type, ...getBaseClasses(Moderation)]
         this.inputs = [

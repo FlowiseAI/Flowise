@@ -7,7 +7,7 @@ import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
 import { OutputFixingParser } from 'langchain/output_parsers'
-import { checkInputs, Moderation, streamResponse } from '../../responsibleAI/ResponsibleAI'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 
 class LLMChain_Chains implements INode {
     label: string

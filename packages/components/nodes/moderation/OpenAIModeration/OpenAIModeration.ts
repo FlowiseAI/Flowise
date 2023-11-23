@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src'
-import { Moderation } from '../ResponsibleAI'
+import { Moderation } from '../Moderation'
 import { OpenAIModerationRunner } from './OpenAIModerationRunner'
 
 class OpenAIModeration implements INode {
@@ -20,7 +20,7 @@ class OpenAIModeration implements INode {
         this.version = 1.0
         this.type = 'Moderation'
         this.icon = 'openai-moderation.png'
-        this.category = 'Responsible AI'
+        this.category = 'Moderation'
         this.description = 'Check whether content complies with OpenAI usage policies.'
         this.baseClasses = [this.type, ...getBaseClasses(Moderation)]
         this.inputs = [

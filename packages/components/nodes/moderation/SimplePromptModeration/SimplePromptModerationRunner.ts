@@ -1,4 +1,4 @@
-import { Moderation } from '../ResponsibleAI'
+import { Moderation } from '../Moderation'
 import { BaseLanguageModel } from 'langchain/base_language'
 
 export class SimplePromptModerationRunner implements Moderation {
