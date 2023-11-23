@@ -166,6 +166,7 @@ export interface IncomingInput {
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
+    stopNodeId?: string
 }
 
 export interface IActiveChatflows {
