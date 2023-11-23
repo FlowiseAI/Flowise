@@ -1,0 +1,57 @@
+version: '3.8'
+# -------------------
+# "Service", "image" and "container" named the same to easely access via bash cli
+# Ex: docker exec -it flowise bash
+# -------------------
+# Values commented out to avoid errors when running the docker container
+# Uncomment when in use by the ENV
+# -------------------
+services:
+    flowise:
+        build:
+            context: .
+            dockerfile: ./docker/Dockerfile
+            args:
+                DOCKER_WORKSPACE_DIR: ${DOCKER_WORKSPACE_DIR}
+        image: flowise
+        container_name: flowise
+        hostname: flowise
+        restart: always
+        tty: true
+        env_file: .env
+        working_dir: ${DOCKER_WORKSPACE_DIR}
+        environment:
+            - SERVICE_NAME=flowise
+            - PORT=${PORT}
+            # - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+            # - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+            # - DEBUG=${DEBUG}
+            - DATABASE_PATH=${DATABASE_PATH}
+            # - DATABASE_TYPE=${DATABASE_TYPE}
+            # - DATABASE_PORT=${DATABASE_PORT}
+            # - DATABASE_HOST=${DATABASE_HOST}
+            # - DATABASE_NAME=${DATABASE_NAME}
+            # - DATABASE_USER=${DATABASE_USER}
+            # - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - APIKEY_PATH=${APIKEY_PATH}
+            - SECRETKEY_PATH=${SECRETKEY_PATH}
+            # - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            # - LOG_LEVEL=${LOG_LEVEL}
+            # - LOG_PATH=${LOG_PATH}
+        ports:
+            - '${PORT}:${PORT}'
+        volumes:
+            - /.flowise:${DOCKER_WORKSPACE_DIR}/.flowise:delegated
+            # Avoids the need to "copy" file into the container
+            - ./:${DOCKER_WORKSPACE_DIR}:cached
+            # Share this folder with the dev folder to continue work
+            - ./data:${DOCKER_WORKSPACE_DIR}/data:delegated
+            # Keep the node_modules inside the container to avoid performance issues
+            - node_modules:${DOCKER_WORKSPACE_DIR}/node_modules
+        networks:
+            - flowise__network
+networks:
+    flowise__network:
+        driver: bridge
+volumes:
+    node_modules:

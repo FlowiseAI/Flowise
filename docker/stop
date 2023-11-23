@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# @knighttower - https://github.com/knighttower
+# ------------------
+# Docker Stop Script
+# ------------------
+rootDir="$(pwd)"
+dockerDir="$rootDir/docker"
+source "$dockerDir/helpers.sh"
+
+# ------------------
+# Run the docker command
+dockerUser="$(getEnv DOCKER_USER)"
+# Check if it is empty and set the default value if it is
+# User and container will be the same. It avoid issues/confusions with permissions and allows easy access via bash cli.
+if [ "$dockerUser" = "" ]; then
+    dockerUser="flowise"
+fi
+echo -e "\e[32m Using dockerUser ----> $dockerUser!\e[0m"
+
+# When multiple containers are running, is better to use the container name. Otherwise, it may not stop the container.
+docker-compose -p "$dockerUser" stop

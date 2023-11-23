@@ -40,30 +40,9 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 ## 🐳 Docker
 
-### Docker Compose
+**Go here for [Instructions](https://github.com/FlowiseAI/Flowise/blob/main/docker/README.md)**
 
-1. Go to `docker` folder at the root of the project
-2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
-3. `docker-compose up -d`
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
-
-### Docker Image
-
-1. Build the image locally:
-    ```bash
-    docker build --no-cache -t flowise .
-    ```
-2. Run image:
-
-    ```bash
-    docker run -d --name flowise -p 3000:3000 flowise
-    ```
-
-3. Stop image:
-    ```bash
-    docker stop flowise
-    ```
+     
 
 ## 👨‍💻 Developers
 
@@ -88,31 +67,32 @@ Flowise has 3 different modules in a single mono repository.
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2. Use Docker for a better Dev flow (see Docker [Instructions](https://github.com/FlowiseAI/Flowise/blob/main/docker/README.md), and skip the other steps) or Manually: 
+    - Go into repository folder
 
-    ```bash
-    cd Flowise
-    ```
+        ```bash
+        cd Flowise
+        ```
 
-3. Install all dependencies of all modules:
+    - Install all dependencies of all modules:
 
-    ```bash
-    yarn install
-    ```
+        ```bash
+        yarn install
+        ```
 
-4. Build all the code:
+    - Build all the code:
 
-    ```bash
-    yarn build
-    ```
+        ```bash
+        yarn build
+        ```
 
-5. Start the app:
+    - Start the app:
 
-    ```bash
-    yarn start
-    ```
+        ```bash
+        yarn start
+        ```
 
-    You can now access the app on [http://localhost:3000](http://localhost:3000)
+    - You can now access the app on [http://localhost:3000](http://localhost:3000)
 
 6. For development build:
 
