@@ -20,6 +20,7 @@
         "commands": "./dist/commands"
     },
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "build": "tsc",
         "start": "run-script-os",
         "start:windows": "cd bin && run start",

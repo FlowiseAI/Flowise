@@ -10,6 +10,7 @@
         "components"
     ],
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "dev": "kill-port 3000 5173 && pnpm --filter \"./packages/**\" dev",
         "build": "pnpm --filter \"./packages/**\" build",
         "start": "kill-port 3000 && run-script-os",

@@ -5,6 +5,7 @@
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "build": "tsc && gulp",
         "dev": "tsc --watch"
     },

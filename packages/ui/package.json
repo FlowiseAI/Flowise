@@ -59,6 +59,7 @@
         "yup": "^0.32.9"
     },
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "dev": "vite",
         "build": "vite build"
     },
