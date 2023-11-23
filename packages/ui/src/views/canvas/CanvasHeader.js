@@ -16,7 +16,7 @@ import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
 import APICodeDialog from 'views/chatflows/APICodeDialog'
 import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
 import ViewMessagesDialog from 'ui-component/dialog/ViewMessagesDialog'
-import ConversationStarterDialog from 'ui-component/dialog/ConversationStarterDialog'
+import StarterPromptsDialog from 'ui-component/dialog/StarterPromptsDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -385,7 +385,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
             <AnalyseFlowDialog show={analyseDialogOpen} dialogProps={analyseDialogProps} onCancel={() => setAnalyseDialogOpen(false)} />
-            <ConversationStarterDialog
+            <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
                 onCancel={() => setConversationStartersDialogOpen(false)}

@@ -33,7 +33,7 @@ import { baseURL, maxScroll } from 'store/constant'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
-import StarterConversationCard from '../../ui-component/cards/StarterConversationCard'
+import StarterPromptsCard from '../../ui-component/cards/StarterPromptsCard'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -238,11 +238,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     useEffect(() => {
         if (getChatflowConfig.data) {
-            if (
-                getChatflowConfig.data?.chatbotConfig?.starterPrompts &&
-                JSON.parse(getChatflowConfig.data?.chatbotConfig?.starterPrompts)
-            ) {
-                setStarterPrompts(JSON.parse(getChatflowConfig.data?.chatbotConfig?.starterPrompts))
+            if (getChatflowConfig.data?.chatbotConfig && JSON.parse(getChatflowConfig.data?.chatbotConfig)) {
+                let config = JSON.parse(getChatflowConfig.data?.chatbotConfig)
+                if (config.starterPrompts) {
+                    let inputFields = []
+                    Object.getOwnPropertyNames(config.starterPrompts).forEach((key) => {
+                        if (config.starterPrompts[key]) {
+                            inputFields.push(config.starterPrompts[key])
+                        }
+                    })
+                    setStarterPrompts(inputFields)
+                }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -439,11 +445,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 <div style={{ width: '100%' }}>
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                         {messages && messages.length === 1 && (
-                            <StarterConversationCard
-                                starterPrompts={starterPrompts || []}
-                                onPromptClick={handlePromptClick}
-                                isGrid={isDialog}
-                            />
+                            <StarterPromptsCard starterPrompts={starterPrompts || []} onPromptClick={handlePromptClick} isGrid={isDialog} />
                         )}
                         <OutlinedInput
                             inputRef={inputRef}

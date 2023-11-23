@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box'
 import PropTypes from 'prop-types'
 import { Button } from '@mui/material'
-import './StarterConversationCard.css'
+import './StarterPromptsCard.css'
 
-const StarterConversationCard = ({ isGrid, starterPrompts, onPromptClick }) => {
+const StarterPromptsCard = ({ isGrid, starterPrompts, onPromptClick }) => {
     return (
         <Box className={'button-container'} sx={{ maxWidth: isGrid ? 'inherit' : '400px' }}>
             {starterPrompts.map((sp, index) => (
@@ -15,10 +15,10 @@ const StarterConversationCard = ({ isGrid, starterPrompts, onPromptClick }) => {
     )
 }
 
-StarterConversationCard.propTypes = {
+StarterPromptsCard.propTypes = {
     isGrid: PropTypes.bool,
     starterPrompts: PropTypes.arrayOf(PropTypes.string),
     onPromptClick: PropTypes.func
 }
 
-export default StarterConversationCard
+export default StarterPromptsCard

@@ -5,7 +5,18 @@ import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 
 // material-ui
-import { Button, IconButton, Dialog, DialogContent, OutlinedInput, DialogTitle, DialogActions, Box, List, Divider } from '@mui/material'
+import {
+    Button,
+    IconButton,
+    Dialog,
+    DialogContent,
+    OutlinedInput,
+    DialogTitle,
+    DialogActions,
+    Box,
+    List,
+    InputAdornment
+} from '@mui/material'
 import { IconX, IconTrash, IconPlus } from '@tabler/icons'
 
 // Project import
@@ -18,7 +29,7 @@ import useNotifier from 'utils/useNotifier'
 // API
 import chatflowsApi from 'api/chatflows'
 
-const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
+const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -56,10 +67,13 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
 
     const onSave = async () => {
         try {
-            const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
-                chatbotConfig: {
-                    starterPrompts: JSON.stringify(inputFields)
+            let value = {
+                starterPrompts: {
+                    ...inputFields
                 }
+            }
+            const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
+                chatbotConfig: JSON.stringify(value)
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -96,16 +110,30 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     useEffect(() => {
-        if (dialogProps.chatflow && dialogProps.chatbotConfig.starterPrompts) {
+        if (dialogProps.chatflow && dialogProps.chatflow.chatbotConfig) {
             try {
-                setInputFields(JSON.parse(dialogProps.chatbotConfig.starterPrompts))
+                let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
+                if (chatbotConfig.starterPrompts) {
+                    let inputFields = []
+                    Object.getOwnPropertyNames(chatbotConfig.starterPrompts).forEach((key) => {
+                        if (chatbotConfig.starterPrompts[key]) {
+                            inputFields.push(chatbotConfig.starterPrompts[key])
+                        }
+                    })
+                    setInputFields(inputFields)
+                } else {
+                    setInputFields([
+                        {
+                            prompt: ''
+                        }
+                    ])
+                }
             } catch (e) {
                 setInputFields([
                     {
                         prompt: ''
                     }
                 ])
-                console.error(e)
             }
         }
 
@@ -131,27 +159,33 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.title || 'Conversation Starter Prompts'}
             </DialogTitle>
             <DialogContent>
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
                     <List>
                         {inputFields.map((data, index) => {
                             return (
-                                <div key={index} style={{ display: 'flex', width: '100%', flexDirection: 'row' }}>
-                                    <Box sx={{ width: '85%', mb: 1 }}>
+                                <div key={index} style={{ display: 'flex', width: '100%' }}>
+                                    <Box sx={{ width: '90%', mb: 1 }}>
                                         <OutlinedInput
                                             sx={{ width: '100%' }}
                                             key={index}
                                             type='text'
                                             onChange={(e) => handleChange(index, e)}
+                                            size='small'
                                             value={data.prompt}
                                             name='prompt'
+                                            endAdornment={
+                                                <InputAdornment position='end' sx={{ padding: '2px' }}>
+                                                    <IconButton
+                                                        size='small'
+                                                        disabled={inputFields.length === 1}
+                                                        onClick={removeInputFields}
+                                                        edge='end'
+                                                    >
+                                                        <IconTrash />
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
                                         />
-                                    </Box>
-                                    <Box sx={{ width: '10%' }}>
-                                        {inputFields.length !== 1 && (
-                                            <IconButton onClick={removeInputFields}>
-                                                <IconTrash />
-                                            </IconButton>
-                                        )}
                                     </Box>
                                     <Box sx={{ width: '10%' }}>
                                         {index === inputFields.length - 1 && (
@@ -160,6 +194,13 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
                                             </IconButton>
                                         )}
                                     </Box>
+                                    {/*<Box sx={{ width: '10%' }}>*/}
+                                    {/*    {inputFields.length !== 1 && (*/}
+                                    {/*        <IconButton onClick={removeInputFields}>*/}
+                                    {/*            <IconTrash />*/}
+                                    {/*        </IconButton>*/}
+                                    {/*    )}*/}
+                                    {/*</Box>*/}
                                 </div>
                             )
                         })}
@@ -167,10 +208,7 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Divider />
-                <StyledButton variant='contained' color={'error'} onClick={onCancel}>
-                    Cancel
-                </StyledButton>
+                <Button onClick={onCancel}>Cancel</Button>
                 <StyledButton variant='contained' onClick={onSave}>
                     Save
                 </StyledButton>
@@ -181,10 +219,10 @@ const ConversationStarterDialog = ({ show, dialogProps, onCancel }) => {
     return createPortal(component, portalElement)
 }
 
-ConversationStarterDialog.propTypes = {
+StarterPromptsDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
 }
 
-export default ConversationStarterDialog
+export default StarterPromptsDialog
