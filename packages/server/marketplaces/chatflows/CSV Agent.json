@@ -180,6 +180,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
                 "inputAnchors": [
@@ -199,7 +207,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {

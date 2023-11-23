@@ -16,7 +16,7 @@ class MongoDBUrlApi implements INodeCredential {
                 label: 'ATLAS Connection URL',
                 name: 'mongoDBConnectUrl',
                 type: 'string',
-                placeholder: 'mongodb+srv://myDatabaseUser:D1fficultP%40ssw0rd@cluster0.example.mongodb.net/?retryWrites=true&w=majority'
+                placeholder: 'mongodb+srv://<user>:<pwd>@cluster0.example.mongodb.net/?retryWrites=true&w=majority'
             }
         ]
     }
