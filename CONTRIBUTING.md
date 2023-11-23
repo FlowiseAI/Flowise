@@ -44,9 +44,9 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Prerequisite
 
--   Install [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
+-   Install [PNPM](https://pnpm.io/installation)
     ```bash
-    npm i -g yarn
+    npm i -g pnpm
     ```
 
 #### Step by step
@@ -71,19 +71,19 @@ Flowise has 3 different modules in a single mono repository.
 6. Install all dependencies of all modules:
 
     ```bash
-    yarn install
+    pnpm install
     ```
 
 7. Build all the code:
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
 8. Start the app on [http://localhost:3000](http://localhost:3000)
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
 9. For development:
@@ -93,23 +93,23 @@ Flowise has 3 different modules in a single mono repository.
     - Run
 
     ```bash
-    yarn dev
+    pnpm dev
     ```
 
-    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
+    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:5173](http://localhost:5173)
 
-    For changes made in `packages/components`, run `yarn build` again to pickup the changes.
+    For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
 
 10. After making all the changes, run
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
     and
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
     to make sure everything works fine in production.
