@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // material-ui
 import {
@@ -55,7 +55,7 @@ import {
     IconEye,
     IconEyeOff
 } from '@tabler/icons'
-import APIEmptySVG from 'assets/images/api_empty.svg'
+import APIEmptySVG from '@/assets/images/api_empty.svg'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 

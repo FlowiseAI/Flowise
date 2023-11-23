@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBoth }) => {
     const portalElement = document.getElementById('portal')
