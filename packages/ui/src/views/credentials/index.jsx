@@ -24,29 +24,29 @@ import {
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import MainCard from '@/ui-component/cards/MainCard'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 import CredentialListDialog from './CredentialListDialog'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import AddEditCredentialDialog from './AddEditCredentialDialog'
 
 // API
-import credentialsApi from 'api/credentials'
+import credentialsApi from '@/api/credentials'
 
 // Hooks
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import useApi from '@/hooks/useApi'
+import useConfirm from '@/hooks/useConfirm'
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons'
-import CredentialEmptySVG from 'assets/images/credential_empty.svg'
+import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 
 // const
-import { baseURL } from 'store/constant'
-import { SET_COMPONENT_CREDENTIALS } from 'store/actions'
+import { baseURL } from '@/store/constant'
+import { SET_COMPONENT_CREDENTIALS } from '@/store/actions'
 
 // ==============================|| Credentials ||============================== //
 

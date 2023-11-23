@@ -2,32 +2,32 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Box, Typography, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
-import { File } from 'ui-component/file/File'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
+import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
+import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
+import { File } from '@/ui-component/file/File'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
 
 // Icons
 import { IconX } from '@tabler/icons'
 
 // API
-import assistantsApi from 'api/assistants'
+import assistantsApi from '@/api/assistants'
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from '@/hooks/useApi'
 
 // utils
-import useNotifier from 'utils/useNotifier'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useNotifier from '@/utils/useNotifier'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const assistantAvailableModels = [
     {

@@ -26,32 +26,32 @@ import {
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
 
-import robotPNG from 'assets/images/robot.png'
-import userPNG from 'assets/images/account.png'
-import msgEmptySVG from 'assets/images/message_empty.svg'
+import robotPNG from '@/assets/images/robot.png'
+import userPNG from '@/assets/images/account.png'
+import msgEmptySVG from '@/assets/images/message_empty.svg'
 import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons'
 
 // Project import
-import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from 'ui-component/markdown/CodeBlock'
-import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
-import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
+import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
+import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 // API
-import chatmessageApi from 'api/chatmessage'
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import chatmessageApi from '@/api/chatmessage'
+import useApi from '@/hooks/useApi'
+import useConfirm from '@/hooks/useConfirm'
 
 // Utils
-import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
-import useNotifier from 'utils/useNotifier'
-import { baseURL } from 'store/constant'
+import { isValidURL, removeDuplicateURL } from '@/utils/genericHelper'
+import useNotifier from '@/utils/useNotifier'
+import { baseURL } from '@/store/constant'
 
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 import 'views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
