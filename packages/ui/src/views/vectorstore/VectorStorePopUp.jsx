@@ -6,17 +6,17 @@ import { Button } from '@mui/material'
 import { IconDatabaseImport, IconX } from '@tabler/icons'
 
 // project import
-import { StyledFab } from 'ui-component/button/StyledFab'
+import { StyledFab } from '@/ui-component/button/StyledFab'
 import VectorStoreDialog from './VectorStoreDialog'
 
 // api
-import vectorstoreApi from 'api/vectorstore'
+import vectorstoreApi from '@/api/vectorstore'
 
 // Hooks
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // Const
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 export const VectorStorePopUp = ({ chatflowid }) => {
     const dispatch = useDispatch()

@@ -19,19 +19,19 @@ import {
     Typography
 } from '@mui/material'
 
-import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
-import { TableViewOnly } from 'ui-component/table/Table'
+import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import { TableViewOnly } from '@/ui-component/table/Table'
 
 import { IconX } from '@tabler/icons'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import pythonSVG from 'assets/images/python.svg'
-import javascriptSVG from 'assets/images/javascript.svg'
-import cURLSVG from 'assets/images/cURL.svg'
+import pythonSVG from '@/assets/images/python.svg'
+import javascriptSVG from '@/assets/images/javascript.svg'
+import cURLSVG from '@/assets/images/cURL.svg'
 
-import useApi from 'hooks/useApi'
-import configApi from 'api/config'
-import vectorstoreApi from 'api/vectorstore'
+import useApi from '@/hooks/useApi'
+import configApi from '@/api/config'
+import vectorstoreApi from '@/api/vectorstore'
 
 // Utils
 import {
@@ -41,14 +41,14 @@ import {
     getConfigExamplesForJS,
     getConfigExamplesForPython,
     getConfigExamplesForCurl
-} from 'utils/genericHelper'
-import useNotifier from 'utils/useNotifier'
+} from '@/utils/genericHelper'
+import useNotifier from '@/utils/useNotifier'
 
 // Store
-import { flowContext } from 'store/context/ReactFlowContext'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import { baseURL } from 'store/constant'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { flowContext } from '@/store/context/ReactFlowContext'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { baseURL } from '@/store/constant'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
