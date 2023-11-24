@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
@@ -141,7 +141,7 @@ class LLMChain_Chains implements INode {
 
 const runPrediction = async (
     inputVariables: string[],
-    chain: LLMChain<string | object>,
+    chain: LLMChain<string | object | BaseLanguageModel<any, BaseLanguageModelCallOptions>>,
     input: string,
     promptValuesRaw: ICommonObject | undefined,
     options: ICommonObject,
@@ -164,7 +164,7 @@ const runPrediction = async (
     if (moderations && moderations.length > 0) {
         try {
             // Use the output of the moderation chain as input for the LLM chain
-            input = await checkInputs(moderations, chain.llm, input)
+            input = await checkInputs(moderations, input)
         } catch (e) {
             await new Promise((resolve) => setTimeout(resolve, 500))
             streamResponse(isStreaming, e.message, socketIO, socketIOClientId)

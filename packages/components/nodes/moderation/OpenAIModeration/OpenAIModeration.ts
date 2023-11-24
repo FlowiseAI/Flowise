@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { Moderation } from '../Moderation'
 import { OpenAIModerationRunner } from './OpenAIModerationRunner'
 
@@ -12,6 +12,7 @@ class OpenAIModeration implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -23,6 +24,12 @@ class OpenAIModeration implements INode {
         this.category = 'Moderation'
         this.description = 'Check whether content complies with OpenAI usage policies.'
         this.baseClasses = [this.type, ...getBaseClasses(Moderation)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['openAIApi']
+        }
         this.inputs = [
             {
                 label: 'Error Message',
@@ -35,8 +42,11 @@ class OpenAIModeration implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const runner = new OpenAIModerationRunner()
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+
+        const runner = new OpenAIModerationRunner(openAIApiKey)
         const moderationErrorMessage = nodeData.inputs?.moderationErrorMessage as string
         if (moderationErrorMessage) runner.setErrorMessage(moderationErrorMessage)
         return runner
