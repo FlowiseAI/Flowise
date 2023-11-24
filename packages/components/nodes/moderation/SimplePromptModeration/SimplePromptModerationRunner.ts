@@ -1,5 +1,4 @@
 import { Moderation } from '../Moderation'
-import { BaseLanguageModel } from 'langchain/base_language'
 
 export class SimplePromptModerationRunner implements Moderation {
     private readonly denyList: string = ''
@@ -13,7 +12,7 @@ export class SimplePromptModerationRunner implements Moderation {
         this.moderationErrorMessage = moderationErrorMessage
     }
 
-    async checkForViolations(_: BaseLanguageModel, input: string): Promise<string> {
+    async checkForViolations(input: string): Promise<string> {
         this.denyList.split('\n').forEach((denyListItem) => {
             if (denyListItem && denyListItem !== '' && input.includes(denyListItem)) {
                 throw Error(this.moderationErrorMessage)

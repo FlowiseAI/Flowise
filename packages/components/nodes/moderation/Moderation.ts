@@ -1,13 +1,12 @@
-import { BaseLanguageModel } from 'langchain/base_language'
 import { Server } from 'socket.io'
 
 export abstract class Moderation {
-    abstract checkForViolations(llm: BaseLanguageModel, input: string): Promise<string>
+    abstract checkForViolations(input: string): Promise<string>
 }
 
-export const checkInputs = async (inputModerations: Moderation[], llm: BaseLanguageModel, input: string): Promise<string> => {
+export const checkInputs = async (inputModerations: Moderation[], input: string): Promise<string> => {
     for (const moderation of inputModerations) {
-        input = await moderation.checkForViolations(llm, input)
+        input = await moderation.checkForViolations(input)
     }
     return input
 }
