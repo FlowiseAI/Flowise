@@ -31,7 +31,8 @@ class InMemoryVectorStore_VectorStores implements INode {
                 label: 'Document',
                 name: 'document',
                 type: 'Document',
-                list: true
+                list: true,
+                optional: true
             },
             {
                 label: 'Embeddings',
