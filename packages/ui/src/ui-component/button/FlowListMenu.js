@@ -106,6 +106,11 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
         setConversationStartersDialogOpen(true)
     }
 
+    const saveFlowStarterPrompts = async () => {
+        setConversationStartersDialogOpen(false)
+        await updateFlowsApi.request()
+    }
+
     const saveFlowRename = async (chatflowName) => {
         const updateBody = {
             name: chatflowName,
@@ -301,6 +306,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
+                onConfirm={saveFlowStarterPrompts}
                 onCancel={() => setConversationStartersDialogOpen(false)}
             />
         </div>

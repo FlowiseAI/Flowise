@@ -29,7 +29,7 @@ import useNotifier from 'utils/useNotifier'
 // API
 import chatflowsApi from 'api/chatflows'
 
-const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
+const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm = undefined }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -43,6 +43,8 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
             prompt: ''
         }
     ])
+
+    const [chatbotConfig, setChatbotConfig] = useState({})
 
     const addInputField = () => {
         setInputFields([
@@ -72,8 +74,9 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
                     ...inputFields
                 }
             }
+            chatbotConfig.starterPrompts = value.starterPrompts
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
-                chatbotConfig: JSON.stringify(value)
+                chatbotConfig: JSON.stringify(chatbotConfig)
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -90,7 +93,9 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
-            onCancel()
+            if (onConfirm) {
+                onConfirm()
+            }
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
@@ -113,6 +118,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
         if (dialogProps.chatflow && dialogProps.chatflow.chatbotConfig) {
             try {
                 let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
+                setChatbotConfig(chatbotConfig || {})
                 if (chatbotConfig.starterPrompts) {
                     let inputFields = []
                     Object.getOwnPropertyNames(chatbotConfig.starterPrompts).forEach((key) => {
@@ -222,7 +228,8 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
 StarterPromptsDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    onConfirm: PropTypes.func
 }
 
 export default StarterPromptsDialog
