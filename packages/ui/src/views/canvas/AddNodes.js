@@ -68,10 +68,14 @@ const AddNodes = ({ nodesData, node }) => {
             else newNodes.push(vsNode)
         }
         delete obj['Vector Stores']
-        obj['Vector Stores;DEPRECATING'] = deprecatingNodes
-        accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
-        obj['Vector Stores;NEW'] = newNodes
-        accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
+        if (deprecatingNodes.length) {
+            obj['Vector Stores;DEPRECATING'] = deprecatingNodes
+            accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
+        }
+        if (newNodes.length) {
+            obj['Vector Stores;NEW'] = newNodes
+            accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
+        }
         setNodes(obj)
     }
 
