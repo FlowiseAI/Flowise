@@ -18,6 +18,7 @@ class Milvus_Upsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -32,6 +33,7 @@ class Milvus_Upsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Milvus'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -110,7 +112,9 @@ class Milvus_Upsert_VectorStores implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         const vectorStore = await MilvusUpsert.fromDocuments(finalDocs, embeddings, milVusArgs)
@@ -252,7 +256,7 @@ class MilvusUpsert extends Milvus {
             collection_name: this.collectionName
         })
 
-        if (descIndexResp.status.error_code === ErrorCode.INDEX_NOT_EXIST) {
+        if (descIndexResp.status.error_code === ErrorCode.IndexNotExist) {
             const resp = await this.client.createIndex({
                 collection_name: this.collectionName,
                 field_name: this.vectorField,

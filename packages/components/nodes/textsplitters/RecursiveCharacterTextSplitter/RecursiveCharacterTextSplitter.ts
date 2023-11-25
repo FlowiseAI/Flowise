@@ -41,8 +41,9 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
                 name: 'separators',
                 type: 'string',
                 rows: 4,
-                description: 'Array of custom seperators to determine when to split the text, will override the default separators',
+                description: 'Array of custom separators to determine when to split the text, will override the default separators',
                 placeholder: `["|", "##", ">", "-"]`,
+                additionalParams: true,
                 optional: true
             }
         ]
@@ -51,7 +52,7 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const chunkSize = nodeData.inputs?.chunkSize as string
         const chunkOverlap = nodeData.inputs?.chunkOverlap as string
-        const separators = nodeData.inputs?.separators as string
+        const separators = nodeData.inputs?.separators
 
         const obj = {} as RecursiveCharacterTextSplitterParams
 
@@ -59,7 +60,7 @@ class RecursiveCharacterTextSplitter_TextSplitters implements INode {
         if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
         if (separators) {
             try {
-                obj.separators = JSON.parse(separators)
+                obj.separators = typeof separators === 'object' ? separators : JSON.parse(separators)
             } catch (e) {
                 throw new Error(e)
             }

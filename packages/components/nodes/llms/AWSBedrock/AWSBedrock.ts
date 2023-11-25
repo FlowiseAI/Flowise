@@ -27,7 +27,7 @@ class AWSBedrock_LLMs implements INode {
     constructor() {
         this.label = 'AWS Bedrock'
         this.name = 'awsBedrock'
-        this.version = 1.2
+        this.version = 2.0
         this.type = 'AWSBedrock'
         this.icon = 'awsBedrock.png'
         this.category = 'LLMs'
@@ -98,6 +98,7 @@ class AWSBedrock_LLMs implements INode {
                     { label: 'amazon.titan-tg1-large', name: 'amazon.titan-tg1-large' },
                     { label: 'amazon.titan-e1t-medium', name: 'amazon.titan-e1t-medium' },
                     { label: 'cohere.command-text-v14', name: 'cohere.command-text-v14' },
+                    { label: 'cohere.command-light-text-v14', name: 'cohere.command-light-text-v14' },
                     { label: 'ai21.j2-grande-instruct', name: 'ai21.j2-grande-instruct' },
                     { label: 'ai21.j2-jumbo-instruct', name: 'ai21.j2-jumbo-instruct' },
                     { label: 'ai21.j2-mid', name: 'ai21.j2-mid' },

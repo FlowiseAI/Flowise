@@ -13,6 +13,7 @@ class VectaraUpsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -27,6 +28,7 @@ class VectaraUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Vectara'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -132,7 +134,9 @@ class VectaraUpsert_VectorStores implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         const vectorStore = await VectaraStore.fromDocuments(finalDocs, embeddings, vectaraArgs)

@@ -71,7 +71,7 @@ const ProfileSection = ({ username, handleLogout }) => {
         try {
             const response = await databaseApi.getExportDatabase()
             const exportItems = response.data
-            let dataStr = JSON.stringify(exportItems)
+            let dataStr = JSON.stringify(exportItems, null, 2)
             let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
             let exportFileDefaultName = `DB.json`

@@ -41,7 +41,7 @@ class CharacterTextSplitter_TextSplitters implements INode {
                 name: 'separator',
                 type: 'string',
                 placeholder: `" "`,
-                description: 'Seperator to determine when to split the text, will override the default separator',
+                description: 'Separator to determine when to split the text, will override the default separator',
                 optional: true
             }
         ]
