@@ -403,6 +403,19 @@ export class App {
             return res.json(obj)
         })
 
+        // Check if chatflow valid for uploads
+        this.app.get('/api/v1/chatflows-uploads/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+
+            const obj = {
+                allowUploads: this.shouldAllowUploads(chatflow)
+            }
+            return res.json(obj)
+        })
+
         // ----------------------------------------
         // ChatMessage
         // ----------------------------------------
@@ -1239,6 +1252,19 @@ export class App {
         this.app.use((req, res) => {
             res.sendFile(uiHtmlPath)
         })
+    }
+
+    private uploadAllowedNodes = ['OpenAIVisionChain']
+    private shouldAllowUploads(result: ChatFlow): boolean {
+        const flowObj = JSON.parse(result.flowData)
+        let allowUploads = false
+        flowObj.nodes.forEach((node: IReactFlowNode) => {
+            if (this.uploadAllowedNodes.indexOf(node.data.type) > -1) {
+                logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
+                allowUploads = true
+            }
+        })
+        return allowUploads
     }
 
     /**
