@@ -33,6 +33,13 @@ class LocalAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'string',
                 placeholder: 'text-embedding-ada-002'
+            },
+            {
+                label: 'API Key',
+                name: 'apiKey',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -40,13 +47,17 @@ class LocalAIEmbedding_Embeddings implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
         const basePath = nodeData.inputs?.basePath as string
+        const apiKey = nodeData.inputs?.apiKey as string
 
         const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
             modelName,
             openAIApiKey: 'sk-'
         }
 
-        const model = new OpenAIEmbeddings(obj, { basePath })
+        const headers: Record<string, string | null | undefined> = {}
+        if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
+
+        const model = new OpenAIEmbeddings(obj, { baseURL: basePath, defaultHeaders: headers })
 
         return model
     }

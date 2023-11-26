@@ -75,6 +75,13 @@ class ChatLocalAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'API Key',
+                name: 'apiKey',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -87,6 +94,7 @@ class ChatLocalAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
         const cache = nodeData.inputs?.cache as BaseCache
+        const apiKey = nodeData.inputs?.apiKey as string
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
@@ -99,7 +107,10 @@ class ChatLocalAI_ChatModels implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
 
-        const model = new OpenAIChat(obj, { basePath })
+        const headers: Record<string, string | null | undefined> = {}
+        if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
+
+        const model = new OpenAIChat(obj, { baseURL: basePath, defaultHeaders: headers })
 
         return model
     }
