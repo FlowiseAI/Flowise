@@ -82,6 +82,8 @@ class ConversationalRetrievalAgent_Agents implements INode {
         if (executor.memory) {
             ;(executor.memory as any).memoryKey = 'chat_history'
             ;(executor.memory as any).outputKey = 'output'
+            ;(executor.memory as any).returnMessages = true
+
             const chatHistoryClassName = (executor.memory as any).chatHistory.constructor.name
             // Only replace when its In-Memory
             if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
