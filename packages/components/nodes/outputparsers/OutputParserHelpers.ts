@@ -1,6 +1,6 @@
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
 import { ICommonObject } from '../../src'
 import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
 
@@ -15,7 +15,7 @@ export const formatResponse = (response: string | object): string | object => {
 
 export const injectOutputParser = (
     outputParser: BaseOutputParser<unknown>,
-    chain: LLMChain<string, BaseLanguageModel>,
+    chain: LLMChain<string | object | BaseLanguageModel<any, BaseLanguageModelCallOptions>>,
     promptValues: ICommonObject | undefined = undefined
 ) => {
     if (outputParser && chain.prompt) {

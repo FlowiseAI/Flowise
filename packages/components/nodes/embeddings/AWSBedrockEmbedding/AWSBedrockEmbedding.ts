@@ -18,7 +18,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'AWS Bedrock Embeddings'
         this.name = 'AWSBedrockEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AWSBedrockEmbeddings'
         this.icon = 'awsBedrock.png'
         this.category = 'Embeddings'
@@ -81,7 +81,9 @@ class AWSBedrockEmbedding_Embeddings implements INode {
                 type: 'options',
                 options: [
                     { label: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1' },
-                    { label: 'amazon.titan-embed-g1-text-02', name: 'amazon.titan-embed-g1-text-02' }
+                    { label: 'amazon.titan-embed-g1-text-02', name: 'amazon.titan-embed-g1-text-02' },
+                    { label: 'cohere.embed-english-v3', name: 'cohere.embed-english-v3' },
+                    { label: 'cohere.embed-multilingual-v3', name: 'cohere.embed-multilingual-v3' }
                 ],
                 default: 'amazon.titan-embed-text-v1'
             }
