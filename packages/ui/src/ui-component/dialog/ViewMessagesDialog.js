@@ -7,6 +7,7 @@ import rehypeMathjax from 'rehype-mathjax'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
+import axios from 'axios'
 
 // material-ui
 import {
@@ -28,7 +29,7 @@ import DatePicker from 'react-datepicker'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import msgEmptySVG from 'assets/images/message_empty.svg'
-import { IconFileExport, IconEraser, IconX } from '@tabler/icons'
+import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons'
 
 // Project import
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
@@ -48,6 +49,7 @@ import useConfirm from 'hooks/useConfirm'
 // Utils
 import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
+import { baseURL } from 'store/constant'
 
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
 
@@ -130,6 +132,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             }
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
+            if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -253,6 +256,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             }
             if (chatmsg.sourceDocuments) obj.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) obj.usedTools = JSON.parse(chatmsg.usedTools)
+            if (chatmsg.fileAnnotations) obj.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
 
             loadedMessages.push(obj)
         }
@@ -316,6 +320,26 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const onURLClick = (data) => {
         window.open(data, '_blank')
+    }
+
+    const downloadFile = async (fileAnnotation) => {
+        try {
+            const response = await axios.post(
+                `${baseURL}/api/v1/openai-assistants-file`,
+                { fileName: fileAnnotation.fileName },
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: response.headers['content-type'] })
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.download = fileAnnotation.fileName
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+        } catch (error) {
+            console.error('Download failed:', error)
+        }
     }
 
     const onSourceDialogClick = (data, title) => {
@@ -648,10 +672,37 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         {message.message}
                                                                     </MemoizedReactMarkdown>
                                                                 </div>
+                                                                {message.fileAnnotations && (
+                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                                        {message.fileAnnotations.map((fileAnnotation, index) => {
+                                                                            return (
+                                                                                <Button
+                                                                                    sx={{
+                                                                                        fontSize: '0.85rem',
+                                                                                        textTransform: 'none',
+                                                                                        mb: 1,
+                                                                                        mr: 1
+                                                                                    }}
+                                                                                    key={index}
+                                                                                    variant='outlined'
+                                                                                    onClick={() => downloadFile(fileAnnotation)}
+                                                                                    endIcon={
+                                                                                        <IconDownload color={theme.palette.primary.main} />
+                                                                                    }
+                                                                                >
+                                                                                    {fileAnnotation.fileName}
+                                                                                </Button>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                                 {message.sourceDocuments && (
                                                                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                                         {removeDuplicateURL(message).map((source, index) => {
-                                                                            const URL = isValidURL(source.metadata.source)
+                                                                            const URL =
+                                                                                source.metadata && source.metadata.source
+                                                                                    ? isValidURL(source.metadata.source)
+                                                                                    : undefined
                                                                             return (
                                                                                 <Chip
                                                                                     size='small'
