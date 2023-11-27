@@ -72,6 +72,7 @@ export interface INodeParams {
     fileType?: string
     additionalParams?: boolean
     loadMethod?: string
+    hidden?: boolean
 }
 
 export interface INodeExecutionData {
@@ -92,6 +93,7 @@ export interface INodeProperties {
     baseClasses: string[]
     description?: string
     filePath?: string
+    badge?: string
 }
 
 export interface INode extends INodeProperties {
@@ -99,6 +101,11 @@ export interface INode extends INodeProperties {
     output?: INodeOutputsValue[]
     loadMethods?: {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
+    }
+    vectorStoreMethods?: {
+        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
+        delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
     }
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string | ICommonObject>
@@ -124,6 +131,12 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+}
+
+export interface IUsedTool {
+    tool: string
+    toolInput: object
+    toolOutput: string | object
 }
 
 /**

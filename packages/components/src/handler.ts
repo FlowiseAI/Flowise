@@ -250,6 +250,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
                     if (release) langFuseOptions.release = release
+                    if (options.chatId) langFuseOptions.userId = options.chatId
 
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)

@@ -50,7 +50,7 @@ class ElasicsearchUpsert_VectorStores extends ElasticSearchBase implements INode
             delete d.metadata.loc
         })
         // end of workaround
-        return super.init(nodeData, _, options, flattenDocs)
+        return super.init(nodeData, _, options, finalDocs)
     }
 }
 

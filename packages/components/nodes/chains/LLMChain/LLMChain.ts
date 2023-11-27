@@ -1,12 +1,13 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
 import { OutputFixingParser } from 'langchain/output_parsers'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -46,6 +47,14 @@ class LLMChain_Chains implements INode {
                 name: 'outputParser',
                 type: 'BaseLLMOutputParser',
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             },
             {
                 label: 'Chain Name',
@@ -132,7 +141,7 @@ class LLMChain_Chains implements INode {
 
 const runPrediction = async (
     inputVariables: string[],
-    chain: LLMChain<string | object>,
+    chain: LLMChain<string | object | BaseLanguageModel<any, BaseLanguageModelCallOptions>>,
     input: string,
     promptValuesRaw: ICommonObject | undefined,
     options: ICommonObject,
@@ -144,13 +153,24 @@ const runPrediction = async (
     const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
-
+    const moderations = nodeData.inputs?.inputModeration as Moderation[]
     /**
      * Apply string transformation to reverse converted special chars:
      * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
      * TO: { "value": "hello i am ben\n\n\thow are you?" }
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+
+    if (moderations && moderations.length > 0) {
+        try {
+            // Use the output of the moderation chain as input for the LLM chain
+            input = await checkInputs(moderations, input)
+        } catch (e) {
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+            return formatResponse(e.message)
+        }
+    }
 
     if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []
