@@ -1129,81 +1129,6 @@
         },
         {
             "width": 300,
-            "height": 383,
-            "id": "conversationalAgent_0",
-            "position": {
-                "x": 2506.011817109287,
-                "y": -241.58006840004734
-            },
-            "type": "customNode",
-            "data": {
-                "id": "conversationalAgent_0",
-                "label": "Conversational Agent",
-                "version": 1,
-                "name": "conversationalAgent",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
-                "category": "Agents",
-                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
-                "inputParams": [
-                    {
-                        "label": "System Message",
-                        "name": "systemMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "default": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "conversationalAgent_0-input-systemMessage-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "conversationalAgent_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalAgent_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseChatMemory",
-                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
-                    }
-                ],
-                "inputs": {
-                    "tools": ["{{chainTool_2.data.instance}}", "{{chainTool_3.data.instance}}"],
-                    "model": "{{chatOpenAI_2.data.instance}}",
-                    "memory": "{{bufferMemory_0.data.instance}}",
-                    "systemMessage": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist."
-                },
-                "outputAnchors": [
-                    {
-                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
-                        "name": "conversationalAgent",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain | Runnable"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2506.011817109287,
-                "y": -241.58006840004734
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 574,
             "id": "chatOpenAI_2",
             "position": {
@@ -1602,6 +1527,81 @@
                 "y": 75.96855802341503
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 383,
+            "id": "conversationalAgent_0",
+            "position": {
+                "x": 2432.125364763489,
+                "y": -105.27942167533908
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalAgent_0",
+                "label": "Conversational Agent",
+                "version": 2,
+                "name": "conversationalAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "conversationalAgent_0-input-systemMessage-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "conversationalAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationalAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{chainTool_2.data.instance}}", "{{chainTool_3.data.instance}}"],
+                    "model": "{{chatOpenAI_2.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "systemMessage": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "conversationalAgent",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2432.125364763489,
+                "y": -105.27942167533908
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -1705,6 +1705,28 @@
             }
         },
         {
+            "source": "plainText_1",
+            "sourceHandle": "plainText_1-output-document-Document",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "recursiveCharacterTextSplitter_0",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable",
+            "target": "plainText_1",
+            "targetHandle": "plainText_1-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable-plainText_1-plainText_1-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
             "source": "chainTool_2",
             "sourceHandle": "chainTool_2-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
             "target": "conversationalAgent_0",
@@ -1730,9 +1752,9 @@
             "source": "chatOpenAI_2",
             "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-model-BaseLanguageModel",
+            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalAgent_0-conversationalAgent_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
@@ -1744,28 +1766,6 @@
             "targetHandle": "conversationalAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
             "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationalAgent_0-conversationalAgent_0-input-memory-BaseChatMemory",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "plainText_1",
-            "sourceHandle": "plainText_1-output-document-Document",
-            "target": "faiss_0",
-            "targetHandle": "faiss_0-input-document-Document",
-            "type": "buttonedge",
-            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "recursiveCharacterTextSplitter_0",
-            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable",
-            "target": "plainText_1",
-            "targetHandle": "plainText_1-input-textSplitter-TextSplitter",
-            "type": "buttonedge",
-            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable-plainText_1-plainText_1-input-textSplitter-TextSplitter",
             "data": {
                 "label": ""
             }
