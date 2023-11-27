@@ -25,9 +25,9 @@ import { useDispatch } from 'react-redux'
 import FormControl from '@mui/material/FormControl'
 import Checkbox from '@mui/material/Checkbox'
 import MenuItem from '@mui/material/MenuItem'
-import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import CredentialInputHandler from '../../views/canvas/CredentialInputHandler'
+import promptApi from '../../api/prompt'
 
 const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
     const portalElement = document.getElementById('portal')
@@ -96,13 +96,24 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
         { id: 306, name: 'Spanish' }
     ]
     const [language, setLanguage] = useState([])
-    const [prompts, setPrompts] = useState([])
+    const [availablePrompNameList, setAvailablePrompNameList] = useState([])
     const [selectedPrompt, setSelectedPrompt] = useState({})
 
     const [credentialId, setCredentialId] = useState('')
 
-    const handleListItemClick = (event, index) => {
-        setSelectedPrompt(prompts[index])
+    const handleListItemClick = async (event, index) => {
+        const prompt = availablePrompNameList[index]
+
+        if (!prompt.detailed) {
+            const createResp = await promptApi.getPrompt({
+                credential: credentialId,
+                promptName: selectedPrompt.full_name
+            })
+            if (createResp.data) {
+                prompt.detailed = createResp.data.templates
+            }
+        }
+        setSelectedPrompt(prompt)
     }
 
     const fetchPrompts = async () => {
@@ -116,17 +127,15 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
         language.forEach((item) => {
             tags += `tags=${item.name}&`
         })
-        const url = `https://web.hub.langchain.com/repos/?${tags}offset=0&limit=20&has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
-        axios.get(url).then((response) => {
-            if (response.data.repos) {
-                setPrompts(response.data.repos)
-                // response.data.repos.forEach((item) => {
-                //     console.log(item)
-                // })
-            }
+        const createResp = await promptApi.getAvailablePrompts({
+            credential: credentialId,
+            tags: tags
         })
-        // latestReleaseReq.then()
+        if (createResp.data) {
+            setAvailablePrompNameList(createResp.data.repos)
+        }
     }
+
     const removeDuplicates = (value) => {
         let duplicateRemoved = []
 
@@ -173,26 +182,29 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='prompt-dialog-title'>
                 Load Prompts from Langsmith Hub ({promptType === 'template' ? 'PromptTemplate' : 'ChatPromptTemplate'})
             </DialogTitle>
-            <DialogContent dividers>
-                <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'row' }}>
+            <DialogContent dividers sx={{ p: 1 }}>
+                <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'row', p: 1, m: 0 }}>
                     <Typography style={{ alignSelf: 'center' }} sx={{ mr: 5 }} variant='overline'>
                         Langsmith Credential
                         <span style={{ color: 'red' }}>*</span>
                     </Typography>
-                    <CredentialInputHandler
-                        sx={{ flexGrow: 1 }}
-                        key={credentialId}
-                        data={credentialId ? { credential: credentialId } : {}}
-                        inputParam={{
-                            label: 'Connect Credential',
-                            name: 'credential',
-                            type: 'credential',
-                            credentialNames: ['openAIApi']
-                        }}
-                        onSelect={(newValue) => {
-                            setCredentialId(newValue)
-                        }}
-                    />
+                    <FormControl style={{ width: '30%' }} xs={4} sx={{ m: 1 }}>
+                        <CredentialInputHandler
+                            size='small'
+                            sx={{ flexGrow: 1 }}
+                            key={credentialId}
+                            data={credentialId ? { credential: credentialId } : {}}
+                            inputParam={{
+                                label: 'Connect Credential',
+                                name: 'credential',
+                                type: 'credential',
+                                credentialNames: ['langsmithApi']
+                            }}
+                            onSelect={(newValue) => {
+                                setCredentialId(newValue)
+                            }}
+                        />
+                    </FormControl>
                 </Box>
                 <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'row' }}>
                     <FormControl
@@ -206,6 +218,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                             Model
                         </InputLabel>
                         <Select
+                            disabled={!credentialId}
                             id='model-checkbox'
                             labelId='model-checkbox-label'
                             multiple
@@ -236,6 +249,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                         </InputLabel>
                         <Select
                             autoWidth={false}
+                            disabled={!credentialId}
                             labelId='usecase-checkbox-label'
                             id='usecase-checkbox'
                             multiple
@@ -267,6 +281,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                         <Select
                             labelId='language-checkbox-label'
                             id='language-checkbox'
+                            disabled={!credentialId}
                             multiple
                             size='small'
                             value={language}
@@ -299,13 +314,13 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                 <Grid xs={12} container spacing={2} justifyContent='center' alignItems='center'>
                     <Grid xs={4} item style={{ textAlign: 'left' }}>
                         <Box sx={{ width: '100%', maxWidth: 360 }}>
-                            <Card variant='outlined' style={{ height: 430, overflow: 'auto' }}>
+                            <Card variant='outlined' style={{ height: 470, overflow: 'auto' }}>
                                 <CardContent sx={{ p: 1 }}>
                                     <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                                         Available Prompts
                                     </Typography>
                                     <List component='nav' aria-label='secondary mailbox folder'>
-                                        {prompts.map((item, index) => (
+                                        {availablePrompNameList.map((item, index) => (
                                             <ListItemButton
                                                 key={item.id}
                                                 selected={item.id === selectedPrompt?.id}
@@ -321,25 +336,21 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                     </Grid>
                     <Grid xs={8} item style={{ textAlign: 'left' }}>
                         <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Card variant='outlined' style={{ height: 80, overflow: 'auto' }}>
+                            <Card variant='outlined' style={{ height: 100, overflow: 'auto' }}>
                                 <CardContent sx={{ p: 1 }}>
                                     <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                                         Description
                                     </Typography>
-                                    <Typography color='text.primary'>{selectedPrompt?.description}</Typography>
-                                </CardContent>
-                            </Card>
-                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 60, overflow: 'auto' }}>
-                                <CardContent sx={{ p: 1 }}>
-                                    <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                        Tags
+                                    <Typography sx={{ fontSize: 12 }} color='text.primary'>
+                                        {selectedPrompt?.description}
+                                        <br />
+                                        {selectedPrompt?.tags?.map((item) => (
+                                            <Chip size='small' key={item.id} label={item} sx={{ mr: 1, mb: 0.5, fontSize: 10 }} />
+                                        ))}
                                     </Typography>
-                                    {selectedPrompt?.tags?.map((item) => (
-                                        <Chip size='small' key={item} label={item} sx={{ mr: 1, mb: 1, fontSize: 10 }} />
-                                    ))}
                                 </CardContent>
                             </Card>
-                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 280, overflow: 'auto' }}>
+                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 100, overflow: 'auto' }}>
                                 <CardContent sx={{ p: 1 }}>
                                     <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                                         Readme
@@ -347,6 +358,20 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                                     <ReactMarkdown sx={{ width: '100%' }} style={{ width: '100%', flexGrow: 1, resize: 'none' }}>
                                         {selectedPrompt?.readme}
                                     </ReactMarkdown>
+                                </CardContent>
+                            </Card>
+                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 250, overflow: 'auto' }}>
+                                <CardContent sx={{ p: 1 }}>
+                                    {selectedPrompt?.detailed?.map((item) => (
+                                        <>
+                                            <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
+                                                {item.type}
+                                            </Typography>
+                                            <ReactMarkdown key={item} sx={{ fontSize: 12, mb: 2 }} color='text.primary'>
+                                                {item.template}
+                                            </ReactMarkdown>
+                                        </>
+                                    ))}
                                 </CardContent>
                             </Card>
                         </Box>
