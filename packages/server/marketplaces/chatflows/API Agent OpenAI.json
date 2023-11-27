@@ -199,6 +199,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-baseOptions-json"
                     }
                 ],
                 "inputAnchors": [
@@ -218,7 +226,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -325,7 +334,7 @@
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
                 "name": "openAIFunctionAgent",
-                "version": 1,
+                "version": 2,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -356,11 +365,10 @@
                         "id": "openAIFunctionAgent_0-input-memory-BaseChatMemory"
                     },
                     {
-                        "label": "OpenAI Chat Model",
+                        "label": "OpenAI/Azure Chat Model",
                         "name": "model",
-                        "description": "Only works with gpt-3.5-turbo-0613 and gpt-4-0613. Refer <a target=\"_blank\" href=\"https://platform.openai.com/docs/guides/gpt/function-calling\">docs</a> for more info",
-                        "type": "BaseChatModel",
-                        "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
+                        "type": "ChatOpenAI | AzureChatOpenAI",
+                        "id": "openAIFunctionAgent_0-input-model-ChatOpenAI | AzureChatOpenAI"
                     }
                 ],
                 "inputs": {
@@ -510,6 +518,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_2-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-baseOptions-json"
                     }
                 ],
                 "inputAnchors": [
@@ -529,7 +545,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {

@@ -6,6 +6,7 @@
 export default function themePalette(theme) {
     return {
         mode: theme?.customization?.navType,
+        transparent: theme.colors?.transparent,
         common: {
             black: theme.colors?.darkPaper,
             dark: theme.colors?.darkPrimaryMain
@@ -33,6 +34,11 @@ export default function themePalette(theme) {
             light: theme.colors?.orangeLight,
             main: theme.colors?.orangeMain,
             dark: theme.colors?.orangeDark
+        },
+        teal: {
+            light: theme.colors?.tealLight,
+            main: theme.colors?.tealMain,
+            dark: theme.colors?.tealDark
         },
         warning: {
             light: theme.colors?.warningLight,
