@@ -1,6 +1,22 @@
-                                 Apache License
+                                Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
+
+Flowise is governed by the Apache License 2.0, with additional terms and conditions outlined below:
+
+Flowise can be used for commercial purposes for "backend-as-a-service" for your applications or as a development platform for enterprises. However, under specific conditions, you must reach out to the project's administrators to secure a commercial license:
+
+a. Multi-tenant SaaS service: Unless you have explicit written authorization from Flowise, you may not utilize the Flowise source code to operate a multi-tenant SaaS service that closely resembles the Flowise cloud-based services.
+b. Logo and copyright information: While using Flowise in commercial application, you are prohibited from removing or altering the LOGO or copyright information displayed in the Flowise console and UI.
+
+For inquiries regarding licensing matters, please contact hello@flowiseai.com via email.
+
+Contributors are required to consent to the following terms related to their contributed code:
+
+a. The project maintainers have the authority to modify the open-source agreement to be more stringent or lenient.
+b. Contributed code can be used for commercial purposes, including Flowise's cloud-based services.
+
+All other rights and restrictions are in accordance with the Apache License 2.0.
 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 

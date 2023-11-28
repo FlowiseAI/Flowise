@@ -27,7 +27,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS Bedrock'
         this.name = 'awsChatBedrock'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AWSChatBedrock'
         this.icon = 'awsBedrock.png'
         this.category = 'Chat Models'
@@ -97,7 +97,8 @@ class AWSChatBedrock_ChatModels implements INode {
                 options: [
                     { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
                     { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
-                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' }
+                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' },
+                    { label: 'meta.llama2-13b-chat-v1', name: 'meta.llama2-13b-chat-v1' }
                 ],
                 default: 'anthropic.claude-v2'
             },
@@ -128,12 +129,14 @@ class AWSChatBedrock_ChatModels implements INode {
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: BaseBedrockInput & BaseLLMParams = {
             region: iRegion,
             model: iModel,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
-            temperature: parseFloat(iTemperature)
+            temperature: parseFloat(iTemperature),
+            streaming: streaming ?? true
         }
 
         /**

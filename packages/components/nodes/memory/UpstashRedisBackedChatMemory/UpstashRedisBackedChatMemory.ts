@@ -95,6 +95,7 @@ const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject
     })
 
     const memory = new BufferMemoryExtended({
+        memoryKey: 'chat_history',
         chatHistory: redisChatMessageHistory,
         isSessionIdUsingChatMessageId
     })

@@ -13,8 +13,8 @@
             "data": {
                 "id": "calculator_1",
                 "label": "Calculator",
-                "name": "calculator",
                 "version": 1,
+                "name": "calculator",
                 "type": "Calculator",
                 "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -52,8 +52,8 @@
             "data": {
                 "id": "bufferMemory_1",
                 "label": "Buffer Memory",
-                "name": "bufferMemory",
                 "version": 1,
+                "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
@@ -109,8 +109,8 @@
             "data": {
                 "id": "serpAPI_0",
                 "label": "Serp API",
-                "name": "serpAPI",
                 "version": 1,
+                "name": "serpAPI",
                 "type": "SerpAPI",
                 "baseClasses": ["SerpAPI", "Tool", "StructuredTool"],
                 "category": "Tools",
@@ -146,7 +146,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 97.01321406237057,
@@ -156,8 +156,8 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "name": "chatOpenAI",
                 "version": 2,
+                "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -267,6 +267,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
                 "inputAnchors": [
@@ -279,14 +287,15 @@
                     }
                 ],
                 "inputs": {
-                    "modelName": "gpt-3.5-turbo",
+                    "modelName": "gpt-3.5-turbo-16k",
                     "temperature": 0.9,
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -311,17 +320,17 @@
             "height": 383,
             "id": "conversationalAgent_0",
             "position": {
-                "x": 1164.4550359451973,
-                "y": 283.40041124403075
+                "x": 1191.1524476753796,
+                "y": 324.2479396683294
             },
             "type": "customNode",
             "data": {
                 "id": "conversationalAgent_0",
                 "label": "Conversational Agent",
+                "version": 2,
                 "name": "conversationalAgent",
-                "version": 1,
                 "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
                 "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
                 "inputParams": [
@@ -347,8 +356,8 @@
                     {
                         "label": "Language Model",
                         "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalAgent_0-input-model-BaseLanguageModel"
+                        "type": "BaseChatModel",
+                        "id": "conversationalAgent_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Memory",
@@ -365,10 +374,10 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain",
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
                         "name": "conversationalAgent",
                         "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
+                        "type": "AgentExecutor | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -376,8 +385,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1164.4550359451973,
-                "y": 283.40041124403075
+                "x": 1191.1524476753796,
+                "y": 324.2479396683294
             },
             "dragging": false
         }
@@ -409,9 +418,9 @@
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-model-BaseLanguageModel",
+            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
