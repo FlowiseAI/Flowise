@@ -14,7 +14,7 @@
             "data": {
                 "id": "openAIAssistant_0",
                 "label": "OpenAI Assistant",
-                "version": 1,
+                "version": 2,
                 "name": "openAIAssistant",
                 "type": "OpenAIAssistant",
                 "baseClasses": ["OpenAIAssistant"],
@@ -27,6 +27,15 @@
                         "type": "asyncOptions",
                         "loadMethod": "listAssistants",
                         "id": "openAIAssistant_0-input-selectedAssistant-asyncOptions"
+                    },
+                    {
+                        "label": "Disable File Download",
+                        "name": "disableFileDownload",
+                        "type": "boolean",
+                        "description": "Messages can contain text, images, or files. In some cases, you may want to prevent others from downloading the files. Learn more from OpenAI File Annotation <a target=\"_blank\" href=\"https://platform.openai.com/docs/assistants/how-it-works/managing-threads-and-messages\">docs</a>",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIAssistant_0-input-disableFileDownload-boolean"
                     }
                 ],
                 "inputAnchors": [
