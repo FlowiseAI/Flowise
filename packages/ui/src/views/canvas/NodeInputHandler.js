@@ -75,6 +75,14 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const onShowPromptHubButtonClicked = () => {
         setShowPromptHubDialog(true)
     }
+    const onShowPromptHubButtonSubmit = (templates) => {
+        setShowPromptHubDialog(false)
+        for (const t of templates) {
+            if (Object.prototype.hasOwnProperty.call(data.inputs, t.type)) {
+                data.inputs[t.type] = t.template
+            }
+        }
+    }
     const onFormatPromptValuesClicked = (value, inputParam) => {
         // Preset values if the field is format prompt values
         let inputValue = value
@@ -234,6 +242,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     promptType={inputParam.name}
                                     show={showPromptHubDialog}
                                     onCancel={() => setShowPromptHubDialog(false)}
+                                    onSubmit={onShowPromptHubButtonSubmit}
                                 ></PromptLangsmithHubDialog>
                             </>
                         )}

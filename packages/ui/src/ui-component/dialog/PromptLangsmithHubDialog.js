@@ -8,6 +8,7 @@ import {
     CardContent,
     Chip,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
@@ -28,8 +29,9 @@ import MenuItem from '@mui/material/MenuItem'
 import ReactMarkdown from 'react-markdown'
 import CredentialInputHandler from '../../views/canvas/CredentialInputHandler'
 import promptApi from '../../api/prompt'
+import { StyledButton } from '../button/StyledButton'
 
-const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
+const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -114,6 +116,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
             }
         }
         setSelectedPrompt(prompt)
+        await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     const fetchPrompts = async () => {
@@ -355,7 +358,10 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                                     <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                                         Readme
                                     </Typography>
-                                    <ReactMarkdown sx={{ width: '100%' }} style={{ width: '100%', flexGrow: 1, resize: 'none' }}>
+                                    <ReactMarkdown
+                                        sx={{ fontSize: 11, width: '100%' }}
+                                        style={{ width: '100%', flexGrow: 1, resize: 'none' }}
+                                    >
                                         {selectedPrompt?.readme}
                                     </ReactMarkdown>
                                 </CardContent>
@@ -365,11 +371,11 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                                     {selectedPrompt?.detailed?.map((item) => (
                                         <>
                                             <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                                {item.type}
+                                                {item.typeDisplay.toUpperCase()}
                                             </Typography>
-                                            <ReactMarkdown key={item} sx={{ fontSize: 12, mb: 2 }} color='text.primary'>
-                                                {item.template}
-                                            </ReactMarkdown>
+                                            <Typography>
+                                                <pre style={{ fontFamily: 'inherit' }}>{item.template}</pre>
+                                            </Typography>
                                         </>
                                     ))}
                                 </CardContent>
@@ -378,6 +384,12 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
                     </Grid>
                 </Grid>
             </DialogContent>
+            <DialogActions>
+                <Button onClick={onCancel}>Cancel</Button>
+                <StyledButton disabled={!selectedPrompt?.detailed} onClick={() => onSubmit(selectedPrompt.detailed)} variant='contained'>
+                    Submit
+                </StyledButton>
+            </DialogActions>
         </Dialog>
     ) : null
 
@@ -387,7 +399,8 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel }) => {
 PromptLangsmithHubDialog.propTypes = {
     promptType: PropTypes.string,
     show: PropTypes.bool,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    onSubmit: PropTypes.func
 }
 
 export default PromptLangsmithHubDialog
