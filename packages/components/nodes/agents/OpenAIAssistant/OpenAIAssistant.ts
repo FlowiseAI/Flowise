@@ -41,6 +41,15 @@ class OpenAIAssistant_Agents implements INode {
                 name: 'tools',
                 type: 'Tool',
                 list: true
+            },
+            {
+                label: 'Disable File Download',
+                name: 'disableFileDownload',
+                type: 'boolean',
+                description:
+                    'Messages can contain text, images, or files. In some cases, you may want to prevent others from downloading the files. Learn more from OpenAI File Annotation <a target="_blank" href="https://platform.openai.com/docs/assistants/how-it-works/managing-threads-and-messages">docs</a>',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -119,6 +128,8 @@ class OpenAIAssistant_Agents implements INode {
         const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const disableFileDownload = nodeData.inputs?.disableFileDownload as boolean
+
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         const formattedTools = tools?.map((tool: any) => formatToOpenAIAssistantTool(tool)) ?? []
@@ -310,7 +321,7 @@ class OpenAIAssistant_Agents implements INode {
 
                         const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
 
-                        // Iterate over the annotations and add footnotes
+                        // Iterate over the annotations
                         for (let index = 0; index < annotations.length; index++) {
                             const annotation = annotations[index]
                             let filePath = ''
@@ -323,11 +334,13 @@ class OpenAIAssistant_Agents implements INode {
                                 // eslint-disable-next-line no-useless-escape
                                 const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                 filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                fileAnnotations.push({
-                                    filePath,
-                                    fileName
-                                })
+                                if (!disableFileDownload) {
+                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                    fileAnnotations.push({
+                                        filePath,
+                                        fileName
+                                    })
+                                }
                             } else {
                                 const file_path = (annotation as OpenAI.Beta.Threads.Messages.MessageContentText.Text.FilePath).file_path
                                 if (file_path) {
@@ -335,11 +348,13 @@ class OpenAIAssistant_Agents implements INode {
                                     // eslint-disable-next-line no-useless-escape
                                     const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                     filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                    fileAnnotations.push({
-                                        filePath,
-                                        fileName
-                                    })
+                                    if (!disableFileDownload) {
+                                        await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                        fileAnnotations.push({
+                                            filePath,
+                                            fileName
+                                        })
+                                    }
                                 }
                             }
 
@@ -351,6 +366,9 @@ class OpenAIAssistant_Agents implements INode {
                     } else {
                         returnVal += content.text.value
                     }
+
+                    const lenticularBracketRegex = /【[^】]*】/g
+                    returnVal = returnVal.replace(lenticularBracketRegex, '')
                 } else {
                     const content = assistantMessages[0].content[i] as MessageContentImageFile
                     const fileId = content.image_file.file_id
