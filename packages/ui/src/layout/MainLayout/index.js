@@ -60,6 +60,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 
 const MainLayout = () => {
     const theme = useTheme()
+    console.log(theme.typography)
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
     // Handle left drawer
@@ -85,7 +86,8 @@ const MainLayout = () => {
                 elevation={0}
                 sx={{
                     bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
+                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
+                    borderBottom: '1px solid #E8EAEC'
                 }}
             >
                 <Toolbar>

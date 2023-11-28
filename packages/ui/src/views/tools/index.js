@@ -111,14 +111,19 @@ const Tools = () => {
                         <Grid item>
                             <Button
                                 variant='outlined'
-                                sx={{ mr: 2 }}
+                                sx={{ mr: 2, borderRadius: '12px' }}
                                 onClick={() => inputRef.current.click()}
                                 startIcon={<IconFileImport />}
                             >
                                 Загрузить
                             </Button>
                             <input ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
-                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ color: 'white', borderRadius: '12px' }}
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                            >
                                 Создать
                             </StyledButton>
                         </Grid>

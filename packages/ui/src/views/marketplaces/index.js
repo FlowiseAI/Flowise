@@ -6,7 +6,6 @@ import PropTypes from 'prop-types'
 // material-ui
 import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconHierarchy, IconTool } from '@tabler/icons'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
@@ -139,14 +138,9 @@ const Marketplace = () => {
                 <Stack flexDirection='row'>
                     <h1>Marketplace</h1>
                 </Stack>
-                <Tabs sx={{ mb: 2 }} variant='fullWidth' value={value} onChange={handleChange} aria-label='tabs'>
+                <Tabs sx={{ mb: 2 }} value={value} onChange={handleChange} aria-label='tabs'>
                     {tabItems.map((item, index) => (
-                        <Tab
-                            key={index}
-                            icon={index === 0 ? <IconHierarchy /> : <IconTool />}
-                            iconPosition='start'
-                            label={<span style={{ fontSize: '1.1rem' }}>{item}</span>}
-                        />
+                        <Tab key={index} iconPosition='start' label={<span style={{ fontSize: '1rem' }}>{item}</span>} />
                     ))}
                 </Tabs>
                 {tabItems.map((item, index) => (
@@ -165,7 +159,7 @@ const Marketplace = () => {
                                                         }
                                                     }}
                                                     badgeContent={data.badge}
-                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                    color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                 >
                                                     <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                                 </Badge>
@@ -191,7 +185,7 @@ const Marketplace = () => {
                                                         }
                                                     }}
                                                     badgeContent={data.badge}
-                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                    color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                 >
                                                     <ItemCard data={data} onClick={() => goToTool(data)} />
                                                 </Badge>

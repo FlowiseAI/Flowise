@@ -360,7 +360,7 @@ const APIKey = () => {
                                 <ButtonGroup disableElevation aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        sx={{ color: 'white', mr: 1, height: 37, borderRadius: '12px' }}
                                         onClick={addNew}
                                         startIcon={<IconPlus />}
                                     >
@@ -384,10 +384,10 @@ const APIKey = () => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Key Name</TableCell>
-                                    <TableCell>API Key</TableCell>
-                                    <TableCell>Usage</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>Имя Ключа</TableCell>
+                                    <TableCell>API Ключ</TableCell>
+                                    <TableCell>Применение</TableCell>
+                                    <TableCell>Создан</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
                                 </TableRow>

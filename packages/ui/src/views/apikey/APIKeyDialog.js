@@ -211,7 +211,11 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <StyledButton variant='contained' onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())}>
+                <StyledButton
+                    sx={{ borderRadius: '12px' }}
+                    variant='contained'
+                    onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())}
+                >
                     Добавить
                 </StyledButton>
             </DialogActions>
