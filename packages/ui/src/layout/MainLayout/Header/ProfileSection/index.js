@@ -8,7 +8,6 @@ import { useTheme } from '@mui/material/styles'
 import {
     Box,
     ButtonBase,
-    Avatar,
     ClickAwayListener,
     Divider,
     List,
@@ -17,8 +16,10 @@ import {
     ListItemText,
     Paper,
     Popper,
-    Typography
+    Typography,
+    Switch
 } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -30,14 +31,60 @@ import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
 import AboutDialog from 'ui-component/dialog/AboutDialog'
 
 // assets
-import { IconLogout, IconSettings, IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
+import { IconInfoCircle } from '@tabler/icons'
+import { ReactComponent as IconUpload } from 'assets/images/upload.svg'
+import { ReactComponent as IconDownload } from 'assets/images/download.svg'
+import { ReactComponent as IconExit } from 'assets/images/exit.svg'
+
+import iconDown from 'assets/images/IconDown.svg'
+import iconSettings from 'assets/images/IconSettings.svg'
 
 // API
 import databaseApi from 'api/database'
 
-import { SET_MENU } from 'store/actions'
+import { SET_MENU, SET_DARKMODE } from 'store/actions'
 
 import './index.css'
+const AntSwitch = styled(Switch)(({ theme }) => ({
+    width: 28,
+    height: 16,
+    padding: 0,
+    display: 'flex',
+    '&:active': {
+        '& .MuiSwitch-thumb': {
+            width: 15
+        },
+        '& .MuiSwitch-switchBase.Mui-checked': {
+            transform: 'translateX(9px)'
+        }
+    },
+    '& .MuiSwitch-switchBase': {
+        padding: 2,
+        '&.Mui-checked': {
+            transform: 'translateX(12px)',
+            color: '#fff',
+            '& + .MuiSwitch-track': {
+                opacity: 1,
+                backgroundColor: theme.palette.mode === 'dark' ? '#177ddc' : '#1890ff'
+            }
+        }
+    },
+    '& .MuiSwitch-thumb': {
+        boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        transition: theme.transitions.create(['width'], {
+            duration: 200
+        })
+    },
+    '& .MuiSwitch-track': {
+        borderRadius: 16 / 2,
+        opacity: 1,
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.25)',
+        boxSizing: 'border-box'
+    }
+}))
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -45,8 +92,15 @@ const ProfileSection = ({ username, handleLogout }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
-
     const customization = useSelector((state) => state.customization)
+
+    const [isDark, setIsDark] = useState(customization.isDarkMode)
+
+    const changeDarkMode = () => {
+        dispatch({ type: SET_DARKMODE, isDarkMode: !isDark })
+        setIsDark((isDark) => !isDark)
+        localStorage.setItem('isDarkMode', !isDark)
+    }
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -127,8 +181,8 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     return (
         <>
-            <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                <Avatar
+            <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }} onClick={handleToggle}>
+                {/* <Avatar
                     variant='rounded'
                     sx={{
                         ...theme.typography.commonAvatar,
@@ -145,7 +199,10 @@ const ProfileSection = ({ username, handleLogout }) => {
                     color='inherit'
                 >
                     <IconSettings stroke={1.5} size='1.3rem' />
-                </Avatar>
+                </Avatar> */}
+                <img src={iconSettings} alt='settings' />
+                <div className='settings__title'>Настройки</div>
+                <img src={iconDown} alt='down' />
             </ButtonBase>
             <Popper
                 placement='bottom-end'
@@ -204,7 +261,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     }}
                                                 >
                                                     <ListItemIcon>
-                                                        <IconFileDownload stroke={1.5} size='1.3rem' />
+                                                        <IconUpload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText
                                                         primary={<Typography variant='body2'>Загрузить базу данных</Typography>}
@@ -215,10 +272,11 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     onClick={handleExportDB}
                                                 >
                                                     <ListItemIcon>
-                                                        <IconFileExport stroke={1.5} size='1.3rem' />
+                                                        <IconDownload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Экспорт базы данных</Typography>} />
                                                 </ListItemButton>
+                                                <Divider />
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
@@ -231,15 +289,33 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>О Start.AI</Typography>} />
                                                 </ListItemButton>
+                                                <Divider />
+                                                {/* <ListItemText
+                                                    sx={{
+                                                        borderRadius: `${customization.borderRadius}px`,
+                                                        display: 'flex',
+                                                        flexDirection: 'column'
+                                                    }}
+                                                >
+                                                    <ListItemText primary={<Typography variant='body2'>Тема</Typography>} />
+                                                    <ListItemButton onClick={changeDarkMode}>
+                                                        <ListItemIcon>
+                                                            <IconFileExport stroke={1.5} size='1.3rem' />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant='body2'>Темная тема</Typography>} />
+                                                        <AntSwitch checked={isDark} inputProps={{ 'aria-label': 'ant design' }} />
+                                                    </ListItemButton>
+                                                </ListItemText>
+                                                <Divider /> */}
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         onClick={handleLogout}
                                                     >
                                                         <ListItemIcon>
-                                                            <IconLogout stroke={1.5} size='1.3rem' />
+                                                            <IconExit stroke={1.5} size='1.3rem' />
                                                         </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
+                                                        <ListItemText primary={<Typography variant='body2'>Выйти</Typography>} />
                                                     </ListItemButton>
                                                 )}
                                             </List>

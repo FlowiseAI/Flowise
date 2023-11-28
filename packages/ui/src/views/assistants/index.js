@@ -90,14 +90,24 @@ const Assistants = () => {
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
                     <Grid sx={{ mb: 1.25 }} container direction='row'>
-                        <h1>OpenAI Assistants</h1>
+                        <h1>OpenAI Ассистенты</h1>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
-                            <Button variant='outlined' sx={{ mr: 2 }} onClick={loadExisting} startIcon={<IconFileImport />}>
-                                Load
+                            <Button
+                                variant='outlined'
+                                sx={{ mr: 2, borderRadius: '12px' }}
+                                onClick={loadExisting}
+                                startIcon={<IconFileImport />}
+                            >
+                                Загрузить
                             </Button>
-                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                                Add
+                            <StyledButton
+                                variant='contained'
+                                sx={{ color: 'white', borderRadius: '12px' }}
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                            >
+                                Добавить
                             </StyledButton>
                         </Grid>
                     </Grid>
@@ -123,7 +133,7 @@ const Assistants = () => {
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
                         </Box>
-                        <div>No Assistants Added Yet</div>
+                        <div>Ассистентов еще нет</div>
                     </Stack>
                 )}
             </MainCard>

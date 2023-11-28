@@ -7,6 +7,7 @@ import { Box, Grid, Typography } from '@mui/material'
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
+import moment from 'moment'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -25,6 +26,17 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     whiteSpace: 'pre-line'
 }))
 
+const CreatedAT = styled('div')({
+    position: 'absolute',
+    right: '0',
+    padding: '5px 20px',
+    fontSize: '12px',
+    fontWeight: '400',
+    lineHeight: '14px',
+    letterSpacing: '-0.01em',
+    color: '#3E444A',
+    opacity: '50%'
+})
 // ===========================|| CONTRACT CARD ||=========================== //
 const translateDescriptions = {
     'Flowise Docs Github QnA using conversational retrieval QA chain':
@@ -139,12 +151,14 @@ const translateDescriptions = {
         ' OpenAI Assistant, который имеет инструкции и может использовать модели, инструменты и знания для ответа на запросы пользователей.'
 }
 const ItemCard = ({ isLoading, data, images, onClick }) => {
+    console.log(data)
     return (
         <>
             {isLoading ? (
                 <SkeletonChatflowCard />
             ) : (
-                <CardWrapper border={false} content={false} onClick={onClick}>
+                <CardWrapper border={false} content={false} onClick={onClick} sx={{ border: '1px solid #E8EAEC' }}>
+                    {data.createdDate && <CreatedAT>{moment(data.createdDate).format('. DD.MM.YYYY, h:mm a')}</CreatedAT>}
                     <Box sx={{ p: 2.25 }}>
                         <Grid container direction='column'>
                             <div

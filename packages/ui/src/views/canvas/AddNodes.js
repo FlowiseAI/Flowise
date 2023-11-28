@@ -384,10 +384,10 @@ const AddNodes = ({ nodesData, node }) => {
                 sx={{ left: 20, top: 20 }}
                 ref={anchorRef}
                 size='small'
-                color='primary'
                 aria-label='add'
                 title='Add Node'
                 onClick={handleToggle}
+                color='secondary'
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>

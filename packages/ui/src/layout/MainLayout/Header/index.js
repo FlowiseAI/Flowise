@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Switch } from '@mui/material'
+import { Box, ButtonBase, Switch } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 // project imports
@@ -13,11 +13,10 @@ import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
 
 // assets
-import { IconMenu2 } from '@tabler/icons'
 
 // store
 import { SET_DARKMODE } from 'store/actions'
-
+import iconMenu from '../../../assets/images/IconMenu.svg'
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
@@ -101,11 +100,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     }
                 }}
             >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
-                    <LogoSection />
-                </Box>
-                <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                    <Avatar
+                <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden', marginRight: '10px' }} onClick={handleLeftDrawerToggle}>
+                    {/* <Avatar
                         variant='rounded'
                         sx={{
                             ...theme.typography.commonAvatar,
@@ -122,11 +118,15 @@ const Header = ({ handleLeftDrawerToggle }) => {
                         color='inherit'
                     >
                         <IconMenu2 stroke={1.5} size='1.3rem' />
-                    </Avatar>
+                    </Avatar> */}
+                    <img src={iconMenu} alt='menu icon' />
                 </ButtonBase>
+                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+                    <LogoSection />
+                </Box>
             </Box>
             <Box sx={{ flexGrow: 1 }} />
-            <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
+            {/* <MaterialUISwitch checked={isDark} onChange={changeDarkMode} /> */}
             <Box sx={{ ml: 2 }}></Box>
             <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} />
         </>

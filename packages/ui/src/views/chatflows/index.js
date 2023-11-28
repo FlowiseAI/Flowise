@@ -152,9 +152,14 @@ const Chatflows = () => {
                             }}
                         />
                         <Box sx={{ flexGrow: 1 }} />
-                        <ButtonGroup sx={{ maxHeight: 40 }} disableElevation variant='contained' aria-label='outlined primary button group'>
-                            <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
+                        <ButtonGroup
+                            sx={{ maxHeight: 40 }}
+                            disableElevation
+                            variant='contained'
+                            aria-label='outlined secondary button group'
+                        >
+                            <ButtonGroup disableElevation variant='contained' aria-label='outlined secondary button group'>
+                                <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='secondary' exclusive onChange={handleChange}>
                                     <ToggleButton
                                         sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                         variant='contained'
@@ -176,7 +181,13 @@ const Chatflows = () => {
                             </ButtonGroup>
                             <Box sx={{ width: 5 }} />
                             <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />}>
+                                <StyledButton
+                                    sx={{ borderRadius: '12px' }}
+                                    color='secondary'
+                                    variant='contained'
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                >
                                     Создать
                                 </StyledButton>
                             </ButtonGroup>

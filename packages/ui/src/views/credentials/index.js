@@ -204,12 +204,12 @@ const Credentials = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>Credentials&nbsp;</h1>
+                            <h1>Учетные Данные&nbsp;</h1>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
                                 variant='outlined'
-                                placeholder='Search credential name'
+                                placeholder='Поиск Учетных Данных'
                                 onChange={onSearchChange}
                                 InputProps={{
                                     startAdornment: (
@@ -229,11 +229,11 @@ const Credentials = () => {
                                 <ButtonGroup disableElevation aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        sx={{ color: 'white', mr: 1, borderRadius: '12px', height: 37 }}
                                         onClick={listCredential}
                                         startIcon={<IconPlus />}
                                     >
-                                        Add Credential
+                                        Добавить Данные
                                     </StyledButton>
                                 </ButtonGroup>
                             </ButtonGroup>

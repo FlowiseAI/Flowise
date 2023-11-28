@@ -5,7 +5,6 @@ import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMe
 const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
-
 const settings = {
     id: 'settings',
     title: '',

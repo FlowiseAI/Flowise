@@ -1,8 +1,19 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot } from '@tabler/icons'
-
+import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconTable } from '@tabler/icons'
+import { ReactComponent as IconKeys } from 'assets/images/IconKey.svg'
+import { ReactComponent as IconSmile } from 'assets/images/smile.svg'
+import { ReactComponent as IconCollection } from 'assets/images/collection.svg'
+import { ReactComponent as IconLocks } from 'assets/images/lock.svg'
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot }
+const icons = {
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconTable
+}
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -16,7 +27,7 @@ const dashboard = {
             title: 'Проекты',
             type: 'item',
             url: '/chatflows',
-            icon: icons.IconHierarchy,
+            icon: IconCollection,
             breadcrumbs: true
         },
         {
@@ -24,7 +35,7 @@ const dashboard = {
             title: 'Marketplace',
             type: 'item',
             url: '/marketplaces',
-            icon: icons.IconBuildingStore,
+            icon: icons.IconTable,
             breadcrumbs: true
         },
         {
@@ -40,7 +51,7 @@ const dashboard = {
             title: 'Ассистенты ',
             type: 'item',
             url: '/assistants',
-            icon: icons.IconRobot,
+            icon: IconSmile,
             breadcrumbs: true
         },
         {
@@ -48,7 +59,7 @@ const dashboard = {
             title: 'Учетные данные',
             type: 'item',
             url: '/credentials',
-            icon: icons.IconLock,
+            icon: IconLocks,
             breadcrumbs: true
         },
         {
@@ -56,7 +67,7 @@ const dashboard = {
             title: 'API-ключи',
             type: 'item',
             url: '/apikey',
-            icon: icons.IconKey,
+            icon: IconKeys,
             breadcrumbs: true
         }
     ]
