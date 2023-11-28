@@ -14,7 +14,7 @@ export class SimplePromptModerationRunner implements Moderation {
 
     async checkForViolations(input: string): Promise<string> {
         this.denyList.split('\n').forEach((denyListItem) => {
-            if (denyListItem && denyListItem !== '' && input.includes(denyListItem)) {
+            if (denyListItem && denyListItem !== '' && input.toLowerCase().includes(denyListItem.toLowerCase())) {
                 throw Error(this.moderationErrorMessage)
             }
         })
