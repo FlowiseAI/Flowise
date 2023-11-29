@@ -181,7 +181,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     >
                         <IconBulb size={30} color='#2d6a4f' />
                         <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                            Starter prompts will only be shown when there is no messages on the chat yet
+                            Starter prompts will only be shown when there is no messages on the chat
                         </span>
                     </div>
                 </div>
