@@ -6,7 +6,6 @@ import {
     Button,
     Card,
     CardContent,
-    Chip,
     Dialog,
     DialogActions,
     DialogContent,
@@ -30,6 +29,46 @@ import ReactMarkdown from 'react-markdown'
 import CredentialInputHandler from '../../views/canvas/CredentialInputHandler'
 import promptApi from '../../api/prompt'
 import { StyledButton } from '../button/StyledButton'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { styled } from '@mui/material/styles'
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'
+import MuiAccordion from '@mui/material/Accordion'
+import MuiAccordionSummary from '@mui/material/AccordionSummary'
+import MuiAccordionDetails from '@mui/material/AccordionDetails'
+
+const NewLineToBr = ({ children = '' }) => {
+    return children.split('\n').reduce(function (arr, line) {
+        return arr.concat(line, <br />)
+    }, [])
+}
+
+const Accordion = styled((props) => <MuiAccordion disableGutters elevation={0} square {...props} />)(({ theme }) => ({
+    border: `1px solid ${theme.palette.divider}`,
+    '&:not(:last-child)': {
+        borderBottom: 0
+    },
+    '&:before': {
+        display: 'none'
+    }
+}))
+
+const AccordionSummary = styled((props) => (
+    <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
+))(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+        transform: 'rotate(180deg)'
+    },
+    '& .MuiAccordionSummary-content': {
+        marginLeft: theme.spacing(1)
+    }
+}))
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+    padding: theme.spacing(2),
+    borderTop: '1px solid rgba(0, 0, 0, .125)'
+}))
 
 const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const portalElement = document.getElementById('portal')
@@ -102,6 +141,11 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const [selectedPrompt, setSelectedPrompt] = useState({})
 
     const [credentialId, setCredentialId] = useState('')
+    const [accordionExpanded, setAccordionExpanded] = useState('panel2')
+
+    const handleAccordionChange = (panel) => {
+        setAccordionExpanded(panel)
+    }
 
     const handleListItemClick = async (event, index) => {
         const prompt = availablePrompNameList[index]
@@ -178,7 +222,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth='md'
+            maxWidth='lg'
             aria-labelledby='prompt-dialog-title'
             aria-describedby='prompt-dialog-description'
         >
@@ -314,10 +358,10 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                 </Box>
                 <Divider sx={{ mb: 2 }} />
-                <Grid xs={12} container spacing={2} justifyContent='center' alignItems='center'>
+                <Grid xs={12} container spacing={1} justifyContent='center' alignItems='center'>
                     <Grid xs={4} item style={{ textAlign: 'left' }}>
                         <Box sx={{ width: '100%', maxWidth: 360 }}>
-                            <Card variant='outlined' style={{ height: 470, overflow: 'auto' }}>
+                            <Card variant='outlined' style={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
                                 <CardContent sx={{ p: 1 }}>
                                     <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                                         Available Prompts
@@ -339,45 +383,70 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </Grid>
                     <Grid xs={8} item style={{ textAlign: 'left' }}>
                         <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Card variant='outlined' style={{ height: 100, overflow: 'auto' }}>
-                                <CardContent sx={{ p: 1 }}>
-                                    <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                        Description
-                                    </Typography>
-                                    <Typography sx={{ fontSize: 12 }} color='text.primary'>
-                                        {selectedPrompt?.description}
-                                        <br />
-                                        {selectedPrompt?.tags?.map((item) => (
-                                            <Chip size='small' key={item.id} label={item} sx={{ mr: 1, mb: 0.5, fontSize: 10 }} />
-                                        ))}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 100, overflow: 'auto' }}>
-                                <CardContent sx={{ p: 1 }}>
-                                    <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                        Readme
-                                    </Typography>
-                                    <ReactMarkdown
-                                        sx={{ fontSize: 11, width: '100%' }}
-                                        style={{ width: '100%', flexGrow: 1, resize: 'none' }}
-                                    >
-                                        {selectedPrompt?.readme}
-                                    </ReactMarkdown>
-                                </CardContent>
-                            </Card>
-                            <Card sx={{ mt: 1 }} variant='outlined' style={{ height: 250, overflow: 'auto' }}>
-                                <CardContent sx={{ p: 1 }}>
-                                    {selectedPrompt?.detailed?.map((item) => (
-                                        <>
-                                            <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                                {item.typeDisplay.toUpperCase()}
+                            <Card variant='outlined' style={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
+                                <CardContent sx={{ p: 0.5 }}>
+                                    <Accordion expanded={accordionExpanded === 'panel1'} onChange={() => handleAccordionChange('panel1')}>
+                                        <AccordionSummary
+                                            aria-controls='panel1d-content'
+                                            expandIcon={<ExpandMoreIcon />}
+                                            id='panel1d-header'
+                                        >
+                                            <Typography>Description</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Typography sx={{ fontSize: 12, wordWrap: 'true' }} color='text.primary'>
+                                                {selectedPrompt?.description}
                                             </Typography>
-                                            <Typography>
-                                                <pre style={{ fontFamily: 'inherit' }}>{item.template}</pre>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                    <Accordion expanded={accordionExpanded === 'panel2'} onChange={() => handleAccordionChange('panel2')}>
+                                        <AccordionSummary
+                                            aria-controls='panel2d-content'
+                                            expandIcon={<ExpandMoreIcon />}
+                                            id='panel2d-header'
+                                        >
+                                            <Typography>Prompt</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Typography sx={{ fontSize: 12, wordWrap: 'true' }} color='text.primary'>
+                                                {selectedPrompt?.detailed?.map((item) => (
+                                                    <>
+                                                        <Typography sx={{ fontSize: 12 }} color='text.secondary' gutterBottom>
+                                                            {item.typeDisplay.toUpperCase()}
+                                                        </Typography>
+                                                        <Typography sx={{ fontSize: 12 }}>
+                                                            <p
+                                                                style={{
+                                                                    whiteSpace: 'pre-wrap -moz-pre-wrap -pre-wrap -o-pre-wrap',
+                                                                    wordWrap: 'break-word',
+                                                                    fontFamily: 'inherit'
+                                                                }}
+                                                            >
+                                                                <NewLineToBr>{item.template}</NewLineToBr>
+                                                            </p>
+                                                        </Typography>
+                                                    </>
+                                                ))}
                                             </Typography>
-                                        </>
-                                    ))}
+                                        </AccordionDetails>
+                                    </Accordion>
+                                    <Accordion expanded={accordionExpanded === 'panel3'} onChange={() => handleAccordionChange('panel3')}>
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls='panel3d-content'
+                                            id='panel3d-header'
+                                        >
+                                            <Typography>Readme</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <ReactMarkdown
+                                                sx={{ fontSize: 11, wordWrap: 'true', width: '100%' }}
+                                                style={{ width: '100%', flexGrow: 1, resize: 'none' }}
+                                            >
+                                                {selectedPrompt?.readme}
+                                            </ReactMarkdown>
+                                        </AccordionDetails>
+                                    </Accordion>
                                 </CardContent>
                             </Card>
                         </Box>

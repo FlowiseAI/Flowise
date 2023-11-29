@@ -28,6 +28,7 @@ export function parsePrompt(prompt: string): any[] {
         let template = promptObj.kwargs.template
         response.push({
             type: 'template',
+            typeDisplay: 'Prompt',
             template: template
         })
     }
