@@ -20,7 +20,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Function Agent'
         this.name = 'openAIFunctionAgent'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'openai.png'
@@ -41,7 +41,7 @@ class OpenAIFunctionAgent_Agents implements INode {
             {
                 label: 'OpenAI/Azure Chat Model',
                 name: 'model',
-                type: 'ChatOpenAI | AzureChatOpenAI'
+                type: 'BaseChatModel'
             },
             {
                 label: 'System Message',
@@ -86,6 +86,8 @@ class OpenAIFunctionAgent_Agents implements INode {
                 executor.memory = memory
             }
         }
+
+        ;(executor.memory as any).returnMessages = true // Return true for BaseChatModel
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
