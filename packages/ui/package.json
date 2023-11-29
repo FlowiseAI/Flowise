@@ -1,11 +1,11 @@
 {
-    "name": "flowise-ui",
+    "name": "flow",
     "version": "1.4.0",
     "license": "SEE LICENSE IN LICENSE.md",
-    "homepage": "https://flowiseai.com",
+    "homepage": "",
     "author": {
-        "name": "HenryHeng",
-        "email": "henryheng@flowiseai.com"
+        "name": "H",
+        "email": "h"
     },
     "dependencies": {
         "@emotion/cache": "^11.4.0",
