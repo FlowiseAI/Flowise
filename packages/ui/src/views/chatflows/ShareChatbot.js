@@ -406,14 +406,10 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     />
                 </div>
             </Stack>
-            {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
-            {textField(
-                titleAvatarSrc,
-                'titleAvatarSrc',
-                'Title Avatar Link',
-                'string',
-                `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
-            )}
+            {textField(title, 'title', 'Title', 'string', 'StartAI Assistant')}
+            {textField(titleAvatarSrc, 'titleAvatarSrc', 'Title Avatar Link', 'string', {
+                /* `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png` */
+            })}
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
             {textField(fontSize, 'fontSize', 'Font Size', 'number')}

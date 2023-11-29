@@ -94,7 +94,7 @@ export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = 
             )}
             {!disabled && (
                 <Button sx={{ mt: 1 }} variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
-                    Add Item
+                    Добавить параметр
                 </Button>
             )}
         </>

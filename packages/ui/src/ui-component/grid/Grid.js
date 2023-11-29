@@ -17,7 +17,7 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addN
         <>
             {!disabled && (
                 <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
-                    Add Item
+                    Добавить параметр
                 </Button>
             )}
             {rows && columns && (

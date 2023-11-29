@@ -12,42 +12,42 @@ const settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: 'Просмотр сообщений',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Chatflow',
+            title: 'Дублировать Проект',
             type: 'item',
             url: '',
             icon: icons.IconCopy
         },
         {
             id: 'loadChatflow',
-            title: 'Load Chatflow',
+            title: 'Загрузить Проект',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload
         },
         {
             id: 'exportChatflow',
-            title: 'Export Chatflow',
+            title: 'Скачать Проект',
             type: 'item',
             url: '',
             icon: icons.IconFileExport
         },
         {
             id: 'analyseChatflow',
-            title: 'Analyse Chatflow',
+            title: 'Анализ Проекта',
             type: 'item',
             url: '',
             icon: icons.IconSearch
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Chatflow',
+            title: 'Удалить Проект',
             type: 'item',
             url: '',
             icon: icons.IconTrash

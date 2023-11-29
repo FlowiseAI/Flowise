@@ -160,7 +160,7 @@ const translationsNodesDescription = {
     'BraveSearch API': 'Оболочка вокруг API BraveSearch - API в реальном времени для доступа к результатам поиска Brave',
     Calculator: 'Выполняйте вычисления по ответу',
     'Chain Tool': 'Используйте цепь как разрешенный инструмент для агента',
-    'Custom Tool': 'Используйте пользовательский инструмент, созданный вами в Flowise в рамках чат-потока',
+    'Custom Tool': 'Используйте пользовательский инструмент, созданный вами в StartAI в рамках чат-потока',
     'Google Custom Search': 'Оболочка вокруг API Google Custom Search - API в реальном времени для доступа к результатам поиска Google',
     'OpenAPI Toolkit': 'Загружайте спецификацию OpenAPI',
     'Read File': 'Читайте файл с диска',
@@ -532,87 +532,102 @@ const AddNodes = ({ nodesData, node }) => {
                                                                             />
                                                                         </div>
                                                                     ) : (
-                                                                        <Typography variant='h5'>{category}</Typography>
+                                                                        <Typography variant='h5'>
+                                                                            {translationsNodes[category] || category}
+                                                                        </Typography>
                                                                     )}
                                                                 </AccordionSummary>
                                                                 <AccordionDetails>
-                                                                    {nodes[category].map((node, index) => (
-                                                                        <div
-                                                                            key={node.name}
-                                                                            onDragStart={(event) => onDragStart(event, node)}
-                                                                            draggable
-                                                                        >
-                                                                            <ListItemButton
-                                                                                sx={{
-                                                                                    p: 0,
-                                                                                    borderRadius: `${customization.borderRadius}px`,
-                                                                                    cursor: 'move'
-                                                                                }}
-                                                                            >
-                                                                                <ListItem alignItems='center'>
-                                                                                    <ListItemAvatar>
-                                                                                        <div
-                                                                                            style={{
-                                                                                                width: 50,
-                                                                                                height: 50,
-                                                                                                borderRadius: '50%',
-                                                                                                backgroundColor: 'white'
-                                                                                            }}
-                                                                                        >
-                                                                                            <img
-                                                                                                style={{
-                                                                                                    width: '100%',
-                                                                                                    height: '100%',
-                                                                                                    padding: 10,
-                                                                                                    objectFit: 'contain'
-                                                                                                }}
-                                                                                                alt={node.name}
-                                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                            />
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                    <ListItemText
-                                                                                        sx={{ ml: 1 }}
-                                                                                        primary={
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    display: 'flex',
-                                                                                                    flexDirection: 'row',
-                                                                                                    alignItems: 'center'
-                                                                                                }}
-                                                                                            >
-                                                                                                <span>{node.label}</span>
-                                                                                                &nbsp;
-                                                                                                {node.badge && (
-                                                                                                    <Chip
-                                                                                                        sx={{
-                                                                                                            width: 'max-content',
-                                                                                                            fontWeight: 700,
-                                                                                                            fontSize: '0.65rem',
-                                                                                                            background:
-                                                                                                                node.badge === 'DEPRECATING'
-                                                                                                                    ? theme.palette.warning
-                                                                                                                          .main
-                                                                                                                    : theme.palette.teal
-                                                                                                                          .main,
-                                                                                                            color:
-                                                                                                                node.badge !== 'DEPRECATING'
-                                                                                                                    ? 'white'
-                                                                                                                    : 'inherit'
+                                                                    {nodes[category].map(
+                                                                        (node, index) =>
+                                                                            !excludedNodesByLable.includes(node.label) && (
+                                                                                <div
+                                                                                    key={node.name}
+                                                                                    onDragStart={(event) => onDragStart(event, node)}
+                                                                                    draggable
+                                                                                >
+                                                                                    <ListItemButton
+                                                                                        sx={{
+                                                                                            p: 0,
+                                                                                            borderRadius: `${customization.borderRadius}px`,
+                                                                                            cursor: 'move'
+                                                                                        }}
+                                                                                    >
+                                                                                        <ListItem alignItems='center'>
+                                                                                            <ListItemAvatar>
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        width: 50,
+                                                                                                        height: 50,
+                                                                                                        borderRadius: '50%',
+                                                                                                        backgroundColor: 'white'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <img
+                                                                                                        style={{
+                                                                                                            width: '100%',
+                                                                                                            height: '100%',
+                                                                                                            padding: 10,
+                                                                                                            objectFit: 'contain'
                                                                                                         }}
-                                                                                                        size='small'
-                                                                                                        label={node.badge}
+                                                                                                        alt={node.name}
+                                                                                                        src={`${baseURL}/api/v1/node-icon/${node.name}`}
                                                                                                     />
-                                                                                                )}
-                                                                                            </div>
-                                                                                        }
-                                                                                        secondary={node.description}
-                                                                                    />
-                                                                                </ListItem>
-                                                                            </ListItemButton>
-                                                                            {index === nodes[category].length - 1 ? null : <Divider />}
-                                                                        </div>
-                                                                    ))}
+                                                                                                </div>
+                                                                                            </ListItemAvatar>
+                                                                                            <ListItemText
+                                                                                                sx={{ ml: 1 }}
+                                                                                                primary={
+                                                                                                    <div
+                                                                                                        style={{
+                                                                                                            display: 'flex',
+                                                                                                            flexDirection: 'row',
+                                                                                                            alignItems: 'center'
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <span>{node.label}</span>
+                                                                                                        &nbsp;
+                                                                                                        {node.badge && (
+                                                                                                            <Chip
+                                                                                                                sx={{
+                                                                                                                    width: 'max-content',
+                                                                                                                    fontWeight: 700,
+                                                                                                                    fontSize: '0.65rem',
+                                                                                                                    background:
+                                                                                                                        node.badge ===
+                                                                                                                        'DEPRECATING'
+                                                                                                                            ? theme.palette
+                                                                                                                                  .warning
+                                                                                                                                  .main
+                                                                                                                            : theme.palette
+                                                                                                                                  .teal
+                                                                                                                                  .main,
+                                                                                                                    color:
+                                                                                                                        node.badge !==
+                                                                                                                        'DEPRECATING'
+                                                                                                                            ? 'white'
+                                                                                                                            : 'inherit'
+                                                                                                                }}
+                                                                                                                size='small'
+                                                                                                                label={node.badge}
+                                                                                                            />
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                }
+                                                                                                secondary={
+                                                                                                    translationsNodesDescription[
+                                                                                                        node.label
+                                                                                                    ] || node.description
+                                                                                                }
+                                                                                            />
+                                                                                        </ListItem>
+                                                                                    </ListItemButton>
+                                                                                    {index === nodes[category].length - 1 ? null : (
+                                                                                        <Divider />
+                                                                                    )}
+                                                                                </div>
+                                                                            )
+                                                                    )}
                                                                 </AccordionDetails>
                                                             </Accordion>
                                                         )
