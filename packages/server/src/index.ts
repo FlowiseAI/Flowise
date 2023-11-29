@@ -17,7 +17,6 @@ import {
     IReactFlowNode,
     IReactFlowObject,
     INodeData,
-    IDatabaseExport,
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
@@ -57,7 +56,7 @@ import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { ICommonObject, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
-import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, replaceAllAPIKeys, updateAPIKey } from './utils/apiKey'
+import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 
 export class App {
     app: express.Application
@@ -1017,57 +1016,6 @@ export class App {
             } catch (error) {
                 return res.status(500).send(`Version not found: ${error}`)
             }
-        })
-
-        // ----------------------------------------
-        // Export Load Chatflow & ChatMessage & Apikeys
-        // ----------------------------------------
-
-        this.app.get('/api/v1/database/export', async (req: Request, res: Response) => {
-            const chatmessages = await this.AppDataSource.getRepository(ChatMessage).find()
-            const chatflows = await this.AppDataSource.getRepository(ChatFlow).find()
-            const apikeys = await getAPIKeys()
-            const result: IDatabaseExport = {
-                chatmessages,
-                chatflows,
-                apikeys
-            }
-            return res.json(result)
-        })
-
-        this.app.post('/api/v1/database/load', async (req: Request, res: Response) => {
-            const databaseItems: IDatabaseExport = req.body
-
-            await this.AppDataSource.getRepository(ChatFlow).delete({})
-            await this.AppDataSource.getRepository(ChatMessage).delete({})
-
-            let error = ''
-
-            // Get a new query runner instance
-            const queryRunner = this.AppDataSource.createQueryRunner()
-
-            // Start a new transaction
-            await queryRunner.startTransaction()
-
-            try {
-                const chatflows: ChatFlow[] = databaseItems.chatflows
-                const chatmessages: ChatMessage[] = databaseItems.chatmessages
-
-                await queryRunner.manager.insert(ChatFlow, chatflows)
-                await queryRunner.manager.insert(ChatMessage, chatmessages)
-
-                await queryRunner.commitTransaction()
-            } catch (err: any) {
-                error = err?.message ?? 'Error loading database'
-                await queryRunner.rollbackTransaction()
-            } finally {
-                await queryRunner.release()
-            }
-
-            await replaceAllAPIKeys(databaseItems.apikeys)
-
-            if (error) return res.status(500).send(error)
-            return res.status(201).send('OK')
         })
 
         // ----------------------------------------
