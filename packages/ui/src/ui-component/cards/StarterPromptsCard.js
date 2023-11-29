@@ -1,15 +1,13 @@
 import Box from '@mui/material/Box'
 import PropTypes from 'prop-types'
-import { Button } from '@mui/material'
+import { Chip } from '@mui/material'
 import './StarterPromptsCard.css'
 
 const StarterPromptsCard = ({ isGrid, starterPrompts, onPromptClick }) => {
     return (
-        <Box className={'button-container'} sx={{ maxWidth: isGrid ? 'inherit' : '400px' }}>
+        <Box className={'button-container'} sx={{ maxWidth: isGrid ? 'inherit' : '400px', m: 1 }}>
             {starterPrompts.map((sp, index) => (
-                <Button variant='outlined' className={'button'} key={index} onClick={(e) => onPromptClick(sp.prompt, e)}>
-                    {sp.prompt}
-                </Button>
+                <Chip label={sp.prompt} className={'button'} key={index} onClick={(e) => onPromptClick(sp.prompt, e)} />
             ))}
         </Box>
     )

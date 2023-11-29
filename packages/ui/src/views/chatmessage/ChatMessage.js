@@ -108,26 +108,30 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }, 100)
     }
 
-    const handlePromptClick = async (prompt, e) => {
-        setUserInput(prompt)
-        await handleSubmit(e)
+    const handlePromptClick = async (promptStarterInput) => {
+        setUserInput(promptStarterInput)
+        handleSubmit(undefined, promptStarterInput)
     }
 
     // Handle form submission
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    const handleSubmit = async (e, promptStarterInput) => {
+        if (e) e.preventDefault()
 
-        if (userInput.trim() === '') {
+        if (!promptStarterInput && userInput.trim() === '') {
             return
         }
 
+        let input = userInput
+
+        if (promptStarterInput !== undefined && promptStarterInput.trim() !== '') input = promptStarterInput
+
         setLoading(true)
-        setMessages((prevMessages) => [...prevMessages, { message: userInput, type: 'userMessage' }])
+        setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage' }])
 
         // Send user question and history to API
         try {
             const params = {
-                question: userInput,
+                question: input,
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
@@ -439,13 +443,16 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         })}
                 </div>
             </div>
-            <Divider />
+
+            <div style={{ position: 'relative' }}>
+                {messages && messages.length === 1 && (
+                    <StarterPromptsCard starterPrompts={starterPrompts || []} onPromptClick={handlePromptClick} isGrid={isDialog} />
+                )}
+                <Divider />
+            </div>
             <div className='center'>
                 <div style={{ width: '100%' }}>
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                        {messages && messages.length === 1 && (
-                            <StarterPromptsCard starterPrompts={starterPrompts || []} onPromptClick={handlePromptClick} isGrid={isDialog} />
-                        )}
                         <OutlinedInput
                             inputRef={inputRef}
                             // eslint-disable-next-line
