@@ -118,7 +118,7 @@
 
 .cloud {
     width: 400px;
-    height: calc(90vh - 260px);
+    height: calc(100vh - 260px);
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;

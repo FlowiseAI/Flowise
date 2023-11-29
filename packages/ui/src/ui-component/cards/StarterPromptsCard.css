@@ -5,12 +5,7 @@
     scrollbar-width: none; /* For Firefox */
 }
 
-/*.button-container::-webkit-scrollbar {*/
-/*    display: none; !* For Chrome, Safari, and Opera *!*/
-/*}*/
-
 .button {
     flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
     margin: 5px; /* Adjust as needed for spacing between buttons */
-    /* Add additional button styling here */
 }

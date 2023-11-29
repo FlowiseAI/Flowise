@@ -17,7 +17,7 @@ import {
     List,
     InputAdornment
 } from '@mui/material'
-import { IconX, IconTrash, IconPlus } from '@tabler/icons'
+import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons'
 
 // Project import
 import { StyledButton } from 'ui-component/button/StyledButton'
@@ -29,7 +29,7 @@ import useNotifier from 'utils/useNotifier'
 // API
 import chatflowsApi from 'api/chatflows'
 
-const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm = undefined }) => {
+const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -93,9 +93,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm = undefin
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
-            if (onConfirm) {
-                onConfirm()
-            }
+            onConfirm()
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
@@ -165,12 +163,34 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm = undefin
                 {dialogProps.title || 'Conversation Starter Prompts'}
             </DialogTitle>
             <DialogContent>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 10,
+                        background: '#d8f3dc',
+                        padding: 10
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <IconBulb size={30} color='#2d6a4f' />
+                        <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
+                            Starter prompts will only be shown when there is no messages on the chat yet
+                        </span>
+                    </div>
+                </div>
                 <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
                     <List>
                         {inputFields.map((data, index) => {
                             return (
                                 <div key={index} style={{ display: 'flex', width: '100%' }}>
-                                    <Box sx={{ width: '90%', mb: 1 }}>
+                                    <Box sx={{ width: '95%', mb: 1 }}>
                                         <OutlinedInput
                                             sx={{ width: '100%' }}
                                             key={index}
@@ -181,32 +201,29 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm = undefin
                                             name='prompt'
                                             endAdornment={
                                                 <InputAdornment position='end' sx={{ padding: '2px' }}>
-                                                    <IconButton
-                                                        size='small'
-                                                        disabled={inputFields.length === 1}
-                                                        onClick={removeInputFields}
-                                                        edge='end'
-                                                    >
-                                                        <IconTrash />
-                                                    </IconButton>
+                                                    {inputFields.length > 1 && (
+                                                        <IconButton
+                                                            sx={{ height: 30, width: 30 }}
+                                                            size='small'
+                                                            color='error'
+                                                            disabled={inputFields.length === 1}
+                                                            onClick={() => removeInputFields(index)}
+                                                            edge='end'
+                                                        >
+                                                            <IconTrash />
+                                                        </IconButton>
+                                                    )}
                                                 </InputAdornment>
                                             }
                                         />
                                     </Box>
-                                    <Box sx={{ width: '10%' }}>
+                                    <Box sx={{ width: '5%', mb: 1 }}>
                                         {index === inputFields.length - 1 && (
-                                            <IconButton onClick={addInputField}>
+                                            <IconButton color='primary' onClick={addInputField}>
                                                 <IconPlus />
                                             </IconButton>
                                         )}
                                     </Box>
-                                    {/*<Box sx={{ width: '10%' }}>*/}
-                                    {/*    {inputFields.length !== 1 && (*/}
-                                    {/*        <IconButton onClick={removeInputFields}>*/}
-                                    {/*            <IconTrash />*/}
-                                    {/*        </IconButton>*/}
-                                    {/*    )}*/}
-                                    {/*</Box>*/}
                                 </div>
                             )
                         })}

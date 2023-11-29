@@ -388,6 +388,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
+                onConfirm={() => setConversationStartersDialogOpen(false)}
                 onCancel={() => setConversationStartersDialogOpen(false)}
             />
             <ViewMessagesDialog
