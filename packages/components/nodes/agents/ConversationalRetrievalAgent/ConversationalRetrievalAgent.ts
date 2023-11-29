@@ -21,7 +21,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
     constructor() {
         this.label = 'Conversational Retrieval Agent'
         this.name = 'conversationalRetrievalAgent'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -42,7 +42,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
             {
                 label: 'OpenAI/Azure Chat Model',
                 name: 'model',
-                type: 'ChatOpenAI | AzureChatOpenAI'
+                type: 'BaseChatModel'
             },
             {
                 label: 'System Message',
