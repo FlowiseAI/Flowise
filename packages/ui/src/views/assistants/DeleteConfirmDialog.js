@@ -22,10 +22,10 @@ const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBo
                 <span>{dialogProps.description}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', marginTop: 20 }}>
                     <StyledButton sx={{ mb: 1 }} color='orange' variant='contained' onClick={onDelete}>
-                        Delete only from Flowise
+                        Удалить только из StartAI
                     </StyledButton>
                     <StyledButton sx={{ mb: 1 }} color='error' variant='contained' onClick={onDeleteBoth}>
-                        Delete from both OpenAI and Flowise
+                        Удалить из OpenAI и StartAI
                     </StyledButton>
                     <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
                 </div>

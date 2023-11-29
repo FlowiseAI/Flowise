@@ -12,7 +12,7 @@ const Logo = () => {
             <img
                 style={{ objectFit: 'contain', height: 'auto', width: 110 }}
                 src={customization.isDarkMode ? startLogo : startLogo}
-                alt='Flowise'
+                alt='StartAI'
             />
         </div>
     )
