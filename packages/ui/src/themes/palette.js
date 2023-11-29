@@ -76,7 +76,8 @@ export default function themePalette(theme) {
         },
         background: {
             paper: theme.paper,
-            default: theme.backgroundDefault
+            default: theme.backgroundDefault,
+            sidebar: theme.colors?.primaryLight
         },
         card: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.paper,

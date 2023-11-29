@@ -58,7 +58,7 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
             aria-describedby='category-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Set Chatflow Category Tags
+                Установить теги для проекта
             </DialogTitle>
             <DialogContent>
                 <Box>
@@ -81,19 +81,19 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                             value={inputValue}
                             onChange={handleInputChange}
                             onKeyDown={handleInputKeyDown}
-                            label='Add a tag'
+                            label='Ввести тег'
                             variant='outlined'
                         />
                         <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
-                            Enter a tag and press enter to add it to the list. You can add as many tags as you want.
+                            Введите название тега и нажмиите Enter для добавления. Вы можете добавлять множество тегов.
                         </Typography>
                     </form>
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>Отмена</Button>
                 <Button variant='contained' onClick={handleSubmit}>
-                    Submit
+                    Принять
                 </Button>
             </DialogActions>
         </Dialog>

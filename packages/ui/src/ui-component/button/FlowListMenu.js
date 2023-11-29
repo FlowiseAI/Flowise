@@ -161,10 +161,10 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete chatflow ${chatflow.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: `Удалить`,
+            description: `Удалить Проект ${chatflow.name}?`,
+            confirmButtonName: 'Удалить',
+            cancelButtonName: 'Отмена'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -222,6 +222,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     return (
         <div>
             <Button
+                color='secondary'
                 id='demo-customized-button'
                 aria-controls={open ? 'demo-customized-menu' : undefined}
                 aria-haspopup='true'
@@ -230,7 +231,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 onClick={handleClick}
                 endIcon={<KeyboardArrowDownIcon />}
             >
-                Options
+                Настройки
             </Button>
             <StyledMenu
                 id='demo-customized-menu'
@@ -243,34 +244,34 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             >
                 <MenuItem onClick={handleFlowRename} disableRipple>
                     <EditIcon />
-                    Rename
+                    Переименовать
                 </MenuItem>
                 <MenuItem onClick={handleDuplicate} disableRipple>
                     <FileCopyIcon />
-                    Duplicate
+                    Дублировать
                 </MenuItem>
                 <MenuItem onClick={handleExport} disableRipple>
                     <FileDownloadIcon />
-                    Export
+                    Экспорт
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
-                    Update Category
+                    Обновить категории
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleDelete} disableRipple>
                     <FileDeleteIcon />
-                    Delete
+                    Удалить
                 </MenuItem>
             </StyledMenu>
             <ConfirmDialog />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Rename Chatflow`,
-                    confirmButtonName: 'Rename',
-                    cancelButtonName: 'Cancel'
+                    title: `Переименовать Chatflow`,
+                    confirmButtonName: 'Переименовать',
+                    cancelButtonName: 'Отмена'
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={saveFlowRename}

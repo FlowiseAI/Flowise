@@ -3,6 +3,10 @@ import { DataGrid } from '@mui/x-data-grid'
 import { IconPlus } from '@tabler/icons'
 import { Button } from '@mui/material'
 
+const localizedTextsMap = {
+    footerRowSelected: (count) => (count !== 1 ? `${count.toLocaleString()} строк выбрано` : `${count.toLocaleString()} строка выбрана`)
+}
+
 export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addNewRow }) => {
     const handleProcessRowUpdate = (newRow) => {
         onRowUpdate(newRow)
@@ -26,6 +30,12 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addN
                         onProcessRowUpdateError={(error) => console.error(error)}
                         rows={rows}
                         columns={columns}
+                        localeText={localizedTextsMap}
+                        componentsProps={{
+                            pagination: {
+                                labelRowsPerPage: 'Строк на странице'
+                            }
+                        }}
                     />
                 </div>
             )}

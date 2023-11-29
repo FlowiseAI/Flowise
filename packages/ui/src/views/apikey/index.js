@@ -231,7 +231,7 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New API Key',
+            title: 'Добавить новый ключ API',
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add'
@@ -242,7 +242,7 @@ const APIKey = () => {
 
     const edit = (key) => {
         const dialogProp = {
-            title: 'Edit API Key',
+            title: 'Изменить API ключ',
             type: 'EDIT',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
@@ -257,8 +257,8 @@ const APIKey = () => {
             title: `Delete`,
             description:
                 key.chatFlows.length === 0
-                    ? `Delete key [${key.keyName}] ? `
-                    : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
+                    ? `Удалить ключ [${key.keyName}] ? `
+                    : `Удалить ключ [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -269,7 +269,7 @@ const APIKey = () => {
                 const deleteResp = await apiKeyApi.deleteAPI(key.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'API key deleted',
+                        message: 'API ключ удален',
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -285,7 +285,7 @@ const APIKey = () => {
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete API key: ${errorData}`,
+                    message: `Ошибка удаления API ключа: ${errorData}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -335,7 +335,7 @@ const APIKey = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>API Keys&nbsp;</h1>
+                            <h1>API ключи&nbsp;</h1>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -360,11 +360,11 @@ const APIKey = () => {
                                 <ButtonGroup disableElevation aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        sx={{ color: 'white', mr: 1, height: 37, borderRadius: '12px' }}
                                         onClick={addNew}
                                         startIcon={<IconPlus />}
                                     >
-                                        Create Key
+                                        Добавить новый ключ
                                     </StyledButton>
                                 </ButtonGroup>
                             </ButtonGroup>
@@ -376,7 +376,7 @@ const APIKey = () => {
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
                         </Box>
-                        <div>No API Keys Yet</div>
+                        <div>Пока API ключей нет</div>
                     </Stack>
                 )}
                 {apiKeys.length > 0 && (
@@ -384,10 +384,10 @@ const APIKey = () => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Key Name</TableCell>
-                                    <TableCell>API Key</TableCell>
-                                    <TableCell>Usage</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>Имя Ключа</TableCell>
+                                    <TableCell>API Ключ</TableCell>
+                                    <TableCell>Применение</TableCell>
+                                    <TableCell>Создан</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
                                 </TableRow>

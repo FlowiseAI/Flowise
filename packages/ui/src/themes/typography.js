@@ -14,7 +14,7 @@ export default function themeTypography(theme) {
         h5: {
             fontSize: '0.875rem',
             color: theme.heading,
-            fontWeight: 500
+            fontWeight: 600
         },
         h4: {
             fontSize: '1rem',
@@ -89,10 +89,10 @@ export default function themeTypography(theme) {
         mainContent: {
             backgroundColor: theme.background,
             width: '100%',
-            minHeight: 'calc(100vh - 75px)',
+            minHeight: 'calc(100vh - 55px)',
             flexGrow: 1,
             padding: '20px',
-            marginTop: '75px',
+            marginTop: '55px',
             marginRight: '20px',
             borderRadius: `${theme?.customization?.borderRadius}px`
         },

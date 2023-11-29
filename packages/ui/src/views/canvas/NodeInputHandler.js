@@ -41,7 +41,96 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 })
 
 // ===========================|| NodeInputHandler ||=========================== //
-
+const translateInputParamsAnchors = {
+    'Language Model': 'Языковая Модель',
+    'Base Id': 'ID по умолчанию',
+    'Base URL': 'URL по умолчанию',
+    Size: 'Размер',
+    Embeddings: 'Вложения',
+    'Auto Summary': 'Автоматическое резюме',
+    'Table Id': 'ID таблицы',
+    'Connect Credential': 'Подключить учетные данные',
+    'Allowed Tools': 'Доступные инструменты',
+    'Vector Store Retriever': 'Векторный магазин Ретривер',
+    'Chat Model': 'Чат модель',
+    'AutoGPT Name': 'Имя AutoGPT',
+    'AutoGPT Role': 'Роль AutoGPT',
+    'Maximum Loop': 'Максимум циклов',
+    'Select Assistant': 'Выбор Ассистента',
+    'Base Path': 'Базовый путь',
+    'Example Prompt': 'Пример запроса',
+    Cache: 'Кэш',
+    Memory: 'Память',
+    'Base Chain': 'Базовая цепочка',
+    'Chain Name': 'Имя цепочки',
+    'System Message': 'Системное сообщение',
+    'Memory Key': 'Ключ памяти',
+    'API Documentation': 'Документация по API',
+    'Task Loop': 'Цикл задачи',
+    'Chunk Size': 'Размер фрагмента',
+    'Return Source Documents': 'Вернуть исходные документы',
+    Document: 'Документ',
+    'Text Splitter': 'Разделитель текста',
+    URL: 'URL',
+    Template: 'Шаблон',
+    'Base Path to store': 'Базовый путь для хранения',
+    'Txt File': 'TXT-файл',
+    Metadata: 'Метаданные',
+    Usage: 'Использование',
+    'Chunk Overlap': 'Перекрытие фрагментов',
+    'Custom Separators': 'Пользовательские разделители',
+    'Pdf File': 'PDF-файл',
+    'Format Prompt Values': 'Форматирование значений запроса',
+    Temperature: 'Температура',
+    'Max Tokens': 'Максимальное количество токенов',
+    'Top Probability': 'Вероятность верхних результатов',
+    'Frequency Penalty': 'Штраф за частоту',
+    'Presence Penalty': 'Штраф за наличие',
+    Timeout: 'Таймаут',
+    BasePath: 'Базовый путь',
+    'ChatOpenAI Model': 'Модель ChatGPT OpenAI',
+    Headers: 'Заголовки',
+    'URL Prompt': 'URL-запрос',
+    'Answer Prompt': 'Запрос на ответ',
+    'Pinecone Index': 'Индекс Pinecone',
+    'Pinecone Namespace': 'Пространство имен Pinecone',
+    'Pinecone Metadata Filter': 'Фильтр метаданных Pinecone',
+    'Strip New Lines': 'Удалить новые строки',
+    'Batch Size': 'Размер пакета',
+    Body: 'Тело',
+    Description: 'Описание',
+    'Plugin Url': 'URL плагина',
+    'Use Legacy Build': 'Использовать предыдущую сборку',
+    'Repo Link': 'Ссылка на репозиторий',
+    Branch: 'Ветка',
+    'Max Concurrency': 'Максимальная параллельность',
+    Recursive: 'Рекурсивно',
+    'Ignore Paths': 'Игнорировать пути',
+    'Max Retries': 'Максимальное количество повторов',
+    'Output Parser': 'Парсер вывода',
+    'Prompt System Message': 'Системное сообщение запроса',
+    'Prompt Description': 'Описание запроса',
+    'Retriever Name': 'Имя извлекателя',
+    'Retriever Description': 'Описание извлекателя',
+    'Vector Store': 'Векторное хранилище',
+    'Collection Name': 'Имя коллекции',
+    'Chroma URL': 'URL Chroma',
+    'Minimum Score (%)': 'Минимальный балл (%)',
+    Query: 'Запрос',
+    Database: 'База данных',
+    Autofix: 'Автопоправка',
+    'JSON Structure': 'Структура JSON',
+    'Human Message': 'Сообщение для человека',
+    File: 'Файл',
+    'Sentences Before': 'Предложения перед',
+    'Sentences After': 'Предложения после',
+    Lambda: 'Лямбда',
+    'Input Key': 'Ключ ввода',
+    'Chain Option': 'Опция цепочки',
+    'Get Relative Links Method': 'Метод получения относительных ссылок',
+    'Model Name': 'Имя модели',
+    'Chain Description': 'Описание цепочки'
+}
 const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isAdditionalParams = false }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -181,7 +270,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                     </CustomWidthTooltip>
                     <Box sx={{ p: 2 }}>
                         <Typography>
-                            {inputAnchor.label}
+                            {translateInputParamsAnchors[inputAnchor.label] || inputAnchor.label}
                             {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                             {inputAnchor.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputAnchor.description} />}
                         </Typography>
@@ -211,7 +300,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                     <Box sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
-                                {inputParam.label}
+                                {translateInputParamsAnchors[inputParam.label] || inputParam.label}
                                 {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                                 {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>

@@ -44,21 +44,21 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
             <TableContainer style={{ marginTop: '30', border: 1 }} component={Paper}>
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
                     <TableHead>
-                        <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
+                        <TableRow sx={{ marginTop: '10' }}>
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
-                                Name
+                                Название
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='1'>
-                                Category
+                                Категории
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '30%' }} key='2'>
-                                Nodes
+                                Узлы
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '15%' }} key='3'>
-                                Last Modified Date
+                                Дата обновления
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '10%' }} key='4'>
-                                Actions
+                                Параметры
                             </StyledTableCell>
                         </TableRow>
                     </TableHead>
@@ -69,7 +69,9 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                     <Typography
                                         sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                     >
-                                        <Button onClick={() => goToCanvas(row)}>{row.templateName || row.name}</Button>
+                                        <Button color='secondary' onClick={() => goToCanvas(row)}>
+                                            {row.templateName || row.name}
+                                        </Button>
                                     </Typography>
                                 </TableCell>
                                 <TableCell key='1'>
@@ -123,13 +125,13 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                                 <Typography
                                                     sx={{ alignItems: 'center', display: 'flex', fontSize: '.8rem', fontWeight: 200 }}
                                                 >
-                                                    + {images[row.id].length - 5} More
+                                                    + {images[row.id].length - 5}
                                                 </Typography>
                                             )}
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</TableCell>
+                                <TableCell key='3'>{moment(row.updatedDate).format('. DD.MM.YYYY, h:mm a')}</TableCell>
                                 <TableCell key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                         <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />

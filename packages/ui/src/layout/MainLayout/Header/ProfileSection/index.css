@@ -4,3 +4,6 @@
 .ps__thumb-x {
     display: none !important;
 }
+.settings__title {
+    margin: 0 10px;
+}

@@ -204,12 +204,12 @@ const Credentials = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>Credentials&nbsp;</h1>
+                            <h1>Учетные Данные&nbsp;</h1>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
                                 variant='outlined'
-                                placeholder='Search credential name'
+                                placeholder='Поиск Учетных Данных'
                                 onChange={onSearchChange}
                                 InputProps={{
                                     startAdornment: (
@@ -229,11 +229,11 @@ const Credentials = () => {
                                 <ButtonGroup disableElevation aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
+                                        sx={{ color: 'white', mr: 1, borderRadius: '12px', height: 37 }}
                                         onClick={listCredential}
                                         startIcon={<IconPlus />}
                                     >
-                                        Add Credential
+                                        Добавить Данные
                                     </StyledButton>
                                 </ButtonGroup>
                             </ButtonGroup>
@@ -249,7 +249,7 @@ const Credentials = () => {
                                 alt='CredentialEmptySVG'
                             />
                         </Box>
-                        <div>No Credentials Yet</div>
+                        <div>Учетных записей пока нет</div>
                     </Stack>
                 )}
                 {credentials.length > 0 && (
@@ -257,9 +257,9 @@ const Credentials = () => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Last Updated</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>Название</TableCell>
+                                    <TableCell>Дата обновления</TableCell>
+                                    <TableCell>Дата создания</TableCell>
                                     <TableCell> </TableCell>
                                     <TableCell> </TableCell>
                                 </TableRow>
