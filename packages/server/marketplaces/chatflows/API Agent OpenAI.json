@@ -672,9 +672,9 @@
             "source": "chatOpenAI_2",
             "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
+            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-ChatOpenAI | AzureChatOpenAI",
+            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
