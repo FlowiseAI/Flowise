@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
@@ -27,7 +28,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import Transitions from 'ui-component/extended/Transitions'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
 import AboutDialog from 'ui-component/dialog/AboutDialog'
 
 // assets
@@ -40,9 +40,8 @@ import iconDown from 'assets/images/IconDown.svg'
 import iconSettings from 'assets/images/IconSettings.svg'
 
 // API
-import databaseApi from 'api/database'
 
-import { SET_MENU, SET_DARKMODE } from 'store/actions'
+import { SET_DARKMODE } from 'store/actions'
 
 import './index.css'
 const AntSwitch = styled(Switch)(({ theme }) => ({
@@ -103,11 +102,9 @@ const ProfileSection = ({ username, handleLogout }) => {
     }
 
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
-    const uploadRef = useRef(null)
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -118,56 +115,6 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen)
-    }
-
-    const handleExportDB = async () => {
-        setOpen(false)
-        try {
-            const response = await databaseApi.getExportDatabase()
-            const exportItems = response.data
-            let dataStr = JSON.stringify(exportItems, null, 2)
-            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
-
-            let exportFileDefaultName = `DB.json`
-
-            let linkElement = document.createElement('a')
-            linkElement.setAttribute('href', dataUri)
-            linkElement.setAttribute('download', exportFileDefaultName)
-            linkElement.click()
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    const handleFileUpload = (e) => {
-        if (!e.target.files) return
-
-        const file = e.target.files[0]
-        const reader = new FileReader()
-        reader.onload = async (evt) => {
-            if (!evt?.target?.result) {
-                return
-            }
-            const { result } = evt.target
-
-            if (result.includes(`"chatmessages":[`) && result.includes(`"chatflows":[`) && result.includes(`"apikeys":[`)) {
-                dispatch({ type: SET_MENU, opened: false })
-                setLoading(true)
-
-                try {
-                    await databaseApi.createLoadDatabase(JSON.parse(result))
-                    setLoading(false)
-                    navigate('/', { replace: true })
-                    navigate(0)
-                } catch (e) {
-                    console.error(e)
-                    setLoading(false)
-                }
-            } else {
-                alert('Incorrect Flowise Database Format')
-            }
-        }
-        reader.readAsText(file)
     }
 
     const prevOpen = useRef(open)
@@ -327,8 +274,6 @@ const ProfileSection = ({ username, handleLogout }) => {
                     </Transitions>
                 )}
             </Popper>
-            <input ref={uploadRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
-            <BackdropLoader open={loading} />
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
         </>
     )

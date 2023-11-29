@@ -137,7 +137,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     }
 
     const memory = new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
         isSessionIdUsingChatMessageId
     })

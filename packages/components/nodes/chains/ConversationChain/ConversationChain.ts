@@ -106,15 +106,17 @@ class ConversationChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as ConversationChain
         const memory = nodeData.inputs?.memory as BufferMemory
+        memory.returnMessages = true // Return true for BaseChatModel
 
         if (options && options.chatHistory) {
             const chatHistoryClassName = memory.chatHistory.constructor.name
             // Only replace when its In-Memory
             if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
                 memory.chatHistory = mapChatHistory(options)
-                chain.memory = memory
             }
         }
+
+        chain.memory = memory
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
