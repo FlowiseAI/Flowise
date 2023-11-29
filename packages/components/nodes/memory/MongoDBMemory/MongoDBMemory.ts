@@ -123,9 +123,8 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     }
 
     return new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: mongoDBChatMessageHistory,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
 }
