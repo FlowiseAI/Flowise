@@ -404,7 +404,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     {dialogProps.title}
                     <div style={{ flex: 1 }} />
                     <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
-                        Export
+                        Скачать
                     </Button>
                 </div>
             </DialogTitle>
@@ -412,7 +412,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 <>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 10 }}>
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>From Date</b>
+                            <b style={{ marginRight: 10 }}>Дата От</b>
                             <DatePicker
                                 selected={startDate}
                                 onChange={(date) => onStartDateSelected(date)}
@@ -423,7 +423,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>To Date</b>
+                            <b style={{ marginRight: 10 }}>Дата До</b>
                             <DatePicker
                                 selected={endDate}
                                 onChange={(date) => onEndDateSelected(date)}
@@ -436,7 +436,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minWidth: '200px', marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>Source</b>
+                            <b style={{ marginRight: 10 }}>Источник</b>
                             <MultiDropdown
                                 key={JSON.stringify(chatTypeFilter)}
                                 name='chatType'
@@ -467,7 +467,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         alt='msgEmptySVG'
                                     />
                                 </Box>
-                                <div>No Messages</div>
+                                <div>Нет сообщений</div>
                             </Stack>
                         )}
                         {chatlogs && chatlogs.length > 0 && (
@@ -514,7 +514,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             </div>
                                                         </div>
                                                     }
-                                                    secondary={moment(chatmsg.createdDate).format('MMMM Do YYYY, h:mm:ss a')}
+                                                    secondary={moment(chatmsg.createdDate).format('MMMM Do YYYY, h:mm')}
                                                 />
                                             </ListItem>
                                         </ListItemButton>
@@ -529,17 +529,17 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         <div style={{ flex: 1, marginLeft: '20px', marginBottom: '15px', marginTop: '10px' }}>
                                             {chatMessages[1].sessionId && (
                                                 <div>
-                                                    Session Id:&nbsp;<b>{chatMessages[1].sessionId}</b>
+                                                    ID сессии:&nbsp;<b>{chatMessages[1].sessionId}</b>
                                                 </div>
                                             )}
                                             {chatMessages[1].chatType && (
                                                 <div>
-                                                    Source:&nbsp;<b>{chatMessages[1].chatType === 'INTERNAL' ? 'UI' : 'API/Embed'}</b>
+                                                    Источник:&nbsp;<b>{chatMessages[1].chatType === 'INTERNAL' ? 'UI' : 'API/Embed'}</b>
                                                 </div>
                                             )}
                                             {chatMessages[1].memoryType && (
                                                 <div>
-                                                    Memory:&nbsp;<b>{chatMessages[1].memoryType}</b>
+                                                    Память:&nbsp;<b>{chatMessages[1].memoryType}</b>
                                                 </div>
                                             )}
                                         </div>
@@ -559,17 +559,17 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                 onClick={() => clearChat(chatMessages[1])}
                                                 startIcon={<IconEraser />}
                                             >
-                                                Clear
+                                                Очистить
                                             </StyledButton>
                                             {chatMessages[1].sessionId && (
                                                 <Tooltip
                                                     title={
-                                                        'At your left 👈 you will see the Memory node that was used in this conversation. You need to have the matching Memory node with same parameters in the canvas, in order to delete the session conversations stored on the Memory node'
+                                                        'Слева 👈 вы увидите узел Память, который использовался в этом разговоре. Вам необходимо иметь соответствующий узел «Память» с теми же параметрами на холсте, чтобы удалить сеансовые разговоры, хранящиеся в узле «Память».'
                                                     }
                                                     placement='bottom'
                                                 >
                                                     <h5 style={{ cursor: 'pointer', color: theme.palette.primary.main }}>
-                                                        Why my session is not deleted?
+                                                        Почему моя сессия не удалена?
                                                     </h5>
                                                 </Tooltip>
                                             )}
@@ -741,7 +741,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             key={index}
                                                             style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                                                         >
-                                                            {moment(message.message).format('MMMM Do YYYY, h:mm:ss a')}
+                                                            {moment(message.message).format('MMMM Do YYYY, hh:mm')}
                                                         </Box>
                                                     )
                                                 }

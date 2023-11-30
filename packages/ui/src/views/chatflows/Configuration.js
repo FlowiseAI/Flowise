@@ -39,7 +39,7 @@ const Configuration = () => {
         const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
         const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
         if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
-            throw new Error('Need to fill all rate limit input fields')
+            throw new Error('Необходимо заполнить все поля ввода ограничения скорости.')
         } else if (rateLimitFilledValues.length === 3) {
             obj.rateLimit = {
                 limitMax,
@@ -58,7 +58,7 @@ const Configuration = () => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'API Configuration Saved',
+                    message: 'Конфигурация API сохранена.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -77,7 +77,7 @@ const Configuration = () => {
                 ? error.response.data || `${error.response.status}: ${error.response.statusText}`
                 : error.message
             enqueueSnackbar({
-                message: `Failed to save API Configuration: ${errorData}`,
+                message: `Не удалось сохранить конфигурацию API: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -131,7 +131,7 @@ const Configuration = () => {
         <>
             {/*Rate Limit*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                Rate Limit{' '}
+                Ограничение скорости{' '}
                 {/* <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}
                     title={
@@ -139,12 +139,12 @@ const Configuration = () => {
                     }
                 /> */}
             </Typography>
-            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number')}
-            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number')}
-            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string')}
+            {textField(limitMax, 'limitMax', 'Лимит сообщений за длительность', 'number')}
+            {textField(limitDuration, 'limitDuration', 'Продолжительность в секундах', 'number')}
+            {textField(limitMsg, 'limitMsg', 'Лимит сообщений', 'string')}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
-                Save Changes
+                Сохранить изменения
             </StyledButton>
         </>
     )

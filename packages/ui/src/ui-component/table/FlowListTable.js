@@ -131,7 +131,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                         </div>
                                     )}
                                 </TableCell>
-                                <TableCell key='3'>{moment(row.updatedDate).format('. DD.MM.YYYY, h:mm a')}</TableCell>
+                                <TableCell key='3'>{moment(row.updatedDate).format('. DD.MM.YYYY, HH:MM ')}</TableCell>
                                 <TableCell key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                         <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />

@@ -309,7 +309,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: 'Chatflow saved',
+            message: 'Проект сохранен',
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -361,7 +361,8 @@ const Canvas = () => {
         } else if (getSpecificChatflowApi.error) {
             const error = getSpecificChatflowApi.error
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to retrieve chatflow: ${errorData}`)
+            errorFailed(`
+            Не удалось получить поток проекта: ${errorData}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -377,7 +378,7 @@ const Canvas = () => {
         } else if (createNewChatflowApi.error) {
             const error = createNewChatflowApi.error
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            errorFailed(`Ошибка сохранения проекта: ${errorData}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -391,7 +392,7 @@ const Canvas = () => {
         } else if (updateChatflowApi.error) {
             const error = updateChatflowApi.error
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            errorFailed(`Ошибка сохранения проекта: ${errorData}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -401,7 +402,7 @@ const Canvas = () => {
     useEffect(() => {
         if (testChatflowApi.error) {
             enqueueSnackbar({
-                message: 'Test chatflow failed',
+                message: 'Тест проекта провален',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -441,7 +442,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: 'Untitled chatflow'
+                    name: 'Новый проект'
                 }
             })
         }

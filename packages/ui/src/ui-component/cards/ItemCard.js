@@ -158,7 +158,7 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 <SkeletonChatflowCard />
             ) : (
                 <CardWrapper border={false} content={false} onClick={onClick} sx={{ border: '1px solid #E8EAEC' }}>
-                    {data.createdDate && <CreatedAT>{moment(data.createdDate).format('. DD.MM.YYYY, h:mm a')}</CreatedAT>}
+                    {data.createdDate && <CreatedAT>{moment(data.createdDate).format('. DD.MM.YYYY, HH:MM ')}</CreatedAT>}
                     <Box sx={{ p: 2.25 }}>
                         <Grid container direction='column'>
                             <div

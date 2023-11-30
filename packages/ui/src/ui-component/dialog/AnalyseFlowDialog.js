@@ -48,21 +48,21 @@ const analyticProviders = [
         url: 'https://smith.langchain.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'Подключить учетную заипись',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langsmithApi']
             },
             {
-                label: 'Project Name',
+                label: 'Название проекта',
                 name: 'projectName',
                 type: 'string',
                 optional: true,
-                description: 'If not provided, default will be used',
+                description: 'Если не указано, будет использоваться значение по умолчанию',
                 placeholder: 'default'
             },
             {
-                label: 'On/Off',
+                label: 'Включить/Выключить',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -76,20 +76,20 @@ const analyticProviders = [
         url: 'https://langfuse.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'Подключить учетную заипись',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langfuseApi']
             },
             {
-                label: 'Release',
+                label: 'Выпуск',
                 name: 'release',
                 type: 'string',
                 optional: true,
-                description: 'The release number/hash of the application to provide analytics grouped by release'
+                description: 'Номер выпуска/хэш приложения для предоставления аналитики, сгруппированной по выпускам.'
             },
             {
-                label: 'On/Off',
+                label: 'Включить/Выключить',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -103,13 +103,13 @@ const analyticProviders = [
         url: 'https://llmonitor.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'Подключить учетную заипись',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['llmonitorApi']
             },
             {
-                label: 'On/Off',
+                label: 'Включить/Выключить',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -137,7 +137,7 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Analytic Configuration Saved',
+                    message: 'Аналитическая конфигурация сохранена.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -154,7 +154,7 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Analytic Configuration: ${errorData}`,
+                message: `Не удалось сохранить аналитическую конфигурацию.: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -219,7 +219,7 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Analyse Chatflow
+                Анализ проекта
             </DialogTitle>
             <DialogContent>
                 {analyticProviders.map((provider, index) => (
@@ -340,7 +340,7 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
             </DialogContent>
             <DialogActions>
                 <StyledButton variant='contained' onClick={onSave}>
-                    Save
+                    Сохранить
                 </StyledButton>
             </DialogActions>
         </Dialog>

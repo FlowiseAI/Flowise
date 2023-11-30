@@ -164,7 +164,7 @@ def query(payload):
     return response.json()
     
 output = query({
-    "question": "Hey, how are you?",
+    "question": "Эй, ты как?",
 })
 `
         } else if (codeLang === 'JavaScript') {
@@ -183,14 +183,14 @@ output = query({
     return result;
 }
 
-query({"question": "Hey, how are you?"}).then((response) => {
+query({"question": "Эй, ты как?"}).then((response) => {
     console.log(response);
 });
 `
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?"}' \\
+     -d '{"question": "Эй, ты как?"}' \\
      -H "Content-Type: application/json"`
         }
         return ''
@@ -208,7 +208,7 @@ def query(payload):
     return response.json()
     
 output = query({
-    "question": "Hey, how are you?",
+    "question": "Эй, ты как?",
 })
 `
         } else if (codeLang === 'JavaScript') {
@@ -228,14 +228,14 @@ output = query({
     return result;
 }
 
-query({"question": "Hey, how are you?"}).then((response) => {
+query({"question": "Эй, ты как?"}).then((response) => {
     console.log(response);
 });
 `
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?"}' \\
+     -d '{"question": "Эй, ты как?"}' \\
      -H "Content-Type: application/json" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
@@ -388,7 +388,7 @@ def query(payload):
     return response.json()
 
 output = query({
-    "question": "Hey, how are you?",
+    "question": "Эй, ты как?",
     "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
     }
 })
@@ -410,7 +410,7 @@ output = query({
 }
 
 query({
-  "question": "Hey, how are you?",
+  "question": "Эй, ты как?",
   "overrideConfig": {${getConfigExamplesForJS(configData, 'json')}
   }
 }).then((response) => {
@@ -420,7 +420,7 @@ query({
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
+     -d '{"question": "Эй, ты как?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
      -H "Content-Type: application/json"`
         }
         return ''
@@ -440,7 +440,7 @@ def query(payload):
     return response.json()
 
 output = query({
-    "question": "Hey, how are you?",
+    "question": "Эй, ты как?",
     "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
     }
 })
@@ -463,7 +463,7 @@ output = query({
 }
 
 query({
-  "question": "Hey, how are you?",
+  "question": "Эй, ты как?",
   "overrideConfig": {${getConfigExamplesForJS(configData, 'json')}
   }
 }).then((response) => {
@@ -473,7 +473,7 @@ query({
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
-     -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
+     -d '{"question": "Эй, ты как?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
      -H "Content-Type: application/json" \\
      -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
         }
@@ -510,7 +510,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         if (getAllAPIKeysApi.data) {
             const options = [
                 {
-                    label: 'No Authorization',
+                    label: 'Без авторизации',
                     name: ''
                 }
             ]
@@ -521,7 +521,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 })
             }
             options.push({
-                label: '- Add New Key -',
+                label: '- Добавить новый ключ -',
                 name: 'addnewkey'
             })
             setKeyOptions(options)
@@ -587,9 +587,9 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                     <TabPanel key={index} value={value} index={index}>
                         {(codeLang === 'Embed' || codeLang === 'Share Chatbot') && chatflowApiKeyId && (
                             <>
-                                <p>You cannot use API key while embedding/sharing chatbot.</p>
+                                <p>Вы не можете использовать ключ API при встраивании или совместном использовании чат-бота.</p>
                                 <p>
-                                    Please select <b>&quot;No Authorization&quot;</b> from the dropdown at the top right corner.
+                                    Выберите <b>&quot;No Authorization&quot;</b> в раскрывающемся списке в правом верхнем углу.
                                 </p>
                             </>
                         )}
@@ -603,7 +603,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                     showLineNumbers={false}
                                     wrapLines
                                 />
-                                <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
+                                <CheckboxInput label='Показать конфигурацию ввода' value={checkboxVal} onChange={onCheckBoxChanged} />
                                 {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                                     <>
                                         {Object.keys(nodeConfig)
@@ -688,7 +688,8 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             >
                                                 <IconBulb size={30} color='#2d6a4f' />
                                                 <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                                                    You can also specify multiple values for a config parameter by specifying the node id
+                                                    Вы также можете указать несколько значений для параметра конфигурации, указав
+                                                    идентификатор узла.
                                                 </span>
                                             </div>
                                             <div style={{ padding: 10 }}>

@@ -151,8 +151,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             value,
             inputParam,
             disabled,
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: 'Сохранить',
+            cancelButtonName: 'Отмена'
         }
         setExpandDialogProps(dialogProp)
         setShowExpandDialog(true)
@@ -190,18 +190,18 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const editAsyncOption = (inputParamName, inputValue) => {
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
-                title: 'Edit Tool',
+                title: 'Изменить инструмент',
                 type: 'EDIT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                confirmButtonName: 'Сохранить',
+                cancelButtonName: 'Отмена',
                 toolId: inputValue
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
-                title: 'Edit Assistant',
+                title: 'Изменить ассистента',
                 type: 'EDIT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                confirmButtonName: 'Сохранить',
+                cancelButtonName: 'Отмена',
                 assistantId: inputValue
             })
         }
@@ -211,17 +211,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const addAsyncOption = (inputParamName) => {
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
-                title: 'Add New Tool',
+                title: 'Добавить новый инструмент',
                 type: 'ADD',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Add'
+                confirmButtonName: 'Добавить',
+                cancelButtonName: 'Отмена'
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
-                title: 'Add New Assistant',
+                title: 'Добавить нового ассистента',
                 type: 'ADD',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Add'
+                confirmButtonName: 'Добавить',
+                cancelButtonName: 'Отмена'
             })
         }
         setAsyncOptionEditDialog(inputParamName)

@@ -55,7 +55,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            OpenAI Credential
+                            Учетные данные OpenAI
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                     </Stack>
@@ -63,7 +63,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                         key={credentialId}
                         data={credentialId ? { credential: credentialId } : {}}
                         inputParam={{
-                            label: 'Connect Credential',
+                            label: 'Подключить учетные данные',
                             name: 'credential',
                             type: 'credential',
                             credentialNames: ['openAIApi']
@@ -78,7 +78,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                     <Box sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                Assistants
+                                Ассистенты
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -86,7 +86,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                             name={selectedOpenAIAssistantId}
                             options={availableAssistantsOptions}
                             onSelect={(newValue) => setSelectedOpenAIAssistantId(newValue)}
-                            value={selectedOpenAIAssistantId ?? 'choose an option'}
+                            value={selectedOpenAIAssistantId ?? 'выберите из'}
                         />
                     </Box>
                 )}

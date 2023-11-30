@@ -269,7 +269,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Переименовать Chatflow`,
+                    title: `Переименовать проект`,
                     confirmButtonName: 'Переименовать',
                     cancelButtonName: 'Отмена'
                 }}

@@ -220,7 +220,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             const createResp = await assistantsApi.createNewAssistant(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Assistant added',
+                    message: 'Новый ассистент добавлен',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -237,7 +237,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Assistant: ${errorData}`,
+                message: `Ошибка добавления нового ассистента: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -274,7 +274,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             const saveResp = await assistantsApi.updateAssistant(assistantId, obj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Assistant saved',
+                    message: 'Ассистент добавлен',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -291,7 +291,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Assistant: ${errorData}`,
+                message: `Ошибка сохранения ассистента: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -315,7 +315,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             if (getResp.data) {
                 syncData(getResp.data)
                 enqueueSnackbar({
-                    message: 'Assistant successfully synced!',
+                    message: 'Ассистент успешно синхронизирован!',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -331,7 +331,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to sync Assistant: ${errorData}`,
+                message: `Не удалось синхронизировать Ассистента: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -349,9 +349,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const onDeleteClick = () => {
         setDeleteDialogProps({
-            title: `Delete Assistant`,
-            description: `Delete Assistant ${assistantName}?`,
-            cancelButtonName: 'Cancel'
+            title: `Удалить ассистента`,
+            description: `Удалить ассистента ${assistantName}?`,
+            cancelButtonName: 'Отмена'
         })
         setDeleteDialogOpen(true)
     }
@@ -362,7 +362,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             const delResp = await assistantsApi.deleteAssistant(assistantId, isDeleteBoth)
             if (delResp.data) {
                 enqueueSnackbar({
-                    message: 'Assistant deleted',
+                    message: 'Ассистент удален',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -378,7 +378,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to delete Assistant: ${errorData}`,
+                message: `Ошибка удаления ассистента: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -414,18 +414,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Assistant Name
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={'The name of the assistant. The maximum length is 256 characters.'}
-                            />
+                            Имя ассистента
+                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Имя ассистента. Максимум 256 символов.'} />
                         </Typography>
                     </Stack>
                     <OutlinedInput
                         id='assistantName'
                         type='string'
                         fullWidth
-                        placeholder='My New Assistant'
+                        placeholder='Мой ассистент'
                         value={assistantName}
                         name='assistantName'
                         onChange={(e) => setAssistantName(e.target.value)}
@@ -434,18 +431,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Assistant Description
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={'The description of the assistant. The maximum length is 512 characters.'}
-                            />
+                            Описание ассистента
+                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Описание ассистента. Максимум 512 символов.'} />
                         </Typography>
                     </Stack>
                     <OutlinedInput
                         id='assistantDesc'
                         type='string'
                         fullWidth
-                        placeholder='Description of what the Assistant does'
+                        placeholder='Описание что делает ассистент'
                         multiline={true}
                         rows={3}
                         value={assistantDesc}
@@ -455,7 +449,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>Assistant Icon Src</Typography>
+                        <Typography variant='overline'>Иконка ассистента Src</Typography>
                     </Stack>
                     <div
                         style={{
@@ -490,7 +484,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Assistant Model
+                            Модель ассистента
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                     </Stack>
@@ -505,7 +499,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            OpenAI Credential
+                            Учетные данные OpenAI
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                     </Stack>
@@ -524,10 +518,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Assistant Instruction
+                            Инструкция ассистента
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title={'The system instructions that the assistant uses. The maximum length is 32768 characters.'}
+                                title={'Инструкция о том, как работать с ним. Максимум 32768 символов.'}
                             />
                         </Typography>
                     </Stack>
@@ -535,7 +529,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         id='assistantInstructions'
                         type='string'
                         fullWidth
-                        placeholder='You are a personal math tutor. When asked a question, write and run Python code to answer the question.'
+                        placeholder='Ты проффесиональный математический помошник. Когда задают вопрос, напиши ответ на языке Pytohn.'
                         multiline={true}
                         rows={3}
                         value={assistantInstructions}
@@ -546,10 +540,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Assistant Tools
+                            Инструменты ассистента
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title='A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant.'
+                                title='Список инструментов, включенных в ассистента. На одного ассистента может быть максимум 128 инструментов.'
                             />
                         </Typography>
                     </Stack>
@@ -558,7 +552,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         name={JSON.stringify(assistantTools)}
                         options={[
                             {
-                                label: 'Code Interpreter',
+                                label: 'Интерпретатор кода',
                                 name: 'code_interpreter'
                             },
                             {
@@ -573,10 +567,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Knowledge Files
+                            Файлы знаний
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title='Allow assistant to use the content from uploaded files for retrieval and code interpreter. MAX: 20 files'
+                                title='Разрешить ассистентe использовать содержимое загруженных файлов для поиска и интерпретатора кода. МАКС: 20 файлов'
                             />
                         </Typography>
                     </Stack>
@@ -610,19 +604,19 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         key={uploadAssistantFiles}
                         fileType='*'
                         onChange={(newValue) => setUploadAssistantFiles(newValue)}
-                        value={uploadAssistantFiles ?? 'Choose a file to upload'}
+                        value={uploadAssistantFiles ?? 'Выберите файлы для загрузки'}
                     />
                 </Box>
             </DialogContent>
             <DialogActions>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='secondary' variant='contained' onClick={() => onSyncClick()}>
-                        Sync
+                        Синхронизировать
                     </StyledButton>
                 )}
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => onDeleteClick()}>
-                        Delete
+                        Удалить
                     </StyledButton>
                 )}
                 <StyledButton
@@ -630,7 +624,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewAssistant() : saveAssistant())}
                 >
-                    {dialogProps.confirmButtonName}
+                    Добавить
                 </StyledButton>
             </DialogActions>
             <DeleteConfirmDialog
