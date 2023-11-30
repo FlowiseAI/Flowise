@@ -15,7 +15,8 @@ import {
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
-    IVariableDict
+    IVariableDict,
+    IncomingInput
 } from '../Interface'
 import { cloneDeep, get, isEqual } from 'lodash'
 import {
@@ -216,7 +217,7 @@ export const buildLangchain = async (
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
     question: string,
-    chatHistory: IMessage[],
+    chatHistory: IMessage[] | string,
     chatId: string,
     chatflowid: string,
     appDataSource: DataSource,
@@ -347,8 +348,8 @@ export const clearAllSessionMemory = async (
             node.data.inputs.sessionId = sessionId
         }
 
-        if (newNodeInstance.clearSessionMemory) {
-            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
         }
     }
 }
@@ -380,8 +381,8 @@ export const clearSessionMemoryFromViewMessageDialog = async (
 
         if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
 
-        if (newNodeInstance.clearSessionMemory) {
-            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
             return
         }
     }
@@ -399,7 +400,7 @@ export const getVariableValue = (
     paramValue: string,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[],
+    chatHistory: IMessage[] | string,
     isAcceptVariable = false
 ) => {
     let returnVal = paramValue
@@ -432,7 +433,10 @@ export const getVariableValue = (
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(
+                    typeof chatHistory === 'string' ? chatHistory : convertChatHistoryToText(chatHistory),
+                    false
+                )
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -475,7 +479,7 @@ export const resolveVariables = (
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[]
+    chatHistory: IMessage[] | string
 ): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -872,4 +876,40 @@ export const checkMemorySessionId = (instance: any, chatId: string): string | un
     else if (instance.memory && instance.memory.chatHistory && instance.memory.chatHistory.sessionId)
         return instance.memory.chatHistory.sessionId
     return undefined
+}
+
+/**
+ * Replace chatHistory if incomingInput.history is empty and sessionId/chatId is provided
+ * @param {IReactFlowNode} memoryNode
+ * @param {IncomingInput} incomingInput
+ * @param {DataSource} appDataSource
+ * @param {IDatabaseEntity} databaseEntities
+ * @param {any} logger
+ * @returns {string}
+ */
+export const replaceChatHistory = async (
+    memoryNode: IReactFlowNode,
+    incomingInput: IncomingInput,
+    appDataSource: DataSource,
+    databaseEntities: IDatabaseEntity,
+    logger: any
+): Promise<string> => {
+    const nodeInstanceFilePath = memoryNode.data.filePath as string
+    const nodeModule = await import(nodeInstanceFilePath)
+    const newNodeInstance = new nodeModule.nodeClass()
+
+    if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
+        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
+    }
+
+    if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.getChatMessages) {
+        return await newNodeInstance.memoryMethods.getChatMessages(memoryNode.data, {
+            chatId: incomingInput.chatId,
+            appDataSource,
+            databaseEntities,
+            logger
+        })
+    }
+
+    return ''
 }
