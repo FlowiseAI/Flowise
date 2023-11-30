@@ -9,7 +9,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
-import ToolEmptySVG from 'assets/images/tools_empty.svg'
+import AssistantEmptySvg from 'assets/images/assistant_empty_startai.svg'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import AssistantDialog from './AssistantDialog'
 import LoadAssistantDialog from './LoadAssistantDialog'
@@ -38,7 +38,7 @@ const Assistants = () => {
 
     const loadExisting = () => {
         const dialogProp = {
-            title: 'Load Existing Assistant'
+            title: 'Загрузить существующий ассистент'
         }
         setLoadDialogProps(dialogProp)
         setShowLoadDialog(true)
@@ -51,10 +51,10 @@ const Assistants = () => {
 
     const addNew = (selectedOpenAIAssistantId, credential) => {
         const dialogProp = {
-            title: 'Add New Assistant',
+            title: 'Создать нового ассистента',
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: 'Отмена',
+            confirmButtonName: 'Добавить',
             selectedOpenAIAssistantId,
             credential
         }
@@ -64,10 +64,10 @@ const Assistants = () => {
 
     const edit = (selectedAssistant) => {
         const dialogProp = {
-            title: 'Edit Assistant',
+            title: 'Изменить',
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: 'Отмена',
+            confirmButtonName: 'Сохранить',
             data: selectedAssistant
         }
         setDialogProps(dialogProp)
@@ -131,7 +131,11 @@ const Assistants = () => {
                 {!getAllAssistantsApi.loading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
-                            <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                            <img
+                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
+                                src={AssistantEmptySvg}
+                                alt='AssistantEmptySvg'
+                            />
                         </Box>
                         <div>Ассистентов еще нет</div>
                     </Stack>

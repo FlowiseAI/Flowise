@@ -42,7 +42,7 @@ import useNotifier from 'utils/useNotifier'
 
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons'
-import CredentialEmptySVG from 'assets/images/credential_empty.svg'
+import CredentialEmptySVG from 'assets/images/credential_empty_startai.svg'
 
 // const
 import { baseURL } from 'store/constant'
@@ -82,7 +82,7 @@ const Credentials = () => {
 
     const listCredential = () => {
         const dialogProp = {
-            title: 'Add New Credential',
+            title: 'Добавить новые учетные данные',
             componentsCredentials
         }
         setCredentialListDialogProps(dialogProp)
@@ -92,8 +92,8 @@ const Credentials = () => {
     const addNew = (credentialComponent) => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: 'Отмена',
+            confirmButtonName: 'Добавить',
             credentialComponent
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -103,8 +103,8 @@ const Credentials = () => {
     const edit = (credential) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: 'Отмена',
+            confirmButtonName: 'Сохранить',
             data: credential
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -113,10 +113,10 @@ const Credentials = () => {
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete credential ${credential.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: `Удалить`,
+            description: `Удалить ассистента ${credential.name}?`,
+            confirmButtonName: 'Удалить',
+            cancelButtonName: 'Отмена'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -125,7 +125,7 @@ const Credentials = () => {
                 const deleteResp = await credentialsApi.deleteCredential(credential.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'Credential deleted',
+                        message: 'Учетные данные удалены',
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -141,7 +141,7 @@ const Credentials = () => {
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete Credential: ${errorData}`,
+                    message: `Ошибка удаления учетных данных: ${errorData}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',

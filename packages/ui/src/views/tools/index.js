@@ -9,7 +9,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
-import ToolEmptySVG from 'assets/images/tools_empty.svg'
+import ToolEmptySVG from 'assets/images/tools_empty_startai.svg'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import ToolDialog from './ToolDialog'
 

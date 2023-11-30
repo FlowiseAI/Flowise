@@ -64,8 +64,8 @@ export const AsyncDropdown = ({
     const [loading, setLoading] = useState(false)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
-    const addNewOption = [{ label: '- Create New -', name: '-create-' }]
-    let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
+    const addNewOption = [{ label: '- создать -', name: '-create-' }]
+    let [internalValue, setInternalValue] = useState(value ?? 'выберите одно из')
 
     const fetchCredentialList = async () => {
         try {

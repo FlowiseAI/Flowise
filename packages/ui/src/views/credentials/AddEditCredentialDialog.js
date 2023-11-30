@@ -104,7 +104,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             const createResp = await credentialsApi.createCredential(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Credential added',
+                    message: 'Новые учетные данные добавлены',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -120,7 +120,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
         } catch (error) {
             const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Credential: ${errorData}`,
+                message: `Ошибка добавления учетных данных: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -154,7 +154,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             const saveResp = await credentialsApi.updateCredential(credential.id, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Credential saved',
+                    message: 'Учетные данные сохранены',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -170,7 +170,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Credential: ${errorData}`,
+                message: `Ошибка сохранения учетных данных: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -245,7 +245,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                     <Box sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                Credential Name
+                                Название учетных данных
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -272,7 +272,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
                 >
-                    {dialogProps.confirmButtonName}
+                    Добавить
                 </StyledButton>
             </DialogActions>
             <ConfirmDialog />

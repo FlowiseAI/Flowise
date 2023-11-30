@@ -145,7 +145,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Chatbot Configuration Saved',
+                    message: 'Конфигурация чат-бота сохранена.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -162,7 +162,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
             console.error(error)
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Chatbot Configuration: ${errorData}`,
+                message: `Не удалось сохранить конфигурацию чат-бота. ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -182,7 +182,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
             const saveResp = await chatflowsApi.updateChatflow(chatflowid, { isPublic: checked })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Chatbot Configuration Saved',
+                    message: 'Конфигурация чат-бота сохранена.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -199,7 +199,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
             console.error(error)
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Chatbot Configuration: ${errorData}`,
+                message: `Не удалось сохранить конфигурацию чат-бота.: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -375,7 +375,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     {`${baseURL}/chatbot/${chatflowid}`}
                 </Typography>
                 <IconButton
-                    title='Copy Link'
+                    title='Скопировать ссылку'
                     color='success'
                     onClick={(event) => {
                         navigator.clipboard.writeText(`${baseURL}/chatbot/${chatflowid}`)
@@ -387,7 +387,11 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 >
                     <IconCopy />
                 </IconButton>
-                <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
+                <IconButton
+                    title='Открыть новую вклдадку'
+                    color='primary'
+                    onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}
+                >
                     <IconArrowUpRightCircle />
                 </IconButton>
                 <div style={{ flex: 1 }} />
@@ -399,73 +403,81 @@ const ShareChatbot = ({ isSessionMemory }) => {
                             onSwitchChange(event.target.checked)
                         }}
                     />
-                    <Typography>Make Public</Typography>
+                    <Typography>Сделать публичным</Typography>
                     <TooltipWithParser
                         style={{ marginLeft: 10 }}
-                        title={'Making public will allow anyone to access the chatbot without username & password'}
+                        title={'Публикация позволит любому получить доступ к чат-боту без имени пользователя и пароля.'}
                     />
                 </div>
             </Stack>
-            {textField(title, 'title', 'Title', 'string', 'StartAI Assistant')}
-            {textField(titleAvatarSrc, 'titleAvatarSrc', 'Title Avatar Link', 'string', {
-                /* `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png` */
-            })}
-            {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
-            {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
-            {textField(fontSize, 'fontSize', 'Font Size', 'number')}
-            {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
+            {textField(title, 'title', 'Заголовок', 'string', 'StartAI Ассистент')}
+            {textField(titleAvatarSrc, 'titleAvatarSrc', 'Ссылка на аватар', 'string', 'https://dark.png')}
+            {textField(
+                welcomeMessage,
+                'welcomeMessage',
+                'Приветсвтенное письмо',
+                'string',
+                'Привет! Это специальное приветственное сообщение'
+            )}
+            {colorField(backgroundColor, 'backgroundColor', 'Фоновый цвет')}
+            {textField(fontSize, 'fontSize', 'Размер шрифта', 'number')}
+            {colorField(poweredByTextColor, 'poweredByTextColor', '"Разработано на" Цвет текста')}
 
             {/*BOT Message*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                Bot Message
+                Сообщение бота
             </Typography>
-            {colorField(botMessageBackgroundColor, 'botMessageBackgroundColor', 'Background Color')}
-            {colorField(botMessageTextColor, 'botMessageTextColor', 'Text Color')}
+            {colorField(botMessageBackgroundColor, 'botMessageBackgroundColor', 'Фоновый цвет')}
+            {colorField(botMessageTextColor, 'botMessageTextColor', 'Цвет текста')}
             {textField(
                 botMessageAvatarSrc,
                 'botMessageAvatarSrc',
-                'Avatar Link',
+                'Ссылка на аватар',
                 'string',
                 `https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png`
             )}
-            {booleanField(botMessageShowAvatar, 'botMessageShowAvatar', 'Show Avatar')}
+            {booleanField(botMessageShowAvatar, 'botMessageShowAvatar', 'Показать аватар')}
 
             {/*USER Message*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                User Message
+                Сообщение пользователя
             </Typography>
-            {colorField(userMessageBackgroundColor, 'userMessageBackgroundColor', 'Background Color')}
-            {colorField(userMessageTextColor, 'userMessageTextColor', 'Text Color')}
+            {colorField(userMessageBackgroundColor, 'userMessageBackgroundColor', 'Фоновый цвет')}
+            {colorField(userMessageTextColor, 'userMessageTextColor', 'Цвет текста')}
             {textField(
                 userMessageAvatarSrc,
                 'userMessageAvatarSrc',
-                'Avatar Link',
+                'Ссылка на аватар',
                 'string',
                 `https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png`
             )}
-            {booleanField(userMessageShowAvatar, 'userMessageShowAvatar', 'Show Avatar')}
+            {booleanField(userMessageShowAvatar, 'userMessageShowAvatar', 'Показать аватар')}
 
             {/*TEXT Input*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                Text Input
+                Поле текста
             </Typography>
-            {colorField(textInputBackgroundColor, 'textInputBackgroundColor', 'Background Color')}
-            {colorField(textInputTextColor, 'textInputTextColor', 'Text Color')}
-            {textField(textInputPlaceholder, 'textInputPlaceholder', 'TextInput Placeholder', 'string', `Type question..`)}
-            {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'TextIntput Send Button Color')}
+            {colorField(textInputBackgroundColor, 'textInputBackgroundColor', 'Фоновый цвет')}
+            {colorField(textInputTextColor, 'textInputTextColor', 'Цвет текста')}
+            {textField(textInputPlaceholder, 'textInputPlaceholder', 'Плейсхолдер поля текста', 'string', `отправить сообщение...`)}
+            {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'Цвет кнопки отправки сообщения')}
 
             {/*Session Memory Input*/}
             {isSessionMemory && (
                 <>
                     <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
-                        Session Memory
+                        Память сессии
                     </Typography>
-                    {booleanField(generateNewSession, 'generateNewSession', 'Start new session when chatbot link is opened or refreshed')}
+                    {booleanField(
+                        generateNewSession,
+                        'generateNewSession',
+                        'Начинать новый сеанс, когда ссылка на чат-бот открывается или обновляется.'
+                    )}
                 </>
             )}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
-                Save Changes
+                Сохранить изменения
             </StyledButton>
             <Popover
                 open={openColorPopOver}
@@ -496,7 +508,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 }}
             >
                 <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
-                    Copied!
+                    Скопировано!
                 </Typography>
             </Popover>
         </>

@@ -105,7 +105,7 @@ const ChatbotFull = () => {
             {!isLoading ? (
                 <>
                     {!chatflow || chatflow.apikeyid ? (
-                        <p>Invalid Chatbot</p>
+                        <p>Невалидный чат-бот</p>
                     ) : (
                         <FullPageChat
                             chatflowid={chatflow.id}

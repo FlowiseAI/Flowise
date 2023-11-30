@@ -11,7 +11,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
-import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
+import WorkflowEmptySVG from 'assets/images/workflow_empty_startai.svg'
 import ToolDialog from 'views/tools/ToolDialog'
 
 // API
@@ -65,10 +65,10 @@ const Marketplace = () => {
 
     const onUseTemplate = (selectedTool) => {
         const dialogProp = {
-            title: 'Add New Tool',
+            title: 'Добавить новый инструмент',
             type: 'IMPORT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: 'Отмена',
+            confirmButtonName: 'Добавить',
             data: selectedTool
         }
         setToolDialogProps(dialogProp)

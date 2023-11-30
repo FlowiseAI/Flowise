@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
+import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -23,7 +23,7 @@ import useApi from 'hooks/useApi'
 import { baseURL } from 'store/constant'
 
 // icons
-import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
 import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { FlowListTable } from '../../ui-component/table/FlowListTable'
@@ -137,20 +137,7 @@ const Chatflows = () => {
                         }}
                     >
                         <h1>Проекты</h1>
-                        <TextField
-                            size='small'
-                            sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                            variant='outlined'
-                            placeholder='Search name or category'
-                            onChange={onSearchChange}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position='start'>
-                                        <IconSearch />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
+
                         <Box sx={{ flexGrow: 1 }} />
                         <ButtonGroup
                             sx={{ maxHeight: 40 }}

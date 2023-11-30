@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-
+import { useEffect, useState } from 'react'
 import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline, StyledEngineProvider } from '@mui/material'
 
@@ -15,8 +15,53 @@ import NavigationScroll from 'layout/NavigationScroll'
 // ==============================|| APP ||============================== //
 
 const App = () => {
-    const customization = useSelector((state) => state.customization)
+    const [targetElement, setTargetElement] = useState()
 
+    const target = document.querySelector('#root')
+
+    const config = { childList: true, subtree: true }
+    const callback = function (mutationsList, observer) {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                for (const addedNode of mutation.addedNodes) {
+                    if (addedNode.matches && addedNode.matches('flowise-fullchatbot')) {
+                        // Получаем или создаем shadow DOM элемент
+                        const shadowRoot = addedNode.shadowRoot || addedNode.attachShadow({ mode: 'open' })
+
+                        // Определяем функцию обратного вызова для MutationObserver внутри shadowRoot
+                        const shadowObserverCallback = function (mutations, observer) {
+                            for (const shadowMutation of mutations) {
+                                if (shadowMutation.type === 'childList' && shadowMutation.target === shadowRoot) {
+                                    // Теперь вы можете выполнить ваш запрос внутри shadow DOM
+                                    setTargetElement(shadowRoot.querySelector('div'))
+                                }
+                            }
+                        }
+
+                        // Создаем новый MutationObserver для отслеживания изменений внутри shadowRoot
+                        const shadowObserver = new MutationObserver(shadowObserverCallback)
+
+                        // Начинаем отслеживание изменений
+                        shadowObserver.observe(shadowRoot, { childList: true, subtree: true })
+                    }
+                }
+            }
+        }
+    }
+
+    const observer = new MutationObserver(callback)
+    observer.observe(target, config)
+    useEffect(() => {
+        if (targetElement != null) {
+            const hrefBadge = targetElement.querySelector('#lite-badge')
+            hrefBadge.setAttribute('href', '#')
+            const parentSpan = hrefBadge.parentElement
+            parentSpan.textContent = 'Разработано на платформе Start.AI'
+            const spanBadge = hrefBadge.querySelector('span')
+            spanBadge.textContent = ' Разработано на платформе Start.AI'
+        }
+    }, [targetElement])
+    const customization = useSelector((state) => state.customization)
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={themes(customization)}>
