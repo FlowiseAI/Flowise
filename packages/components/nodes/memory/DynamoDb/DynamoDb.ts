@@ -109,9 +109,8 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     })
 
     const memory = new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: dynamoDb,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
     return memory
