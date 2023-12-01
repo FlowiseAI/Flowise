@@ -50,6 +50,11 @@ $neutrals-secondary-to-utility-state-blue: saturate(8) brightness(0.97) hue-rota
     secondaryLight: $neutrals-white;
     secondaryMain: $neutrals-secondary;
     secondaryDark: $neutrals-secondary;
+
+    // teal
+    tealLight: $utility-state-blue-light;
+    tealMain: $primary-brand-blue;
+    tealDark: $utility-state-blue-darker;
 }
 
 // ==============================|| CSS ||============================== //
@@ -60,7 +65,6 @@ $neutrals-secondary-to-utility-state-blue: saturate(8) brightness(0.97) hue-rota
 //.MuiButtonBase-root,
 .MuiButton-contained {
     border-radius: 3px;
-    border-style: solid;
     border-width: 1px;
     box-sizing: border-box;
     font-style: normal;
@@ -68,7 +72,6 @@ $neutrals-secondary-to-utility-state-blue: saturate(8) brightness(0.97) hue-rota
     font-size: 14px;
     height: 40px;
     line-height: 17px;
-    margin: 3px; /* All button styles use box-shadow for the focus state and box-shadow clips to the border box, so margin must be present. */
     padding: 0 16px;
     text-align: center;
 }

@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types'
 import { useState, useRef, forwardRef, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
 import AboutDialog from 'ui-component/dialog/AboutDialog'
-// material-ui
 
+// material-ui
 import { useTheme } from '@mui/material/styles'
 import {
     Avatar,
@@ -21,8 +20,9 @@ import {
     ClickAwayListener,
     List
 } from '@mui/material'
+
 // third-party
-import { IconFileExport, IconFileDownload, IconInfoCircle } from '@tabler/icons'
+import { IconInfoCircle } from '@tabler/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
@@ -31,19 +31,18 @@ import { MENU_OPEN, SET_MENU } from 'store/actions'
 import config from 'config'
 import MainCard from 'ui-component/cards/MainCard'
 import Transitions from 'ui-component/extended/Transitions'
+
 // assets
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import databaseApi from 'api/database'
+
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
-const NavItem = ({ item, level, navType, onClick, trigger }) => {
+const NavItem = ({ item, level, navType, onClick, onUploadFile, trigger }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
-    const navigate = useNavigate()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const Icon = item.icon
@@ -81,67 +80,33 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
     if (item?.id === 'loadChatflow') {
         listItemProps.component = 'label'
     }
-    const handleExportDB = async () => {
-        setOpen(false)
-        try {
-            const response = await databaseApi.getExportDatabase()
-            const exportItems = response.data
-            let dataStr = JSON.stringify(exportItems)
-            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
-
-            let exportFileDefaultName = `DB.json`
-
-            let linkElement = document.createElement('a')
-            linkElement.setAttribute('href', dataUri)
-            linkElement.setAttribute('download', exportFileDefaultName)
-            linkElement.click()
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    const handleFileUpload = (e) => {
-        if (!e.target.files) return
-
-        const file = e.target.files[0]
-        const reader = new FileReader()
-        reader.onload = async (evt) => {
-            if (!evt?.target?.result) {
-                return
-            }
-            const { result } = evt.target
-
-            if (result.includes(`"chatmessages":[`) && result.includes(`"chatflows":[`) && result.includes(`"apikeys":[`)) {
-                dispatch({ type: SET_MENU, opened: false })
-                setLoading(true)
-
-                try {
-                    await databaseApi.createLoadDatabase(JSON.parse(result))
-                    setLoading(false)
-                    navigate('/', { replace: true })
-                    navigate(0)
-                } catch (e) {
-                    console.error(e)
-                    setLoading(false)
-                }
-            } else {
-                alert('Incorrect Flowise Database Format')
-            }
-        }
-        reader.readAsText(file)
-    }
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen)
     }
     const anchorRef = useRef(null)
-    const uploadRef = useRef(null)
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
             return
         }
         setOpen(false)
+    }
+
+    const handleFileUpload = (e) => {
+        if (!e.target.files) return
+
+        const file = e.target.files[0]
+
+        const reader = new FileReader()
+        reader.onload = (evt) => {
+            if (!evt?.target?.result) {
+                return
+            }
+            const { result } = evt.target
+            onUploadFile(result)
+        }
+        reader.readAsText(file)
     }
 
     const itemHandler = (id) => {
@@ -311,27 +276,6 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
                                                         setOpen(false)
-                                                        uploadRef.current.click()
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconFileDownload stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Load Database</Typography>} />
-                                                </ListItemButton>
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={handleExportDB}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconFileExport stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export Database</Typography>} />
-                                                </ListItemButton>
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
                                                         setAboutDialogOpen(true)
                                                     }}
                                                 >
@@ -349,8 +293,6 @@ const NavItem = ({ item, level, navType, onClick, trigger }) => {
                     </Transitions>
                 )}
             </Popper>
-            <input ref={uploadRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
-            <BackdropLoader open={loading} />
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
         </>
     )

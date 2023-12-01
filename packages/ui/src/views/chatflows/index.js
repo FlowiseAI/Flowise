@@ -11,8 +11,8 @@ import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 import NoAccessDialog from 'ui-component/dialog/NoAccessDialog'
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -39,6 +39,7 @@ const Chatflows = () => {
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
+    const [search, setSearch] = useState('')
     const [noAccessDialogOpen, setNoAccessDialogOpenOpen] = useState(false)
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
