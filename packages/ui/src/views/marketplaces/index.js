@@ -11,7 +11,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
-import WorkflowEmptySVG from 'assets/images/workflow_empty_startai.svg'
+import WorkflowEmptySVG from 'assets/images/404_startai.svg'
 import ToolDialog from 'views/tools/ToolDialog'
 
 // API
