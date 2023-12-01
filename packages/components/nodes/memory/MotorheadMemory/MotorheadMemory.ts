@@ -3,6 +3,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput } from 'langchain/memory'
 import fetch from 'node-fetch'
+import { getBufferString } from 'langchain/memory'
 
 class MotorMemory_Memory implements INode {
     label: string
@@ -64,13 +65,23 @@ class MotorMemory_Memory implements INode {
         return initalizeMotorhead(nodeData, options)
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const motorhead = await initalizeMotorhead(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing Motorhead memory session ${sessionId ? sessionId : chatId}`)
-        await motorhead.clear()
-        options.logger.info(`Successfully cleared Motorhead memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const motorhead = await initalizeMotorhead(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing Motorhead memory session ${sessionId ? sessionId : chatId}`)
+            await motorhead.clear()
+            options.logger.info(`Successfully cleared Motorhead memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const motorhead = await initalizeMotorhead(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await motorhead.loadMemoryVariables({})
+            return getBufferString(memoryResult[key])
+        }
     }
 }
 
