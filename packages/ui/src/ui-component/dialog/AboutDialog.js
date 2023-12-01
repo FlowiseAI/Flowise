@@ -61,7 +61,7 @@ const AboutDialog = ({ show, onCancel }) => {
                         <Table aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Current AI Version</TableCell>
+                                    <TableCell>Flowise Version</TableCell>
                                     <TableCell>Logi Symphony Version</TableCell>
                                     <TableCell>Published At</TableCell>
                                 </TableRow>
@@ -82,6 +82,11 @@ const AboutDialog = ({ show, onCancel }) => {
                         </Table>
                     </TableContainer>
                 )}
+            </DialogContent>
+            <DialogContent>
+                <a style={{ display: 'flex', justifyContent: 'center' }} target='_blank' rel='noreferrer' href='https://www.flowiseai.com/'>
+                    Powered by Flowise
+                </a>
             </DialogContent>
         </Dialog>
     ) : null
