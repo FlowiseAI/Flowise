@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { baseURL } from 'store/constant'
+import { getAuthorizationConfig } from './cookies'
 
 const apiClient = axios.create({
     baseURL: `${baseURL}/api/v1`,
@@ -9,17 +10,7 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(function (config) {
-    const username = localStorage.getItem('username')
-    const password = localStorage.getItem('password')
-
-    if (username && password) {
-        config.auth = {
-            username,
-            password
-        }
-    }
-
-    return config
+    return getAuthorizationConfig(config)
 })
 
 export default apiClient

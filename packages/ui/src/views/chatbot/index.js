@@ -13,6 +13,7 @@ import useApi from 'hooks/useApi'
 
 //Const
 import { baseURL } from 'store/constant'
+import { getCookieValue } from '../../api/cookies'
 
 // ==============================|| Chatbot ||============================== //
 
@@ -32,8 +33,11 @@ const ChatbotFull = () => {
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
     const onLoginClick = (username, password) => {
+        // localStorage is used to store the username and password temporarily
+        // and will be cleared when the server responds with 200
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
+        localStorage.setItem('loggedIn', 'true')
         navigate(0)
     }
 
@@ -46,7 +50,7 @@ const ChatbotFull = () => {
     useEffect(() => {
         if (getSpecificChatflowFromPublicApi.error) {
             if (getSpecificChatflowFromPublicApi.error?.response?.status === 401) {
-                if (localStorage.getItem('username') && localStorage.getItem('password')) {
+                if (getCookieValue('flowise', document.cookie)) {
                     getSpecificChatflowApi.request(chatflowId)
                 } else {
                     setLoginDialogProps({

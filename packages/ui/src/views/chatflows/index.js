@@ -62,8 +62,11 @@ const Chatflows = () => {
     }
 
     const onLoginClick = (username, password) => {
+        // localStorage is used to store the username and password temporarily
+        // and will be cleared when the server responds with 200
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
+        localStorage.setItem('loggedIn', 'true')
         navigate(0)
     }
 

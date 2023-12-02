@@ -65,7 +65,7 @@ export class App {
     chatflowPool: ChatflowPool
     cachePool: CachePool
     AppDataSource = getDataSource()
-
+    authenticated = false
     constructor() {
         this.app = express()
     }
@@ -122,7 +122,11 @@ export class App {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
-                users: { [username]: password }
+                users: { [username]: password },
+                authorizer: (username: string, password: string) => {
+                    this.authenticated = username === process.env.FLOWISE_USERNAME && password === process.env.FLOWISE_PASSWORD
+                    return this.authenticated
+                }
             })
             const whitelistURLs = [
                 '/api/v1/verify/apikey/',
@@ -137,8 +141,26 @@ export class App {
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
+                if (this.authenticated) {
+                    res.cookie('flowise', btoa(username + ':' + password), {
+                        maxAge: 1000 * 60 * 60 * 24 * 7,
+                        httpOnly: false,
+                        signed: false,
+                        secure: true
+                    })
+                    res.cookie('flowise-user', username, {
+                        maxAge: 1000 * 60 * 60 * 24 * 7,
+                        httpOnly: false,
+                        signed: false,
+                        secure: true
+                    })
+                }
                 if (req.url.includes('/api/v1/')) {
-                    whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
+                    if (whitelistURLs.some((url) => req.url.includes(url))) {
+                        next()
+                    } else {
+                        basicAuthMiddleware(req, res, next)
+                    }
                 } else next()
             })
         }
