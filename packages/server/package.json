@@ -47,7 +47,7 @@
     "dependencies": {
         "@oclif/core": "^1.13.10",
         "async-mutex": "^0.4.0",
-        "axios": "^0.27.2",
+        "axios": "1.6.2",
         "cors": "^2.8.5",
         "crypto-js": "^4.1.1",
         "dotenv": "^16.0.0",
