@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, serializeChatHistory } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { UpstashRedisChatMessageHistory } from 'langchain/stores/message/upstash_redis'
@@ -63,13 +63,22 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
         return initalizeUpstashRedis(nodeData, options)
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const redis = await initalizeUpstashRedis(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing Upstash Redis memory session ${sessionId ? sessionId : chatId}`)
-        await redis.clear()
-        options.logger.info(`Successfully cleared Upstash Redis memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const redis = await initalizeUpstashRedis(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing Upstash Redis memory session ${sessionId ? sessionId : chatId}`)
+            await redis.clear()
+            options.logger.info(`Successfully cleared Upstash Redis memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const redis = await initalizeUpstashRedis(nodeData, options)
+            const key = 'chat_history'
+            const memoryResult = await redis.loadMemoryVariables({})
+            return serializeChatHistory(memoryResult[key])
+        }
     }
 }
 
@@ -95,6 +104,7 @@ const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject
     })
 
     const memory = new BufferMemoryExtended({
+        memoryKey: 'chat_history',
         chatHistory: redisChatMessageHistory,
         isSessionIdUsingChatMessageId
     })
