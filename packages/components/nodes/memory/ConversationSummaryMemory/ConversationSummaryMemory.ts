@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
 import { ConversationSummaryMemory, ConversationSummaryMemoryInput } from 'langchain/memory'
 import { BaseLanguageModel } from 'langchain/base_language'
 
@@ -56,7 +56,50 @@ class ConversationSummaryMemory_Memory implements INode {
             inputKey
         }
 
-        return new ConversationSummaryMemory(obj)
+        return new ConversationSummaryMemoryExtended(obj)
+    }
+}
+
+class ConversationSummaryMemoryExtended extends ConversationSummaryMemory {
+    isShortTermMemory = true
+
+    constructor(fields: ConversationSummaryMemoryInput) {
+        super(fields)
+    }
+
+    async getChatMessages(): Promise<IMessage[]> {
+        const memoryResult = await this.loadMemoryVariables({})
+        const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
+        return convertBaseMessagetoIMessage(baseMessages)
+    }
+
+    async addChatMessages(msgArray: { text: string; type: MessageType }[]): Promise<void> {
+        const input = msgArray.find((msg) => msg.type === 'userMessage')
+        const output = msgArray.find((msg) => msg.type === 'apiMessage')
+
+        const inputValues = { [this.inputKey ?? 'input']: input?.text }
+        const outputValues = { output: output?.text }
+
+        await this.saveContext(inputValues, outputValues)
+    }
+
+    async clearChatMessages(): Promise<void> {
+        await this.clear()
+    }
+
+    async resumeMessages(messages: IMessage[]): Promise<void> {
+        // Clear existing chatHistory to avoid duplication
+        if (messages.length) await this.clear()
+
+        // Insert into chatHistory
+        for (const msg of messages) {
+            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
+            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
+        }
+
+        // Replace buffer
+        const chatMessages = await this.chatHistory.getMessages()
+        this.buffer = await this.predictNewSummary(chatMessages.slice(-2), this.buffer)
     }
 }
 

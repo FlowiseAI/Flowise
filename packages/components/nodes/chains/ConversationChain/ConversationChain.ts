@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
-import { getBaseClasses, mapChatHistory } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BufferMemory } from 'langchain/memory'
 import { BaseChatModel } from 'langchain/chat_models/base'
@@ -105,15 +105,14 @@ class ConversationChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const chain = nodeData.instance as ConversationChain
-        const memory = nodeData.inputs?.memory as BufferMemory
+        const memory = nodeData.inputs?.memory
         memory.returnMessages = true // Return true for BaseChatModel
 
-        if (options && options.chatHistory) {
-            const chatHistoryClassName = memory.chatHistory.constructor.name
-            // Only replace when its In-Memory
-            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
-                memory.chatHistory = mapChatHistory(options)
-            }
+        /* When incomingInput.history is provided, only force replace chatHistory if its ShortTermMemory
+         * LongTermMemory will automatically retrieved chatHistory from sessionId
+         */
+        if (options && options.chatHistory && memory.isShortTermMemory) {
+            await memory.resumeMessages(options.chatHistory)
         }
 
         chain.memory = memory

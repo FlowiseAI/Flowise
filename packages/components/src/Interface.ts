@@ -91,6 +91,7 @@ export interface INodeProperties {
     version: number
     category: string
     baseClasses: string[]
+    tags?: string[]
     description?: string
     filePath?: string
     badge?: string
@@ -106,10 +107,6 @@ export interface INode extends INodeProperties {
         upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
         delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
-    }
-    memoryMethods?: {
-        clearSessionMemory: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
-        getChatMessages: (nodeData: INodeData, options?: ICommonObject) => Promise<string>
     }
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string | ICommonObject>

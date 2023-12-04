@@ -1,9 +1,9 @@
 import { BaseLanguageModel } from 'langchain/base_language'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, mapChatHistory } from '../../../src/utils'
+import { ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
 import { ConversationalRetrievalQAChain, QAChainParams } from 'langchain/chains'
 import { BaseRetriever } from 'langchain/schema/retriever'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemoryInput, BufferMemory } from 'langchain/memory'
 import { PromptTemplate } from 'langchain/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import {
@@ -158,7 +158,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 returnMessages: true
             }
             if (chainOption === 'refine') fields.outputKey = 'output_text'
-            obj.memory = new BufferMemory(fields)
+            obj.memory = new BufferMemoryExtended(fields)
         }
 
         const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStoreRetriever, obj)
@@ -178,12 +178,11 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         const obj = { question: input }
 
-        if (options && options.chatHistory && chain.memory) {
-            const chatHistoryClassName = (chain.memory as any).chatHistory.constructor.name
-            // Only replace when its In-Memory
-            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
-                ;(chain.memory as any).chatHistory = mapChatHistory(options)
-            }
+        /* When incomingInput.history is provided, only force replace chatHistory if its ShortTermMemory
+         * LongTermMemory will automatically retrieved chatHistory from sessionId
+         */
+        if (options && options.chatHistory && chain.memory && (chain.memory as any).isShortTermMemory) {
+            await (chain.memory as any).resumeMessages(options.chatHistory)
         }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
@@ -212,6 +211,29 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             const res = await chain.call(obj, [loggerHandler, ...callbacks])
             if (res.text && res.sourceDocuments) return res
             return res?.text
+        }
+    }
+}
+
+class BufferMemoryExtended extends BufferMemory {
+    isShortTermMemory = true
+
+    constructor(fields: BufferMemoryInput) {
+        super(fields)
+    }
+
+    async clearChatMessages(): Promise<void> {
+        await this.clear()
+    }
+
+    async resumeMessages(messages: IMessage[]): Promise<void> {
+        // Clear existing chatHistory to avoid duplication
+        if (messages.length) await this.clear()
+
+        // Insert into chatHistory
+        for (const msg of messages) {
+            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
+            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
         }
     }
 }

@@ -37,13 +37,12 @@ import {
     databaseEntities,
     transformToCredentialEntity,
     decryptCredentialData,
-    clearAllSessionMemory,
     replaceInputsWithConfig,
     getEncryptionKey,
-    checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog,
+    replaceMemorySessionId,
     getUserHome,
-    replaceChatHistory
+    replaceChatHistory,
+    clearSessionMemory
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -387,7 +386,12 @@ export class App {
             const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
             if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
 
-            if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+            if (
+                endingNodeData &&
+                endingNodeData.category !== 'Chains' &&
+                endingNodeData.category !== 'Agents' &&
+                endingNodeData.category !== 'Engine'
+            ) {
                 return res.status(500).send(`Ending node must be either a Chain or Agent`)
             }
 
@@ -472,18 +476,15 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
 
-            if (isClearFromViewMessageDialog) {
-                await clearSessionMemoryFromViewMessageDialog(
-                    nodes,
-                    this.nodesPool.componentNodes,
-                    chatId,
-                    this.AppDataSource,
-                    sessionId,
-                    memoryType
-                )
-            } else {
-                await clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
-            }
+            await clearSessionMemory(
+                nodes,
+                this.nodesPool.componentNodes,
+                chatId,
+                this.AppDataSource,
+                sessionId,
+                memoryType,
+                isClearFromViewMessageDialog
+            )
 
             const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
             if (memoryType) deleteOptions.memoryType = memoryType
@@ -1377,7 +1378,13 @@ export class App {
                 const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
                 if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
 
-                if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents' && !isUpsert) {
+                if (
+                    endingNodeData &&
+                    endingNodeData.category !== 'Chains' &&
+                    endingNodeData.category !== 'Agents' &&
+                    endingNodeData.category !== 'Engine' &&
+                    !isUpsert
+                ) {
                     return res.status(500).send(`Ending node must be either a Chain or Agent`)
                 }
 
@@ -1396,7 +1403,9 @@ export class App {
 
                 isStreamValid = isFlowValidForStream(nodes, endingNodeData)
 
-                let chatHistory: IMessage[] | string = incomingInput.history
+                let chatHistory: IMessage[] = incomingInput.history
+
+                // If chatHistory is empty, and sessionId/chatId is present, replace it
                 if (
                     endingNodeData.inputs?.memory &&
                     !incomingInput.history &&
@@ -1437,8 +1446,10 @@ export class App {
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                 if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
-                if (incomingInput.overrideConfig)
+                if (incomingInput.overrideConfig) {
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+                }
+
                 const reactFlowNodeData: INodeData = resolveVariables(
                     nodeToExecute.data,
                     reactFlowNodes,
@@ -1458,19 +1469,11 @@ export class App {
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             let sessionId = undefined
-            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
-
-            const memoryNode = this.findMemoryLabel(nodes, edges)
-            const memoryType = memoryNode?.data.label
-
-            let chatHistory: IMessage[] | string = incomingInput.history
-            if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-            }
+            if (nodeToExecuteData.instance) sessionId = replaceMemorySessionId(nodeToExecuteData.instance, chatId)
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatHistory,
+                      chatHistory: incomingInput.history,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId,
                       logger,
@@ -1480,7 +1483,7 @@ export class App {
                       chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatHistory,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
@@ -1494,6 +1497,9 @@ export class App {
             if (typeof result === 'object' && result.assistant) {
                 sessionId = result.assistant.threadId
             }
+
+            const memoryNode = this.findMemoryLabel(nodes, edges)
+            const memoryType = memoryNode?.data.label
 
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',

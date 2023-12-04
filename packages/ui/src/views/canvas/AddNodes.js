@@ -22,7 +22,9 @@ import {
     Popper,
     Stack,
     Typography,
-    Chip
+    Chip,
+    Tab,
+    Tabs
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
@@ -36,12 +38,20 @@ import { StyledFab } from 'ui-component/button/StyledFab'
 
 // icons
 import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons'
+import LlamaindexPNG from 'assets/images/llamaindex.png'
+import LangChainPNG from 'assets/images/langchain.png'
 
 // const
 import { baseURL } from 'store/constant'
 import { SET_COMPONENT_NODES } from 'store/actions'
 
 // ==============================|| ADD NODES||============================== //
+function a11yProps(index) {
+    return {
+        id: `attachment-tab-${index}`,
+        'aria-controls': `attachment-tabpanel-${index}`
+    }
+}
 
 const AddNodes = ({ nodesData, node }) => {
     const theme = useTheme()
@@ -52,6 +62,7 @@ const AddNodes = ({ nodesData, node }) => {
     const [nodes, setNodes] = useState({})
     const [open, setOpen] = useState(false)
     const [categoryExpanded, setCategoryExpanded] = useState({})
+    const [tabValue, setTabValue] = useState(0)
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -86,6 +97,11 @@ const AddNodes = ({ nodesData, node }) => {
         }
     }
 
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue)
+        filterSearch(searchValue, newValue)
+    }
+
     const getSearchedNodes = (value) => {
         const passed = nodesData.filter((nd) => {
             const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
@@ -95,23 +111,34 @@ const AddNodes = ({ nodesData, node }) => {
         return passed
     }
 
-    const filterSearch = (value) => {
+    const filterSearch = (value, newTabValue) => {
         setSearchValue(value)
         setTimeout(() => {
             if (value) {
                 const returnData = getSearchedNodes(value)
-                groupByCategory(returnData, true)
+                groupByCategory(returnData, newTabValue ?? tabValue, true)
                 scrollTop()
             } else if (value === '') {
-                groupByCategory(nodesData)
+                groupByCategory(nodesData, newTabValue ?? tabValue)
                 scrollTop()
             }
         }, 500)
     }
 
-    const groupByCategory = (nodes, isFilter) => {
+    const groupByTags = (nodes, newTabValue = 0) => {
+        const langchainNodes = nodes.filter((nd) => !nd.tags)
+        const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
+        if (newTabValue === 0) {
+            return langchainNodes
+        } else {
+            return llmaindexNodes
+        }
+    }
+
+    const groupByCategory = (nodes, newTabValue, isFilter) => {
+        const taggedNodes = groupByTags(nodes, newTabValue)
         const accordianCategories = {}
-        const result = nodes.reduce(function (r, a) {
+        const result = taggedNodes.reduce(function (r, a) {
             r[a.category] = r[a.category] || []
             r[a.category].push(a)
             accordianCategories[a.category] = isFilter ? true : false
@@ -244,13 +271,61 @@ const AddNodes = ({ nodesData, node }) => {
                                                 'aria-label': 'weight'
                                             }}
                                         />
+                                        <Tabs variant='fullWidth' value={tabValue} onChange={handleTabChange} aria-label='tabs'>
+                                            {['LangChain', 'LlamaIndex'].map((item, index) => (
+                                                <Tab
+                                                    icon={
+                                                        <div
+                                                            style={{
+                                                                borderRadius: '50%'
+                                                            }}
+                                                        >
+                                                            <img
+                                                                style={{
+                                                                    width: '25px',
+                                                                    height: '25px',
+                                                                    borderRadius: '50%',
+                                                                    objectFit: 'contain'
+                                                                }}
+                                                                src={index === 0 ? LangChainPNG : LlamaindexPNG}
+                                                                alt={item}
+                                                            />
+                                                        </div>
+                                                    }
+                                                    iconPosition='start'
+                                                    key={index}
+                                                    label={
+                                                        item === 'LlamaIndex' ? (
+                                                            <>
+                                                                <h4>{item}</h4>
+                                                                &nbsp;
+                                                                <Chip
+                                                                    sx={{
+                                                                        width: 'max-content',
+                                                                        fontWeight: 700,
+                                                                        fontSize: '0.65rem',
+                                                                        background: theme.palette.primary.main,
+                                                                        color: 'white'
+                                                                    }}
+                                                                    size='small'
+                                                                    label='BETA'
+                                                                />
+                                                            </>
+                                                        ) : (
+                                                            <h4>{item}</h4>
+                                                        )
+                                                    }
+                                                    {...a11yProps(index)}
+                                                ></Tab>
+                                            ))}
+                                        </Tabs>
                                         <Divider />
                                     </Box>
                                     <PerfectScrollbar
                                         containerRef={(el) => {
                                             ps.current = el
                                         }}
-                                        style={{ height: '100%', maxHeight: 'calc(100vh - 320px)', overflowX: 'hidden' }}
+                                        style={{ height: '100%', maxHeight: 'calc(100vh - 380px)', overflowX: 'hidden' }}
                                     >
                                         <Box sx={{ p: 2 }}>
                                             <List

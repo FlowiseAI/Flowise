@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { getBaseClasses, mapChatHistory } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { flatten } from 'lodash'
 import { BaseChatMemory } from 'langchain/memory'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
@@ -58,8 +58,8 @@ class ConversationalRetrievalAgent_Agents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model
-        const memory = nodeData.inputs?.memory as BaseChatMemory
         const systemMessage = nodeData.inputs?.systemMessage as string
+        const memory = nodeData.inputs?.memory as BaseChatMemory
 
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
@@ -78,18 +78,20 @@ class ConversationalRetrievalAgent_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
+        const memory = nodeData.inputs?.memory
 
-        if (executor.memory) {
-            ;(executor.memory as any).memoryKey = 'chat_history'
-            ;(executor.memory as any).outputKey = 'output'
-            ;(executor.memory as any).returnMessages = true
+        memory.memoryKey = 'chat_history'
+        memory.outputKey = 'output'
+        memory.returnMessages = true
 
-            const chatHistoryClassName = (executor.memory as any).chatHistory.constructor.name
-            // Only replace when its In-Memory
-            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
-                ;(executor.memory as any).chatHistory = mapChatHistory(options)
-            }
+        /* When incomingInput.history is provided, only force replace chatHistory if its ShortTermMemory
+         * LongTermMemory will automatically retrieved chatHistory from sessionId
+         */
+        if (options && options.chatHistory && memory.isShortTermMemory) {
+            await memory.resumeMessages(options.chatHistory)
         }
+
+        executor.memory = memory
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)

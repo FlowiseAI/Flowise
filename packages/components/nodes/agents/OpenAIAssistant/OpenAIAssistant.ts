@@ -81,50 +81,8 @@ class OpenAIAssistant_Agents implements INode {
         }
     }
 
-    async init(): Promise<any> {
-        return null
-    }
-
-    //@ts-ignore
-    memoryMethods = {
-        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
-            const appDataSource = options.appDataSource as DataSource
-            const databaseEntities = options.databaseEntities as IDatabaseEntity
-            let sessionId = nodeData.inputs?.sessionId as string
-
-            const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
-                id: selectedAssistantId
-            })
-
-            if (!assistant) {
-                options.logger.error(`Assistant ${selectedAssistantId} not found`)
-                return
-            }
-
-            if (!sessionId && options.chatId) {
-                const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                    chatId: options.chatId
-                })
-                if (!chatmsg) {
-                    options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
-                    return
-                }
-                sessionId = chatmsg.sessionId
-            }
-
-            const credentialData = await getCredentialData(assistant.credential ?? '', options)
-            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-            if (!openAIApiKey) {
-                options.logger.error(`OpenAI ApiKey not found`)
-                return
-            }
-
-            const openai = new OpenAI({ apiKey: openAIApiKey })
-            options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
-            if (sessionId) await openai.beta.threads.del(sessionId)
-            options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
-        }
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        return new OpenAIAssistant({ nodeData, options })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
@@ -456,6 +414,60 @@ const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.AssistantCreatePara
             description: tool.description,
             parameters: zodToJsonSchema(tool.schema)
         }
+    }
+}
+
+interface OpenAIAssistantInput {
+    nodeData: INodeData
+    options: ICommonObject
+}
+
+class OpenAIAssistant {
+    nodeData: INodeData
+    options: ICommonObject = {}
+
+    constructor(fields: OpenAIAssistantInput) {
+        this.nodeData = fields.nodeData
+        this.options = fields.options
+    }
+
+    async clearChatMessages(): Promise<void> {
+        const selectedAssistantId = this.nodeData.inputs?.selectedAssistant as string
+        const appDataSource = this.options.appDataSource as DataSource
+        const databaseEntities = this.options.databaseEntities as IDatabaseEntity
+        let sessionId = this.nodeData.inputs?.sessionId as string
+
+        const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
+            id: selectedAssistantId
+        })
+
+        if (!assistant) {
+            this.options.logger.error(`Assistant ${selectedAssistantId} not found`)
+            return
+        }
+
+        if (!sessionId && this.options.chatId) {
+            const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
+                chatId: this.options.chatId
+            })
+            if (!chatmsg) {
+                this.options.logger.error(`Chat Message with Chat Id: ${this.options.chatId} not found`)
+                return
+            }
+            sessionId = chatmsg.sessionId
+        }
+
+        const credentialData = await getCredentialData(assistant.credential ?? '', this.options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, this.nodeData)
+        if (!openAIApiKey) {
+            this.options.logger.error(`OpenAI ApiKey not found`)
+            return
+        }
+
+        const openai = new OpenAI({ apiKey: openAIApiKey })
+        this.options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
+        if (sessionId) await openai.beta.threads.del(sessionId)
+        this.options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
     }
 }
 
