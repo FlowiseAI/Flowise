@@ -28,7 +28,7 @@ import Transitions from 'ui-component/extended/Transitions'
 import AboutDialog from 'ui-component/dialog/AboutDialog'
 
 // assets
-import { IconLogout, IconSettings } from '@tabler/icons'
+import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons'
 
 import './index.css'
 
@@ -135,6 +135,18 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     }
                                                 }}
                                             >
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={() => {
+                                                        setOpen(false)
+                                                        setAboutDialogOpen(true)
+                                                    }}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                </ListItemButton>
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}

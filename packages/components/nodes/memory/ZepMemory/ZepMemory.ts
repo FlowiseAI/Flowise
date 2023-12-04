@@ -3,6 +3,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
 import { ICommonObject } from '../../../src'
+import { getBufferString } from 'langchain/memory'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -140,13 +141,25 @@ class ZepMemory_Memory implements INode {
         return zep
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const zep = await initalizeZep(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing Zep memory session ${sessionId ? sessionId : chatId}`)
-        await zep.clear()
-        options.logger.info(`Successfully cleared Zep memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const zep = await initalizeZep(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing Zep memory session ${sessionId ? sessionId : chatId}`)
+            await zep.clear()
+            options.logger.info(`Successfully cleared Zep memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const aiPrefix = nodeData.inputs?.aiPrefix as string
+            const humanPrefix = nodeData.inputs?.humanPrefix as string
+            const zep = await initalizeZep(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await zep.loadMemoryVariables({})
+            return getBufferString(memoryResult[key], humanPrefix, aiPrefix)
+        }
     }
 }
 
