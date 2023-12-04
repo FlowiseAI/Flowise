@@ -47,7 +47,6 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     )
 
     const container = window !== undefined ? () => window.document.body : undefined
-    console.log(theme.palette)
     return (
         <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label='mailbox folders'>
             <Drawer

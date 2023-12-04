@@ -415,7 +415,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         type='string'
                         fullWidth
                         disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='My New Tool'
+                        placeholder='Мой новый инструмент'
                         value={toolName}
                         name='toolName'
                         onChange={(e) => setToolName(e.target.value)}
@@ -437,7 +437,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         type='string'
                         fullWidth
                         disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
+                        placeholder='Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'
                         multiline={true}
                         rows={3}
                         value={toolDesc}
@@ -464,7 +464,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
                             Схема вывода
-                            <TooltipWithParser style={{ marginLeft: 10 }} title={'What should be the output response in JSON format?'} />
+                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Каким должен быть выходной ответ в формате JSON?'} />
                         </Typography>
                     </Stack>
                     <Grid
@@ -481,7 +481,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             Функция Javascript
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string.'
+                                title='Функция, выполняемая при использовании инструмента. Вы можете использовать свойства, указанные в схеме вывода, в качестве переменных. Например, если свойство имеет вид <code>userid</code>, вы можете использовать его как <code>$userid</code>. Возвращаемое значение должно быть строкой.'
                             />
                         </Typography>
                     </Stack>

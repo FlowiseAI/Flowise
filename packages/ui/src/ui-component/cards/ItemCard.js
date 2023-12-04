@@ -148,10 +148,27 @@ const translateDescriptions = {
     'Send message to Teams channel': 'Отправить сообщение в канал Teams',
 
     'OpenAI Assistant that has instructions and can leverage models, tools, and knowledge to respond to user queries':
-        ' OpenAI Assistant, который имеет инструкции и может использовать модели, инструменты и знания для ответа на запросы пользователей.'
+        'OpenAI Assistant, который имеет инструкции и может использовать модели, инструменты и знания для ответа на запросы пользователей.',
+    'Engage with data sources such as YouTube Transcripts, Google, and more through intelligent Q&A interactions':
+        'Взаимодействуйте с такими источниками данных, как YouTube Transcripts, Google и другими, посредством интеллектуального взаимодействия с вопросами и ответами.',
+    'Generate image using Replicate Stability text-to-image generative AI model':
+        'Создайте изображение с помощью генеративной модели искусственного интеллекта Replication Stability для преобразования текста в изображение.',
+    'Use Anthropic Claude with 200k context window to ingest whole document for QnA':
+        'Используйте Anthropic Claude с контекстным окном размером 200 тыс., чтобы вставить весь документ для QnA.',
+    'QnA chain using Ollama local LLM, LocalAI embedding model, and Faiss local vector store':
+        'Цепочка QnA с использованием локального LLM Ollama, модели внедрения LocalAI и локального векторного хранилища Faiss',
+    'Detect text that could generate harmful output and prevent it from being sent to the language model':
+        'Обнаруживайте текст, который может генерировать вредоносный вывод, и предотвращайте его отправку в языковую модель.',
+    'Upsert multiple files with metadata and filter by it using conversational retrieval QA chain':
+        'Вставьте несколько файлов с метаданными и отфильтруйте их с помощью цепочки контроля качества диалогового поиска.',
+    'Use long term memory like Zep to differentiate conversations between users with sessionId':
+        'Используйте долговременную память, например Zep, чтобы различать разговоры между пользователями с идентификатором sessionId.',
+    'A chain that automatically picks an appropriate retriever from multiple different vector databases':
+        'Цепочка, которая автоматически выбирает подходящего ретривера из нескольких различных баз данных векторов.',
+    'An agent that uses ReAct logic to decide what action to take':
+        'Агент, который использует логику ReAct, чтобы решить, какое действие предпринять.'
 }
 const ItemCard = ({ isLoading, data, images, onClick }) => {
-    console.log(data)
     return (
         <>
             {isLoading ? (
