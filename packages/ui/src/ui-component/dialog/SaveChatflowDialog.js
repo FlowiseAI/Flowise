@@ -34,15 +34,15 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     id='chatflow-name'
                     type='text'
                     fullWidth
-                    placeholder='My New Chatflow'
+                    placeholder='Мой новый проект'
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
+                <Button onClick={onCancel}>Отменить</Button>
                 <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
-                    {dialogProps.confirmButtonName}
+                    Сохранить
                 </StyledButton>
             </DialogActions>
         </Dialog>

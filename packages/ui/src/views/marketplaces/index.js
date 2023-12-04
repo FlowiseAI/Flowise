@@ -149,26 +149,33 @@ const Marketplace = () => {
                             <Grid container spacing={gridSpacing}>
                                 {!isChatflowsLoading &&
                                     getAllChatflowsMarketplacesApi.data &&
-                                    getAllChatflowsMarketplacesApi.data.map((data, index) => (
-                                        <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                            {data.badge && (
-                                                <Badge
-                                                    sx={{
-                                                        '& .MuiBadge-badge': {
-                                                            right: 20
-                                                        }
-                                                    }}
-                                                    badgeContent={data.badge}
-                                                    color={data.badge === 'POPULAR' ? 'success' : 'warning'}
-                                                >
-                                                    <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                                </Badge>
-                                            )}
-                                            {!data.badge && (
-                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                            )}
-                                        </Grid>
-                                    ))}
+                                    getAllChatflowsMarketplacesApi.data.map(
+                                        (data, index) =>
+                                            data.name !== 'Flowise Docs QnA' && (
+                                                <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
+                                                    {data.badge && (
+                                                        <Badge
+                                                            sx={{
+                                                                '& .MuiBadge-badge': {
+                                                                    right: 20
+                                                                }
+                                                            }}
+                                                            badgeContent={data.badge}
+                                                            color={data.badge === 'POPULAR' ? 'success' : 'warning'}
+                                                        >
+                                                            <ItemCard
+                                                                onClick={() => goToCanvas(data)}
+                                                                data={data}
+                                                                images={images[data.id]}
+                                                            />
+                                                        </Badge>
+                                                    )}
+                                                    {!data.badge && (
+                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                    )}
+                                                </Grid>
+                                            )
+                                    )}
                             </Grid>
                         )}
                         {item === 'Инструменты' && (

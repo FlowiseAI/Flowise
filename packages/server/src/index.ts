@@ -42,7 +42,8 @@ import {
     getEncryptionKey,
     checkMemorySessionId,
     clearSessionMemoryFromViewMessageDialog,
-    getUserHome
+    getUserHome,
+    replaceChatHistory
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -54,7 +55,7 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, INodeOptionsValue } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 
@@ -1267,14 +1268,14 @@ export class App {
      * @param {IReactFlowEdge[]} edges
      * @returns {string | undefined}
      */
-    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): string | undefined {
+    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined {
         const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
         const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
 
         for (const edge of edges) {
             if (memoryNodeIds.includes(edge.source)) {
                 const memoryNode = nodes.find((node) => node.data.id === edge.source)
-                return memoryNode ? memoryNode.data.label : undefined
+                return memoryNode
             }
         }
         return undefined
@@ -1395,6 +1396,19 @@ export class App {
 
                 isStreamValid = isFlowValidForStream(nodes, endingNodeData)
 
+                let chatHistory: IMessage[] | string = incomingInput.history
+                if (
+                    endingNodeData.inputs?.memory &&
+                    !incomingInput.history &&
+                    (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
+                ) {
+                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
+                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+                    if (memoryNode) {
+                        chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
+                    }
+                }
+
                 /*** Get Starting Nodes with Non-Directed Graph ***/
                 const constructedObj = constructGraphs(nodes, edges, true)
                 const nonDirectedGraph = constructedObj.graph
@@ -1409,7 +1423,7 @@ export class App {
                     depthQueue,
                     this.nodesPool.componentNodes,
                     incomingInput.question,
-                    incomingInput.history,
+                    chatHistory,
                     chatId,
                     chatflowid,
                     this.AppDataSource,
@@ -1429,7 +1443,7 @@ export class App {
                     nodeToExecute.data,
                     reactFlowNodes,
                     incomingInput.question,
-                    incomingInput.history
+                    chatHistory
                 )
                 nodeToExecuteData = reactFlowNodeData
 
@@ -1446,11 +1460,17 @@ export class App {
             let sessionId = undefined
             if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
 
-            const memoryType = this.findMemoryLabel(nodes, edges)
+            const memoryNode = this.findMemoryLabel(nodes, edges)
+            const memoryType = memoryNode?.data.label
+
+            let chatHistory: IMessage[] | string = incomingInput.history
+            if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
+                chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
+            }
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatHistory: incomingInput.history,
+                      chatHistory,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId,
                       logger,
@@ -1460,7 +1480,7 @@ export class App {
                       chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatHistory: incomingInput.history,
+                      chatHistory,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,

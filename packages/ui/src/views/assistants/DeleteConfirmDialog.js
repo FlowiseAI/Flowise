@@ -27,7 +27,7 @@ const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBo
                     <StyledButton sx={{ mb: 1 }} color='error' variant='contained' onClick={onDeleteBoth}>
                         Удалить из OpenAI и StartAI
                     </StyledButton>
-                    <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
+                    <Button onClick={onCancel}>Отменить</Button>
                 </div>
             </DialogContent>
         </Dialog>
