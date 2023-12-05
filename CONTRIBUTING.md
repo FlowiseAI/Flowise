@@ -88,7 +88,7 @@ Flowise has 3 different modules in a single mono repository.
 
 9. For development:
 
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/ui`
+    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
     - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
     - Run
 
@@ -96,7 +96,7 @@ Flowise has 3 different modules in a single mono repository.
     pnpm dev
     ```
 
-    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:5173](http://localhost:5173)
+    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
 
     For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
 

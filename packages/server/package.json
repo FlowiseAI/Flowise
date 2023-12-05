@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -20,7 +20,6 @@
         "commands": "./dist/commands"
     },
     "scripts": {
-        "preinstall": "npx only-allow pnpm",
         "build": "tsc",
         "start": "run-script-os",
         "clean": "rimraf dist",
@@ -44,7 +43,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "engines": {
-        "node": ">=18.15.0"
+        "node": ">=18.15.0 <19.0.0 || ^20"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {

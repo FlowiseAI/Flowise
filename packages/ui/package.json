@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -59,7 +59,6 @@
         "yup": "^0.32.9"
     },
     "scripts": {
-        "preinstall": "npx only-allow pnpm",
         "dev": "vite",
         "build": "vite build",
         "clean": "rimraf build",

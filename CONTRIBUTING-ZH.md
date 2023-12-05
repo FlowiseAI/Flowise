@@ -44,9 +44,9 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
 
 #### 先决条件
 
--   安装 [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
+-   安装 [PNPM](https://pnpm.io/installation)
     ```bash
-    npm i -g yarn
+    npm i -g pnpm
     ```
 
 #### 逐步指南
@@ -71,45 +71,45 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
 6. 安装所有模块的依赖项：
 
     ```bash
-    yarn install
+    pnpm install
     ```
 
 7. 构建所有代码：
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
 8. 在[http://localhost:3000](http://localhost:3000)上启动应用程序
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
 9. 开发时：
 
-    - 在`packages/ui`中创建`.env`文件并指定`PORT`（参考`.env.example`）
+    - 在`packages/ui`中创建`.env`文件并指定`VITE_PORT`（参考`.env.example`）
     - 在`packages/server`中创建`.env`文件并指定`PORT`（参考`.env.example`）
     - 运行
 
     ```bash
-    yarn dev
+    pnpm dev
     ```
 
     对`packages/ui`或`packages/server`进行的任何更改都将反映在[http://localhost:8080](http://localhost:8080)上
 
-    对于`packages/components`中进行的更改，再次运行`yarn build`以应用更改。
+    对于`packages/components`中进行的更改，再次运行`pnpm build`以应用更改。
 
 10. 做完所有的更改后，运行以下命令来确保在生产环境中一切正常：
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
     和
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
 11. 提交代码并从指向 [Flowise 主分支](https://github.com/FlowiseAI/Flowise/tree/master) 的分叉分支上提交 Pull Request。

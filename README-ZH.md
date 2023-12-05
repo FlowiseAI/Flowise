@@ -75,9 +75,9 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
 
 ### 先决条件
 
--   安装 [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
+-   安装 [PNPM](https://pnpm.io/installation)
     ```bash
-    npm i -g yarn
+    npm i -g pnpm
     ```
 
 ### 设置
@@ -97,31 +97,31 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
 3. 安装所有模块的依赖：
 
     ```bash
-    yarn install
+    pnpm install
     ```
 
 4. 构建所有代码：
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
 5. 启动应用：
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
     现在可以在 [http://localhost:3000](http://localhost:3000) 访问应用
 
 6. 用于开发构建：
 
-    - 在 `packages/ui` 中创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
+    - 在 `packages/ui` 中创建 `.env` 文件并指定 `VITE_PORT`（参考 `.env.example`）
     - 在 `packages/server` 中创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
     - 运行
 
         ```bash
-        yarn dev
+        pnpm dev
         ```
 
     任何代码更改都会自动重新加载应用程序，访问 [http://localhost:8080](http://localhost:8080)
