@@ -1,33 +1,33 @@
 import path from 'path'
 import fs from 'fs'
-import moment from 'moment'
 import logger from './logger'
 import {
+    IComponentCredentials,
     IComponentNodes,
+    ICredentialDataDecrypted,
+    ICredentialReqBody,
     IDepthQueue,
     IExploredNode,
+    INodeData,
     INodeDependencies,
     INodeDirectedGraph,
     INodeQueue,
+    IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
     IVariableDict,
-    INodeData,
-    IOverrideConfig,
-    ICredentialDataDecrypted,
-    IComponentCredentials,
-    ICredentialReqBody
+    IncomingInput
 } from '../Interface'
 import { cloneDeep, get, isEqual } from 'lodash'
 import {
-    ICommonObject,
+    convertChatHistoryToText,
     getInputVariables,
-    IDatabaseEntity,
     handleEscapeCharacters,
-    IMessage,
-    convertChatHistoryToText
+    ICommonObject,
+    IDatabaseEntity,
+    IMessage
 } from 'flowise-components'
-import { scryptSync, randomBytes, timingSafeEqual } from 'crypto'
+import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -217,7 +217,7 @@ export const buildLangchain = async (
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
     question: string,
-    chatHistory: IMessage[],
+    chatHistory: IMessage[] | string,
     chatId: string,
     chatflowid: string,
     appDataSource: DataSource,
@@ -348,8 +348,8 @@ export const clearAllSessionMemory = async (
             node.data.inputs.sessionId = sessionId
         }
 
-        if (newNodeInstance.clearSessionMemory) {
-            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
         }
     }
 }
@@ -381,8 +381,8 @@ export const clearSessionMemoryFromViewMessageDialog = async (
 
         if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
 
-        if (newNodeInstance.clearSessionMemory) {
-            await newNodeInstance?.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
             return
         }
     }
@@ -400,7 +400,7 @@ export const getVariableValue = (
     paramValue: string,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[],
+    chatHistory: IMessage[] | string,
     isAcceptVariable = false
 ) => {
     let returnVal = paramValue
@@ -433,7 +433,10 @@ export const getVariableValue = (
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(
+                    typeof chatHistory === 'string' ? chatHistory : convertChatHistoryToText(chatHistory),
+                    false
+                )
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -476,7 +479,7 @@ export const resolveVariables = (
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[]
+    chatHistory: IMessage[] | string
 ): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -555,9 +558,20 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
             if (inputVariables.length > 0) return true
         }
     }
-    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT', 'chatPromptTemplate', 'promptTemplate'] //If these nodes are found, chatflow cannot be reused
     for (const node of nodes) {
-        if (whitelistNodeNames.includes(node.data.name)) return true
+        if (node.data.name === 'chatPromptTemplate' || node.data.name === 'promptTemplate') {
+            let promptValues: ICommonObject = {}
+            const promptValuesRaw = node.data.inputs?.promptValues
+            if (promptValuesRaw) {
+                try {
+                    promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw)
+                } catch (exception) {
+                    console.error(exception)
+                }
+            }
+            if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true
+        } else if (whitelistNodeNames.includes(node.data.name)) return true
     }
     return false
 }
@@ -591,147 +605,6 @@ export const isSameOverrideConfig = (
     // If there is no existing and new overrideconfig
     if (!existingOverrideConfig && !newOverrideConfig) return true
     return false
-}
-
-/**
- * Returns the api key path
- * @returns {string}
- */
-export const getAPIKeyPath = (): string => {
-    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
-}
-
-/**
- * Generate the api key
- * @returns {string}
- */
-export const generateAPIKey = (): string => {
-    const buffer = randomBytes(32)
-    return buffer.toString('base64')
-}
-
-/**
- * Generate the secret key
- * @param {string} apiKey
- * @returns {string}
- */
-export const generateSecretHash = (apiKey: string): string => {
-    const salt = randomBytes(8).toString('hex')
-    const buffer = scryptSync(apiKey, salt, 64) as Buffer
-    return `${buffer.toString('hex')}.${salt}`
-}
-
-/**
- * Verify valid keys
- * @param {string} storedKey
- * @param {string} suppliedKey
- * @returns {boolean}
- */
-export const compareKeys = (storedKey: string, suppliedKey: string): boolean => {
-    const [hashedPassword, salt] = storedKey.split('.')
-    const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
-    return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)
-}
-
-/**
- * Get API keys
- * @returns {Promise<ICommonObject[]>}
- */
-export const getAPIKeys = async (): Promise<ICommonObject[]> => {
-    try {
-        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
-        return JSON.parse(content)
-    } catch (error) {
-        const keyName = 'DefaultKey'
-        const apiKey = generateAPIKey()
-        const apiSecret = generateSecretHash(apiKey)
-        const content = [
-            {
-                keyName,
-                apiKey,
-                apiSecret,
-                createdAt: moment().format('DD-MMM-YY'),
-                id: randomBytes(16).toString('hex')
-            }
-        ]
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-        return content
-    }
-}
-
-/**
- * Add new API key
- * @param {string} keyName
- * @returns {Promise<ICommonObject[]>}
- */
-export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const apiKey = generateAPIKey()
-    const apiSecret = generateSecretHash(apiKey)
-    const content = [
-        ...existingAPIKeys,
-        {
-            keyName,
-            apiKey,
-            apiSecret,
-            createdAt: moment().format('DD-MMM-YY'),
-            id: randomBytes(16).toString('hex')
-        }
-    ]
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-    return content
-}
-
-/**
- * Get API Key details
- * @param {string} apiKey
- * @returns {Promise<ICommonObject[]>}
- */
-export const getApiKey = async (apiKey: string) => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
-    if (keyIndex < 0) return undefined
-    return existingAPIKeys[keyIndex]
-}
-
-/**
- * Update existing API key
- * @param {string} keyIdToUpdate
- * @param {string} newKeyName
- * @returns {Promise<ICommonObject[]>}
- */
-export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate)
-    if (keyIndex < 0) return []
-    existingAPIKeys[keyIndex].keyName = newKeyName
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8')
-    return existingAPIKeys
-}
-
-/**
- * Delete API key
- * @param {string} keyIdToDelete
- * @returns {Promise<ICommonObject[]>}
- */
-export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
-    return result
-}
-
-/**
- * Replace all api keys
- * @param {ICommonObject[]} content
- * @returns {Promise<void>}
- */
-export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void> => {
-    try {
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-    } catch (error) {
-        logger.error(error)
-    }
 }
 
 /**
@@ -1014,4 +887,68 @@ export const checkMemorySessionId = (instance: any, chatId: string): string | un
     else if (instance.memory && instance.memory.chatHistory && instance.memory.chatHistory.sessionId)
         return instance.memory.chatHistory.sessionId
     return undefined
+}
+
+/**
+ * Replace chatHistory if incomingInput.history is empty and sessionId/chatId is provided
+ * @param {IReactFlowNode} memoryNode
+ * @param {IncomingInput} incomingInput
+ * @param {DataSource} appDataSource
+ * @param {IDatabaseEntity} databaseEntities
+ * @param {any} logger
+ * @returns {string}
+ */
+export const replaceChatHistory = async (
+    memoryNode: IReactFlowNode,
+    incomingInput: IncomingInput,
+    appDataSource: DataSource,
+    databaseEntities: IDatabaseEntity,
+    logger: any
+): Promise<string> => {
+    const nodeInstanceFilePath = memoryNode.data.filePath as string
+    const nodeModule = await import(nodeInstanceFilePath)
+    const newNodeInstance = new nodeModule.nodeClass()
+
+    if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
+        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
+    }
+
+    if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.getChatMessages) {
+        return await newNodeInstance.memoryMethods.getChatMessages(memoryNode.data, {
+            chatId: incomingInput.chatId,
+            appDataSource,
+            databaseEntities,
+            logger
+        })
+    }
+
+    return ''
+}
+
+/**
+ * Get all values from a JSON object
+ * @param {any} obj
+ * @returns {any[]}
+ */
+export const getAllValuesFromJson = (obj: any): any[] => {
+    const values: any[] = []
+
+    function extractValues(data: any) {
+        if (typeof data === 'object' && data !== null) {
+            if (Array.isArray(data)) {
+                for (const item of data) {
+                    extractValues(item)
+                }
+            } else {
+                for (const key in data) {
+                    extractValues(data[key])
+                }
+            }
+        } else {
+            values.push(data)
+        }
+    }
+
+    extractValues(obj)
+    return values
 }

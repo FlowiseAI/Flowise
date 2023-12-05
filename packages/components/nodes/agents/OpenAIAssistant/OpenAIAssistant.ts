@@ -23,7 +23,7 @@ class OpenAIAssistant_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Assistant'
         this.name = 'openAIAssistant'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAIAssistant'
         this.category = 'Agents'
         this.icon = 'openai.png'
@@ -41,6 +41,15 @@ class OpenAIAssistant_Agents implements INode {
                 name: 'tools',
                 type: 'Tool',
                 list: true
+            },
+            {
+                label: 'Disable File Download',
+                name: 'disableFileDownload',
+                type: 'boolean',
+                description:
+                    'Messages can contain text, images, or files. In some cases, you may want to prevent others from downloading the files. Learn more from OpenAI File Annotation <a target="_blank" href="https://platform.openai.com/docs/assistants/how-it-works/managing-threads-and-messages">docs</a>',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -76,49 +85,54 @@ class OpenAIAssistant_Agents implements INode {
         return null
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
-        let sessionId = nodeData.inputs?.sessionId as string
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            let sessionId = nodeData.inputs?.sessionId as string
 
-        const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
-            id: selectedAssistantId
-        })
-
-        if (!assistant) {
-            options.logger.error(`Assistant ${selectedAssistantId} not found`)
-            return
-        }
-
-        if (!sessionId && options.chatId) {
-            const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                chatId: options.chatId
+            const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
+                id: selectedAssistantId
             })
-            if (!chatmsg) {
-                options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
+
+            if (!assistant) {
+                options.logger.error(`Assistant ${selectedAssistantId} not found`)
                 return
             }
-            sessionId = chatmsg.sessionId
-        }
 
-        const credentialData = await getCredentialData(assistant.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-        if (!openAIApiKey) {
-            options.logger.error(`OpenAI ApiKey not found`)
-            return
-        }
+            if (!sessionId && options.chatId) {
+                const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
+                    chatId: options.chatId
+                })
+                if (!chatmsg) {
+                    options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
+                    return
+                }
+                sessionId = chatmsg.sessionId
+            }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
-        options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
-        if (sessionId) await openai.beta.threads.del(sessionId)
-        options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+            const credentialData = await getCredentialData(assistant.credential ?? '', options)
+            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+            if (!openAIApiKey) {
+                options.logger.error(`OpenAI ApiKey not found`)
+                return
+            }
+
+            const openai = new OpenAI({ apiKey: openAIApiKey })
+            options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
+            if (sessionId) await openai.beta.threads.del(sessionId)
+            options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+        }
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const disableFileDownload = nodeData.inputs?.disableFileDownload as boolean
+
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         const formattedTools = tools?.map((tool: any) => formatToOpenAIAssistantTool(tool)) ?? []
@@ -310,7 +324,7 @@ class OpenAIAssistant_Agents implements INode {
 
                         const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
 
-                        // Iterate over the annotations and add footnotes
+                        // Iterate over the annotations
                         for (let index = 0; index < annotations.length; index++) {
                             const annotation = annotations[index]
                             let filePath = ''
@@ -323,11 +337,13 @@ class OpenAIAssistant_Agents implements INode {
                                 // eslint-disable-next-line no-useless-escape
                                 const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                 filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                fileAnnotations.push({
-                                    filePath,
-                                    fileName
-                                })
+                                if (!disableFileDownload) {
+                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                    fileAnnotations.push({
+                                        filePath,
+                                        fileName
+                                    })
+                                }
                             } else {
                                 const file_path = (annotation as OpenAI.Beta.Threads.Messages.MessageContentText.Text.FilePath).file_path
                                 if (file_path) {
@@ -335,22 +351,30 @@ class OpenAIAssistant_Agents implements INode {
                                     // eslint-disable-next-line no-useless-escape
                                     const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                     filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                    fileAnnotations.push({
-                                        filePath,
-                                        fileName
-                                    })
+                                    if (!disableFileDownload) {
+                                        await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                        fileAnnotations.push({
+                                            filePath,
+                                            fileName
+                                        })
+                                    }
                                 }
                             }
 
                             // Replace the text with a footnote
-                            message_content.value = message_content.value.replace(`${annotation.text}`, `${filePath}`)
+                            message_content.value = message_content.value.replace(
+                                `${annotation.text}`,
+                                `${disableFileDownload ? '' : filePath}`
+                            )
                         }
 
                         returnVal += message_content.value
                     } else {
                         returnVal += content.text.value
                     }
+
+                    const lenticularBracketRegex = /【[^】]*】/g
+                    returnVal = returnVal.replace(lenticularBracketRegex, '')
                 } else {
                     const content = assistantMessages[0].content[i] as MessageContentImageFile
                     const fileId = content.image_file.file_id

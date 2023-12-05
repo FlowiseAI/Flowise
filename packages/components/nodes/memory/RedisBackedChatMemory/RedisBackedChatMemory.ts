@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, serializeChatHistory } from '../../../src/utils'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/ioredis'
 import { mapStoredMessageToChatMessage, BaseMessage } from 'langchain/schema'
@@ -65,13 +65,23 @@ class RedisBackedChatMemory_Memory implements INode {
         return await initalizeRedis(nodeData, options)
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const redis = await initalizeRedis(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing Redis memory session ${sessionId ? sessionId : chatId}`)
-        await redis.clear()
-        options.logger.info(`Successfully cleared Redis memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const redis = await initalizeRedis(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing Redis memory session ${sessionId ? sessionId : chatId}`)
+            await redis.clear()
+            options.logger.info(`Successfully cleared Redis memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const redis = await initalizeRedis(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await redis.loadMemoryVariables({})
+            return serializeChatHistory(memoryResult[key])
+        }
     }
 }
 
@@ -137,7 +147,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     }
 
     const memory = new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
         isSessionIdUsingChatMessageId
     })

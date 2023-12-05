@@ -15,19 +15,18 @@ import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons'
 
-import chatflowsApi from '@/api/chatflows'
+import chatflowsApi from 'api/chatflows'
 
-import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
-import { uiBaseURL } from '@/store/constant'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import useApi from '../../hooks/useApi'
+import useConfirm from 'hooks/useConfirm'
+import { uiBaseURL } from '../../store/constant'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
 
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
-import TagDialog from '@/ui-component/dialog/TagDialog'
+import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
+import TagDialog from '../dialog/TagDialog'
 
-import { generateExportFlowData } from '@/utils/genericHelper'
-import useNotifier from '@/utils/useNotifier'
+import { generateExportFlowData } from '../../utils/genericHelper'
+import useNotifier from '../../utils/useNotifier'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -264,7 +263,6 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     Delete
                 </MenuItem>
             </StyledMenu>
-            <ConfirmDialog />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
