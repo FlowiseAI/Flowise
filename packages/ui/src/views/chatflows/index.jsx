@@ -7,28 +7,28 @@ import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, T
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import ItemCard from 'ui-component/cards/ItemCard'
-import { gridSpacing } from 'store/constant'
-import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import LoginDialog from 'ui-component/dialog/LoginDialog'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import MainCard from '@/ui-component/cards/MainCard'
+import ItemCard from '@/ui-component/cards/ItemCard'
+import { gridSpacing } from '@/store/constant'
+import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
+import LoginDialog from '@/ui-component/dialog/LoginDialog'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from '@/api/chatflows'
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from '@/hooks/useApi'
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL } from '@/store/constant'
 
 // icons
 import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons'
 import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { FlowListTable } from '../../ui-component/table/FlowListTable'
-import { StyledButton } from '../../ui-component/button/StyledButton'
+import { FlowListTable } from '@/ui-component/table/FlowListTable'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // ==============================|| CHATFLOWS ||============================== //
 

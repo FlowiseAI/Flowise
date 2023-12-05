@@ -26,7 +26,7 @@
         "nuke": "rimraf dist node_modules",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",
-        "dev": "nodemon",
+        "dev": "tsc-watch --noClear -p ./tsconfig.json",
         "oclif-dev": "run-script-os",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",
@@ -85,6 +85,7 @@
         "run-script-os": "^1.1.6",
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
+        "tsc-watch": "^6.0.4",
         "typescript": "^4.8.4"
     }
 }
