@@ -26,7 +26,7 @@
         "nuke": "rimraf dist node_modules",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",
-        "dev": "tsc-watch --noClear -p ./tsconfig.json",
+        "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"pnpm start\"",
         "oclif-dev": "run-script-os",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",
