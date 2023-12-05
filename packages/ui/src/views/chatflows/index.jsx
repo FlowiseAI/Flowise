@@ -12,6 +12,7 @@ import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -26,8 +27,8 @@ import { baseURL } from '@/store/constant'
 import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons'
 import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { FlowListTable } from '../../ui-component/table/FlowListTable'
-import { StyledButton } from '../../ui-component/button/StyledButton'
+import { FlowListTable } from '@/ui-component/table/FlowListTable'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -212,6 +213,7 @@ const Chatflows = () => {
                 </Stack>
             )}
             <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+            <ConfirmDialog />
         </MainCard>
     )
 }

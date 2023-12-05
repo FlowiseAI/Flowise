@@ -550,6 +550,18 @@ export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string =
 }
 
 /**
+ * Serialize array chat history to string
+ * @param {IMessage[]} chatHistory
+ * @returns {string}
+ */
+export const serializeChatHistory = (chatHistory: string | Array<string>) => {
+    if (Array.isArray(chatHistory)) {
+        return chatHistory.join('\n')
+    }
+    return chatHistory
+}
+
+/**
  * Convert schema to zod schema
  * @param {string | object} schema
  * @returns {ICommonObject}

@@ -170,7 +170,7 @@ const Canvas = () => {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate(-1)
+                navigate('/')
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({

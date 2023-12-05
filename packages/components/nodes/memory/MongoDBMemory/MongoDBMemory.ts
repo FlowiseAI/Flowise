@@ -1,4 +1,13 @@
-import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import {
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    serializeChatHistory
+} from '../../../src'
 import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { BaseMessage, mapStoredMessageToChatMessage } from 'langchain/schema'
@@ -67,13 +76,23 @@ class MongoDB_Memory implements INode {
         return initializeMongoDB(nodeData, options)
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const mongodbMemory = await initializeMongoDB(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing MongoDB memory session ${sessionId ? sessionId : chatId}`)
-        await mongodbMemory.clear()
-        options.logger.info(`Successfully cleared MongoDB memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const mongodbMemory = await initializeMongoDB(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing MongoDB memory session ${sessionId ? sessionId : chatId}`)
+            await mongodbMemory.clear()
+            options.logger.info(`Successfully cleared MongoDB memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const mongodbMemory = await initializeMongoDB(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await mongodbMemory.loadMemoryVariables({})
+            return serializeChatHistory(memoryResult[key])
+        }
     }
 }
 
@@ -123,9 +142,8 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     }
 
     return new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: mongoDBChatMessageHistory,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
 }
