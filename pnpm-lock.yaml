@@ -327,6 +327,9 @@ importers:
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
+      tsc-watch:
+        specifier: ^6.0.4
+        version: 6.0.4(typescript@4.9.5)
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
