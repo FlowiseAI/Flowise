@@ -161,7 +161,7 @@ const Chatflows = () => {
                                         variant='contained'
                                         value='card'
                                         title='Card View'
-                                        selectedColor='#00abc0'
+                                        selectedcolor='#00abc0'
                                     >
                                         <IconLayoutGrid />
                                     </ToggleButton>
