@@ -1,6 +1,14 @@
 import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
+
+import rehypeMathjax from 'rehype-mathjax'
+import rehypeRaw from 'rehype-raw'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+
+// MUI
 import {
     Box,
     Button,
@@ -10,7 +18,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
+    Chip,
     Grid,
     InputLabel,
     List,
@@ -18,23 +26,30 @@ import {
     ListItemText,
     OutlinedInput,
     Select,
-    Typography
+    Typography,
+    Stack,
+    IconButton,
+    FormControl,
+    Checkbox,
+    MenuItem
 } from '@mui/material'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '../../store/actions'
-import { useDispatch } from 'react-redux'
-import FormControl from '@mui/material/FormControl'
-import Checkbox from '@mui/material/Checkbox'
-import MenuItem from '@mui/material/MenuItem'
-import ReactMarkdown from 'react-markdown'
-import CredentialInputHandler from '../../views/canvas/CredentialInputHandler'
-import promptApi from '../../api/prompt'
-import { StyledButton } from '../button/StyledButton'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { styled } from '@mui/material/styles'
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'
 import MuiAccordion from '@mui/material/Accordion'
 import MuiAccordionSummary from '@mui/material/AccordionSummary'
 import MuiAccordionDetails from '@mui/material/AccordionDetails'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'
+import ClearIcon from '@mui/icons-material/Clear'
+import { styled } from '@mui/material/styles'
+
+//Project Import
+import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
+import { StyledButton } from 'ui-component/button/StyledButton'
+import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
+import { CodeBlock } from 'ui-component/markdown/CodeBlock'
+import promptEmptySVG from 'assets/images/prompt_empty.svg'
+
+import promptApi from 'api/prompt'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
 const NewLineToBr = ({ children = '' }) => {
     return children.split('\n').reduce(function (arr, line) {
@@ -73,6 +88,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -141,19 +157,24 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const [selectedPrompt, setSelectedPrompt] = useState({})
 
     const [credentialId, setCredentialId] = useState('')
-    const [accordionExpanded, setAccordionExpanded] = useState('panel2')
+    const [accordionExpanded, setAccordionExpanded] = useState(['prompt'])
 
-    const handleAccordionChange = (panel) => {
-        setAccordionExpanded(panel)
+    const handleAccordionChange = (accordionName) => (event, isExpanded) => {
+        const accordians = [...accordionExpanded]
+        if (!isExpanded) setAccordionExpanded(accordians.filter((accr) => accr !== accordionName))
+        else {
+            accordians.push(accordionName)
+            setAccordionExpanded(accordians)
+        }
     }
 
-    const handleListItemClick = async (event, index) => {
-        const prompt = availablePrompNameList[index]
+    const handleListItemClick = async (index, overridePromptNameList = []) => {
+        const prompt = overridePromptNameList.length ? overridePromptNameList[index] : availablePrompNameList[index]
 
         if (!prompt.detailed) {
             const createResp = await promptApi.getPrompt({
                 credential: credentialId,
-                promptName: selectedPrompt.full_name
+                promptName: prompt.full_name
             })
             if (createResp.data) {
                 prompt.detailed = createResp.data.templates
@@ -180,6 +201,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         })
         if (createResp.data) {
             setAvailablePrompNameList(createResp.data.repos)
+            if (createResp.data.repos?.length) handleListItemClick(0, createResp.data.repos)
         }
     }
 
@@ -217,12 +239,21 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         setLanguage(removeDuplicates(value))
     }
 
+    const clear = () => {
+        setModelName([])
+        setUsecase([])
+        setLanguage([])
+        setSelectedPrompt({})
+        setAvailablePrompNameList([])
+        setAccordionExpanded(['prompt'])
+    }
+
     const component = show ? (
         <Dialog
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth='lg'
+            maxWidth={credentialId ? 'lg' : 'sm'}
             aria-labelledby='prompt-dialog-title'
             aria-describedby='prompt-dialog-description'
         >
@@ -230,12 +261,12 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                 Load Prompts from Langsmith Hub ({promptType === 'template' ? 'PromptTemplate' : 'ChatPromptTemplate'})
             </DialogTitle>
             <DialogContent dividers sx={{ p: 1 }}>
-                <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'row', p: 1, m: 0 }}>
-                    <Typography style={{ alignSelf: 'center' }} sx={{ mr: 5 }} variant='overline'>
-                        Langsmith Credential
+                <Box sx={{ width: credentialId ? '40%' : '100%', display: 'flex', flexDirection: 'row', p: 2, alignItems: 'center' }}>
+                    <Typography sx={{ mr: 2 }}>
+                        Langsmith Credential &nbsp;
                         <span style={{ color: 'red' }}>*</span>
                     </Typography>
-                    <FormControl style={{ width: '30%' }} xs={4} sx={{ m: 1 }}>
+                    <FormControl sx={{ flex: 1 }}>
                         <CredentialInputHandler
                             size='small'
                             sx={{ flexGrow: 1 }}
@@ -249,216 +280,327 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             }}
                             onSelect={(newValue) => {
                                 setCredentialId(newValue)
+                                if (!newValue) clear()
                             }}
                         />
                     </FormControl>
                 </Box>
-                <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'row' }}>
-                    <FormControl
-                        style={{
-                            width: '30%'
-                        }}
-                        xs={4}
-                        sx={{ m: 1 }}
-                    >
-                        <InputLabel size='small' id='model-checkbox-label'>
-                            Model
-                        </InputLabel>
-                        <Select
-                            disabled={!credentialId}
-                            id='model-checkbox'
-                            labelId='model-checkbox-label'
-                            multiple
-                            size='small'
-                            value={modelName}
-                            onChange={handleModelChange}
-                            input={<OutlinedInput label='Model' />}
-                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                            MenuProps={MenuProps}
-                        >
-                            {models.map((variant) => (
-                                <MenuItem key={variant.id} value={variant}>
-                                    <Checkbox id={variant.id} checked={modelName.findIndex((item) => item.id === variant.id) >= 0} />
-                                    <ListItemText primary={variant.name} />
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <FormControl
-                        xs={4}
-                        style={{
-                            width: '30%'
-                        }}
-                        sx={{ m: 1 }}
-                    >
-                        <InputLabel size='small' id='usecase-checkbox-label'>
-                            Usecase
-                        </InputLabel>
-                        <Select
-                            autoWidth={false}
-                            disabled={!credentialId}
-                            labelId='usecase-checkbox-label'
-                            id='usecase-checkbox'
-                            multiple
-                            size='small'
-                            value={usecase}
-                            onChange={handleUsecaseChange}
-                            input={<OutlinedInput label='Usecase' />}
-                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                            MenuProps={MenuProps}
-                        >
-                            {usecases.map((variant) => (
-                                <MenuItem key={variant.id} value={variant}>
-                                    <Checkbox id={variant.id} checked={usecase.findIndex((item) => item.id === variant.id) >= 0} />
-                                    <ListItemText primary={variant.name} />
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <FormControl
-                        style={{
-                            width: '25%'
-                        }}
-                        xs={3}
-                        sx={{ m: 1 }}
-                    >
-                        <InputLabel size='small' id='language-checkbox-label'>
-                            Language
-                        </InputLabel>
-                        <Select
-                            labelId='language-checkbox-label'
-                            id='language-checkbox'
-                            disabled={!credentialId}
-                            multiple
-                            size='small'
-                            value={language}
-                            onChange={handleLanguageChange}
-                            input={<OutlinedInput label='language' />}
-                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                            MenuProps={MenuProps}
-                        >
-                            {languages.map((variant) => (
-                                <MenuItem key={variant.id} value={variant}>
-                                    <Checkbox id={variant.id} checked={language.findIndex((item) => item.id === variant.id) >= 0} />
-                                    <ListItemText primary={variant.name} />
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <FormControl
-                        style={{
-                            width: '5%'
-                        }}
-                        xs={1}
-                        sx={{ m: 1 }}
-                    >
-                        <Button disableElevation variant='outlined' onClick={fetchPrompts}>
-                            Fetch
-                        </Button>
-                    </FormControl>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                <Grid xs={12} container spacing={1} justifyContent='center' alignItems='center'>
-                    <Grid xs={4} item style={{ textAlign: 'left' }}>
-                        <Box sx={{ width: '100%', maxWidth: 360 }}>
-                            <Card variant='outlined' style={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
-                                <CardContent sx={{ p: 1 }}>
-                                    <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                        Available Prompts
-                                    </Typography>
-                                    <List component='nav' aria-label='secondary mailbox folder'>
-                                        {availablePrompNameList.map((item, index) => (
-                                            <ListItemButton
-                                                key={item.id}
-                                                selected={item.id === selectedPrompt?.id}
-                                                onClick={(event) => handleListItemClick(event, index)}
-                                            >
-                                                <ListItemText>{item.full_name}</ListItemText>
-                                            </ListItemButton>
-                                        ))}
-                                    </List>
-                                </CardContent>
-                            </Card>
+                {credentialId && (
+                    <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, pt: 1, alignItems: 'center' }}>
+                        <FormControl sx={{ mr: 1, width: '30%' }}>
+                            <InputLabel size='small' id='model-checkbox-label'>
+                                Model
+                            </InputLabel>
+                            <Select
+                                disabled={!credentialId}
+                                id='model-checkbox'
+                                labelId='model-checkbox-label'
+                                multiple
+                                size='small'
+                                value={modelName}
+                                onChange={handleModelChange}
+                                input={<OutlinedInput label='Model' />}
+                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                                endAdornment={
+                                    modelName.length ? (
+                                        <IconButton sx={{ mr: 2 }} onClick={() => setModelName([])}>
+                                            <ClearIcon style={{ width: 20, height: 20 }} />
+                                        </IconButton>
+                                    ) : (
+                                        false
+                                    )
+                                }
+                                sx={{
+                                    '.MuiSvgIcon-root ': {
+                                        fill: customization.isDarkMode ? 'white !important' : ''
+                                    }
+                                }}
+                                MenuProps={MenuProps}
+                            >
+                                {models.map((variant) => (
+                                    <MenuItem key={variant.id} value={variant}>
+                                        <Checkbox id={variant.id} checked={modelName.findIndex((item) => item.id === variant.id) >= 0} />
+                                        <ListItemText primary={variant.name} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl sx={{ mr: 1, width: '30%' }}>
+                            <InputLabel size='small' id='usecase-checkbox-label'>
+                                Usecase
+                            </InputLabel>
+                            <Select
+                                autoWidth={false}
+                                disabled={!credentialId}
+                                labelId='usecase-checkbox-label'
+                                id='usecase-checkbox'
+                                multiple
+                                size='small'
+                                value={usecase}
+                                onChange={handleUsecaseChange}
+                                input={<OutlinedInput label='Usecase' />}
+                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                                endAdornment={
+                                    usecase.length ? (
+                                        <IconButton sx={{ mr: 2 }} onClick={() => setUsecase([])}>
+                                            <ClearIcon style={{ width: 20, height: 20 }} />
+                                        </IconButton>
+                                    ) : (
+                                        false
+                                    )
+                                }
+                                sx={{
+                                    '.MuiSvgIcon-root ': {
+                                        fill: customization.isDarkMode ? 'white !important' : ''
+                                    }
+                                }}
+                                MenuProps={MenuProps}
+                            >
+                                {usecases.map((variant) => (
+                                    <MenuItem key={variant.id} value={variant}>
+                                        <Checkbox id={variant.id} checked={usecase.findIndex((item) => item.id === variant.id) >= 0} />
+                                        <ListItemText primary={variant.name} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl sx={{ mr: 1, width: '30%' }}>
+                            <InputLabel size='small' id='language-checkbox-label'>
+                                Language
+                            </InputLabel>
+                            <Select
+                                labelId='language-checkbox-label'
+                                id='language-checkbox'
+                                disabled={!credentialId}
+                                multiple
+                                size='small'
+                                value={language}
+                                onChange={handleLanguageChange}
+                                input={<OutlinedInput label='language' />}
+                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                                endAdornment={
+                                    language.length ? (
+                                        <IconButton sx={{ mr: 2 }} onClick={() => setLanguage([])}>
+                                            <ClearIcon style={{ width: 20, height: 20 }} />
+                                        </IconButton>
+                                    ) : (
+                                        false
+                                    )
+                                }
+                                sx={{
+                                    '.MuiSvgIcon-root ': {
+                                        fill: customization.isDarkMode ? 'white !important' : ''
+                                    }
+                                }}
+                                MenuProps={MenuProps}
+                            >
+                                {languages.map((variant) => (
+                                    <MenuItem key={variant.id} value={variant}>
+                                        <Checkbox id={variant.id} checked={language.findIndex((item) => item.id === variant.id) >= 0} />
+                                        <ListItemText primary={variant.name} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl sx={{ width: '10%' }}>
+                            <Button disableElevation variant='outlined' onClick={fetchPrompts}>
+                                Search
+                            </Button>
+                        </FormControl>
+                    </Box>
+                )}
+                {availablePrompNameList && availablePrompNameList.length == 0 && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%', pb: 3 }} flexDirection='column'>
+                        <Box sx={{ p: 5, height: 'auto' }}>
+                            <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={promptEmptySVG} alt='promptEmptySVG' />
                         </Box>
-                    </Grid>
-                    <Grid xs={8} item style={{ textAlign: 'left' }}>
-                        <Box sx={{ width: '100%' }} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Card variant='outlined' style={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
-                                <CardContent sx={{ p: 0.5 }}>
-                                    <Accordion expanded={accordionExpanded === 'panel1'} onChange={() => handleAccordionChange('panel1')}>
-                                        <AccordionSummary
-                                            aria-controls='panel1d-content'
-                                            expandIcon={<ExpandMoreIcon />}
-                                            id='panel1d-header'
-                                        >
-                                            <Typography>Description</Typography>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            <Typography sx={{ fontSize: 12, wordWrap: 'true' }} color='text.primary'>
-                                                {selectedPrompt?.description}
-                                            </Typography>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                    <Accordion expanded={accordionExpanded === 'panel2'} onChange={() => handleAccordionChange('panel2')}>
-                                        <AccordionSummary
-                                            aria-controls='panel2d-content'
-                                            expandIcon={<ExpandMoreIcon />}
-                                            id='panel2d-header'
-                                        >
-                                            <Typography>Prompt</Typography>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            <Typography sx={{ fontSize: 12, wordWrap: 'true' }} color='text.primary'>
-                                                {selectedPrompt?.detailed?.map((item) => (
-                                                    <>
-                                                        <Typography sx={{ fontSize: 12 }} color='text.secondary' gutterBottom>
-                                                            {item.typeDisplay.toUpperCase()}
+                        <div>No Available Prompts</div>
+                    </Stack>
+                )}
+                {availablePrompNameList && availablePrompNameList.length > 0 && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
+                        <Box sx={{ width: '100%', p: 2 }}>
+                            <Grid xs={12} container spacing={1} justifyContent='center' alignItems='center'>
+                                <Grid xs={4} item sx={{ textAlign: 'left' }}>
+                                    <Box sx={{ width: '100%', maxWidth: 360 }}>
+                                        <Card variant='outlined' sx={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
+                                            <CardContent sx={{ p: 1 }}>
+                                                <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
+                                                    Available Prompts
+                                                </Typography>
+                                                <List component='nav' aria-label='secondary mailbox folder'>
+                                                    {availablePrompNameList.map((item, index) => (
+                                                        <ListItemButton
+                                                            key={item.id}
+                                                            selected={item.id === selectedPrompt?.id}
+                                                            onClick={() => handleListItemClick(index)}
+                                                        >
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <Typography sx={{ fontSize: 16, p: 1, fontWeight: 500 }}>
+                                                                    {item.full_name}
+                                                                </Typography>
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'row',
+                                                                        flexWrap: 'wrap',
+                                                                        marginTop: 5
+                                                                    }}
+                                                                >
+                                                                    {item.tags.map((tag, index) => (
+                                                                        <Chip
+                                                                            key={index}
+                                                                            label={tag}
+                                                                            style={{ marginRight: 5, marginBottom: 5 }}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </ListItemButton>
+                                                    ))}
+                                                </List>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                </Grid>
+                                <Grid xs={8} item sx={{ textAlign: 'left' }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Card sx={{ height: 470, overflow: 'auto' }}>
+                                            <CardContent sx={{ p: 0.5 }}>
+                                                <Accordion
+                                                    expanded={accordionExpanded.includes('prompt')}
+                                                    onChange={handleAccordionChange('prompt')}
+                                                >
+                                                    <AccordionSummary
+                                                        aria-controls='panel2d-content'
+                                                        expandIcon={<ExpandMoreIcon />}
+                                                        id='panel2d-header'
+                                                    >
+                                                        <Typography>Prompt</Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <Typography sx={{ wordWrap: 'true' }} color='text.primary'>
+                                                            {selectedPrompt?.detailed?.map((item) => (
+                                                                <>
+                                                                    <Typography sx={{ fontSize: 12 }} color='text.secondary' gutterBottom>
+                                                                        {item.typeDisplay.toUpperCase()}
+                                                                    </Typography>
+                                                                    <Typography>
+                                                                        <p
+                                                                            style={{
+                                                                                whiteSpace: 'pre-wrap -moz-pre-wrap -pre-wrap -o-pre-wrap',
+                                                                                wordWrap: 'break-word',
+                                                                                fontFamily: 'inherit',
+                                                                                wordSpacing: '0.1rem',
+                                                                                lineHeight: '1.5rem'
+                                                                            }}
+                                                                        >
+                                                                            <NewLineToBr>{item.template}</NewLineToBr>
+                                                                        </p>
+                                                                    </Typography>
+                                                                </>
+                                                            ))}
                                                         </Typography>
-                                                        <Typography sx={{ fontSize: 12 }}>
-                                                            <p
-                                                                style={{
-                                                                    whiteSpace: 'pre-wrap -moz-pre-wrap -pre-wrap -o-pre-wrap',
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                                <Accordion
+                                                    expanded={accordionExpanded.includes('description')}
+                                                    onChange={handleAccordionChange('description')}
+                                                >
+                                                    <AccordionSummary
+                                                        aria-controls='panel1d-content'
+                                                        expandIcon={<ExpandMoreIcon />}
+                                                        id='panel1d-header'
+                                                    >
+                                                        <Typography>Description</Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <Typography
+                                                            sx={{ wordWrap: 'true', wordSpacing: '0.1rem', lineHeight: '1.5rem' }}
+                                                            color='text.primary'
+                                                        >
+                                                            {selectedPrompt?.description}
+                                                        </Typography>
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                                <Accordion
+                                                    expanded={accordionExpanded.includes('readme')}
+                                                    onChange={handleAccordionChange('readme')}
+                                                >
+                                                    <AccordionSummary
+                                                        expandIcon={<ExpandMoreIcon />}
+                                                        aria-controls='panel3d-content'
+                                                        id='panel3d-header'
+                                                    >
+                                                        <Typography>Readme</Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <div
+                                                            style={{
+                                                                lineHeight: 1.75,
+                                                                '& a': {
+                                                                    display: 'block',
+                                                                    marginRight: '2.5rem',
                                                                     wordWrap: 'break-word',
-                                                                    fontFamily: 'inherit'
+                                                                    color: '#16bed7',
+                                                                    fontWeight: 500
+                                                                },
+                                                                '& a:hover': { opacity: 0.8 },
+                                                                '& code': {
+                                                                    color: '#0ab126',
+                                                                    fontWeight: 500,
+                                                                    whiteSpace: 'pre-wrap !important'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <MemoizedReactMarkdown
+                                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                                components={{
+                                                                    code({ inline, className, children, ...props }) {
+                                                                        const match = /language-(\w+)/.exec(className || '')
+                                                                        return !inline ? (
+                                                                            <CodeBlock
+                                                                                key={Math.random()}
+                                                                                isDialog={true}
+                                                                                language={(match && match[1]) || ''}
+                                                                                value={String(children).replace(/\n$/, '')}
+                                                                                {...props}
+                                                                            />
+                                                                        ) : (
+                                                                            <code className={className} {...props}>
+                                                                                {children}
+                                                                            </code>
+                                                                        )
+                                                                    }
                                                                 }}
                                                             >
-                                                                <NewLineToBr>{item.template}</NewLineToBr>
-                                                            </p>
-                                                        </Typography>
-                                                    </>
-                                                ))}
-                                            </Typography>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                    <Accordion expanded={accordionExpanded === 'panel3'} onChange={() => handleAccordionChange('panel3')}>
-                                        <AccordionSummary
-                                            expandIcon={<ExpandMoreIcon />}
-                                            aria-controls='panel3d-content'
-                                            id='panel3d-header'
-                                        >
-                                            <Typography>Readme</Typography>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            <ReactMarkdown
-                                                sx={{ fontSize: 11, wordWrap: 'true', width: '100%' }}
-                                                style={{ width: '100%', flexGrow: 1, resize: 'none' }}
-                                            >
-                                                {selectedPrompt?.readme}
-                                            </ReactMarkdown>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                </CardContent>
-                            </Card>
+                                                                {selectedPrompt?.readme}
+                                                            </MemoizedReactMarkdown>
+                                                        </div>
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                </Grid>
+                            </Grid>
                         </Box>
-                    </Grid>
-                </Grid>
+                    </Stack>
+                )}
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
-                <StyledButton disabled={!selectedPrompt?.detailed} onClick={() => onSubmit(selectedPrompt.detailed)} variant='contained'>
-                    Submit
-                </StyledButton>
-            </DialogActions>
+            {availablePrompNameList && availablePrompNameList.length > 0 && (
+                <DialogActions>
+                    <Button onClick={onCancel}>Cancel</Button>
+                    <StyledButton
+                        disabled={!selectedPrompt?.detailed}
+                        onClick={() => onSubmit(selectedPrompt.detailed)}
+                        variant='contained'
+                    >
+                        Load
+                    </StyledButton>
+                </DialogActions>
+            )}
         </Dialog>
     ) : null
 

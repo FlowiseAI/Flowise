@@ -231,7 +231,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         flexDirection: 'row',
                                         width: '100%'
                                     }}
-                                    sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 2 }}
+                                    sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
                                     variant='outlined'
                                     onClick={() => onShowPromptHubButtonClicked()}
                                     endIcon={<IconAutoFixHigh />}
