@@ -40,4 +40,7 @@ export class ChatMessage implements IChatMessage {
 
     @CreateDateColumn()
     createdDate: Date
+
+    @Column({ type: 'json', nullable: true })
+    feedback?: { feedbackType: string; feedbackMessage: string }
 }
