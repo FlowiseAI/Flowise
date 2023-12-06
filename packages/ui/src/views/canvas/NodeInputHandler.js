@@ -223,29 +223,30 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         </CustomWidthTooltip>
                     )}
                     <Box sx={{ p: 2 }}>
-                        {(inputParam.name === 'template' || inputParam.name === 'systemMessagePrompt') && (
-                            <>
-                                <Button
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        width: '100%'
-                                    }}
-                                    sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
-                                    variant='outlined'
-                                    onClick={() => onShowPromptHubButtonClicked()}
-                                    endIcon={<IconAutoFixHigh />}
-                                >
-                                    Langsmith Prompt Hub
-                                </Button>
-                                <PromptLangsmithHubDialog
-                                    promptType={inputParam.name}
-                                    show={showPromptHubDialog}
-                                    onCancel={() => setShowPromptHubDialog(false)}
-                                    onSubmit={onShowPromptHubButtonSubmit}
-                                ></PromptLangsmithHubDialog>
-                            </>
-                        )}
+                        {(data.name === 'promptTemplate' || data.name === 'chatPromptTemplate') &&
+                            (inputParam.name === 'template' || inputParam.name === 'systemMessagePrompt') && (
+                                <>
+                                    <Button
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            width: '100%'
+                                        }}
+                                        sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
+                                        variant='outlined'
+                                        onClick={() => onShowPromptHubButtonClicked()}
+                                        endIcon={<IconAutoFixHigh />}
+                                    >
+                                        Langsmith Prompt Hub
+                                    </Button>
+                                    <PromptLangsmithHubDialog
+                                        promptType={inputParam.name}
+                                        show={showPromptHubDialog}
+                                        onCancel={() => setShowPromptHubDialog(false)}
+                                        onSubmit={onShowPromptHubButtonSubmit}
+                                    ></PromptLangsmithHubDialog>
+                                </>
+                            )}
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
                                 {inputParam.label}
