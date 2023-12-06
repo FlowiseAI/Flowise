@@ -8,7 +8,7 @@ class RedisCacheUrlApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Redis Cache URL'
+        this.label = 'Redis URL'
         this.name = 'redisCacheUrlApi'
         this.version = 1.0
         this.inputs = [
@@ -16,7 +16,7 @@ class RedisCacheUrlApi implements INodeCredential {
                 label: 'Redis URL',
                 name: 'redisUrl',
                 type: 'string',
-                default: '127.0.0.1'
+                default: 'redis://localhost:6379'
             }
         ]
     }

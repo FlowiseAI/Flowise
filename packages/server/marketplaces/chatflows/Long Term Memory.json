@@ -205,7 +205,7 @@
             "data": {
                 "id": "ZepMemory_0",
                 "label": "Zep Memory",
-                "version": 1,
+                "version": 2,
                 "name": "ZepMemory",
                 "type": "ZepMemory",
                 "baseClasses": ["ZepMemory", "BaseChatMemory", "BaseMemory"],
@@ -229,13 +229,6 @@
                         "id": "ZepMemory_0-input-baseURL-string"
                     },
                     {
-                        "label": "Auto Summary",
-                        "name": "autoSummary",
-                        "type": "boolean",
-                        "default": true,
-                        "id": "ZepMemory_0-input-autoSummary-boolean"
-                    },
-                    {
                         "label": "Session Id",
                         "name": "sessionId",
                         "type": "string",
@@ -251,16 +244,9 @@
                         "type": "number",
                         "default": "10",
                         "step": 1,
+                        "additionalParams": true,
                         "description": "Window of size k to surface the last k back-and-forths to use as memory.",
                         "id": "ZepMemory_0-input-k-number"
-                    },
-                    {
-                        "label": "Auto Summary Template",
-                        "name": "autoSummaryTemplate",
-                        "type": "string",
-                        "default": "This is the summary of the following conversation:\n{summary}",
-                        "additionalParams": true,
-                        "id": "ZepMemory_0-input-autoSummaryTemplate-string"
                     },
                     {
                         "label": "AI Prefix",
@@ -306,10 +292,8 @@
                 "inputAnchors": [],
                 "inputs": {
                     "baseURL": "http://127.0.0.1:8000",
-                    "autoSummary": true,
                     "sessionId": "",
                     "k": "10",
-                    "autoSummaryTemplate": "This is the summary of the following conversation:\n{summary}",
                     "aiPrefix": "ai",
                     "humanPrefix": "human",
                     "memoryKey": "chat_history",

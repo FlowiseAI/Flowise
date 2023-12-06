@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.4.3",
+    "version": "1.4.5",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -21,7 +21,7 @@
         "@aws-sdk/client-s3": "^3.427.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@elastic/elasticsearch": "^8.9.0",
-        "@getzep/zep-js": "^0.6.3",
+        "@getzep/zep-js": "^0.9.0",
         "@gomomento/sdk": "^1.51.1",
         "@gomomento/sdk-core": "^1.51.1",
         "@google-ai/generativelanguage": "^0.2.1",

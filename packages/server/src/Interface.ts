@@ -192,12 +192,6 @@ export interface IOverrideConfig {
     type: string
 }
 
-export interface IDatabaseExport {
-    chatmessages: IChatMessage[]
-    chatflows: IChatFlow[]
-    apikeys: ICommonObject[]
-}
-
 export type ICredentialDataDecrypted = ICommonObject
 
 // Plain credential object sent to server
