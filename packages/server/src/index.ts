@@ -410,9 +410,7 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
 
-            const obj = {
-                allowUploads: this.shouldAllowUploads(chatflow)
-            }
+            const obj = this.shouldAllowUploads(chatflow)
             return res.json(obj)
         })
 
@@ -1255,16 +1253,30 @@ export class App {
     }
 
     private uploadAllowedNodes = ['OpenAIVisionChain']
-    private shouldAllowUploads(result: ChatFlow): boolean {
+    private shouldAllowUploads(result: ChatFlow): any {
         const flowObj = JSON.parse(result.flowData)
         let allowUploads = false
+        let allowedTypes: string[] = []
+        let maxUploadSize: number = -1
         flowObj.nodes.forEach((node: IReactFlowNode) => {
             if (this.uploadAllowedNodes.indexOf(node.data.type) > -1) {
                 logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
                 allowUploads = true
+                node.data.inputParams.map((param: any) => {
+                    if (param.name === 'allowedUploadTypes') {
+                        allowedTypes = param.default.split(';')
+                    }
+                    if (param.name === 'maxUploadSize') {
+                        maxUploadSize = parseInt(param.default ? param.default : '0')
+                    }
+                })
             }
         })
-        return allowUploads
+        return {
+            allowUploads,
+            allowedTypes,
+            maxUploadSize
+        }
     }
 
     /**
@@ -1390,6 +1402,23 @@ export class App {
             if (!isInternal) {
                 const isKeyValidated = await this.validateKey(req, chatflow)
                 if (!isKeyValidated) return res.status(401).send('Unauthorized')
+            }
+
+            if (incomingInput.uploads) {
+                // @ts-ignore
+                ;(incomingInput.uploads as any[]).forEach((url: any) => {
+                    if (url.type === 'file') {
+                        const filename = url.name
+                        const bf = url.data
+                        const filePath = path.join(getUserHome(), '.flowise', 'gptvision', filename)
+                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'gptvision'))) {
+                            fs.mkdirSync(path.dirname(filePath), { recursive: true })
+                        }
+                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
+                        fs.unlinkSync(filePath)
+                        url.data = bf.toString('base64')
+                    }
+                })
             }
 
             let isStreamValid = false
@@ -1534,6 +1563,7 @@ export class App {
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      uploads: incomingInput.uploads,
                       chatHistory: incomingInput.history,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId,
@@ -1544,6 +1574,7 @@ export class App {
                       chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      uploads: incomingInput.uploads,
                       chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
@@ -1567,7 +1598,8 @@ export class App {
                 chatId,
                 memoryType,
                 sessionId,
-                createdDate: userMessageDateTime
+                createdDate: userMessageDateTime,
+                fileUploads: incomingInput.uploads ? JSON.stringify(incomingInput.uploads) : ''
             }
             await this.addChatMessage(userMessage)
 

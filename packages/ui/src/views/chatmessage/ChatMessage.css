@@ -144,3 +144,32 @@
     justify-content: center;
     align-items: center;
 }
+
+.file-drop-field {
+    position: relative; /* Needed to position the icon correctly */
+    /* Other styling for the field */
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(137, 134, 134, 0.83); /* Semi-transparent white */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10; /* Ensure it's above other content */
+    border: 2px dashed #0094ff; /* Example style */
+}
+
+.preview-container {
+
+}
+
+.button {
+    flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
+    margin: 5px; /* Adjust as needed for spacing between buttons */
+}

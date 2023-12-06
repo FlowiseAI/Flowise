@@ -79,6 +79,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
             messages: []
         }
         if (this.openAIModel.maxTokens) vRequest.max_tokens = this.openAIModel.maxTokens
+        else vRequest.max_tokens = 1024
 
         const userRole: any = { role: 'user' }
         userRole.content = []

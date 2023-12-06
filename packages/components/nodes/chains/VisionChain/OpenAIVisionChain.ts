@@ -12,6 +12,7 @@ class OpenAIVisionChain_Chains implements INode {
     version: number
     type: string
     icon: string
+    badge: string
     category: string
     baseClasses: string[]
     description: string
@@ -21,10 +22,11 @@ class OpenAIVisionChain_Chains implements INode {
     constructor() {
         this.label = 'Open AI Vision Chain'
         this.name = 'openAIVisionChain'
-        this.version = 3.0
+        this.version = 1.0
         this.type = 'OpenAIVisionChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
+        this.badge = 'EXPERIMENTAL'
         this.description = 'Chain to run queries against OpenAI (GPT-4) Vision .'
         this.baseClasses = [this.type, ...getBaseClasses(VLLMChain)]
         this.inputs = [
@@ -63,6 +65,20 @@ class OpenAIVisionChain_Chains implements INode {
                 type: 'string',
                 placeholder: 'Name Your Chain',
                 optional: true
+            },
+            {
+                label: 'Accepted Upload Types',
+                name: 'allowedUploadTypes',
+                type: 'string',
+                default: 'image/gif;image/jpeg;image/png;image/webp',
+                hidden: true
+            },
+            {
+                label: 'Maximum Upload Size (MB)',
+                name: 'maxUploadSize',
+                type: 'number',
+                default: '5',
+                hidden: true
             }
         ]
         this.outputs = [
@@ -93,7 +109,7 @@ class OpenAIVisionChain_Chains implements INode {
             openAIApiKey: openAIModel.openAIApiKey,
             imageResolution: imageResolution,
             verbose: process.env.DEBUG === 'true',
-            imageUrls: options.url,
+            imageUrls: options.uploads,
             openAIModel: openAIModel
         }
         if (output === this.name) {
@@ -156,8 +172,8 @@ const runPrediction = async (
      * TO: { "value": "hello i am ben\n\n\thow are you?" }
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
-    if (options?.url) {
-        chain.imageUrls = options.url
+    if (options?.uploads) {
+        chain.imageUrls = options.uploads
     }
     if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []

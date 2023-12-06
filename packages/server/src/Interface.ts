@@ -31,6 +31,7 @@ export interface IChatMessage {
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
+    fileUploads?: string
     chatType: string
     chatId: string
     memoryType?: string
@@ -167,6 +168,7 @@ export interface IncomingInput {
     socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
+    uploads?: string
 }
 
 export interface IActiveChatflows {

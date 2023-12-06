@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
@@ -9,9 +9,23 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
 
-import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip, Button } from '@mui/material'
+import {
+    Box,
+    Button,
+    Card,
+    CardActions,
+    CardMedia,
+    Chip,
+    CircularProgress,
+    Divider,
+    Grid,
+    IconButton,
+    InputAdornment,
+    OutlinedInput,
+    Typography
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconSend, IconDownload } from '@tabler/icons'
+import { IconDownload, IconSend, IconUpload } from '@tabler/icons'
 
 // project import
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
@@ -33,6 +47,7 @@ import { baseURL, maxScroll } from 'store/constant'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -57,6 +72,185 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
+
+    const fileUploadRef = useRef(null)
+    const getAllowChatFlowUploads = useApi(chatflowsApi.getAllowChatflowUploads)
+    const [isChatFlowAvailableForUploads, setIsChatFlowAvailableForUploads] = useState(false)
+    const [previews, setPreviews] = useState([])
+    const [isDragOver, setIsDragOver] = useState(false)
+    const handleDragOver = (e) => {
+        if (!isChatFlowAvailableForUploads) {
+            return
+        }
+        e.preventDefault()
+    }
+    const isFileAllowedForUpload = (file) => {
+        // check if file type is allowed
+        if (getAllowChatFlowUploads.data?.allowedTypes?.length > 0) {
+            const allowedFileTypes = getAllowChatFlowUploads.data?.allowedTypes
+            if (!allowedFileTypes.includes(file.type)) {
+                alert(`File ${file.name} is not allowed.\nAllowed file types are ${allowedFileTypes.join(', ')}.`)
+                return false
+            }
+        }
+        // check if file size is allowed
+        if (getAllowChatFlowUploads.data?.maxUploadSize > 0) {
+            const sizeInMB = file.size / 1024 / 1024
+            if (sizeInMB > getAllowChatFlowUploads.data?.maxUploadSize) {
+                alert(`File ${file.name} is too large.\nMaximum allowed size is ${getAllowChatFlowUploads.data?.maxUploadSize} MB.`)
+                return false
+            }
+        }
+        return true
+    }
+    const handleDrop = async (e) => {
+        if (!isChatFlowAvailableForUploads) {
+            return
+        }
+        e.preventDefault()
+        setIsDragOver(false)
+        let files = []
+        if (e.dataTransfer.files.length > 0) {
+            for (const file of e.dataTransfer.files) {
+                if (isFileAllowedForUpload(file) === false) {
+                    return
+                }
+                const reader = new FileReader()
+                const { name } = file
+                files.push(
+                    new Promise((resolve) => {
+                        reader.onload = (evt) => {
+                            if (!evt?.target?.result) {
+                                return
+                            }
+                            const { result } = evt.target
+                            resolve({
+                                data: result,
+                                preview: URL.createObjectURL(file),
+                                type: 'file',
+                                name: name
+                            })
+                        }
+                        reader.readAsDataURL(file)
+                    })
+                )
+            }
+
+            const newFiles = await Promise.all(files)
+            setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        }
+        if (e.dataTransfer.items) {
+            const newUploads = []
+            for (const item of e.dataTransfer.items) {
+                if (item.kind === 'string' && item.type.match('^text/uri-list')) {
+                    item.getAsString((s) => {
+                        let upload = {
+                            data: s,
+                            preview: s,
+                            type: 'url',
+                            name: s.substring(s.lastIndexOf('/') + 1)
+                        }
+                        setPreviews((prevPreviews) => [...prevPreviews, upload])
+                    })
+                } else if (item.kind === 'string' && item.type.match('^text/html')) {
+                    item.getAsString((s) => {
+                        if (s.indexOf('href') === -1) return
+                        //extract href
+                        let start = s.substring(s.indexOf('href') + 6)
+                        let hrefStr = start.substring(0, start.indexOf('"'))
+
+                        let upload = {
+                            data: hrefStr,
+                            preview: hrefStr,
+                            type: 'url',
+                            name: hrefStr.substring(hrefStr.lastIndexOf('/') + 1)
+                        }
+                        setPreviews((prevPreviews) => [...prevPreviews, upload])
+                    })
+                }
+            }
+        }
+    }
+    const handleFileChange = async (event) => {
+        const fileObj = event.target.files && event.target.files[0]
+        if (!fileObj) {
+            return
+        }
+        let files = []
+        for (const file of event.target.files) {
+            if (isFileAllowedForUpload(file) === false) {
+                return
+            }
+            const reader = new FileReader()
+            const { name } = file
+            files.push(
+                new Promise((resolve) => {
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) {
+                            return
+                        }
+                        const { result } = evt.target
+                        resolve({
+                            data: result,
+                            preview: URL.createObjectURL(file),
+                            type: 'file',
+                            name: name
+                        })
+                    }
+                    reader.readAsDataURL(file)
+                })
+            )
+        }
+
+        const newFiles = await Promise.all(files)
+        setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        // 👇️ reset file input
+        event.target.value = null
+    }
+
+    const handleDragEnter = (e) => {
+        if (isChatFlowAvailableForUploads) {
+            e.preventDefault()
+            setIsDragOver(true)
+        }
+    }
+
+    const handleDragLeave = (e) => {
+        if (isChatFlowAvailableForUploads) {
+            e.preventDefault()
+            if (e.originalEvent?.pageX !== 0 || e.originalEvent?.pageY !== 0) {
+                return false
+            }
+            setIsDragOver(false) // Set the drag over state to false when the drag leaves
+        }
+    }
+    const handleDeletePreview = (itemToDelete) => {
+        if (itemToDelete.type === 'file') {
+            URL.revokeObjectURL(itemToDelete.preview) // Clean up for file
+        }
+        setPreviews(previews.filter((item) => item !== itemToDelete))
+    }
+    const handleUploadClick = () => {
+        // 👇️ open file input box on click of another element
+        fileUploadRef.current.click()
+    }
+
+    const previewStyle = {
+        width: '64px',
+        height: '64px',
+        objectFit: 'cover' // This makes the image cover the area, cropping it if necessary
+    }
+    const messageImageStyle = {
+        width: '128px',
+        height: '128px',
+        objectFit: 'cover' // This makes the image cover the area, cropping it if necessary
+    }
+
+    const clearPreviews = () => {
+        // Revoke the data uris to avoid memory leaks
+        previews.forEach((file) => URL.revokeObjectURL(file.preview))
+        setPreviews([])
+    }
 
     const onSourceDialogClick = (data, title) => {
         setSourceDialogProps({ data, title })
@@ -113,7 +307,16 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
 
         setLoading(true)
-        setMessages((prevMessages) => [...prevMessages, { message: userInput, type: 'userMessage' }])
+        const urls = []
+        previews.map((item) => {
+            urls.push({
+                data: item.data,
+                type: item.type,
+                name: item.name
+            })
+        })
+        clearPreviews()
+        setMessages((prevMessages) => [...prevMessages, { message: userInput, type: 'userMessage', fileUploads: urls }])
 
         // Send user question and history to API
         try {
@@ -122,6 +325,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
+            if (urls) params.uploads = urls
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
@@ -209,6 +413,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
+                if (message.fileUploads) obj.fileUploads = JSON.parse(message.fileUploads)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -226,6 +431,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getIsChatflowStreamingApi.data])
+
+    // Get chatflow uploads capability
+    useEffect(() => {
+        if (getAllowChatFlowUploads.data) {
+            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.allowUploads ?? false)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAllowChatFlowUploads.data])
 
     // Auto scroll chat to bottom
     useEffect(() => {
@@ -245,6 +458,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (open && chatflowid) {
             getChatmessageApi.request(chatflowid)
             getIsChatflowStreamingApi.request(chatflowid)
+            getAllowChatFlowUploads.request(chatflowid)
             scrollToBottom()
 
             socket = socketIOClient(baseURL)
@@ -281,9 +495,22 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }, [open, chatflowid])
 
     return (
-        <>
-            <div className={isDialog ? 'cloud-dialog' : 'cloud'}>
-                <div ref={ps} className='messagelist'>
+        <div
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`file-drop-field`}
+        >
+            {isDragOver && (
+                <Box className='drop-overlay'>
+                    <Typography variant='h2'>Drop here to upload</Typography>
+                    <Typography variant='subtitle1'>{getAllowChatFlowUploads.data?.allowedTypes?.join(', ')}</Typography>
+                    <Typography variant='subtitle1'>Max Allowed Size: {getAllowChatFlowUploads.data?.maxUploadSize} MB</Typography>
+                </Box>
+            )}
+            <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
+                <div ref={ps} className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
                             return (
@@ -375,6 +602,20 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                     })}
                                                 </div>
                                             )}
+                                            {message.fileUploads &&
+                                                message.fileUploads.map((item, index) => {
+                                                    return (
+                                                        <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
+                                                            <CardMedia
+                                                                component='img'
+                                                                image={item.data}
+                                                                sx={{ height: 64 }}
+                                                                alt={'preview'}
+                                                                style={messageImageStyle}
+                                                            />
+                                                        </Card>
+                                                    )
+                                                })}
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                     {removeDuplicateURL(message).map((source, index) => {
@@ -430,6 +671,22 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             onChange={onChange}
                             multiline={true}
                             maxRows={isDialog ? 7 : 2}
+                            startAdornment={
+                                isChatFlowAvailableForUploads && (
+                                    <InputAdornment position='start' sx={{ padding: '15px' }}>
+                                        <IconButton
+                                            onClick={handleUploadClick}
+                                            type='button'
+                                            disabled={loading || !chatflowid}
+                                            edge='start'
+                                        >
+                                            <IconUpload
+                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
                             endAdornment={
                                 <InputAdornment position='end' sx={{ padding: '15px' }}>
                                     <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
@@ -447,11 +704,39 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                 </InputAdornment>
                             }
                         />
+                        {isChatFlowAvailableForUploads && (
+                            <input style={{ display: 'none' }} ref={fileUploadRef} type='file' onChange={handleFileChange} />
+                        )}
                     </form>
                 </div>
             </div>
+            {previews && previews.length > 0 && (
+                <Grid className='preview-container' container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
+                    {previews.map((item, index) => (
+                        <Grid item xs={12} sm={6} md={3} key={index}>
+                            <Card variant='outlined' sx={{ maxWidth: 64 }}>
+                                <CardMedia
+                                    component='img'
+                                    image={item.preview}
+                                    sx={{ height: 64 }}
+                                    alt={`preview ${index}`}
+                                    style={previewStyle}
+                                />
+                                <CardActions className='center' sx={{ padding: 0, margin: 0 }}>
+                                    <Button
+                                        startIcon={<DeleteIcon />}
+                                        onClick={() => handleDeletePreview(item)}
+                                        size='small'
+                                        variant='text'
+                                    />
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
-        </>
+        </div>
     )
 }
 
