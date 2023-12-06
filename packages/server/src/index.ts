@@ -1077,7 +1077,7 @@ export class App {
                 headers['x-api-key'] = decryptedCredentialData.langsmithApiKey
 
                 const tags = req.body.tags ? `tags=${req.body.tags}` : ''
-                const url = `https://web.hub.langchain.com/repos/?${tags}offset=0&limit=20&has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
+                const url = `https://web.hub.langchain.com/repos/?${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
                 axios.get(url, headers).then((response) => {
                     if (response.data.repos) {
                         return res.json({ status: 'OK', repos: response.data.repos })

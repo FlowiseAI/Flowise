@@ -181,7 +181,6 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
             }
         }
         setSelectedPrompt(prompt)
-        await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     const fetchPrompts = async () => {
@@ -201,7 +200,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         })
         if (createResp.data) {
             setAvailablePrompNameList(createResp.data.repos)
-            if (createResp.data.repos?.length) handleListItemClick(0, createResp.data.repos)
+            if (createResp.data.repos?.length) await handleListItemClick(0, createResp.data.repos)
         }
     }
 
