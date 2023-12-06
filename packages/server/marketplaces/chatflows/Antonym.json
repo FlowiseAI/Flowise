@@ -13,8 +13,8 @@
             "data": {
                 "id": "fewShotPromptTemplate_1",
                 "label": "Few Shot Prompt Template",
-                "name": "fewShotPromptTemplate",
                 "version": 1,
+                "name": "fewShotPromptTemplate",
                 "type": "FewShotPromptTemplate",
                 "baseClasses": ["FewShotPromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
@@ -45,7 +45,7 @@
                         "id": "fewShotPromptTemplate_1-input-suffix-string"
                     },
                     {
-                        "label": "Example Seperator",
+                        "label": "Example Separator",
                         "name": "exampleSeparator",
                         "type": "string",
                         "placeholder": "\n\n",
@@ -115,8 +115,8 @@
             "data": {
                 "id": "promptTemplate_0",
                 "label": "Prompt Template",
-                "name": "promptTemplate",
                 "version": 1,
+                "name": "promptTemplate",
                 "type": "PromptTemplate",
                 "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
@@ -165,18 +165,18 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 1226.7977900193628,
-                "y": 48.01100655894436
+                "y": -22.01100655894436
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 2,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -286,9 +286,25 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -297,7 +313,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -313,26 +330,26 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 1226.7977900193628,
-                "y": 48.01100655894436
+                "y": -22.01100655894436
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 405,
+            "height": 456,
             "id": "llmChain_0",
             "position": {
-                "x": 1573.7490072386481,
-                "y": 429.1905949837192
+                "x": 1609.3428158423485,
+                "y": 409.3763727612179
             },
             "type": "customNode",
             "data": {
                 "id": "llmChain_0",
                 "label": "LLM Chain",
+                "version": 3,
                 "name": "llmChain",
-                "version": 1,
                 "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain"],
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
                 "category": "Chains",
                 "description": "Chain to run queries against LLMs",
                 "inputParams": [
@@ -357,11 +374,19 @@
                         "name": "prompt",
                         "type": "BasePromptTemplate",
                         "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
                     }
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "prompt": "{{fewShotPromptTemplate_1.data.instance}}",
+                    "outputParser": "",
                     "chainName": ""
                 },
                 "outputAnchors": [
@@ -371,10 +396,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain",
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
                                 "name": "llmChain",
                                 "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain"
+                                "type": "LLMChain | BaseChain | Runnable"
                             },
                             {
                                 "id": "llmChain_0-output-outputPrediction-string|json",
@@ -393,8 +418,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1573.7490072386481,
-                "y": 429.1905949837192
+                "x": 1609.3428158423485,
+                "y": 409.3763727612179
             },
             "dragging": false
         }

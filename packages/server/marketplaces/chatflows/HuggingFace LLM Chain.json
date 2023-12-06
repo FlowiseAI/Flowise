@@ -3,87 +3,6 @@
     "nodes": [
         {
             "width": 300,
-            "height": 405,
-            "id": "llmChain_1",
-            "position": {
-                "x": 970.9254258940236,
-                "y": 320.56761595884564
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_1",
-                "label": "LLM Chain",
-                "name": "llmChain",
-                "version": 1,
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "BaseLangChain"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_1-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_1-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{huggingFaceInference_LLMs_0.data.instance}}",
-                    "prompt": "{{promptTemplate_0.data.instance}}",
-                    "chainName": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|BaseLangChain",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | BaseLangChain"
-                            },
-                            {
-                                "id": "llmChain_1-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "llmChain"
-                },
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 970.9254258940236,
-                "y": 320.56761595884564
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 475,
             "id": "promptTemplate_0",
             "position": {
@@ -94,8 +13,8 @@
             "data": {
                 "id": "promptTemplate_0",
                 "label": "Prompt Template",
-                "name": "promptTemplate",
                 "version": 1,
+                "name": "promptTemplate",
                 "type": "PromptTemplate",
                 "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate"],
                 "category": "Prompts",
@@ -144,18 +63,18 @@
         },
         {
             "width": 300,
-            "height": 526,
+            "height": 577,
             "id": "huggingFaceInference_LLMs_0",
             "position": {
                 "x": 498.8594464193537,
-                "y": -44.91050256311678
+                "y": -94.91050256311678
             },
             "type": "customNode",
             "data": {
                 "id": "huggingFaceInference_LLMs_0",
                 "label": "HuggingFace Inference",
+                "version": 2,
                 "name": "huggingFaceInference_LLMs",
-                "version": 1,
                 "type": "HuggingFaceInference",
                 "baseClasses": ["HuggingFaceInference", "LLM", "BaseLLM", "BaseLanguageModel"],
                 "category": "LLMs",
@@ -232,7 +151,15 @@
                         "id": "huggingFaceInference_LLMs_0-input-frequencyPenalty-number"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "huggingFaceInference_LLMs_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "model": "tiiuae/falcon-7b-instruct",
                     "endpoint": "",
@@ -256,30 +183,119 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 498.8594464193537,
-                "y": -44.91050256311678
+                "y": -94.91050256311678
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_0",
+            "position": {
+                "x": 909.6249320819859,
+                "y": 338.9520801783737
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{huggingFaceInference_LLMs_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 909.6249320819859,
+                "y": 338.9520801783737
             },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "promptTemplate_0",
-            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
-            "target": "llmChain_1",
-            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "source": "huggingFaceInference_LLMs_0",
+            "sourceHandle": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "id": "huggingFaceInference_LLMs_0-huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "huggingFaceInference_LLMs_0",
-            "sourceHandle": "huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel",
-            "target": "llmChain_1",
-            "targetHandle": "llmChain_1-input-model-BaseLanguageModel",
+            "source": "promptTemplate_0",
+            "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "huggingFaceInference_LLMs_0-huggingFaceInference_LLMs_0-output-huggingFaceInference_LLMs-HuggingFaceInference|LLM|BaseLLM|BaseLanguageModel-llmChain_1-llmChain_1-input-model-BaseLanguageModel",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }

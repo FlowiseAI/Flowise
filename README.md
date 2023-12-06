@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [中文](<./README-ZH.md>)
+English | [中文](./README-ZH.md)
 
 <h3>Drag & drop UI to build your customized LLM flow</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -153,6 +153,10 @@ Flowise support different environment variables to configure your instance. You 
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
+### [Elestio](https://elest.io/open-source/flowiseai)
+
+[![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+
 ### [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
 <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
@@ -186,4 +190,4 @@ See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://
 
 ## 📄 License
 
-Source code in this repository is made available under the [MIT License](LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).

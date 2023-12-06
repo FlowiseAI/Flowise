@@ -1,5 +1,6 @@
 {
     "description": "Basic example of Conversation Chain with built-in memory - works exactly like ChatGPT",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,
@@ -64,14 +65,14 @@
             "id": "chatOpenAI_0",
             "position": {
                 "x": 754.8942497823595,
-                "y": -70.76607584232393
+                "y": -140
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 1,
+                "version": 2,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -181,9 +182,25 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -192,7 +209,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -208,7 +226,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 754.8942497823595,
-                "y": -70.76607584232393
+                "y": -140
             },
             "dragging": false
         },

@@ -13,8 +13,8 @@
             "data": {
                 "id": "autoGPT_0",
                 "label": "AutoGPT",
-                "name": "autoGPT",
                 "version": 1,
+                "name": "autoGPT",
                 "type": "AutoGPT",
                 "baseClasses": ["AutoGPT"],
                 "category": "Agents",
@@ -69,7 +69,7 @@
                 "inputs": {
                     "tools": ["{{readFile_0.data.instance}}", "{{writeFile_1.data.instance}}", "{{serpAPI_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeExistingIndex_0.data.instance}}",
+                    "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
                     "aiName": "",
                     "aiRole": "",
                     "maxLoop": 5
@@ -104,8 +104,8 @@
             "data": {
                 "id": "writeFile_1",
                 "label": "Write File",
-                "name": "writeFile",
                 "version": 1,
+                "name": "writeFile",
                 "type": "WriteFile",
                 "baseClasses": ["WriteFile", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -154,8 +154,8 @@
             "data": {
                 "id": "readFile_0",
                 "label": "Read File",
-                "name": "readFile",
                 "version": 1,
+                "name": "readFile",
                 "type": "ReadFile",
                 "baseClasses": ["ReadFile", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -204,8 +204,8 @@
             "data": {
                 "id": "serpAPI_0",
                 "label": "Serp API",
-                "name": "serpAPI",
                 "version": 1,
+                "name": "serpAPI",
                 "type": "SerpAPI",
                 "baseClasses": ["SerpAPI", "Tool", "StructuredTool"],
                 "category": "Tools",
@@ -241,7 +241,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 176.69787776192283,
@@ -251,8 +251,8 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 2,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -362,9 +362,25 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -373,7 +389,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -405,8 +422,8 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
                 "version": 1,
+                "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
@@ -479,35 +496,35 @@
         },
         {
             "width": 300,
-            "height": 505,
-            "id": "pineconeExistingIndex_0",
+            "height": 555,
+            "id": "pinecone_0",
             "position": {
-                "x": 1001.3784758268554,
-                "y": 415.24072209485803
+                "x": 1061.413729190394,
+                "y": 387.9611693492896
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeExistingIndex_0",
-                "label": "Pinecone Load Existing Index",
-                "name": "pineconeExistingIndex",
+                "id": "pinecone_0",
+                "label": "Pinecone",
                 "version": 1,
+                "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
                         "credentialNames": ["pineconeApi"],
-                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                        "id": "pinecone_0-input-credential-credential"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                        "id": "pinecone_0-input-pineconeIndex-string"
                     },
                     {
                         "label": "Pinecone Namespace",
@@ -516,7 +533,7 @@
                         "placeholder": "my-first-namespace",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
+                        "id": "pinecone_0-input-pineconeNamespace-string"
                     },
                     {
                         "label": "Pinecone Metadata Filter",
@@ -524,7 +541,7 @@
                         "type": "json",
                         "optional": true,
                         "additionalParams": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                        "id": "pinecone_0-input-pineconeMetadataFilter-json"
                     },
                     {
                         "label": "Top K",
@@ -534,18 +551,27 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-topK-number"
+                        "id": "pinecone_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
                     {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-document-Document"
+                    },
+                    {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                        "id": "pinecone_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
+                    "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
@@ -559,13 +585,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -580,11 +606,11 @@
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 1001.3784758268554,
-                "y": 415.24072209485803
-            }
+                "x": 1061.413729190394,
+                "y": 387.9611693492896
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -611,28 +637,6 @@
             }
         },
         {
-            "source": "pineconeExistingIndex_0",
-            "sourceHandle": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-            "target": "autoGPT_0",
-            "targetHandle": "autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
-            "type": "buttonedge",
-            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-autoGPT_0-autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeExistingIndex_0",
-            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "autoGPT_0",
@@ -650,6 +654,28 @@
             "targetHandle": "autoGPT_0-input-tools-Tool",
             "type": "buttonedge",
             "id": "serpAPI_0-serpAPI_0-output-serpAPI-SerpAPI|Tool|StructuredTool-autoGPT_0-autoGPT_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pinecone_0",
+            "targetHandle": "pinecone_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pinecone_0-pinecone_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pinecone_0",
+            "sourceHandle": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "target": "autoGPT_0",
+            "targetHandle": "autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "pinecone_0-pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-autoGPT_0-autoGPT_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

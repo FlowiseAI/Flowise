@@ -1,5 +1,5 @@
 {
-    "description": "Use Anthropic Claude with 100k context window to ingest whole document for QnA",
+    "description": "Use Anthropic Claude with 200k context window to ingest whole document for QnA",
     "nodes": [
         {
             "width": 300,
@@ -141,14 +141,14 @@
             "id": "chatAnthropic_0",
             "position": {
                 "x": 800.5525382783799,
-                "y": -76.7988221837009
+                "y": -130.7988221837009
             },
             "type": "customNode",
             "data": {
                 "id": "chatAnthropic_0",
                 "label": "ChatAnthropic",
                 "name": "chatAnthropic",
-                "version": 1,
+                "version": 3,
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -170,6 +170,11 @@
                                 "label": "claude-2",
                                 "name": "claude-2",
                                 "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
+                            },
+                            {
+                                "label": "claude-2.1",
+                                "name": "claude-2.1",
+                                "description": "Claude 2 latest full version"
                             },
                             {
                                 "label": "claude-instant-1",
@@ -258,9 +263,17 @@
                         "id": "chatAnthropic_0-input-topK-number"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "claude-2",
+                    "modelName": "claude-2.1",
                     "temperature": 0.9,
                     "maxTokensToSample": "",
                     "topP": "",
@@ -280,7 +293,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 800.5525382783799,
-                "y": -76.7988221837009
+                "y": -130.7988221837009
             },
             "dragging": false
         },

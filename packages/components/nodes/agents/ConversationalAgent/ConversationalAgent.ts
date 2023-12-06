@@ -3,8 +3,9 @@ import { initializeAgentExecutorWithOptions, AgentExecutor, InitializeAgentExecu
 import { Tool } from 'langchain/tools'
 import { BaseChatMemory } from 'langchain/memory'
 import { getBaseClasses, mapChatHistory } from '../../../src/utils'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseChatModel } from 'langchain/chat_models/base'
 import { flatten } from 'lodash'
+import { additionalCallbacks } from '../../../src/handler'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -28,7 +29,7 @@ class ConversationalAgent_Agents implements INode {
     constructor() {
         this.label = 'Conversational Agent'
         this.name = 'conversationalAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -44,7 +45,7 @@ class ConversationalAgent_Agents implements INode {
             {
                 label: 'Language Model',
                 name: 'model',
-                type: 'BaseLanguageModel'
+                type: 'BaseChatModel'
             },
             {
                 label: 'Memory',
@@ -64,7 +65,7 @@ class ConversationalAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as BaseLanguageModel
+        const model = nodeData.inputs?.model as BaseChatModel
         let tools = nodeData.inputs?.tools as Tool[]
         tools = flatten(tools)
         const memory = nodeData.inputs?.memory as BaseChatMemory
@@ -92,12 +93,19 @@ class ConversationalAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as BaseChatMemory
 
         if (options && options.chatHistory) {
-            memory.chatHistory = mapChatHistory(options)
-            executor.memory = memory
+            const chatHistoryClassName = memory.chatHistory.constructor.name
+            // Only replace when its In-Memory
+            if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {
+                memory.chatHistory = mapChatHistory(options)
+                executor.memory = memory
+            }
         }
 
-        const result = await executor.call({ input })
+        ;(executor.memory as any).returnMessages = true // Return true for BaseChatModel
 
+        const callbacks = await additionalCallbacks(nodeData, options)
+
+        const result = await executor.call({ input }, [...callbacks])
         return result?.output
     }
 }

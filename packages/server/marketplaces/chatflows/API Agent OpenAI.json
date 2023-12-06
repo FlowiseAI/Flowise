@@ -3,7 +3,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 510,
+            "height": 491,
             "id": "openApiChain_1",
             "position": {
                 "x": 1203.1825726424859,
@@ -13,8 +13,8 @@
             "data": {
                 "id": "openApiChain_1",
                 "label": "OpenAPI Chain",
-                "name": "openApiChain",
                 "version": 1,
+                "name": "openApiChain",
                 "type": "OpenAPIChain",
                 "baseClasses": ["OpenAPIChain", "BaseChain"],
                 "category": "Chains",
@@ -78,7 +78,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 792.3201947594027,
@@ -88,8 +88,8 @@
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
+                "version": 2,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -199,9 +199,25 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -210,7 +226,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -242,8 +259,8 @@
             "data": {
                 "id": "chainTool_0",
                 "label": "Chain Tool",
-                "name": "chainTool",
                 "version": 1,
+                "name": "chainTool",
                 "type": "ChainTool",
                 "baseClasses": ["ChainTool", "DynamicTool", "Tool", "StructuredTool"],
                 "category": "Tools",
@@ -317,7 +334,7 @@
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
                 "name": "openAIFunctionAgent",
-                "version": 1,
+                "version": 3,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -348,9 +365,8 @@
                         "id": "openAIFunctionAgent_0-input-memory-BaseChatMemory"
                     },
                     {
-                        "label": "OpenAI Chat Model",
+                        "label": "OpenAI/Azure Chat Model",
                         "name": "model",
-                        "description": "Only works with gpt-3.5-turbo-0613 and gpt-4-0613. Refer <a target=\"_blank\" href=\"https://platform.openai.com/docs/guides/gpt/function-calling\">docs</a> for more info",
                         "type": "BaseChatModel",
                         "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
                     }
@@ -381,7 +397,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_2",
             "position": {
                 "x": 1645.450699499575,
@@ -391,8 +407,8 @@
             "data": {
                 "id": "chatOpenAI_2",
                 "label": "ChatOpenAI",
+                "version": 2,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -502,9 +518,25 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_2-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_2-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -513,7 +545,8 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -545,8 +578,8 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "name": "bufferMemory",
                 "version": 1,
+                "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
@@ -625,23 +658,23 @@
             }
         },
         {
-            "source": "chatOpenAI_2",
-            "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "bufferMemory_0",
             "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
             "target": "openAIFunctionAgent_0",
             "targetHandle": "openAIFunctionAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
             "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIFunctionAgent_0-openAIFunctionAgent_0-input-memory-BaseChatMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_2",
+            "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "openAIFunctionAgent_0",
+            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }

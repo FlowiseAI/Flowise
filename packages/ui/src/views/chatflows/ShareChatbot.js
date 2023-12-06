@@ -57,6 +57,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
     const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false)
     const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false)
 
+    const [title, setTitle] = useState(chatbotConfig?.title ?? '')
+    const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '')
+
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
@@ -108,6 +111,8 @@ const ShareChatbot = ({ isSessionMemory }) => {
             textInput: {},
             overrideConfig: {}
         }
+        if (title) obj.title = title
+        if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc
         if (welcomeMessage) obj.welcomeMessage = welcomeMessage
         if (backgroundColor) obj.backgroundColor = backgroundColor
         if (fontSize) obj.fontSize = fontSize
@@ -252,6 +257,12 @@ const ShareChatbot = ({ isSessionMemory }) => {
 
     const onTextChanged = (value, fieldName) => {
         switch (fieldName) {
+            case 'title':
+                setTitle(value)
+                break
+            case 'titleAvatarSrc':
+                setTitleAvatarSrc(value)
+                break
             case 'welcomeMessage':
                 setWelcomeMessage(value)
                 break
@@ -395,6 +406,14 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     />
                 </div>
             </Stack>
+            {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
+            {textField(
+                titleAvatarSrc,
+                'titleAvatarSrc',
+                'Title Avatar Link',
+                'string',
+                `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
+            )}
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
             {textField(fontSize, 'fontSize', 'Font Size', 'number')}

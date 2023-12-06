@@ -1,206 +1,14 @@
 {
     "description": "Use chat history to rephrase user question, and answer the rephrased question using retrieved docs from vector store",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,
-            "height": 503,
-            "id": "pineconeExistingIndex_0",
-            "position": {
-                "x": 1062.7418678410986,
-                "y": -109.27680365777141
-            },
-            "type": "customNode",
-            "data": {
-                "id": "pineconeExistingIndex_0",
-                "label": "Pinecone Load Existing Index",
-                "version": 1,
-                "name": "pineconeExistingIndex",
-                "type": "Pinecone",
-                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
-                "category": "Vector Stores",
-                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["pineconeApi"],
-                        "id": "pineconeExistingIndex_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
-                        "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
-                    },
-                    {
-                        "label": "Pinecone Namespace",
-                        "name": "pineconeNamespace",
-                        "type": "string",
-                        "placeholder": "my-first-namespace",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Pinecone Metadata Filter",
-                        "name": "pineconeMetadataFilter",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
-                    },
-                    {
-                        "label": "Top K",
-                        "name": "topK",
-                        "description": "Number of top results to fetch. Default to 4",
-                        "placeholder": "4",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pineconeExistingIndex_0-input-topK-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
-                    }
-                ],
-                "inputs": {
-                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
-                    "pineconeIndex": "newindex",
-                    "pineconeNamespace": "",
-                    "pineconeMetadataFilter": "{}",
-                    "topK": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
-                                "name": "retriever",
-                                "label": "Pinecone Retriever",
-                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
-                            },
-                            {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
-                                "name": "vectorStore",
-                                "label": "Pinecone Vector Store",
-                                "type": "Pinecone | VectorStore"
-                            }
-                        ],
-                        "default": "retriever"
-                    }
-                ],
-                "outputs": {
-                    "output": "vectorStore"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1062.7418678410986,
-                "y": -109.27680365777141
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 327,
-            "id": "openAIEmbeddings_0",
-            "position": {
-                "x": 711.3971966563331,
-                "y": 7.7184225021727
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIEmbeddings_0",
-                "label": "OpenAI Embeddings",
-                "version": 1,
-                "name": "openAIEmbeddings",
-                "type": "OpenAIEmbeddings",
-                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
-                "category": "Embeddings",
-                "description": "OpenAI API to generate embeddings for a given text",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["openAIApi"],
-                        "id": "openAIEmbeddings_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Strip New Lines",
-                        "name": "stripNewLines",
-                        "type": "boolean",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
-                    },
-                    {
-                        "label": "Batch Size",
-                        "name": "batchSize",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_0-input-batchSize-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_0-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIEmbeddings_0-input-basepath-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "stripNewLines": "",
-                    "batchSize": "",
-                    "timeout": "",
-                    "basepath": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-                        "name": "openAIEmbeddings",
-                        "label": "OpenAIEmbeddings",
-                        "type": "OpenAIEmbeddings | Embeddings"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 711.3971966563331,
-                "y": 7.7184225021727
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 473,
+            "height": 475,
             "id": "promptTemplate_0",
             "position": {
-                "x": 348.2881107399286,
-                "y": -97.74510214137423
+                "x": 344.73370692733414,
+                "y": -122.34815000085804
             },
             "type": "customNode",
             "data": {
@@ -249,24 +57,357 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 348.2881107399286,
-                "y": -97.74510214137423
+                "x": 344.73370692733414,
+                "y": -122.34815000085804
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 522,
+            "height": 652,
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 2290.8365353040026,
+                "y": -168.49082887954518
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 1,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "Using the provided context, answer the user's question to the best of your ability using the resources provided. If there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n\nAnything between the following \\`context\\`  html blocks is retrieved from a knowledge bank, not part of the conversation with the user.\n\n<context>\n    {context}\n<context/>\n\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer. Anything between the preceding 'context' html blocks is retrieved from a knowledge bank, not part of the conversation with the user.",
+                    "humanMessagePrompt": "{text}",
+                    "promptValues": "{\"context\":\"{{vectorStoreToDocument_0.data.instance}}\",\"text\":\"{{question}}\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2290.8365353040026,
+                "y": -168.49082887954518
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 454,
+            "id": "vectorStoreToDocument_0",
+            "position": {
+                "x": 1906.6871314089658,
+                "y": -157.0046189166955
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectorStoreToDocument_0",
+                "label": "VectorStore To Document",
+                "version": 2,
+                "name": "vectorStoreToDocument",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Search documents with scores from vector store",
+                "inputParams": [
+                    {
+                        "label": "Query",
+                        "name": "query",
+                        "type": "string",
+                        "description": "Query to retrieve documents from vector database. If not specified, user question will be used",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "id": "vectorStoreToDocument_0-input-query-string"
+                    },
+                    {
+                        "label": "Minimum Score (%)",
+                        "name": "minScore",
+                        "type": "number",
+                        "optional": true,
+                        "placeholder": "75",
+                        "step": 1,
+                        "description": "Minumum score for embeddings documents to be included",
+                        "id": "vectorStoreToDocument_0-input-minScore-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store",
+                        "name": "vectorStore",
+                        "type": "VectorStore",
+                        "id": "vectorStoreToDocument_0-input-vectorStore-VectorStore"
+                    }
+                ],
+                "inputs": {
+                    "vectorStore": "{{singlestore_0.data.instance}}",
+                    "query": "{{llmChain_2.data.instance}}",
+                    "minScore": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "vectorStoreToDocument_0-output-document-Document",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document"
+                            },
+                            {
+                                "id": "vectorStoreToDocument_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "text"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1906.6871314089658,
+                "y": -157.0046189166955
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_2",
+            "position": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_2",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_2-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_2-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_2-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_2-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "prompt": "{{promptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "RephraseQuestion"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_2-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_2-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "outputPrediction"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 756.2678342825631,
+                "y": -244.07972550448233
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 456,
+            "id": "llmChain_1",
+            "position": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_1",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_1-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_1-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_1-input-outputParser-BaseLLMOutputParser"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "outputParser": "",
+                    "chainName": "FinalResponse"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_1-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2684.08901232628,
+                "y": -301.4742415779482
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 335.7621848973805,
-                "y": -651.7411273245009
+                "x": 339.96857057520754,
+                "y": -732.8078068632885
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 1,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -290,6 +431,14 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-0613",
                                 "name": "gpt-4-0613"
                             },
@@ -304,6 +453,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
                             },
                             {
                                 "label": "gpt-3.5-turbo-0613",
@@ -383,18 +536,36 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
+                    "cache": "",
                     "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": 0.9,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -408,25 +579,25 @@
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 335.7621848973805,
-                "y": -651.7411273245009
-            }
+                "x": 339.96857057520754,
+                "y": -732.8078068632885
+            },
+            "dragging": false
         },
         {
             "width": 300,
-            "height": 522,
+            "height": 574,
             "id": "chatOpenAI_1",
             "position": {
-                "x": 1765.2801848172305,
-                "y": -667.9261054149061
+                "x": 2291.510577325338,
+                "y": -785.9138727666948
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 1,
+                "version": 2,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -450,6 +621,14 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-0613",
                                 "name": "gpt-4-0613"
                             },
@@ -464,6 +643,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
                             },
                             {
                                 "label": "gpt-3.5-turbo-0613",
@@ -543,18 +726,36 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-baseOptions-json"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
+                    "cache": "",
                     "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": 0.9,
+                    "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {
@@ -568,60 +769,231 @@
                 "selected": false
             },
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 1765.2801848172305,
-                "y": -667.9261054149061
-            }
+                "x": 2291.510577325338,
+                "y": -785.9138727666948
+            },
+            "dragging": false
         },
         {
             "width": 300,
-            "height": 473,
-            "id": "promptTemplate_1",
+            "height": 654,
+            "id": "singlestore_0",
             "position": {
-                "x": 1773.720934090435,
-                "y": -116.71323227575395
+                "x": 1530.532503048084,
+                "y": -657.3586990397077
             },
             "type": "customNode",
             "data": {
-                "id": "promptTemplate_1",
-                "label": "Prompt Template",
+                "id": "singlestore_0",
+                "label": "SingleStore",
                 "version": 1,
-                "name": "promptTemplate",
-                "type": "PromptTemplate",
-                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate", "Runnable"],
-                "category": "Prompts",
-                "description": "Schema to represent a basic prompt for an LLM",
+                "name": "singlestore",
+                "type": "SingleStore",
+                "baseClasses": ["SingleStore", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using SingleStore, a fast and distributed cloud relational database",
                 "inputParams": [
                     {
-                        "label": "Template",
-                        "name": "template",
-                        "type": "string",
-                        "rows": 4,
-                        "placeholder": "What is a good name for a company that makes {product}?",
-                        "id": "promptTemplate_1-input-template-string"
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "description": "Needed when using SingleStore cloud hosted",
+                        "optional": true,
+                        "credentialNames": ["singleStoreApi"],
+                        "id": "singlestore_0-input-credential-credential"
                     },
                     {
-                        "label": "Format Prompt Values",
-                        "name": "promptValues",
-                        "type": "json",
+                        "label": "Host",
+                        "name": "host",
+                        "type": "string",
+                        "id": "singlestore_0-input-host-string"
+                    },
+                    {
+                        "label": "Database",
+                        "name": "database",
+                        "type": "string",
+                        "id": "singlestore_0-input-database-string"
+                    },
+                    {
+                        "label": "Table Name",
+                        "name": "tableName",
+                        "type": "string",
+                        "placeholder": "embeddings",
+                        "additionalParams": true,
                         "optional": true,
-                        "acceptVariable": true,
+                        "id": "singlestore_0-input-tableName-string"
+                    },
+                    {
+                        "label": "Content Column Name",
+                        "name": "contentColumnName",
+                        "type": "string",
+                        "placeholder": "content",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "singlestore_0-input-contentColumnName-string"
+                    },
+                    {
+                        "label": "Vector Column Name",
+                        "name": "vectorColumnName",
+                        "type": "string",
+                        "placeholder": "vector",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "singlestore_0-input-vectorColumnName-string"
+                    },
+                    {
+                        "label": "Metadata Column Name",
+                        "name": "metadataColumnName",
+                        "type": "string",
+                        "placeholder": "metadata",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "singlestore_0-input-metadataColumnName-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "singlestore_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
                         "list": true,
-                        "id": "promptTemplate_1-input-promptValues-json"
+                        "optional": true,
+                        "id": "singlestore_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "singlestore_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": "",
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "host": "",
+                    "database": "",
+                    "tableName": "",
+                    "contentColumnName": "",
+                    "vectorColumnName": "",
+                    "metadataColumnName": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "singlestore_0-output-retriever-SingleStore|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "SingleStore Retriever",
+                                "type": "SingleStore | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "singlestore_0-output-vectorStore-SingleStore|VectorStore",
+                                "name": "vectorStore",
+                                "label": "SingleStore Vector Store",
+                                "type": "SingleStore | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1530.532503048084,
+                "y": -657.3586990397077
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 1154.293946350955,
+                "y": -589.6072684085893
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "version": 1,
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "template": "Use the following pieces of context to answer the question at the end.\n\n{context}\n\nQuestion: {question}\nHelpful Answer:",
-                    "promptValues": "{\"context\":\"{{vectorStoreToDocument_0.data.instance}}\",\"question\":\"{{llmChain_0.data.instance}}\"}"
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-                        "name": "promptTemplate",
-                        "label": "PromptTemplate",
-                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate | Runnable"
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
                 "outputs": {},
@@ -629,291 +1001,20 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1773.720934090435,
-                "y": -116.71323227575395
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 404,
-            "id": "llmChain_0",
-            "position": {
-                "x": 756.1670091985342,
-                "y": -592.5151355056942
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_0",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_0-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "prompt": "{{promptTemplate_0.data.instance}}",
-                    "chainName": "QuestionChain"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_0-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "outputPrediction"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 756.1670091985342,
-                "y": -592.5151355056942
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 404,
-            "id": "llmChain_1",
-            "position": {
-                "x": 2200.1274896215496,
-                "y": -144.29167974642334
-            },
-            "type": "customNode",
-            "data": {
-                "id": "llmChain_1",
-                "label": "LLM Chain",
-                "version": 1,
-                "name": "llmChain",
-                "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
-                "category": "Chains",
-                "description": "Chain to run queries against LLMs",
-                "inputParams": [
-                    {
-                        "label": "Chain Name",
-                        "name": "chainName",
-                        "type": "string",
-                        "placeholder": "Name Your Chain",
-                        "optional": true,
-                        "id": "llmChain_1-input-chainName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "llmChain_1-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Prompt",
-                        "name": "prompt",
-                        "type": "BasePromptTemplate",
-                        "id": "llmChain_1-input-prompt-BasePromptTemplate"
-                    }
-                ],
-                "inputs": {
-                    "model": "{{chatOpenAI_1.data.instance}}",
-                    "prompt": "{{promptTemplate_1.data.instance}}",
-                    "chainName": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "llmChain_1-output-llmChain-LLMChain|BaseChain|Runnable",
-                                "name": "llmChain",
-                                "label": "LLM Chain",
-                                "type": "LLMChain | BaseChain | Runnable"
-                            },
-                            {
-                                "id": "llmChain_1-output-outputPrediction-string|json",
-                                "name": "outputPrediction",
-                                "label": "Output Prediction",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "llmChain"
-                    }
-                ],
-                "outputs": {
-                    "output": "llmChain"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2200.1274896215496,
-                "y": -144.29167974642334
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 353,
-            "id": "vectorStoreToDocument_0",
-            "position": {
-                "x": 1407.7038120189868,
-                "y": -26.16468811205081
-            },
-            "type": "customNode",
-            "data": {
-                "id": "vectorStoreToDocument_0",
-                "label": "VectorStore To Document",
-                "version": 1,
-                "name": "vectorStoreToDocument",
-                "type": "Document",
-                "baseClasses": ["Document"],
-                "category": "Document Loaders",
-                "description": "Search documents with scores from vector store",
-                "inputParams": [
-                    {
-                        "label": "Minimum Score (%)",
-                        "name": "minScore",
-                        "type": "number",
-                        "optional": true,
-                        "placeholder": "75",
-                        "step": 1,
-                        "description": "Minumum score for embeddings documents to be included",
-                        "id": "vectorStoreToDocument_0-input-minScore-number"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Vector Store",
-                        "name": "vectorStore",
-                        "type": "VectorStore",
-                        "id": "vectorStoreToDocument_0-input-vectorStore-VectorStore"
-                    }
-                ],
-                "inputs": {
-                    "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
-                    "minScore": ""
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "vectorStoreToDocument_0-output-document-Document",
-                                "name": "document",
-                                "label": "Document",
-                                "type": "Document"
-                            },
-                            {
-                                "id": "vectorStoreToDocument_0-output-text-string|json",
-                                "name": "text",
-                                "label": "Text",
-                                "type": "string | json"
-                            }
-                        ],
-                        "default": "document"
-                    }
-                ],
-                "outputs": {
-                    "output": "text"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1407.7038120189868,
-                "y": -26.16468811205081
+                "x": 1154.293946350955,
+                "y": -589.6072684085893
             },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeExistingIndex_0",
-            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "pineconeExistingIndex_0",
-            "sourceHandle": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
-            "target": "vectorStoreToDocument_0",
-            "targetHandle": "vectorStoreToDocument_0-input-vectorStore-VectorStore",
-            "type": "buttonedge",
-            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore-vectorStoreToDocument_0-vectorStoreToDocument_0-input-vectorStore-VectorStore",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "vectorStoreToDocument_0",
             "sourceHandle": "vectorStoreToDocument_0-output-text-string|json",
-            "target": "promptTemplate_1",
-            "targetHandle": "promptTemplate_1-input-promptValues-json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
             "type": "buttonedge",
-            "id": "vectorStoreToDocument_0-vectorStoreToDocument_0-output-text-string|json-promptTemplate_1-promptTemplate_1-input-promptValues-json",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel",
+            "id": "vectorStoreToDocument_0-vectorStoreToDocument_0-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json",
             "data": {
                 "label": ""
             }
@@ -921,21 +1022,43 @@
         {
             "source": "promptTemplate_0",
             "sourceHandle": "promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
-            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate",
+            "id": "promptTemplate_0-promptTemplate_0-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_2-llmChain_2-input-prompt-BasePromptTemplate",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "llmChain_0",
-            "sourceHandle": "llmChain_0-output-outputPrediction-string|json",
-            "target": "promptTemplate_1",
-            "targetHandle": "promptTemplate_1-input-promptValues-json",
+            "source": "llmChain_2",
+            "sourceHandle": "llmChain_2-output-outputPrediction-string|json",
+            "target": "vectorStoreToDocument_0",
+            "targetHandle": "vectorStoreToDocument_0-input-query-string",
             "type": "buttonedge",
-            "id": "llmChain_0-llmChain_0-output-outputPrediction-string|json-promptTemplate_1-promptTemplate_1-input-promptValues-json",
+            "id": "llmChain_2-llmChain_2-output-outputPrediction-string|json-vectorStoreToDocument_0-vectorStoreToDocument_0-input-query-string",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "llmChain_1",
+            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_2-llmChain_2-input-model-BaseLanguageModel",
             "data": {
                 "label": ""
             }
@@ -952,12 +1075,23 @@
             }
         },
         {
-            "source": "promptTemplate_1",
-            "sourceHandle": "promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
-            "target": "llmChain_1",
-            "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
+            "source": "singlestore_0",
+            "sourceHandle": "singlestore_0-output-vectorStore-SingleStore|VectorStore",
+            "target": "vectorStoreToDocument_0",
+            "targetHandle": "vectorStoreToDocument_0-input-vectorStore-VectorStore",
             "type": "buttonedge",
-            "id": "promptTemplate_1-promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
+            "id": "singlestore_0-singlestore_0-output-vectorStore-SingleStore|VectorStore-vectorStoreToDocument_0-vectorStoreToDocument_0-input-vectorStore-VectorStore",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "singlestore_0",
+            "targetHandle": "singlestore_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-singlestore_0-singlestore_0-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }

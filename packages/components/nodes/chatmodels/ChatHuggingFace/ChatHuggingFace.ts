@@ -1,6 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from './core'
+import { BaseCache } from 'langchain/schema'
 
 class ChatHuggingFace_ChatModels implements INode {
     label: string
@@ -17,7 +18,7 @@ class ChatHuggingFace_ChatModels implements INode {
     constructor() {
         this.label = 'ChatHuggingFace'
         this.name = 'chatHuggingFace'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatHuggingFace'
         this.icon = 'huggingface.png'
         this.category = 'Chat Models'
@@ -30,6 +31,12 @@ class ChatHuggingFace_ChatModels implements INode {
             credentialNames: ['huggingFaceApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model',
                 name: 'model',
@@ -102,6 +109,7 @@ class ChatHuggingFace_ChatModels implements INode {
         const hfTopK = nodeData.inputs?.hfTopK as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const endpoint = nodeData.inputs?.endpoint as string
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
@@ -119,6 +127,7 @@ class ChatHuggingFace_ChatModels implements INode {
         if (endpoint) obj.endpoint = endpoint
 
         const huggingFace = new HuggingFaceInference(obj)
+        if (cache) huggingFace.cache = cache
         return huggingFace
     }
 }

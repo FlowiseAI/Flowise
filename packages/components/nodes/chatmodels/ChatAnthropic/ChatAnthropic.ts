@@ -1,6 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { AnthropicInput, ChatAnthropic } from 'langchain/chat_models/anthropic'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -17,7 +19,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'ChatAnthropic'
         this.icon = 'chatAnthropic.png'
         this.category = 'Chat Models'
@@ -31,6 +33,12 @@ class ChatAnthropic_ChatModels implements INode {
         }
         this.inputs = [
             {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
@@ -39,6 +47,11 @@ class ChatAnthropic_ChatModels implements INode {
                         label: 'claude-2',
                         name: 'claude-2',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
+                    },
+                    {
+                        label: 'claude-2.1',
+                        name: 'claude-2.1',
+                        description: 'Claude 2 latest full version'
                     },
                     {
                         label: 'claude-instant-1',
@@ -135,11 +148,12 @@ class ChatAnthropic_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
 
-        const obj: Partial<AnthropicInput> & { anthropicApiKey?: string } = {
+        const obj: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             anthropicApiKey,
@@ -149,6 +163,7 @@ class ChatAnthropic_ChatModels implements INode {
         if (maxTokensToSample) obj.maxTokensToSample = parseInt(maxTokensToSample, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
+        if (cache) obj.cache = cache
 
         const model = new ChatAnthropic(obj)
         return model

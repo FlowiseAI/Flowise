@@ -1,13 +1,13 @@
 import client from './client'
 
-const getChatmessageFromChatflow = (id) => client.get(`/chatmessage/${id}`)
-
-const createNewChatmessage = (id, body) => client.post(`/chatmessage/${id}`, body)
-
-const deleteChatmessage = (id) => client.delete(`/chatmessage/${id}`)
+const getInternalChatmessageFromChatflow = (id) => client.get(`/internal-chatmessage/${id}`)
+const getAllChatmessageFromChatflow = (id, params = {}) => client.get(`/chatmessage/${id}`, { params: { order: 'DESC', ...params } })
+const getChatmessageFromPK = (id, params = {}) => client.get(`/chatmessage/${id}`, { params: { order: 'ASC', ...params } })
+const deleteChatmessage = (id, params = {}) => client.delete(`/chatmessage/${id}`, { params: { ...params } })
 
 export default {
-    getChatmessageFromChatflow,
-    createNewChatmessage,
+    getInternalChatmessageFromChatflow,
+    getAllChatmessageFromChatflow,
+    getChatmessageFromPK,
     deleteChatmessage
 }

@@ -13,8 +13,8 @@
             "data": {
                 "id": "babyAGI_1",
                 "label": "BabyAGI",
-                "name": "babyAGI",
                 "version": 1,
+                "name": "babyAGI",
                 "type": "BabyAGI",
                 "baseClasses": ["BabyAGI"],
                 "category": "Agents",
@@ -44,7 +44,7 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStore": "{{pineconeExistingIndex_0.data.instance}}",
+                    "vectorStore": "{{pinecone_0.data.instance}}",
                     "taskLoop": 3
                 },
                 "outputAnchors": [
@@ -67,160 +67,6 @@
         },
         {
             "width": 300,
-            "height": 523,
-            "id": "chatOpenAI_0",
-            "position": {
-                "x": 587.1798180512677,
-                "y": -355.9845878719703
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chatOpenAI_0",
-                "label": "ChatOpenAI",
-                "name": "chatOpenAI",
-                "version": 1,
-                "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
-                "category": "Chat Models",
-                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["openAIApi"],
-                        "id": "chatOpenAI_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
-                        "default": "gpt-3.5-turbo",
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-modelName-options"
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.9,
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-temperature-number"
-                    },
-                    {
-                        "label": "Max Tokens",
-                        "name": "maxTokens",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-maxTokens-number"
-                    },
-                    {
-                        "label": "Top Probability",
-                        "name": "topP",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-topP-number"
-                    },
-                    {
-                        "label": "Frequency Penalty",
-                        "name": "frequencyPenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
-                    },
-                    {
-                        "label": "Presence Penalty",
-                        "name": "presencePenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-presencePenalty-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-basepath-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "gpt-3.5-turbo",
-                    "temperature": 0.9,
-                    "maxTokens": "",
-                    "topP": "",
-                    "frequencyPenalty": "",
-                    "presencePenalty": "",
-                    "timeout": "",
-                    "basepath": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-                        "name": "chatOpenAI",
-                        "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 587.1798180512677,
-                "y": -355.9845878719703
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
@@ -231,8 +77,8 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "name": "openAIEmbeddings",
                 "version": 1,
+                "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
@@ -305,35 +151,35 @@
         },
         {
             "width": 300,
-            "height": 505,
-            "id": "pineconeExistingIndex_0",
+            "height": 555,
+            "id": "pinecone_0",
             "position": {
-                "x": 241.78764591331816,
-                "y": -38.438460915613945
+                "x": 238.1350223788262,
+                "y": -133.38073692212225
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeExistingIndex_0",
-                "label": "Pinecone Load Existing Index",
-                "name": "pineconeExistingIndex",
+                "id": "pinecone_0",
+                "label": "Pinecone",
                 "version": 1,
+                "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Load existing index from Pinecone (i.e: Document has been upserted)",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
                         "credentialNames": ["pineconeApi"],
-                        "id": "pineconeExistingIndex_0-input-credential-credential"
+                        "id": "pinecone_0-input-credential-credential"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeExistingIndex_0-input-pineconeIndex-string"
+                        "id": "pinecone_0-input-pineconeIndex-string"
                     },
                     {
                         "label": "Pinecone Namespace",
@@ -342,7 +188,7 @@
                         "placeholder": "my-first-namespace",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeNamespace-string"
+                        "id": "pinecone_0-input-pineconeNamespace-string"
                     },
                     {
                         "label": "Pinecone Metadata Filter",
@@ -350,7 +196,7 @@
                         "type": "json",
                         "optional": true,
                         "additionalParams": true,
-                        "id": "pineconeExistingIndex_0-input-pineconeMetadataFilter-json"
+                        "id": "pinecone_0-input-pineconeMetadataFilter-json"
                     },
                     {
                         "label": "Top K",
@@ -360,20 +206,29 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeExistingIndex_0-input-topK-number"
+                        "id": "pinecone_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
                     {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-document-Document"
+                    },
+                    {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeExistingIndex_0-input-embeddings-Embeddings"
+                        "id": "pinecone_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
+                    "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
-                    "pineconeIndex": "newindex",
+                    "pineconeIndex": "",
                     "pineconeNamespace": "",
                     "pineconeMetadataFilter": "",
                     "topK": ""
@@ -385,13 +240,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeExistingIndex_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -407,42 +262,232 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 241.78764591331816,
-                "y": -38.438460915613945
+                "x": 238.1350223788262,
+                "y": -133.38073692212225
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 574,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 600.5963052289515,
+                "y": -359.24280496678995
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 2,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 600.5963052289515,
+                "y": -359.24280496678995
             },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "pineconeExistingIndex_0",
-            "sourceHandle": "pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore",
-            "target": "babyAGI_1",
-            "targetHandle": "babyAGI_1-input-vectorStore-VectorStore",
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "pinecone_0",
+            "targetHandle": "pinecone_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "pineconeExistingIndex_0-pineconeExistingIndex_0-output-vectorStore-Pinecone|VectorStore-babyAGI_1-babyAGI_1-input-vectorStore-VectorStore",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pinecone_0-pinecone_0-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "babyAGI_1",
             "targetHandle": "babyAGI_1-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-babyAGI_1-babyAGI_1-input-model-BaseChatModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-babyAGI_1-babyAGI_1-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "openAIEmbeddings_0",
-            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeExistingIndex_0",
-            "targetHandle": "pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "source": "pinecone_0",
+            "sourceHandle": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
+            "target": "babyAGI_1",
+            "targetHandle": "babyAGI_1-input-vectorStore-VectorStore",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeExistingIndex_0-pineconeExistingIndex_0-input-embeddings-Embeddings",
+            "id": "pinecone_0-pinecone_0-output-vectorStore-Pinecone|VectorStore-babyAGI_1-babyAGI_1-input-vectorStore-VectorStore",
             "data": {
                 "label": ""
             }

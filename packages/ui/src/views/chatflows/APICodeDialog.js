@@ -23,6 +23,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
+import Configuration from './Configuration'
 
 // Const
 import { baseURL } from 'store/constant'
@@ -34,6 +35,8 @@ import javascriptSVG from 'assets/images/javascript.svg'
 import cURLSVG from 'assets/images/cURL.svg'
 import EmbedSVG from 'assets/images/embed.svg'
 import ShareChatbotSVG from 'assets/images/sharing.png'
+import settingsSVG from 'assets/images/settings.svg'
+import { IconBulb } from '@tabler/icons'
 
 // API
 import apiKeyApi from 'api/apikey'
@@ -45,7 +48,8 @@ import useApi from 'hooks/useApi'
 import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
 import { TableViewOnly } from 'ui-component/table/Table'
 
-import { IconBulb } from '@tabler/icons'
+// Helpers
+import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from 'utils/genericHelper'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -75,73 +79,12 @@ function a11yProps(index) {
     }
 }
 
-const unshiftFiles = (configData) => {
-    const filesConfig = configData.find((config) => config.name === 'files')
-    if (filesConfig) {
-        configData = configData.filter((config) => config.name !== 'files')
-        configData.unshift(filesConfig)
-    }
-    return configData
-}
-
-const getConfigExamplesForJS = (configData, bodyType) => {
-    let finalStr = ''
-    configData = unshiftFiles(configData)
-    const loop = Math.min(configData.length, 4)
-    for (let i = 0; i < loop; i += 1) {
-        const config = configData[i]
-        let exampleVal = `"example"`
-        if (config.type === 'string') exampleVal = `"example"`
-        else if (config.type === 'boolean') exampleVal = `true`
-        else if (config.type === 'number') exampleVal = `1`
-        else if (config.name === 'files') exampleVal = `input.files[0]`
-        finalStr += bodyType === 'json' ? `\n      "${config.name}": ${exampleVal},` : `formData.append("${config.name}", ${exampleVal})\n`
-        if (i === loop - 1 && bodyType !== 'json') finalStr += `formData.append("question", "Hey, how are you?")\n`
-    }
-    return finalStr
-}
-
-const getConfigExamplesForPython = (configData, bodyType) => {
-    let finalStr = ''
-    configData = unshiftFiles(configData)
-    const loop = Math.min(configData.length, 4)
-    for (let i = 0; i < loop; i += 1) {
-        const config = configData[i]
-        let exampleVal = `"example"`
-        if (config.type === 'string') exampleVal = `"example"`
-        else if (config.type === 'boolean') exampleVal = `true`
-        else if (config.type === 'number') exampleVal = `1`
-        else if (config.name === 'files') continue
-        finalStr += bodyType === 'json' ? `\n        "${config.name}": ${exampleVal},` : `\n    "${config.name}": ${exampleVal},`
-        if (i === loop - 1 && bodyType !== 'json') finalStr += `\n    "question": "Hey, how are you?"\n`
-    }
-    return finalStr
-}
-
-const getConfigExamplesForCurl = (configData, bodyType) => {
-    let finalStr = ''
-    configData = unshiftFiles(configData)
-    const loop = Math.min(configData.length, 4)
-    for (let i = 0; i < loop; i += 1) {
-        const config = configData[i]
-        let exampleVal = `example`
-        if (config.type === 'string') exampleVal = bodyType === 'json' ? `"example"` : `example`
-        else if (config.type === 'boolean') exampleVal = `true`
-        else if (config.type === 'number') exampleVal = `1`
-        else if (config.name === 'files') exampleVal = `@/home/user1/Desktop/example${config.type}`
-        finalStr += bodyType === 'json' ? `"${config.name}": ${exampleVal}` : `\n     -F "${config.name}=${exampleVal}"`
-        if (i === loop - 1) finalStr += bodyType === 'json' ? ` }` : ` \\\n     -F "question=Hey, how are you?"`
-        else finalStr += bodyType === 'json' ? `, ` : ` \\`
-    }
-    return finalStr
-}
-
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot', 'Configuration']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
@@ -321,6 +264,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return cURLSVG
         } else if (codeLang === 'Share Chatbot') {
             return ShareChatbotSVG
+        } else if (codeLang === 'Configuration') {
+            return settingsSVG
         }
         return pythonSVG
     }
@@ -330,7 +275,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
     const getConfigCodeWithFormData = (codeLang, configData) => {
         if (codeLang === 'Python') {
             configData = unshiftFiles(configData)
-            const fileType = configData[0].type
+            let fileType = configData[0].type
+            if (fileType.includes(',')) fileType = fileType.split(',')[0]
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
@@ -380,7 +326,8 @@ query(formData).then((response) => {
     const getConfigCodeWithFormDataWithAuth = (codeLang, configData) => {
         if (codeLang === 'Python') {
             configData = unshiftFiles(configData)
-            const fileType = configData[0].type
+            let fileType = configData[0].type
+            if (fileType.includes(',')) fileType = fileType.split(',')[0]
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
@@ -647,7 +594,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             </>
                         )}
                         {codeLang === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
-                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && (
+                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && codeLang !== 'Configuration' && (
                             <>
                                 <CopyBlock
                                     theme={atomOneDark}
@@ -696,7 +643,11 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <TableViewOnly
-                                                            rows={nodeConfig[nodeLabel]}
+                                                            rows={nodeConfig[nodeLabel].map((obj) => {
+                                                                // eslint-disable-next-line
+                                                                const { node, nodeId, ...rest } = obj
+                                                                return rest
+                                                            })}
                                                             columns={Object.keys(nodeConfig[nodeLabel][0]).slice(-3)}
                                                         />
                                                     </AccordionDetails>
@@ -770,6 +721,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                         {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
                             <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} />
                         )}
+                        {codeLang === 'Configuration' && <Configuration />}
                     </TabPanel>
                 ))}
             </DialogContent>
