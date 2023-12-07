@@ -3,6 +3,9 @@ import { BaseChain, ChainInputs } from 'langchain/chains'
 import { ChainValues } from 'langchain/schema'
 import { BasePromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { ChatOpenAI } from 'langchain/chat_models/openai'
+import path from 'path'
+import { getUserHome } from '../../../src/utils'
+import fs from 'fs'
 
 /**
  * Interface for the input parameters of the OpenAIVisionChain class.
@@ -89,10 +92,18 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         })
         if (this.imageUrls && this.imageUrls.length > 0) {
             this.imageUrls.forEach((imageUrl: any) => {
+                let bf = imageUrl?.data
+                if (imageUrl.type == 'stored-file') {
+                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', imageUrl.data)
+
+                    // as the image is stored in the server, read the file and convert it to base64
+                    const contents = fs.readFileSync(filePath)
+                    bf = 'data:' + imageUrl.mime + ';base64,' + contents.toString('base64')
+                }
                 userRole.content.push({
                     type: 'image_url',
                     image_url: {
-                        url: imageUrl?.data,
+                        url: bf,
                         detail: this.imageResolution
                     }
                 })

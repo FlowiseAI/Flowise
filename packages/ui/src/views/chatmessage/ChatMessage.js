@@ -128,7 +128,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                 data: result,
                                 preview: URL.createObjectURL(file),
                                 type: 'file',
-                                name: name
+                                name: name,
+                                mime: file.type
                             })
                         }
                         reader.readAsDataURL(file)
@@ -138,9 +139,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             const newFiles = await Promise.all(files)
             setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+            // if (newFiles.length > 0) {
+            //     document.getElementById('messagelist').style.height = '80%'
+            // }
         }
         if (e.dataTransfer.items) {
-            const newUploads = []
             for (const item of e.dataTransfer.items) {
                 if (item.kind === 'string' && item.type.match('^text/uri-list')) {
                     item.getAsString((s) => {
@@ -194,7 +197,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             data: result,
                             preview: URL.createObjectURL(file),
                             type: 'file',
-                            name: name
+                            name: name,
+                            mime: file.type
                         })
                     }
                     reader.readAsDataURL(file)
@@ -312,7 +316,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             urls.push({
                 data: item.data,
                 type: item.type,
-                name: item.name
+                name: item.name,
+                mime: item.mime
             })
         })
         clearPreviews()
@@ -510,7 +515,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 </Box>
             )}
             <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
-                <div ref={ps} className={'messagelist'}>
+                <div ref={ps} id='messagelist' className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
                             return (
@@ -710,31 +715,33 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     </form>
                 </div>
             </div>
-            {previews && previews.length > 0 && (
-                <Grid className='preview-container' container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
-                    {previews.map((item, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
-                            <Card variant='outlined' sx={{ maxWidth: 64 }}>
-                                <CardMedia
-                                    component='img'
-                                    image={item.preview}
-                                    sx={{ height: 64 }}
-                                    alt={`preview ${index}`}
-                                    style={previewStyle}
-                                />
-                                <CardActions className='center' sx={{ padding: 0, margin: 0 }}>
-                                    <Button
-                                        startIcon={<DeleteIcon />}
-                                        onClick={() => handleDeletePreview(item)}
-                                        size='small'
-                                        variant='text'
+            <div className='preview-container'>
+                {previews && previews.length > 0 && (
+                    <Grid container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
+                        {previews.map((item, index) => (
+                            <Grid item xs={12} sm={6} md={3} key={index}>
+                                <Card variant='outlined' sx={{ maxWidth: 64 }}>
+                                    <CardMedia
+                                        component='img'
+                                        image={item.preview}
+                                        sx={{ height: 64 }}
+                                        alt={`preview ${index}`}
+                                        style={previewStyle}
                                     />
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+                                    <CardActions className='center' sx={{ padding: 0, margin: 0 }}>
+                                        <Button
+                                            startIcon={<DeleteIcon />}
+                                            onClick={() => handleDeletePreview(item)}
+                                            size='small'
+                                            variant='text'
+                                        />
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
+            </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </div>
     )

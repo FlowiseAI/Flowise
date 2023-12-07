@@ -1349,17 +1349,20 @@ export class App {
 
             if (incomingInput.uploads) {
                 // @ts-ignore
-                ;(incomingInput.uploads as any[]).forEach((url: any) => {
-                    if (url.type === 'file') {
-                        const filename = url.name
-                        const bf = url.data
+                ;(incomingInput.uploads as any[]).forEach((upload: any) => {
+                    if (upload.type === 'file') {
+                        const filename = upload.name
                         const filePath = path.join(getUserHome(), '.flowise', 'gptvision', filename)
                         if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'gptvision'))) {
                             fs.mkdirSync(path.dirname(filePath), { recursive: true })
                         }
+                        const splitDataURI = upload.data.split(',')
+                        //const fname = splitDataURI.pop()?.split(':')[1] ?? ''
+                        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                         if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
-                        fs.unlinkSync(filePath)
-                        url.data = bf.toString('base64')
+                        // don't need to store the file contents in chatmessage, just the filename
+                        upload.data = filename //bf.toString('base64')
+                        upload.type = 'stored-file'
                     }
                 })
             }
