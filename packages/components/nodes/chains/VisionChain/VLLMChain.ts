@@ -2,7 +2,6 @@ import { OpenAI as OpenAIClient, ClientOptions } from 'openai'
 import { BaseChain, ChainInputs } from 'langchain/chains'
 import { ChainValues } from 'langchain/schema'
 import { BasePromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
-import { ChatOpenAI } from 'langchain/chat_models/openai'
 import path from 'path'
 import { getUserHome } from '../../../src/utils'
 import fs from 'fs'
@@ -18,7 +17,10 @@ export interface OpenAIVisionChainInput extends ChainInputs {
     configuration?: ClientOptions
     imageUrls?: []
     imageResolution?: string
-    openAIModel: ChatOpenAI
+    temperature?: number
+    modelName?: string
+    maxTokens?: number
+    topP?: number
 }
 
 /**
@@ -30,12 +32,6 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
     static lc_name() {
         return 'VLLMChain'
     }
-
-    get lc_secrets(): { [key: string]: string } | undefined {
-        return {
-            openAIApiKey: 'OPENAI_API_KEY'
-        }
-    }
     prompt: BasePromptTemplate | undefined
 
     inputKey = 'input'
@@ -44,10 +40,13 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
     imageResolution: string = 'low'
     openAIApiKey?: string
     openAIOrganization?: string
-    openAIModel: ChatOpenAI
     clientConfig: ClientOptions
     client: OpenAIClient
     throwError: boolean
+    temperature?: number
+    modelName?: string
+    maxTokens?: number
+    topP?: number
 
     constructor(fields: OpenAIVisionChainInput) {
         super(fields)
@@ -55,13 +54,16 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         this.imageResolution = fields?.imageResolution ?? 'low'
         this.openAIApiKey = fields?.openAIApiKey
         this.prompt = fields?.prompt
+        this.temperature = fields?.temperature
+        this.modelName = fields?.modelName
+        this.maxTokens = fields?.maxTokens
+        this.topP = fields?.topP
         this.imageUrls = fields?.imageUrls ?? []
         if (!this.openAIApiKey) {
             throw new Error('OpenAI API key not found')
         }
 
         this.openAIOrganization = fields?.openAIOrganization
-        this.openAIModel = fields.openAIModel
 
         this.clientConfig = {
             ...fields?.configuration,
@@ -76,12 +78,12 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         const userInput = values[this.inputKey]
 
         const vRequest: any = {
-            model: 'gpt-4-vision-preview',
-            temperature: this.openAIModel.temperature,
-            top_p: this.openAIModel.topP,
+            model: this.modelName,
+            temperature: this.temperature,
+            top_p: this.topP,
             messages: []
         }
-        if (this.openAIModel.maxTokens) vRequest.max_tokens = this.openAIModel.maxTokens
+        if (this.maxTokens) vRequest.max_tokens = this.maxTokens
         else vRequest.max_tokens = 1024
 
         const userRole: any = { role: 'user' }
@@ -94,7 +96,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
             this.imageUrls.forEach((imageUrl: any) => {
                 let bf = imageUrl?.data
                 if (imageUrl.type == 'stored-file') {
-                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', imageUrl.data)
+                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', imageUrl.data, imageUrl.name)
 
                     // as the image is stored in the server, read the file and convert it to base64
                     const contents = fs.readFileSync(filePath)

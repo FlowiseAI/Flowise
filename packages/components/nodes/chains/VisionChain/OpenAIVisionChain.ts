@@ -1,10 +1,8 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { VLLMChain } from './VLLMChain'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { getBaseClasses, getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
+import { OpenAIVisionChainInput, VLLMChain } from './VLLMChain'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { ChatOpenAI } from 'langchain/chat_models/openai'
 
 class OpenAIVisionChain_Chains implements INode {
     label: string
@@ -18,6 +16,7 @@ class OpenAIVisionChain_Chains implements INode {
     description: string
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    credential: INodeParams
 
     constructor() {
         this.label = 'Open AI Vision Chain'
@@ -26,14 +25,28 @@ class OpenAIVisionChain_Chains implements INode {
         this.type = 'OpenAIVisionChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
-        this.badge = 'EXPERIMENTAL'
+        this.badge = 'BETA'
         this.description = 'Chain to run queries against OpenAI (GPT-4) Vision .'
         this.baseClasses = [this.type, ...getBaseClasses(VLLMChain)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['openAIApi']
+        }
         this.inputs = [
             {
-                label: 'Language Model (Works only with Open AI [gpt-4-vision-preview])',
-                name: 'model',
-                type: 'BaseLanguageModel'
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'gpt-4-vision-preview',
+                        name: 'gpt-4-vision-preview'
+                    }
+                ],
+                default: 'gpt-4-vision-preview',
+                optional: true
             },
             {
                 label: 'Prompt',
@@ -57,7 +70,33 @@ class OpenAIVisionChain_Chains implements INode {
                     }
                 ],
                 default: 'low',
-                optional: false
+                optional: false,
+                additionalParams: true
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                default: 0.9,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Chain Name',
@@ -96,22 +135,26 @@ class OpenAIVisionChain_Chains implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        const model = nodeData.inputs?.model as BaseLanguageModel
         const prompt = nodeData.inputs?.prompt
         const output = nodeData.outputs?.output as string
         const imageResolution = nodeData.inputs?.imageResolution
         const promptValues = prompt.promptValues as ICommonObject
-        if (!(model as any).openAIApiKey || (model as any).modelName !== 'gpt-4-vision-preview') {
-            throw new Error('Chain works with OpenAI Vision model only')
-        }
-        const openAIModel = model as ChatOpenAI
-        const fields = {
-            openAIApiKey: openAIModel.openAIApiKey,
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
+        const topP = nodeData.inputs?.topP as string
+        const fields: OpenAIVisionChainInput = {
+            openAIApiKey: openAIApiKey,
             imageResolution: imageResolution,
             verbose: process.env.DEBUG === 'true',
             imageUrls: options.uploads,
-            openAIModel: openAIModel
+            modelName: modelName
         }
+        if (temperature) fields.temperature = parseFloat(temperature)
+        if (maxTokens) fields.maxTokens = parseInt(maxTokens, 10)
+        if (topP) fields.topP = parseFloat(topP)
         if (output === this.name) {
             const chain = new VLLMChain({
                 ...fields,

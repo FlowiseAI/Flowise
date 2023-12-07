@@ -418,7 +418,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
-                if (message.fileUploads) obj.fileUploads = JSON.parse(message.fileUploads)
+                if (message.fileUploads) {
+                    obj.fileUploads = JSON.parse(message.fileUploads)
+                    obj.fileUploads.forEach((file) => {
+                        if (file.type === 'stored-file') {
+                            file.data = `${baseURL}/api/v1/get-upload-file/${file.name}?chatId=${chatId}`
+                        }
+                    })
+                }
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])

@@ -972,12 +972,29 @@ export class App {
             }
         })
 
+        function streamFileToUser(res: Response, filePath: string) {
+            const fileStream = fs.createReadStream(filePath)
+            fileStream.pipe(res)
+        }
+
         // Download file from assistant
         this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
             const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
             res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
-            const fileStream = fs.createReadStream(filePath)
-            fileStream.pipe(res)
+            streamFileToUser(res, filePath)
+        })
+
+        // stream uploaded image
+        this.app.get('/api/v1/get-upload-file/:id', async (req: Request, res: Response) => {
+            if (!req.params.id || !req.query.chatId) {
+                return res.status(500).send(`Invalid file path`)
+            }
+            const filePath = path.join(getUserHome(), '.flowise', 'gptvision', req.query.chatId as string, req.params.id)
+            console.log(filePath)
+            if (!path.isAbsolute(filePath) || !fs.existsSync(filePath)) {
+                return res.status(500).send(`Invalid file path`)
+            }
+            streamFileToUser(res, filePath)
         })
 
         // ----------------------------------------
@@ -1352,16 +1369,17 @@ export class App {
                 ;(incomingInput.uploads as any[]).forEach((upload: any) => {
                     if (upload.type === 'file') {
                         const filename = upload.name
-                        const filePath = path.join(getUserHome(), '.flowise', 'gptvision', filename)
-                        if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'gptvision'))) {
-                            fs.mkdirSync(path.dirname(filePath), { recursive: true })
+                        const dir = path.join(getUserHome(), '.flowise', 'gptvision', chatId)
+                        if (!fs.existsSync(dir)) {
+                            fs.mkdirSync(dir, { recursive: true })
                         }
+                        const filePath = path.join(dir, filename)
                         const splitDataURI = upload.data.split(',')
-                        //const fname = splitDataURI.pop()?.split(':')[1] ?? ''
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                        if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, bf)
-                        // don't need to store the file contents in chatmessage, just the filename
-                        upload.data = filename //bf.toString('base64')
+                        //TODO: check if file exists, what should we do if it exists?
+                        fs.writeFileSync(filePath, bf)
+                        // don't need to store the file contents in chatmessage, just the filename and chatId
+                        upload.data = chatId
                         upload.type = 'stored-file'
                     }
                 })
