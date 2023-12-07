@@ -58,7 +58,7 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { body, param, query, validationResult } from 'express-validator'
+import { sanitizeMiddleware } from './utils/XSS'
 
 export class App {
     app: express.Application
@@ -122,6 +122,9 @@ export class App {
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)
 
+        // Add the sanitizeMiddleware to guard against XSS
+        this.app.use(sanitizeMiddleware)
+
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
@@ -184,27 +187,17 @@ export class App {
         })
 
         // Get specific component node via name
-        this.app.get('/api/v1/nodes/:name', param('name').notEmpty().escape(), (req: Request, res: Response) => {
-            const name = req.params.name
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                throw new Error(`Node ${name} not found`)
-            }
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, name)) {
+        this.app.get('/api/v1/nodes/:name', (req: Request, res: Response) => {
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
                 return res.json(this.nodesPool.componentNodes[req.params.name])
             } else {
-                throw new Error(`Node ${name} not found`)
+                throw new Error(`Node ${req.params.name} not found`)
             }
         })
 
         // Get component credential via name
-        this.app.get('/api/v1/components-credentials/:name', param('name').notEmpty().escape(), (req: Request, res: Response) => {
-            const name = req.params.name
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                throw new Error(`Credential ${name} not found`)
-            }
-            if (!req.params.name.includes('&amp;')) {
+        this.app.get('/api/v1/components-credentials/:name', (req: Request, res: Response) => {
+            if (!req.params.name.includes('&')) {
                 if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
                     return res.json(this.nodesPool.componentCredentials[req.params.name])
                 } else {
@@ -212,7 +205,7 @@ export class App {
                 }
             } else {
                 const returnResponse = []
-                for (const name of req.params.name.split('&amp;')) {
+                for (const name of req.params.name.split('&')) {
                     if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
                         returnResponse.push(this.nodesPool.componentCredentials[name])
                     } else {
@@ -224,14 +217,9 @@ export class App {
         })
 
         // Returns specific component node icon via name
-        this.app.get('/api/v1/node-icon/:name', param('name').notEmpty().escape(), (req: Request, res: Response) => {
-            const name = req.params.name
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                throw new Error(`Node ${name} not found`)
-            }
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, name)) {
-                const nodeInstance = this.nodesPool.componentNodes[name]
+        this.app.get('/api/v1/node-icon/:name', (req: Request, res: Response) => {
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
+                const nodeInstance = this.nodesPool.componentNodes[req.params.name]
                 if (nodeInstance.icon === undefined) {
                     throw new Error(`Node ${req.params.name} icon not found`)
                 }
@@ -240,48 +228,38 @@ export class App {
                     const filepath = nodeInstance.icon
                     res.sendFile(filepath)
                 } else {
-                    throw new Error(`Node ${name} icon is missing icon`)
+                    throw new Error(`Node ${req.params.name} icon is missing icon`)
                 }
             } else {
-                throw new Error(`Node ${name} not found`)
+                throw new Error(`Node ${req.params.name} not found`)
             }
         })
 
         // Returns specific component credential icon via name
-        this.app.get('/api/v1/components-credentials-icon/:name', param('name').notEmpty().escape(), (req: Request, res: Response) => {
-            const name = req.params.name
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                throw new Error(`Credential ${name} not found`)
-            }
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
-                const credInstance = this.nodesPool.componentCredentials[name]
+        this.app.get('/api/v1/components-credentials-icon/:name', (req: Request, res: Response) => {
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
+                const credInstance = this.nodesPool.componentCredentials[req.params.name]
                 if (credInstance.icon === undefined) {
-                    throw new Error(`Credential ${name} icon not found`)
+                    throw new Error(`Credential ${req.params.name} icon not found`)
                 }
 
                 if (credInstance.icon.endsWith('.svg') || credInstance.icon.endsWith('.png') || credInstance.icon.endsWith('.jpg')) {
                     const filepath = credInstance.icon
                     res.sendFile(filepath)
                 } else {
-                    throw new Error(`Credential ${name} is missing icon`)
+                    throw new Error(`Credential ${req.params.name} icon is missing icon`)
                 }
             } else {
-                throw new Error(`Credential ${name} not found`)
+                throw new Error(`Credential ${req.params.name} not found`)
             }
         })
 
         // load async options
-        this.app.post('/api/v1/node-load-method/:name', param('name').notEmpty().escape(), async (req: Request, res: Response) => {
-            const name = req.params.name
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                throw new Error(`Node ${name} not found`)
-            }
+        this.app.post('/api/v1/node-load-method/:name', async (req: Request, res: Response) => {
             const nodeData: INodeData = req.body
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, name)) {
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
                 try {
-                    const nodeInstance = this.nodesPool.componentNodes[name]
+                    const nodeInstance = this.nodesPool.componentNodes[req.params.name]
                     const methodName = nodeData.loadMethod || ''
 
                     const returnOptions: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
@@ -294,7 +272,7 @@ export class App {
                     return res.json([])
                 }
             } else {
-                res.status(404).send(`Node ${name} not found`)
+                res.status(404).send(`Node ${req.params.name} not found`)
                 return
             }
         })
@@ -310,11 +288,7 @@ export class App {
         })
 
         // Get specific chatflow via api key
-        this.app.get('/api/v1/chatflows/apikey/:apiKey', param('apiKey').notEmpty().escape(), async (req: Request, res: Response) => {
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(401).send('Unauthorized')
-            }
+        this.app.get('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
             try {
                 const apiKey = await getApiKey(req.params.apiKey)
                 if (!apiKey) return res.status(401).send('Unauthorized')
@@ -326,19 +300,14 @@ export class App {
                     .orderBy('cf.name', 'ASC')
                     .getMany()
                 if (chatflows.length >= 1) return res.status(200).send(chatflows)
-                return res.status(404).send('APIKey not found')
+                return res.status(404).send('Chatflow not found')
             } catch (err: any) {
                 return res.status(500).send(err?.message)
             }
         })
 
         // Get specific chatflow via id
-        this.app.get('/api/v1/chatflows/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const chatflowId = req.params.id
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatflow ${chatflowId} not found`)
-            }
+        this.app.get('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
@@ -347,12 +316,7 @@ export class App {
         })
 
         // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
-        this.app.get('/api/v1/public-chatflows/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const chatflowId = req.params.id
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatflow ${chatflowId} not found`)
-            }
+        this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
@@ -374,69 +338,48 @@ export class App {
         })
 
         // Update chatflow
-        this.app.put(
-            '/api/v1/chatflows/:id',
-            body('chatflow.id').notEmpty(),
-            param('id').notEmpty().escape(),
-            async (req: Request, res: Response) => {
-                const chatflowId = req.params.id
-                const valResult = validationResult(req)
-                if (!valResult.isEmpty()) {
-                    return res.status(404).send(`Chatflow ${chatflowId} not found`)
-                }
-                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                    id: chatflowId
-                })
+        this.app.put('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
 
-                if (!chatflow) {
-                    res.status(404).send(`Chatflow ${chatflowId} not found`)
-                    return
-                }
-
-                const body = req.body
-                const updateChatFlow = new ChatFlow()
-                Object.assign(updateChatFlow, body)
-
-                updateChatFlow.id = chatflow.id
-                createRateLimiter(updateChatFlow)
-
-                this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-                const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
-
-                // chatFlowPool is initialized only when a flow is opened
-                // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
-                if (this.chatflowPool) {
-                    // Update chatflowpool inSync to false, to build Langchain again because data has been changed
-                    this.chatflowPool.updateInSync(chatflow.id, false)
-                }
-
-                return res.json(result)
+            if (!chatflow) {
+                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                return
             }
-        )
+
+            const body = req.body
+            const updateChatFlow = new ChatFlow()
+            Object.assign(updateChatFlow, body)
+
+            updateChatFlow.id = chatflow.id
+            createRateLimiter(updateChatFlow)
+
+            this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+            const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            // chatFlowPool is initialized only when a flow is opened
+            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+            if (this.chatflowPool) {
+                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                this.chatflowPool.updateInSync(chatflow.id, false)
+            }
+
+            return res.json(result)
+        })
 
         // Delete chatflow via id
-        this.app.delete('/api/v1/chatflows/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const chatflowId = req.params.id
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatflow ${chatflowId} not found`)
-            }
+        this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
             return res.json(results)
         })
 
         // Check if chatflow valid for streaming
-        this.app.get('/api/v1/chatflows-streaming/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const chatflowId = req.params.id
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatflow ${chatflowId} not found`)
-            }
-
+        this.app.get('/api/v1/chatflows-streaming/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: chatflowId
+                id: req.params.id
             })
-            if (!chatflow) return res.status(404).send(`Chatflow ${chatflowId} not found`)
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
 
             /*** Get Ending Node with Directed Graph  ***/
             const flowData = chatflow.flowData
@@ -466,84 +409,58 @@ export class App {
         // ----------------------------------------
 
         // Get all chatmessages from chatflowid
-        this.app.get(
-            '/api/v1/chatmessage/:id',
-            query('chatId').notEmpty().escape(),
-            query('sortOrder').notEmpty().escape(),
-            query('memoryType').notEmpty().escape(),
-            query('sessionId').notEmpty().escape(),
-            query('startDate').notEmpty().escape(),
-            query('endDate').notEmpty().escape(),
-            query('chatTypeFilter').notEmpty().escape(),
-            async (req: Request, res: Response) => {
-                const result = validationResult(req)
-                if (!result.isEmpty()) {
-                    return res.status(404).send(`Chatmessage not found`)
-                }
-                const sortOrder = req.query?.order as string | undefined
-                const chatId = req.query?.chatId as string | undefined
-                const memoryType = req.query?.memoryType as string | undefined
-                const sessionId = req.query?.sessionId as string | undefined
-                const startDate = req.query?.startDate as string | undefined
-                const endDate = req.query?.endDate as string | undefined
-                let chatTypeFilter = req.query?.chatType as chatType | undefined
+        this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            let chatTypeFilter = req.query?.chatType as chatType | undefined
 
-                if (chatTypeFilter) {
-                    try {
-                        const chatTypeFilterArray = JSON.parse(chatTypeFilter)
-                        if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                            chatTypeFilter = undefined
-                        } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
-                            chatTypeFilter = chatType.EXTERNAL
-                        } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                            chatTypeFilter = chatType.INTERNAL
-                        }
-                    } catch (e) {
-                        return res.status(500).send(e)
+            if (chatTypeFilter) {
+                try {
+                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
+                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = undefined
+                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
+                        chatTypeFilter = chatType.EXTERNAL
+                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = chatType.INTERNAL
                     }
+                } catch (e) {
+                    return res.status(500).send(e)
                 }
-
-                const chatmessages = await this.getChatMessage(
-                    req.params.id,
-                    chatTypeFilter,
-                    sortOrder,
-                    chatId,
-                    memoryType,
-                    sessionId,
-                    startDate,
-                    endDate
-                )
-                return res.json(chatmessages)
             }
-        )
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatTypeFilter,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate
+            )
+            return res.json(chatmessages)
+        })
 
         // Get internal chatmessages from chatflowid
-        this.app.get('/api/v1/internal-chatmessage/:id', param('chatId').notEmpty().escape(), async (req: Request, res: Response) => {
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatmessage not found`)
-            }
+        this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
             const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
             return res.json(chatmessages)
         })
 
         // Add chatmessages for chatflowid
-        this.app.post('/api/v1/chatmessage/:id', param('chatId').notEmpty().escape(), async (req: Request, res: Response) => {
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatmessage not found`)
-            }
+        this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const body = req.body
             const results = await this.addChatMessage(body)
             return res.json(results)
         })
 
         // Delete all chatmessages from chatId
-        this.app.delete('/api/v1/chatmessage/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Chatmessage not found`)
-            }
+        this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const chatflowid = req.params.id
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: chatflowid
@@ -627,11 +544,7 @@ export class App {
         })
 
         // Get specific credential
-        this.app.get('/api/v1/credentials/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const result = validationResult(req)
-            if (!result.isEmpty()) {
-                return res.status(404).send(`Credential ${req.params.id} not found`)
-            }
+        this.app.get('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
                 id: req.params.id
             })
@@ -652,11 +565,7 @@ export class App {
         })
 
         // Update credential
-        this.app.put('/api/v1/credentials/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Credential ${req.params.id} not found`)
-            }
+        this.app.put('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
                 id: req.params.id
             })
@@ -672,11 +581,7 @@ export class App {
         })
 
         // Delete all chatmessages from chatflowid
-        this.app.delete('/api/v1/credentials/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Credential ${req.params.id} not found`)
-            }
+        this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Credential).delete({ id: req.params.id })
             return res.json(results)
         })
@@ -692,11 +597,7 @@ export class App {
         })
 
         // Get specific tool
-        this.app.get('/api/v1/tools/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Tool ${req.params.id} not found`)
-            }
+        this.app.get('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
                 id: req.params.id
             })
@@ -716,11 +617,7 @@ export class App {
         })
 
         // Update tool
-        this.app.put('/api/v1/tools/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Tool ${req.params.id} not found`)
-            }
+        this.app.put('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
                 id: req.params.id
             })
@@ -741,11 +638,7 @@ export class App {
         })
 
         // Delete tool
-        this.app.delete('/api/v1/tools/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Tool ${req.params.id} not found`)
-            }
+        this.app.delete('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Tool).delete({ id: req.params.id })
             return res.json(results)
         })
@@ -761,11 +654,7 @@ export class App {
         })
 
         // Get specific assistant
-        this.app.get('/api/v1/assistants/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Assistant ${req.params.id} not found`)
-            }
+        this.app.get('/api/v1/assistants/:id', async (req: Request, res: Response) => {
             const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
                 id: req.params.id
             })
@@ -773,46 +662,33 @@ export class App {
         })
 
         // Get assistant object
-        this.app.get(
-            '/api/v1/openai-assistants/:id',
-            param('id').notEmpty().escape(),
-            query('credential').notEmpty().escape(),
-            async (req: Request, res: Response) => {
-                const valResult = validationResult(req)
-                if (!valResult.isEmpty()) {
-                    return res.status(404).send(`Assistant or Credential not found`)
-                }
-                const credentialId = req.query.credential as string
-                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: credentialId
-                })
+        this.app.get('/api/v1/openai-assistants/:id', async (req: Request, res: Response) => {
+            const credentialId = req.query.credential as string
+            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                id: credentialId
+            })
 
-                if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
+            if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
 
-                // Decrpyt credentialData
-                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-                const openAIApiKey = decryptedCredentialData['openAIApiKey']
-                if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
+            // Decrpyt credentialData
+            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+            const openAIApiKey = decryptedCredentialData['openAIApiKey']
+            if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
 
-                const openai = new OpenAI({ apiKey: openAIApiKey })
-                const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
-                const resp = await openai.files.list()
-                const existingFiles = resp.data ?? []
+            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
+            const resp = await openai.files.list()
+            const existingFiles = resp.data ?? []
 
-                if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
-                    ;(retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
-                }
-
-                return res.json(retrievedAssistant)
+            if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
+                ;(retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
             }
-        )
+
+            return res.json(retrievedAssistant)
+        })
 
         // List available assistants
-        this.app.get('/api/v1/openai-assistants', query('credential').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Assistant or Credential not found`)
-            }
+        this.app.get('/api/v1/openai-assistants', async (req: Request, res: Response) => {
             const credentialId = req.query.credential as string
             const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
                 id: credentialId
@@ -947,11 +823,7 @@ export class App {
         })
 
         // Update assistant
-        this.app.put('/api/v1/assistants/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Assistant ${req.params.id} not found`)
-            }
+        this.app.put('/api/v1/assistants/:id', async (req: Request, res: Response) => {
             const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
                 id: req.params.id
             })
@@ -1059,11 +931,7 @@ export class App {
         })
 
         // Delete assistant
-        this.app.delete('/api/v1/assistants/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Assistant ${req.params.id} not found`)
-            }
+        this.app.delete('/api/v1/assistants/:id', async (req: Request, res: Response) => {
             const assistant = await this.AppDataSource.getRepository(Assistant).findOneBy({
                 id: req.params.id
             })
@@ -1118,11 +986,7 @@ export class App {
         // Configuration
         // ----------------------------------------
 
-        this.app.get('/api/v1/flow-config/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Chatflow ${req.params.id} not found`)
-            }
+        this.app.get('/api/v1/flow-config/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
@@ -1181,11 +1045,7 @@ export class App {
             }
         )
 
-        this.app.post('/api/v1/vector/internal-upsert/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Upsert ${req.params.id} not found`)
-            }
+        this.app.post('/api/v1/vector/internal-upsert/:id', async (req: Request, res: Response) => {
             await this.buildChatflow(req, res, undefined, true, true)
         })
 
@@ -1196,24 +1056,15 @@ export class App {
         // Send input message and get prediction result (External)
         this.app.post(
             '/api/v1/prediction/:id',
-            param('id').notEmpty().escape(),
             upload.array('files'),
             (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
             async (req: Request, res: Response) => {
-                const valResult = validationResult(req)
-                if (!valResult.isEmpty()) {
-                    return res.status(404).send(`Error Processing Prediction`)
-                }
                 await this.buildChatflow(req, res, socketIO)
             }
         )
 
         // Send input message and get prediction result (Internal)
-        this.app.post('/api/v1/internal-prediction/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Error Processing Prediction`)
-            }
+        this.app.post('/api/v1/internal-prediction/:id', async (req: Request, res: Response) => {
             await this.buildChatflow(req, res, socketIO, true)
         })
 
@@ -1308,31 +1159,19 @@ export class App {
         })
 
         // Update api key
-        this.app.put('/api/v1/apikey/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Error Processing Update API Key`)
-            }
+        this.app.put('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await updateAPIKey(req.params.id, req.body.keyName)
             return addChatflowsCount(keys, res)
         })
 
         // Delete new api key
-        this.app.delete('/api/v1/apikey/:id', param('id').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Error Processing Update API Key`)
-            }
+        this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
             const keys = await deleteAPIKey(req.params.id)
             return addChatflowsCount(keys, res)
         })
 
         // Verify api key
-        this.app.get('/api/v1/verify/apikey/:apiKey', param('apikey').notEmpty().escape(), async (req: Request, res: Response) => {
-            const valResult = validationResult(req)
-            if (!valResult.isEmpty()) {
-                return res.status(404).send(`Error Processing API Key`)
-            }
+        this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
             try {
                 const apiKey = await getApiKey(req.params.apiKey)
                 if (!apiKey) return res.status(401).send('Unauthorized')
