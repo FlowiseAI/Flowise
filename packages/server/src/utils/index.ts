@@ -558,9 +558,20 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
             if (inputVariables.length > 0) return true
         }
     }
-    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT', 'chatPromptTemplate', 'promptTemplate'] //If these nodes are found, chatflow cannot be reused
     for (const node of nodes) {
-        if (whitelistNodeNames.includes(node.data.name)) return true
+        if (node.data.name === 'chatPromptTemplate' || node.data.name === 'promptTemplate') {
+            let promptValues: ICommonObject = {}
+            const promptValuesRaw = node.data.inputs?.promptValues
+            if (promptValuesRaw) {
+                try {
+                    promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw)
+                } catch (exception) {
+                    console.error(exception)
+                }
+            }
+            if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true
+        } else if (whitelistNodeNames.includes(node.data.name)) return true
     }
     return false
 }
@@ -912,4 +923,32 @@ export const replaceChatHistory = async (
     }
 
     return ''
+}
+
+/**
+ * Get all values from a JSON object
+ * @param {any} obj
+ * @returns {any[]}
+ */
+export const getAllValuesFromJson = (obj: any): any[] => {
+    const values: any[] = []
+
+    function extractValues(data: any) {
+        if (typeof data === 'object' && data !== null) {
+            if (Array.isArray(data)) {
+                for (const item of data) {
+                    extractValues(item)
+                }
+            } else {
+                for (const key in data) {
+                    extractValues(data[key])
+                }
+            }
+        } else {
+            values.push(data)
+        }
+    }
+
+    extractValues(obj)
+    return values
 }
