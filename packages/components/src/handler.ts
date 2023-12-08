@@ -9,7 +9,7 @@ import { getCredentialData, getCredentialParam } from './utils'
 import { ICommonObject, INodeData } from './Interface'
 import CallbackHandler from 'langfuse-langchain'
 import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
-import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse' // or "langfuse-node"
+import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
 import monitor from 'llmonitor'
 import { v4 as uuidv4 } from 'uuid'
 
