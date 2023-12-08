@@ -8,6 +8,7 @@ import * as path from 'node:path'
 import fetch from 'node-fetch'
 import { flatten, uniqWith, isEqual } from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
+import { AnalyticHandler } from '../../../src/handler'
 
 class OpenAIAssistant_Agents implements INode {
     label: string
@@ -149,6 +150,11 @@ class OpenAIAssistant_Agents implements INode {
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
 
+        // Start analytics
+        const analyticHandlers = new AnalyticHandler(nodeData, options)
+        await analyticHandlers.init()
+        const parentIds = await analyticHandlers.onChainStart('OpenAIAssistant', input)
+
         try {
             const assistantDetails = JSON.parse(assistant.details)
             const openAIAssistantId = assistantDetails.id
@@ -171,7 +177,8 @@ class OpenAIAssistant_Agents implements INode {
             }
 
             const chatmessage = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                chatId: options.chatId
+                chatId: options.chatId,
+                chatflowid: options.chatflowid
             })
 
             let threadId = ''
@@ -185,7 +192,7 @@ class OpenAIAssistant_Agents implements INode {
                 threadId = thread.id
             }
 
-            // List all runs
+            // List all runs, in case existing thread is still running
             if (!isNewThread) {
                 const promise = (threadId: string) => {
                     return new Promise<void>((resolve) => {
@@ -221,6 +228,7 @@ class OpenAIAssistant_Agents implements INode {
             })
 
             // Run assistant thread
+            const llmIds = await analyticHandlers.onLLMStart('ChatOpenAI', input, parentIds)
             const runThread = await openai.beta.threads.runs.create(threadId, {
                 assistant_id: retrievedAssistant.id
             })
@@ -253,7 +261,15 @@ class OpenAIAssistant_Agents implements INode {
                                 for (let i = 0; i < actions.length; i += 1) {
                                     const tool = tools.find((tool: any) => tool.name === actions[i].tool)
                                     if (!tool) continue
+
+                                    // Start tool analytics
+                                    const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
+
                                     const toolOutput = await tool.call(actions[i].toolInput)
+
+                                    // End tool analytics
+                                    await analyticHandlers.onToolEnd(toolIds, toolOutput)
+
                                     submitToolOutputs.push({
                                         tool_call_id: actions[i].toolCallId,
                                         output: toolOutput
@@ -302,7 +318,9 @@ class OpenAIAssistant_Agents implements INode {
                     runThreadId = newRunThread.id
                     state = await promise(threadId, newRunThread.id)
                 } else {
-                    throw new Error(`Error processing thread: ${state}, Thread ID: ${threadId}`)
+                    const errMsg = `Error processing thread: ${state}, Thread ID: ${threadId}`
+                    await analyticHandlers.onChainError(parentIds, errMsg)
+                    throw new Error(errMsg)
                 }
             }
 
@@ -387,10 +405,17 @@ class OpenAIAssistant_Agents implements INode {
                     const bitmap = fsDefault.readFileSync(filePath)
                     const base64String = Buffer.from(bitmap).toString('base64')
 
+                    // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
                     const imgHTML = `<img src="data:image/png;base64,${base64String}" width="100%" height="max-content" alt="${fileObj.filename}" /><br/>`
                     returnVal += imgHTML
                 }
             }
+
+            const imageRegex = /<img[^>]*\/>/g
+            let llmOutput = returnVal.replace(imageRegex, '')
+            llmOutput = llmOutput.replace('<br/>', '')
+            await analyticHandlers.onLLMEnd(llmIds, llmOutput)
+            await analyticHandlers.onChainEnd(parentIds, messageData, true)
 
             return {
                 text: returnVal,
@@ -399,6 +424,7 @@ class OpenAIAssistant_Agents implements INode {
                 assistant: { assistantId: openAIAssistantId, threadId, runId: runThreadId, messages: messageData }
             }
         } catch (error) {
+            await analyticHandlers.onChainError(parentIds, error, true)
             throw new Error(error)
         }
     }
