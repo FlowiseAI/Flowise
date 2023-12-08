@@ -8,6 +8,7 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
+import audioUploadSVG from 'assets/images/wave-sound.jpg'
 
 import {
     Box,
@@ -85,23 +86,21 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         e.preventDefault()
     }
     const isFileAllowedForUpload = (file) => {
-        // check if file type is allowed
-        if (getAllowChatFlowUploads.data?.allowedTypes?.length > 0) {
-            const allowedFileTypes = getAllowChatFlowUploads.data?.allowedTypes
-            if (!allowedFileTypes.includes(file.type)) {
-                alert(`File ${file.name} is not allowed.\nAllowed file types are ${allowedFileTypes.join(', ')}.`)
-                return false
-            }
-        }
-        // check if file size is allowed
-        if (getAllowChatFlowUploads.data?.maxUploadSize > 0) {
+        const constraints = getAllowChatFlowUploads.data
+        let acceptFile = false
+        if (constraints.allowUploads) {
+            const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            if (sizeInMB > getAllowChatFlowUploads.data?.maxUploadSize) {
-                alert(`File ${file.name} is too large.\nMaximum allowed size is ${getAllowChatFlowUploads.data?.maxUploadSize} MB.`)
-                return false
-            }
+            constraints.allowed.map((allowed) => {
+                if (allowed.allowedTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+                    acceptFile = true
+                }
+            })
         }
-        return true
+        if (!acceptFile) {
+            alert(`Cannot upload file. Kindly check the allowed file types and maximum allowed size.`)
+        }
+        return acceptFile
     }
     const handleDrop = async (e) => {
         if (!isChatFlowAvailableForUploads) {
@@ -124,9 +123,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                 return
                             }
                             const { result } = evt.target
+                            let previewUrl
+                            if (file.type.startsWith('audio/')) {
+                                previewUrl = audioUploadSVG
+                            } else if (file.type.startsWith('image/')) {
+                                previewUrl = URL.createObjectURL(file)
+                            }
                             resolve({
                                 data: result,
-                                preview: URL.createObjectURL(file),
+                                preview: previewUrl,
                                 type: 'file',
                                 name: name,
                                 mime: file.type
@@ -240,7 +245,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }
 
     const previewStyle = {
-        width: '64px',
+        width: '128px',
         height: '64px',
         objectFit: 'cover' // This makes the image cover the area, cropping it if necessary
     }
@@ -514,11 +519,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             onDrop={handleDrop}
             className={`file-drop-field`}
         >
-            {isDragOver && (
+            {isDragOver && getAllowChatFlowUploads.data?.allowUploads && (
                 <Box className='drop-overlay'>
                     <Typography variant='h2'>Drop here to upload</Typography>
-                    <Typography variant='subtitle1'>{getAllowChatFlowUploads.data?.allowedTypes?.join(', ')}</Typography>
-                    <Typography variant='subtitle1'>Max Allowed Size: {getAllowChatFlowUploads.data?.maxUploadSize} MB</Typography>
+                    {getAllowChatFlowUploads.data.allowed.map((allowed) => {
+                        return (
+                            <>
+                                <Typography variant='subtitle1'>{allowed.allowedTypes?.join(', ')}</Typography>
+                                <Typography variant='subtitle1'>Max Allowed Size: {allowed.maxUploadSize} MB</Typography>
+                            </>
+                        )
+                    })}
                 </Box>
             )}
             <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
@@ -727,7 +738,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     <Grid container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
                         {previews.map((item, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index}>
-                                <Card variant='outlined' sx={{ maxWidth: 64 }}>
+                                <Card variant='outlined' sx={{ maxWidth: 128 }}>
                                     <CardMedia
                                         component='img'
                                         image={item.preview}
@@ -735,7 +746,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                         alt={`preview ${index}`}
                                         style={previewStyle}
                                     />
-                                    <CardActions className='center' sx={{ padding: 0, margin: 0 }}>
+                                    <CardActions className='center' sx={{ p: 0, m: 0 }}>
                                         <Button
                                             startIcon={<DeleteIcon />}
                                             onClick={() => handleDeletePreview(item)}

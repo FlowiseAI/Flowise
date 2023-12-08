@@ -1212,30 +1212,32 @@ export class App {
         })
     }
 
-    private uploadAllowedNodes = ['OpenAIVisionChain']
+    private uploadAllowedNodes = ['OpenAIMultiModalChain', 'OpenAIWhisper']
     private shouldAllowUploads(result: ChatFlow): any {
         const flowObj = JSON.parse(result.flowData)
         let allowUploads = false
-        let allowedTypes: string[] = []
-        let maxUploadSize: number = -1
+        const allowances: any = []
         flowObj.nodes.forEach((node: IReactFlowNode) => {
             if (this.uploadAllowedNodes.indexOf(node.data.type) > -1) {
                 logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
                 allowUploads = true
+                const allowance: any = {}
                 node.data.inputParams.map((param: any) => {
                     if (param.name === 'allowedUploadTypes') {
-                        allowedTypes = param.default.split(';')
+                        allowance.allowedTypes = param.default.split(';')
                     }
                     if (param.name === 'maxUploadSize') {
-                        maxUploadSize = parseInt(param.default ? param.default : '0')
+                        allowance.maxUploadSize = parseInt(param.default ? param.default : '0')
                     }
                 })
+                if (allowance.allowedTypes && allowance.maxUploadSize) {
+                    allowances.push(allowance)
+                }
             }
         })
         return {
             allowUploads,
-            allowedTypes,
-            maxUploadSize
+            allowed: allowances
         }
     }
 

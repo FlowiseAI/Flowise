@@ -19,14 +19,14 @@ class OpenAIVisionChain_Chains implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'Open AI Vision Chain'
-        this.name = 'openAIVisionChain'
+        this.label = 'Open AI MultiModal Chain'
+        this.name = 'openAIMultiModalChain'
         this.version = 1.0
-        this.type = 'OpenAIVisionChain'
+        this.type = 'OpenAIMultiModalChain'
         this.icon = 'chain.svg'
         this.category = 'Chains'
         this.badge = 'BETA'
-        this.description = 'Chain to run queries against OpenAI (GPT-4) Vision .'
+        this.description = 'Chain to query against Image and Audio Input.'
         this.baseClasses = [this.type, ...getBaseClasses(VLLMChain)]
         this.credential = {
             label: 'Connect Credential',
@@ -36,16 +36,9 @@ class OpenAIVisionChain_Chains implements INode {
         }
         this.inputs = [
             {
-                label: 'Model Name',
-                name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4-vision-preview',
-                        name: 'gpt-4-vision-preview'
-                    }
-                ],
-                default: 'gpt-4-vision-preview',
+                label: 'Audio Input',
+                name: 'audioInput',
+                type: 'OpenAIWhisper',
                 optional: true
             },
             {
@@ -53,6 +46,22 @@ class OpenAIVisionChain_Chains implements INode {
                 name: 'prompt',
                 type: 'BasePromptTemplate',
                 optional: true
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'gpt-4-vision-preview',
+                        name: 'gpt-4-vision-preview'
+                    },
+                    {
+                        label: 'whisper-1',
+                        name: 'whisper-1'
+                    }
+                ],
+                default: 'gpt-4-vision-preview'
             },
             {
                 label: 'Image Resolution',
@@ -122,8 +131,8 @@ class OpenAIVisionChain_Chains implements INode {
         ]
         this.outputs = [
             {
-                label: 'Open AI Vision Chain',
-                name: 'openAIVisionChain',
+                label: 'Open AI MultiModal Chain',
+                name: 'OpenAIMultiModalChain',
                 baseClasses: [this.type, ...getBaseClasses(VLLMChain)]
             },
             {
