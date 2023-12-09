@@ -1044,18 +1044,9 @@ export class App {
         // ----------------------------------------
         this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
             try {
-                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: req.body.credential
-                })
-
-                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
-
-                // Decrypt credentialData
-                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-                let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
+                let hub = new Client()
                 const prompt = await hub.pull(req.body.promptName)
                 const templates = parsePrompt(prompt)
-
                 return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
             } catch (e: any) {
                 return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
@@ -1064,22 +1055,10 @@ export class App {
 
         this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
             try {
-                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: req.body.credential
-                })
-
-                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
-                // Decrypt credentialData
-                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-
-                const headers = {}
-                // @ts-ignore
-                headers['x-api-key'] = decryptedCredentialData.langsmithApiKey
-
                 const tags = req.body.tags ? `tags=${req.body.tags}` : ''
                 // Default to 100, TODO: add pagination and use offset & limit
-                const url = `https://web.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
-                axios.get(url, headers).then((response) => {
+                const url = `https://api.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
+                axios.get(url).then((response) => {
                     if (response.data.repos) {
                         return res.json({ status: 'OK', repos: response.data.repos })
                     }
