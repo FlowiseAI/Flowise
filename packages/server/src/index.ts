@@ -1394,16 +1394,19 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
 
-            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
+            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
+             * - Its not an Upsert request
+             * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
                 return (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                    this.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
                     isSameOverrideConfig(
                         isInternal,
                         this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
@@ -1415,7 +1418,7 @@ export class App {
             }
 
             if (isFlowReusable()) {
-                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
                 isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
                 logger.debug(
                     `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
@@ -1466,6 +1469,7 @@ export class App {
                 const constructedObj = constructGraphs(nodes, edges, true)
                 const nonDirectedGraph = constructedObj.graph
                 const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                 /*** BFS to traverse from Starting Nodes to Ending Node ***/
@@ -1485,13 +1489,18 @@ export class App {
                     isUpsert,
                     incomingInput.stopNodeId
                 )
-                if (isUpsert) return res.status(201).send('Successfully Upserted')
+                if (isUpsert) {
+                    this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+                    return res.status(201).send('Successfully Upserted')
+                }
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                 if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
-                if (incomingInput.overrideConfig)
+                if (incomingInput.overrideConfig) {
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+                }
+
                 const reactFlowNodeData: INodeData = resolveVariables(
                     nodeToExecute.data,
                     reactFlowNodes,
@@ -1500,7 +1509,6 @@ export class App {
                 )
                 nodeToExecuteData = reactFlowNodeData
 
-                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
