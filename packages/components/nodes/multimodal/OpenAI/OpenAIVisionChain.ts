@@ -132,7 +132,7 @@ class OpenAIVisionChain_Chains implements INode {
         this.outputs = [
             {
                 label: 'Open AI MultiModal Chain',
-                name: 'OpenAIMultiModalChain',
+                name: 'openAIMultiModalChain',
                 baseClasses: [this.type, ...getBaseClasses(VLLMChain)]
             },
             {
@@ -154,6 +154,8 @@ class OpenAIVisionChain_Chains implements INode {
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
+        const whisperConfig = nodeData.inputs?.audioInput
+
         const fields: OpenAIVisionChainInput = {
             openAIApiKey: openAIApiKey,
             imageResolution: imageResolution,
@@ -164,6 +166,8 @@ class OpenAIVisionChain_Chains implements INode {
         if (temperature) fields.temperature = parseFloat(temperature)
         if (maxTokens) fields.maxTokens = parseInt(maxTokens, 10)
         if (topP) fields.topP = parseFloat(topP)
+        if (whisperConfig) fields.whisperConfig = whisperConfig
+
         if (output === this.name) {
             const chain = new VLLMChain({
                 ...fields,

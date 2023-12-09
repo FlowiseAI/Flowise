@@ -21,6 +21,7 @@ export interface OpenAIVisionChainInput extends ChainInputs {
     modelName?: string
     maxTokens?: number
     topP?: number
+    whisperConfig?: any
 }
 
 /**
@@ -48,6 +49,8 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
     maxTokens?: number
     topP?: number
 
+    whisperConfig?: any
+
     constructor(fields: OpenAIVisionChainInput) {
         super(fields)
         this.throwError = fields?.throwError ?? false
@@ -59,6 +62,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         this.maxTokens = fields?.maxTokens
         this.topP = fields?.topP
         this.imageUrls = fields?.imageUrls ?? []
+        this.whisperConfig = fields?.whisperConfig ?? {}
         if (!this.openAIApiKey) {
             throw new Error('OpenAI API key not found')
         }
@@ -92,15 +96,44 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
             type: 'text',
             text: userInput
         })
+        if (this.whisperConfig && this.imageUrls && this.imageUrls.length > 0) {
+            const audioUploads = this.getAudioUploads(this.imageUrls)
+            for (const url of audioUploads) {
+                const filePath = path.join(getUserHome(), '.flowise', 'gptvision', url.data, url.name)
+
+                // as the image is stored in the server, read the file and convert it to base64
+                const audio_file = fs.createReadStream(filePath)
+                if (this.whisperConfig.purpose === 'transcription') {
+                    const transcription = await this.client.audio.transcriptions.create({
+                        file: audio_file,
+                        model: 'whisper-1'
+                    })
+                    userRole.content.push({
+                        type: 'text',
+                        text: transcription.text
+                    })
+                } else if (this.whisperConfig.purpose === 'translation') {
+                    const translation = await this.client.audio.translations.create({
+                        file: audio_file,
+                        model: 'whisper-1'
+                    })
+                    userRole.content.push({
+                        type: 'text',
+                        text: translation.text
+                    })
+                }
+            }
+        }
         if (this.imageUrls && this.imageUrls.length > 0) {
-            this.imageUrls.forEach((imageUrl: any) => {
-                let bf = imageUrl?.data
-                if (imageUrl.type == 'stored-file') {
-                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', imageUrl.data, imageUrl.name)
+            const imageUploads = this.getImageUploads(this.imageUrls)
+            for (const url of imageUploads) {
+                let bf = url.data
+                if (url.type == 'stored-file') {
+                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', url.data, url.name)
 
                     // as the image is stored in the server, read the file and convert it to base64
                     const contents = fs.readFileSync(filePath)
-                    bf = 'data:' + imageUrl.mime + ';base64,' + contents.toString('base64')
+                    bf = 'data:' + url.mime + ';base64,' + contents.toString('base64')
                 }
                 userRole.content.push({
                     type: 'image_url',
@@ -109,7 +142,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
                         detail: this.imageResolution
                     }
                 })
-            })
+            }
         }
         vRequest.messages.push(userRole)
         if (this.prompt && this.prompt instanceof ChatPromptTemplate) {
@@ -144,6 +177,14 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         return {
             [this.outputKey]: output.message.content
         }
+    }
+
+    getAudioUploads = (urls: any[]) => {
+        return urls.filter((url: any) => url.mime.startsWith('audio/'))
+    }
+
+    getImageUploads = (urls: any[]) => {
+        return urls.filter((url: any) => url.mime.startsWith('image/'))
     }
 
     _chainType() {

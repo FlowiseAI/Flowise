@@ -7,6 +7,7 @@ class OpenAIAudioWhisper implements INode {
     description: string
     type: string
     icon: string
+    badge: string
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
@@ -18,6 +19,7 @@ class OpenAIAudioWhisper implements INode {
         this.type = 'OpenAIWhisper'
         this.description = 'Speech to text using OpenAI Whisper API'
         this.icon = 'audio.svg'
+        this.badge = 'BETA'
         this.category = 'MultiModal'
         this.baseClasses = [this.type]
         this.inputs = [
@@ -27,14 +29,15 @@ class OpenAIAudioWhisper implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'transcription',
+                        label: 'Transcription',
                         name: 'transcription'
                     },
                     {
-                        label: 'translation',
+                        label: 'Translation',
                         name: 'translation'
                     }
-                ]
+                ],
+                default: 'transcription'
             },
             {
                 label: 'Accepted Upload Types',
@@ -54,7 +57,9 @@ class OpenAIAudioWhisper implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        return {}
+        const purpose = nodeData.inputs?.purpose as string
+
+        return { purpose }
     }
 }
 

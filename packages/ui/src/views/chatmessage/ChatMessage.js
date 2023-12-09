@@ -14,7 +14,6 @@ import {
     Box,
     Button,
     Card,
-    CardActions,
     CardMedia,
     Chip,
     CircularProgress,
@@ -48,7 +47,6 @@ import { baseURL, maxScroll } from 'store/constant'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
-import DeleteIcon from '@mui/icons-material/Delete'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -628,15 +626,25 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             {message.fileUploads &&
                                                 message.fileUploads.map((item, index) => {
                                                     return (
-                                                        <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
-                                                            <CardMedia
-                                                                component='img'
-                                                                image={item.data}
-                                                                sx={{ height: 64 }}
-                                                                alt={'preview'}
-                                                                style={messageImageStyle}
-                                                            />
-                                                        </Card>
+                                                        <>
+                                                            {item.mime.startsWith('image/') ? (
+                                                                <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
+                                                                    <CardMedia
+                                                                        component='img'
+                                                                        image={item.data}
+                                                                        sx={{ height: 64 }}
+                                                                        alt={'preview'}
+                                                                        style={messageImageStyle}
+                                                                    />
+                                                                </Card>
+                                                            ) : (
+                                                                // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                <audio controls='controls'>
+                                                                    Your browser does not support the &lt;audio&gt; tag.
+                                                                    <source src={item.data} type={item.mime} />
+                                                                </audio>
+                                                            )}
+                                                        </>
                                                     )
                                                 })}
                                             {message.sourceDocuments && (
@@ -738,23 +746,23 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     <Grid container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
                         {previews.map((item, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index}>
-                                <Card variant='outlined' sx={{ maxWidth: 128 }}>
-                                    <CardMedia
-                                        component='img'
-                                        image={item.preview}
-                                        sx={{ height: 64 }}
-                                        alt={`preview ${index}`}
-                                        style={previewStyle}
-                                    />
-                                    <CardActions className='center' sx={{ p: 0, m: 0 }}>
-                                        <Button
-                                            startIcon={<DeleteIcon />}
-                                            onClick={() => handleDeletePreview(item)}
-                                            size='small'
-                                            variant='text'
+                                {item.mime.startsWith('image/') ? (
+                                    <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
+                                        <CardMedia
+                                            component='img'
+                                            image={item.data}
+                                            sx={{ height: 64 }}
+                                            alt={'preview'}
+                                            style={previewStyle}
                                         />
-                                    </CardActions>
-                                </Card>
+                                    </Card>
+                                ) : (
+                                    // eslint-disable-next-line jsx-a11y/media-has-caption
+                                    <audio controls='controls'>
+                                        Your browser does not support the &lt;audio&gt; tag.
+                                        <source src={item.data} type={item.mime} />
+                                    </audio>
+                                )}
                             </Grid>
                         ))}
                     </Grid>
