@@ -1,17 +1,17 @@
-import { useState } from 'react'
-import PropTypes from 'prop-types'
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 
-import { Tabs, Tab, Box } from '@mui/material'
-import { CopyBlock, atomOneDark } from 'react-code-blocks'
+import { Tabs, Tab, Box } from '@mui/material';
+import { CopyBlock, atomOneDark } from 'react-code-blocks';
 
 // Project import
-import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
+import { CheckboxInput } from 'ui-component/checkbox/Checkbox';
 
 // Const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props
+    const { children, value, index, ...other } = props;
     return (
         <div
             role='tabpanel'
@@ -22,20 +22,20 @@ function TabPanel(props) {
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
         </div>
-    )
+    );
 }
 
 TabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
     value: PropTypes.number.isRequired
-}
+};
 
 function a11yProps(index) {
     return {
         id: `attachment-tab-${index}`,
         'aria-controls': `attachment-tabpanel-${index}`
-    }
+    };
 }
 
 const embedPopupHtmlCode = (chatflowid) => {
@@ -45,8 +45,8 @@ const embedPopupHtmlCode = (chatflowid) => {
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
     })
-</script>`
-}
+</script>`;
+};
 
 const embedPopupReactCode = (chatflowid) => {
     return `import { BubbleChat } from 'flowise-embed-react'
@@ -55,8 +55,8 @@ const App = () => {
     return (
         <BubbleChat chatflowid="${chatflowid}" apiHost="${baseURL}" />
     );
-};`
-}
+};`;
+};
 
 const embedFullpageHtmlCode = (chatflowid) => {
     return `<flowise-fullchatbot></flowise-fullchatbot>
@@ -66,8 +66,8 @@ const embedFullpageHtmlCode = (chatflowid) => {
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
     })
-</script>`
-}
+</script>`;
+};
 
 const embedFullpageReactCode = (chatflowid) => {
     return `import { FullPageChat } from "flowise-embed-react"
@@ -79,8 +79,8 @@ const App = () => {
             apiHost="${baseURL}"
         />
     );
-};`
-}
+};`;
+};
 
 const buttonConfig = (isReact = false) => {
     return isReact
@@ -99,8 +99,8 @@ const buttonConfig = (isReact = false) => {
                 size: "medium",
                 iconColor: "white",
                 customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
-            }`
-}
+            }`;
+};
 
 const chatwindowConfig = (isReact = false) => {
     return isReact
@@ -155,8 +155,8 @@ const chatwindowConfig = (isReact = false) => {
                     textColor: "#303235",
                     sendButtonColor: "#3B81F6",
                 }
-            }`
-}
+            }`;
+};
 
 const embedPopupHtmlCodeCustomization = (chatflowid) => {
     return `<script type="module">
@@ -172,8 +172,8 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
             ${chatwindowConfig()}
         }
     })
-</script>`
-}
+</script>`;
+};
 
 const embedPopupReactCodeCustomization = (chatflowid) => {
     return `import { BubbleChat } from 'flowise-embed-react'
@@ -189,8 +189,8 @@ const App = () => {
             }}
         />
     );
-};`
-}
+};`;
+};
 
 const embedFullpageHtmlCodeCustomization = (chatflowid) => {
     return `<flowise-fullchatbot></flowise-fullchatbot>
@@ -203,8 +203,8 @@ const embedFullpageHtmlCodeCustomization = (chatflowid) => {
             ${chatwindowConfig()}
         }
     })
-</script>`
-}
+</script>`;
+};
 
 const embedFullpageReactCodeCustomization = (chatflowid) => {
     return `import { FullPageChat } from "flowise-embed-react"
@@ -219,51 +219,51 @@ const App = () => {
             }}
         />
     );
-};`
-}
+};`;
+};
 
 const EmbedChat = ({ chatflowid }) => {
-    const codes = ['Popup Html', 'Fullpage Html', 'Popup React', 'Fullpage React']
-    const [value, setValue] = useState(0)
-    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
+    const codes = ['Popup Html', 'Fullpage Html', 'Popup React', 'Fullpage React'];
+    const [value, setValue] = useState(0);
+    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false);
 
     const onCheckBoxEmbedChatChanged = (newVal) => {
-        setEmbedChatCheckbox(newVal)
-    }
+        setEmbedChatCheckbox(newVal);
+    };
 
     const handleChange = (event, newValue) => {
-        setValue(newValue)
-    }
+        setValue(newValue);
+    };
 
     const getCode = (codeLang) => {
         switch (codeLang) {
             case 'Popup Html':
-                return embedPopupHtmlCode(chatflowid)
+                return embedPopupHtmlCode(chatflowid);
             case 'Fullpage Html':
-                return embedFullpageHtmlCode(chatflowid)
+                return embedFullpageHtmlCode(chatflowid);
             case 'Popup React':
-                return embedPopupReactCode(chatflowid)
+                return embedPopupReactCode(chatflowid);
             case 'Fullpage React':
-                return embedFullpageReactCode(chatflowid)
+                return embedFullpageReactCode(chatflowid);
             default:
-                return ''
+                return '';
         }
-    }
+    };
 
     const getCodeCustomization = (codeLang) => {
         switch (codeLang) {
             case 'Popup Html':
-                return embedPopupHtmlCodeCustomization(chatflowid)
+                return embedPopupHtmlCodeCustomization(chatflowid);
             case 'Fullpage Html':
-                return embedFullpageHtmlCodeCustomization(chatflowid)
+                return embedFullpageHtmlCodeCustomization(chatflowid);
             case 'Popup React':
-                return embedPopupReactCodeCustomization(chatflowid)
+                return embedPopupReactCodeCustomization(chatflowid);
             case 'Fullpage React':
-                return embedFullpageReactCodeCustomization(chatflowid)
+                return embedFullpageReactCodeCustomization(chatflowid);
             default:
-                return ''
+                return '';
         }
-    }
+    };
 
     return (
         <>
@@ -314,11 +314,11 @@ const EmbedChat = ({ chatflowid }) => {
                 </TabPanel>
             ))}
         </>
-    )
-}
+    );
+};
 
 EmbedChat.propTypes = {
     chatflowid: PropTypes.string
-}
+};
 
-export default EmbedChat
+export default EmbedChat;

@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { Popper, FormControl, TextField, Box, Typography } from '@mui/material'
-import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
-import { styled } from '@mui/material/styles'
-import PropTypes from 'prop-types'
+import { Popper, FormControl, TextField, Box, Typography } from '@mui/material';
+import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete';
+import { styled } from '@mui/material/styles';
+import PropTypes from 'prop-types';
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -16,18 +16,18 @@ const StyledPopper = styled(Popper)({
             margin: 10
         }
     }
-})
+});
 
 export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = {}, disabled = false, disableClearable = false }) => {
-    const customization = useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization);
     const findMatchingOptions = (options = [], internalValue) => {
-        let values = []
-        if (internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue)
-        else values = internalValue
-        return options.filter((option) => values.includes(option.name))
-    }
-    const getDefaultOptionValue = () => []
-    let [internalValue, setInternalValue] = useState(value ?? [])
+        let values = [];
+        if (internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue);
+        else values = internalValue;
+        return options.filter((option) => values.includes(option.name));
+    };
+    const getDefaultOptionValue = () => [];
+    let [internalValue, setInternalValue] = useState(value ?? []);
 
     return (
         <FormControl sx={{ mt: 1, width: '100%', ...formControlSx }} size='small'>
@@ -41,16 +41,16 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
                 options={options || []}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
                 onChange={(e, selections) => {
-                    let value = ''
+                    let value = '';
                     if (selections.length) {
-                        const selectionNames = []
+                        const selectionNames = [];
                         for (let i = 0; i < selections.length; i += 1) {
-                            selectionNames.push(selections[i].name)
+                            selectionNames.push(selections[i].name);
                         }
-                        value = JSON.stringify(selectionNames)
+                        value = JSON.stringify(selectionNames);
                     }
-                    setInternalValue(value)
-                    onSelect(value)
+                    setInternalValue(value);
+                    onSelect(value);
                 }}
                 PopperComponent={StyledPopper}
                 renderInput={(params) => <TextField {...params} value={internalValue} />}
@@ -66,8 +66,8 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
                 )}
             />
         </FormControl>
-    )
-}
+    );
+};
 
 MultiDropdown.propTypes = {
     name: PropTypes.string,
@@ -77,4 +77,4 @@ MultiDropdown.propTypes = {
     disabled: PropTypes.bool,
     formControlSx: PropTypes.object,
     disableClearable: PropTypes.bool
-}
+};

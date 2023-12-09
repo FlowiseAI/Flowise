@@ -1,29 +1,29 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright'
-import { test } from 'linkifyjs'
-import { webCrawl, xmlScrape } from '../../../src'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { TextSplitter } from 'langchain/text_splitter';
+import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright';
+import { test } from 'linkifyjs';
+import { webCrawl, xmlScrape } from '../../../src';
 
 class Playwright_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Playwright Web Scraper'
-        this.name = 'playwrightWebScraper'
-        this.version = 1.0
-        this.type = 'Document'
-        this.icon = 'playwright.svg'
-        this.category = 'Document Loaders'
-        this.description = `Load data from webpages`
-        this.baseClasses = [this.type]
+        this.label = 'Playwright Web Scraper';
+        this.name = 'playwrightWebScraper';
+        this.version = 1.0;
+        this.type = 'Document';
+        this.icon = 'playwright.svg';
+        this.category = 'Document Loaders';
+        this.description = `Load data from webpages`;
+        this.baseClasses = [this.type];
         this.inputs = [
             {
                 label: 'URL',
@@ -111,77 +111,82 @@ class Playwright_DocumentLoaders implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const metadata = nodeData.inputs?.metadata
-        const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
-        let limit = nodeData.inputs?.limit as string
-        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
-        let waitForSelector = nodeData.inputs?.waitForSelector as string
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter;
+        const metadata = nodeData.inputs?.metadata;
+        const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string;
+        let limit = nodeData.inputs?.limit as string;
+        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as
+            | 'load'
+            | 'domcontentloaded'
+            | 'networkidle'
+            | 'commit'
+            | undefined;
+        let waitForSelector = nodeData.inputs?.waitForSelector as string;
 
-        let url = nodeData.inputs?.url as string
-        url = url.trim()
+        let url = nodeData.inputs?.url as string;
+        url = url.trim();
         if (!test(url)) {
-            throw new Error('Invalid URL')
+            throw new Error('Invalid URL');
         }
 
         async function playwrightLoader(url: string): Promise<any> {
             try {
-                let docs = []
+                let docs = [];
                 const config: PlaywrightWebBaseLoaderOptions = {
                     launchOptions: {
                         args: ['--no-sandbox'],
                         headless: true
                     }
-                }
+                };
                 if (waitUntilGoToOption) {
                     config['gotoOptions'] = {
                         waitUntil: waitUntilGoToOption
-                    }
+                    };
                 }
                 if (waitForSelector) {
                     config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
-                        await page.waitForSelector(waitForSelector)
+                        await page.waitForSelector(waitForSelector);
 
-                        const result = await page.evaluate(() => document.body.innerHTML)
-                        return result
-                    }
+                        const result = await page.evaluate(() => document.body.innerHTML);
+                        return result;
+                    };
                 }
-                const loader = new PlaywrightWebBaseLoader(url, config)
+                const loader = new PlaywrightWebBaseLoader(url, config);
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.loadAndSplit(textSplitter);
                 } else {
-                    docs = await loader.load()
+                    docs = await loader.load();
                 }
-                return docs
+                return docs;
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in PlaywrightWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true') console.error(`error in PlaywrightWebBaseLoader: ${err.message}, on page: ${url}`);
             }
         }
 
-        let docs = []
+        let docs = [];
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            if (!limit) limit = '10'
-            else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
+            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`);
+            if (!limit) limit = '10';
+            else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0');
             const pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
-            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
-            if (!pages || pages.length === 0) throw new Error('No relative links found')
+                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit));
+            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`);
+            if (!pages || pages.length === 0) throw new Error('No relative links found');
             for (const page of pages) {
-                docs.push(...(await playwrightLoader(page)))
+                docs.push(...(await playwrightLoader(page)));
             }
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`);
         } else {
-            docs = await playwrightLoader(url)
+            docs = await playwrightLoader(url);
         }
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
+            let finaldocs = [];
             for (const doc of docs) {
                 const newdoc = {
                     ...doc,
@@ -189,14 +194,14 @@ class Playwright_DocumentLoaders implements INode {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-                finaldocs.push(newdoc)
+                };
+                finaldocs.push(newdoc);
             }
-            return finaldocs
+            return finaldocs;
         }
 
-        return docs
+        return docs;
     }
 }
 
-module.exports = { nodeClass: Playwright_DocumentLoaders }
+module.exports = { nodeClass: Playwright_DocumentLoaders };

@@ -1,18 +1,18 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface';
 
 class AzureOpenAIApi implements INodeCredential {
-    label: string
-    name: string
-    version: number
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Azure OpenAI API'
-        this.name = 'azureOpenAIApi'
-        this.version = 1.0
+        this.label = 'Azure OpenAI API';
+        this.name = 'azureOpenAIApi';
+        this.version = 1.0;
         this.description =
-            'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service'
+            'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service';
         this.inputs = [
             {
                 label: 'Azure OpenAI Api Key',
@@ -40,8 +40,8 @@ class AzureOpenAIApi implements INodeCredential {
                 description:
                     'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#chat-completions">examples</a>'
             }
-        ]
+        ];
     }
 }
 
-module.exports = { credClass: AzureOpenAIApi }
+module.exports = { credClass: AzureOpenAIApi };

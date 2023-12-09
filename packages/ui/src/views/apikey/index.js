@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
 
 // material-ui
 import {
@@ -22,25 +22,25 @@ import {
     TextField,
     InputAdornment,
     ButtonGroup
-} from '@mui/material'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import { useTheme, styled } from '@mui/material/styles'
+} from '@mui/material';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import { useTheme, styled } from '@mui/material/styles';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import APIKeyDialog from './APIKeyDialog'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import APIKeyDialog from './APIKeyDialog';
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog';
 
 // API
-import apiKeyApi from 'api/apikey'
+import apiKeyApi from 'api/apikey';
 
 // Hooks
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import useApi from 'hooks/useApi';
+import useConfirm from 'hooks/useConfirm';
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from 'utils/useNotifier';
 
 // Icons
 import {
@@ -54,27 +54,27 @@ import {
     IconPlus,
     IconEye,
     IconEyeOff
-} from '@tabler/icons'
-import APIEmptySVG from 'assets/images/api_empty.svg'
-import * as PropTypes from 'prop-types'
-import moment from 'moment/moment'
+} from '@tabler/icons';
+import APIEmptySVG from 'assets/images/api_empty.svg';
+import * as PropTypes from 'prop-types';
+import moment from 'moment/moment';
 
 // ==============================|| APIKey ||============================== //
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
         backgroundColor: theme.palette.action.hover
     }
-}))
+}));
 
 const StyledTableRow = styled(TableRow)(() => ({
     // hide last border
     '&:last-child td, &:last-child th': {
         border: 0
     }
-}))
+}));
 
 function APIKeyRow(props) {
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
     return (
         <>
             <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -168,7 +168,7 @@ function APIKeyRow(props) {
                 </TableRow>
             )}
         </>
-    )
+    );
 }
 
 APIKeyRow.propTypes = {
@@ -182,52 +182,52 @@ APIKeyRow.propTypes = {
     theme: PropTypes.any,
     onEditClick: PropTypes.func,
     onDeleteClick: PropTypes.func
-}
+};
 const APIKey = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
 
-    const dispatch = useDispatch()
-    useNotifier()
+    const dispatch = useDispatch();
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [showDialog, setShowDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState({})
-    const [apiKeys, setAPIKeys] = useState([])
-    const [anchorEl, setAnchorEl] = useState(null)
-    const [showApiKeys, setShowApiKeys] = useState([])
-    const openPopOver = Boolean(anchorEl)
+    const [showDialog, setShowDialog] = useState(false);
+    const [dialogProps, setDialogProps] = useState({});
+    const [apiKeys, setAPIKeys] = useState([]);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [showApiKeys, setShowApiKeys] = useState([]);
+    const openPopOver = Boolean(anchorEl);
 
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState('');
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+        setSearch(event.target.value);
+    };
     function filterKeys(data) {
-        return data.keyName.toLowerCase().indexOf(search.toLowerCase()) > -1
+        return data.keyName.toLowerCase().indexOf(search.toLowerCase()) > -1;
     }
 
-    const { confirm } = useConfirm()
+    const { confirm } = useConfirm();
 
-    const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
+    const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys);
 
     const onShowApiKeyClick = (apikey) => {
-        const index = showApiKeys.indexOf(apikey)
+        const index = showApiKeys.indexOf(apikey);
         if (index > -1) {
             //showApiKeys.splice(index, 1)
             const newShowApiKeys = showApiKeys.filter(function (item) {
-                return item !== apikey
-            })
-            setShowApiKeys(newShowApiKeys)
+                return item !== apikey;
+            });
+            setShowApiKeys(newShowApiKeys);
         } else {
-            setShowApiKeys((prevkeys) => [...prevkeys, apikey])
+            setShowApiKeys((prevkeys) => [...prevkeys, apikey]);
         }
-    }
+    };
 
     const handleClosePopOver = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+    };
 
     const addNew = () => {
         const dialogProp = {
@@ -235,10 +235,10 @@ const APIKey = () => {
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add'
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProp);
+        setShowDialog(true);
+    };
 
     const edit = (key) => {
         const dialogProp = {
@@ -247,10 +247,10 @@ const APIKey = () => {
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
             key
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProp);
+        setShowDialog(true);
+    };
 
     const deleteKey = async (key) => {
         const confirmPayload = {
@@ -261,12 +261,12 @@ const APIKey = () => {
                     : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                const deleteResp = await apiKeyApi.deleteAPI(key.id)
+                const deleteResp = await apiKeyApi.deleteAPI(key.id);
                 if (deleteResp.data) {
                     enqueueSnackbar({
                         message: 'API key deleted',
@@ -279,11 +279,11 @@ const APIKey = () => {
                                 </Button>
                             )
                         }
-                    })
-                    onConfirm()
+                    });
+                    onConfirm();
                 }
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: `Failed to delete API key: ${errorData}`,
                     options: {
@@ -296,28 +296,28 @@ const APIKey = () => {
                             </Button>
                         )
                     }
-                })
-                onCancel()
+                });
+                onCancel();
             }
         }
-    }
+    };
 
     const onConfirm = () => {
-        setShowDialog(false)
-        getAllAPIKeysApi.request()
-    }
+        setShowDialog(false);
+        getAllAPIKeysApi.request();
+    };
 
     useEffect(() => {
-        getAllAPIKeysApi.request()
+        getAllAPIKeysApi.request();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (getAllAPIKeysApi.data) {
-            setAPIKeys(getAllAPIKeysApi.data)
+            setAPIKeys(getAllAPIKeysApi.data);
         }
-    }, [getAllAPIKeysApi.data])
+    }, [getAllAPIKeysApi.data]);
 
     return (
         <>
@@ -399,11 +399,11 @@ const APIKey = () => {
                                         apiKey={key}
                                         showApiKeys={showApiKeys}
                                         onCopyClick={(event) => {
-                                            navigator.clipboard.writeText(key.apiKey)
-                                            setAnchorEl(event.currentTarget)
+                                            navigator.clipboard.writeText(key.apiKey);
+                                            setAnchorEl(event.currentTarget);
                                             setTimeout(() => {
-                                                handleClosePopOver()
-                                            }, 1500)
+                                                handleClosePopOver();
+                                            }, 1500);
                                         }}
                                         onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
                                         open={openPopOver}
@@ -427,7 +427,7 @@ const APIKey = () => {
             ></APIKeyDialog>
             <ConfirmDialog />
         </>
-    )
-}
+    );
+};
 
-export default APIKey
+export default APIKey;

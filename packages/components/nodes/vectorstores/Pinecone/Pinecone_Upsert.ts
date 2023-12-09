@@ -1,41 +1,41 @@
-import { flatten } from 'lodash'
-import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { flatten } from 'lodash';
+import { Pinecone } from '@pinecone-database/pinecone';
+import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone';
+import { Embeddings } from 'langchain/embeddings/base';
+import { Document } from 'langchain/document';
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
 
 class PineconeUpsert_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'Pinecone Upsert Document'
-        this.name = 'pineconeUpsert'
-        this.version = 1.0
-        this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
-        this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Pinecone'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'DEPRECATING'
+        this.label = 'Pinecone Upsert Document';
+        this.name = 'pineconeUpsert';
+        this.version = 1.0;
+        this.type = 'Pinecone';
+        this.icon = 'pinecone.png';
+        this.category = 'Vector Stores';
+        this.description = 'Upsert documents to Pinecone';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'DEPRECATING';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['pineconeApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -70,7 +70,7 @@ class PineconeUpsert_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Pinecone Retriever',
@@ -82,54 +82,54 @@ class PineconeUpsert_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(PineconeStore)]
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const index = nodeData.inputs?.pineconeIndex as string
-        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
-        const docs = nodeData.inputs?.document as Document[]
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const index = nodeData.inputs?.pineconeIndex as string;
+        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string;
+        const docs = nodeData.inputs?.document as Document[];
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const output = nodeData.outputs?.output as string;
+        const topK = nodeData.inputs?.topK as string;
+        const k = topK ? parseFloat(topK) : 4;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData);
+        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData);
 
         const client = new Pinecone({
             apiKey: pineconeApiKey,
             environment: pineconeEnv
-        })
+        });
 
-        const pineconeIndex = client.Index(index)
+        const pineconeIndex = client.Index(index);
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
+        const flattenDocs = docs && docs.length ? flatten(docs) : [];
+        const finalDocs = [];
         for (let i = 0; i < flattenDocs.length; i += 1) {
             if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                finalDocs.push(new Document(flattenDocs[i]))
+                finalDocs.push(new Document(flattenDocs[i]));
             }
         }
 
         const obj: PineconeLibArgs = {
             pineconeIndex
-        }
+        };
 
-        if (pineconeNamespace) obj.namespace = pineconeNamespace
+        if (pineconeNamespace) obj.namespace = pineconeNamespace;
 
-        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
+        const vectorStore = await PineconeStore.fromDocuments(finalDocs, embeddings, obj);
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
+            const retriever = vectorStore.asRetriever(k);
+            return retriever;
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
-module.exports = { nodeClass: PineconeUpsert_VectorStores }
+module.exports = { nodeClass: PineconeUpsert_VectorStores };

@@ -1,85 +1,85 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import ItemCard from 'ui-component/cards/ItemCard'
-import { gridSpacing } from 'store/constant'
-import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import LoginDialog from 'ui-component/dialog/LoginDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import ItemCard from 'ui-component/cards/ItemCard';
+import { gridSpacing } from 'store/constant';
+import WorkflowEmptySVG from 'assets/images/workflow_empty.svg';
+import LoginDialog from 'ui-component/dialog/LoginDialog';
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from 'api/chatflows';
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from 'hooks/useApi';
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 // icons
-import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons'
-import * as React from 'react'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { FlowListTable } from '../../ui-component/table/FlowListTable'
-import { StyledButton } from '../../ui-component/button/StyledButton'
+import { IconPlus, IconSearch, IconLayoutGrid, IconList } from '@tabler/icons';
+import * as React from 'react';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { FlowListTable } from '../../ui-component/table/FlowListTable';
+import { StyledButton } from '../../ui-component/button/StyledButton';
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
-    const navigate = useNavigate()
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const navigate = useNavigate();
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
 
-    const [isLoading, setLoading] = useState(true)
-    const [images, setImages] = useState({})
-    const [search, setSearch] = useState('')
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-    const [loginDialogProps, setLoginDialogProps] = useState({})
+    const [isLoading, setLoading] = useState(true);
+    const [images, setImages] = useState({});
+    const [search, setSearch] = useState('');
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+    const [loginDialogProps, setLoginDialogProps] = useState({});
 
-    const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
-    const [view, setView] = React.useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows);
+    const [view, setView] = React.useState(localStorage.getItem('flowDisplayStyle') || 'card');
 
     const handleChange = (event, nextView) => {
-        localStorage.setItem('flowDisplayStyle', nextView)
-        setView(nextView)
-    }
+        localStorage.setItem('flowDisplayStyle', nextView);
+        setView(nextView);
+    };
 
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+        setSearch(event.target.value);
+    };
 
     function filterFlows(data) {
         return (
             data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1)
-        )
+        );
     }
 
     const onLoginClick = (username, password) => {
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        navigate(0)
-    }
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+        navigate(0);
+    };
 
     const addNew = () => {
-        navigate('/canvas')
-    }
+        navigate('/canvas');
+    };
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`)
-    }
+        navigate(`/canvas/${selectedChatflow.id}`);
+    };
 
     useEffect(() => {
-        getAllChatflowsApi.request()
+        getAllChatflowsApi.request();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (getAllChatflowsApi.error) {
@@ -87,39 +87,39 @@ const Chatflows = () => {
                 setLoginDialogProps({
                     title: 'Login',
                     confirmButtonName: 'Login'
-                })
-                setLoginDialogOpen(true)
+                });
+                setLoginDialogOpen(true);
             }
         }
-    }, [getAllChatflowsApi.error])
+    }, [getAllChatflowsApi.error]);
 
     useEffect(() => {
-        setLoading(getAllChatflowsApi.loading)
-    }, [getAllChatflowsApi.loading])
+        setLoading(getAllChatflowsApi.loading);
+    }, [getAllChatflowsApi.loading]);
 
     useEffect(() => {
         if (getAllChatflowsApi.data) {
             try {
-                const chatflows = getAllChatflowsApi.data
-                const images = {}
+                const chatflows = getAllChatflowsApi.data;
+                const images = {};
                 for (let i = 0; i < chatflows.length; i += 1) {
-                    const flowDataStr = chatflows[i].flowData
-                    const flowData = JSON.parse(flowDataStr)
-                    const nodes = flowData.nodes || []
-                    images[chatflows[i].id] = []
+                    const flowDataStr = chatflows[i].flowData;
+                    const flowData = JSON.parse(flowDataStr);
+                    const nodes = flowData.nodes || [];
+                    images[chatflows[i].id] = [];
                     for (let j = 0; j < nodes.length; j += 1) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`;
                         if (!images[chatflows[i].id].includes(imageSrc)) {
-                            images[chatflows[i].id].push(imageSrc)
+                            images[chatflows[i].id].push(imageSrc);
                         }
                     }
                 }
-                setImages(images)
+                setImages(images);
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
         }
-    }, [getAllChatflowsApi.data])
+    }, [getAllChatflowsApi.data]);
 
     return (
         <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -213,7 +213,7 @@ const Chatflows = () => {
             )}
             <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
         </MainCard>
-    )
-}
+    );
+};
 
-export default Chatflows
+export default Chatflows;

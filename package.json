@@ -17,13 +17,14 @@
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
         "clean": "npm exec -ws -- rimraf dist build",
-        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
         "test": "turbo run test",
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint-fix": "yarn lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "yarn typeorm migration:create"
+        "migration:create": "yarn typeorm migration:create",
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
+        "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,md,mdx}\""
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

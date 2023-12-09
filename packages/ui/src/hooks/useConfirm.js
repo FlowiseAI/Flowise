@@ -1,37 +1,37 @@
-import { useContext } from 'react'
-import ConfirmContext from 'store/context/ConfirmContext'
-import { HIDE_CONFIRM, SHOW_CONFIRM } from 'store/actions'
+import { useContext } from 'react';
+import ConfirmContext from 'store/context/ConfirmContext';
+import { HIDE_CONFIRM, SHOW_CONFIRM } from 'store/actions';
 
-let resolveCallback
+let resolveCallback;
 const useConfirm = () => {
-    const [confirmState, dispatch] = useContext(ConfirmContext)
+    const [confirmState, dispatch] = useContext(ConfirmContext);
 
     const closeConfirm = () => {
         dispatch({
             type: HIDE_CONFIRM
-        })
-    }
+        });
+    };
 
     const onConfirm = () => {
-        closeConfirm()
-        resolveCallback(true)
-    }
+        closeConfirm();
+        resolveCallback(true);
+    };
 
     const onCancel = () => {
-        closeConfirm()
-        resolveCallback(false)
-    }
+        closeConfirm();
+        resolveCallback(false);
+    };
     const confirm = (confirmPayload) => {
         dispatch({
             type: SHOW_CONFIRM,
             payload: confirmPayload
-        })
+        });
         return new Promise((res) => {
-            resolveCallback = res
-        })
-    }
+            resolveCallback = res;
+        });
+    };
 
-    return { confirm, onConfirm, onCancel, confirmState }
-}
+    return { confirm, onConfirm, onCancel, confirmState };
+};
 
-export default useConfirm
+export default useConfirm;

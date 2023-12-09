@@ -1,18 +1,18 @@
-import PropTypes from 'prop-types'
-import { useState } from 'react'
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 // material-ui
-import { styled, useTheme } from '@mui/material/styles'
-import { Box, Typography, Divider, Button } from '@mui/material'
+import { styled, useTheme } from '@mui/material/styles';
+import { Box, Typography, Divider, Button } from '@mui/material';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import NodeInputHandler from 'views/canvas/NodeInputHandler'
-import NodeOutputHandler from 'views/canvas/NodeOutputHandler'
-import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import NodeInputHandler from 'views/canvas/NodeInputHandler';
+import NodeOutputHandler from 'views/canvas/NodeOutputHandler';
+import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog';
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -26,15 +26,15 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     '&:hover': {
         borderColor: theme.palette.primary.main
     }
-}))
+}));
 
 // ===========================|| CANVAS NODE ||=========================== //
 
 const MarketplaceCanvasNode = ({ data }) => {
-    const theme = useTheme()
+    const theme = useTheme();
 
-    const [showDialog, setShowDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState({})
+    const [showDialog, setShowDialog] = useState(false);
+    const [dialogProps, setDialogProps] = useState({});
 
     const onDialogClicked = () => {
         const dialogProps = {
@@ -43,10 +43,10 @@ const MarketplaceCanvasNode = ({ data }) => {
             disabled: true,
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
-        }
-        setDialogProps(dialogProps)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProps);
+        setShowDialog(true);
+    };
 
     return (
         <>
@@ -141,11 +141,11 @@ const MarketplaceCanvasNode = ({ data }) => {
                 onCancel={() => setShowDialog(false)}
             ></AdditionalParamsDialog>
         </>
-    )
-}
+    );
+};
 
 MarketplaceCanvasNode.propTypes = {
     data: PropTypes.object
-}
+};
 
-export default MarketplaceCanvasNode
+export default MarketplaceCanvasNode;

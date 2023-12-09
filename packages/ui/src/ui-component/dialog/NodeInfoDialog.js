@@ -1,39 +1,39 @@
-import { createPortal } from 'react-dom'
-import { useDispatch } from 'react-redux'
-import { useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { createPortal } from 'react-dom';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 // Material
-import { Dialog, DialogContent, DialogTitle } from '@mui/material'
-import { TableViewOnly } from 'ui-component/table/Table'
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { TableViewOnly } from 'ui-component/table/Table';
 
 // Store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import { baseURL } from 'store/constant'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
+import { baseURL } from 'store/constant';
 
 // API
-import configApi from 'api/config'
-import useApi from 'hooks/useApi'
+import configApi from 'api/config';
+import useApi from 'hooks/useApi';
 
 const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const dispatch = useDispatch()
+    const portalElement = document.getElementById('portal');
+    const dispatch = useDispatch();
 
-    const getNodeConfigApi = useApi(configApi.getNodeConfig)
+    const getNodeConfigApi = useApi(configApi.getNodeConfig);
 
     useEffect(() => {
         if (dialogProps.data) {
-            getNodeConfigApi.request(dialogProps.data)
+            getNodeConfigApi.request(dialogProps.data);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps]);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     const component = show ? (
         <Dialog
@@ -152,23 +152,23 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                     <TableViewOnly
                         rows={getNodeConfigApi.data.map((obj) => {
                             // eslint-disable-next-line
-                            const { node, nodeId, ...rest } = obj
-                            return rest
+                            const { node, nodeId, ...rest } = obj;
+                            return rest;
                         })}
                         columns={Object.keys(getNodeConfigApi.data[0]).slice(-3)}
                     />
                 )}
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 NodeInfoDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
-}
+};
 
-export default NodeInfoDialog
+export default NodeInfoDialog;

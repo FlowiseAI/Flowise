@@ -1,15 +1,15 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-import { Dialog, DialogContent, DialogTitle, Button } from '@mui/material'
-import { ChatMessage } from './ChatMessage'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { IconEraser } from '@tabler/icons'
+import { Dialog, DialogContent, DialogTitle, Button } from '@mui/material';
+import { ChatMessage } from './ChatMessage';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { IconEraser } from '@tabler/icons';
 
 const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const customization = useSelector((state) => state.customization)
+    const portalElement = document.getElementById('portal');
+    const customization = useSelector((state) => state.customization);
 
     const component = show ? (
         <Dialog
@@ -47,16 +47,16 @@ const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
                 <ChatMessage isDialog={true} open={dialogProps.open} chatflowid={dialogProps.chatflowid} />
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 ChatExpandDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onClear: PropTypes.func,
     onCancel: PropTypes.func
-}
+};
 
-export default ChatExpandDialog
+export default ChatExpandDialog;

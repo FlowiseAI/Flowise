@@ -1,37 +1,37 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseChatModel } from 'langchain/chat_models/base'
-import { AutoGPT } from 'langchain/experimental/autogpt'
-import { Tool } from 'langchain/tools'
-import { AIMessage, HumanMessage, SystemMessage } from 'langchain/schema'
-import { VectorStoreRetriever } from 'langchain/vectorstores/base'
-import { flatten } from 'lodash'
-import { StructuredTool } from 'langchain/tools'
-import { LLMChain } from 'langchain/chains'
-import { PromptTemplate } from 'langchain/prompts'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { BaseChatModel } from 'langchain/chat_models/base';
+import { AutoGPT } from 'langchain/experimental/autogpt';
+import { Tool } from 'langchain/tools';
+import { AIMessage, HumanMessage, SystemMessage } from 'langchain/schema';
+import { VectorStoreRetriever } from 'langchain/vectorstores/base';
+import { flatten } from 'lodash';
+import { StructuredTool } from 'langchain/tools';
+import { LLMChain } from 'langchain/chains';
+import { PromptTemplate } from 'langchain/prompts';
 
-type ObjectTool = StructuredTool
-const FINISH_NAME = 'finish'
+type ObjectTool = StructuredTool;
+const FINISH_NAME = 'finish';
 
 class AutoGPT_Agents implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'AutoGPT'
-        this.name = 'autoGPT'
-        this.version = 1.0
-        this.type = 'AutoGPT'
-        this.category = 'Agents'
-        this.icon = 'autogpt.png'
-        this.description = 'Autonomous agent with chain of thoughts for self-guided task completion'
-        this.baseClasses = ['AutoGPT']
+        this.label = 'AutoGPT';
+        this.name = 'autoGPT';
+        this.version = 1.0;
+        this.type = 'AutoGPT';
+        this.category = 'Agents';
+        this.icon = 'autogpt.png';
+        this.description = 'Autonomous agent with chain of thoughts for self-guided task completion';
+        this.baseClasses = ['AutoGPT'];
         this.inputs = [
             {
                 label: 'Allowed Tools',
@@ -70,106 +70,109 @@ class AutoGPT_Agents implements INode {
                 default: 5,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as BaseChatModel
-        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever
-        let tools = nodeData.inputs?.tools as Tool[]
-        tools = flatten(tools)
-        const aiName = (nodeData.inputs?.aiName as string) || 'AutoGPT'
-        const aiRole = (nodeData.inputs?.aiRole as string) || 'Assistant'
-        const maxLoop = nodeData.inputs?.maxLoop as string
+        const model = nodeData.inputs?.model as BaseChatModel;
+        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as VectorStoreRetriever;
+        let tools = nodeData.inputs?.tools as Tool[];
+        tools = flatten(tools);
+        const aiName = (nodeData.inputs?.aiName as string) || 'AutoGPT';
+        const aiRole = (nodeData.inputs?.aiRole as string) || 'Assistant';
+        const maxLoop = nodeData.inputs?.maxLoop as string;
 
         const autogpt = AutoGPT.fromLLMAndTools(model, tools, {
             memory: vectorStoreRetriever,
             aiName,
             aiRole
-        })
+        });
 
-        autogpt.maxIterations = parseInt(maxLoop, 10)
+        autogpt.maxIterations = parseInt(maxLoop, 10);
 
-        return autogpt
+        return autogpt;
     }
 
     async run(nodeData: INodeData, input: string): Promise<string> {
-        const executor = nodeData.instance as AutoGPT
-        const model = nodeData.inputs?.model as BaseChatModel
+        const executor = nodeData.instance as AutoGPT;
+        const model = nodeData.inputs?.model as BaseChatModel;
 
         try {
-            let totalAssistantReply = ''
+            let totalAssistantReply = '';
             executor.run = async (goals: string[]): Promise<string | undefined> => {
-                const user_input = 'Determine which next command to use, and respond using the format specified above:'
-                let loopCount = 0
+                const user_input = 'Determine which next command to use, and respond using the format specified above:';
+                let loopCount = 0;
                 while (loopCount < executor.maxIterations) {
-                    loopCount += 1
+                    loopCount += 1;
 
                     const { text: assistantReply } = await executor.chain.call({
                         goals,
                         user_input,
                         memory: executor.memory,
                         messages: executor.fullMessageHistory
-                    })
+                    });
 
                     // eslint-disable-next-line no-console
-                    console.log('\x1b[92m\x1b[1m\n*****AutoGPT*****\n\x1b[0m\x1b[0m')
+                    console.log('\x1b[92m\x1b[1m\n*****AutoGPT*****\n\x1b[0m\x1b[0m');
                     // eslint-disable-next-line no-console
-                    console.log(assistantReply)
-                    totalAssistantReply += assistantReply + '\n'
-                    executor.fullMessageHistory.push(new HumanMessage(user_input))
-                    executor.fullMessageHistory.push(new AIMessage(assistantReply))
+                    console.log(assistantReply);
+                    totalAssistantReply += assistantReply + '\n';
+                    executor.fullMessageHistory.push(new HumanMessage(user_input));
+                    executor.fullMessageHistory.push(new AIMessage(assistantReply));
 
-                    const action = await executor.outputParser.parse(assistantReply)
-                    const tools = executor.tools.reduce((acc, tool) => ({ ...acc, [tool.name]: tool }), {} as { [key: string]: ObjectTool })
+                    const action = await executor.outputParser.parse(assistantReply);
+                    const tools = executor.tools.reduce(
+                        (acc, tool) => ({ ...acc, [tool.name]: tool }),
+                        {} as { [key: string]: ObjectTool }
+                    );
                     if (action.name === FINISH_NAME) {
-                        return action.args.response
+                        return action.args.response;
                     }
-                    let result: string
+                    let result: string;
                     if (action.name in tools) {
-                        const tool = tools[action.name]
-                        let observation
+                        const tool = tools[action.name];
+                        let observation;
                         try {
-                            observation = await tool.call(action.args)
+                            observation = await tool.call(action.args);
                         } catch (e) {
-                            observation = `Error in args: ${e}`
+                            observation = `Error in args: ${e}`;
                         }
-                        result = `Command ${tool.name} returned: ${observation}`
+                        result = `Command ${tool.name} returned: ${observation}`;
                     } else if (action.name === 'ERROR') {
-                        result = `Error: ${action.args}. `
+                        result = `Error: ${action.args}. `;
                     } else {
-                        result = `Unknown command '${action.name}'. Please refer to the 'COMMANDS' list for available commands and only respond in the specified JSON format.`
+                        result = `Unknown command '${action.name}'. Please refer to the 'COMMANDS' list for available commands and only respond in the specified JSON format.`;
                     }
 
-                    let memoryToAdd = `Assistant Reply: ${assistantReply}\nResult: ${result} `
+                    let memoryToAdd = `Assistant Reply: ${assistantReply}\nResult: ${result} `;
                     if (executor.feedbackTool) {
-                        const feedback = `\n${await executor.feedbackTool.call('Input: ')}`
+                        const feedback = `\n${await executor.feedbackTool.call('Input: ')}`;
                         if (feedback === 'q' || feedback === 'stop') {
-                            return 'EXITING'
+                            return 'EXITING';
                         }
-                        memoryToAdd += feedback
+                        memoryToAdd += feedback;
                     }
 
-                    const documents = await executor.textSplitter.createDocuments([memoryToAdd])
-                    await executor.memory.addDocuments(documents)
-                    executor.fullMessageHistory.push(new SystemMessage(result))
+                    const documents = await executor.textSplitter.createDocuments([memoryToAdd]);
+                    await executor.memory.addDocuments(documents);
+                    executor.fullMessageHistory.push(new SystemMessage(result));
                 }
 
-                return undefined
-            }
+                return undefined;
+            };
 
-            const res = await executor.run([input])
+            const res = await executor.run([input]);
 
             if (!res) {
-                const sentence = `Unfortunately I was not able to complete all the task. Here is the chain of thoughts:`
-                return `${await rephraseString(sentence, model)}\n\`\`\`javascript\n${totalAssistantReply}\n\`\`\`\n`
+                const sentence = `Unfortunately I was not able to complete all the task. Here is the chain of thoughts:`;
+                return `${await rephraseString(sentence, model)}\n\`\`\`javascript\n${totalAssistantReply}\n\`\`\`\n`;
             }
 
-            const sentence = `I have completed all my tasks. Here is the chain of thoughts:`
-            let writeFilePath = ''
-            const writeTool = executor.tools.find((tool) => tool.name === 'write_file')
+            const sentence = `I have completed all my tasks. Here is the chain of thoughts:`;
+            let writeFilePath = '';
+            const writeTool = executor.tools.find((tool) => tool.name === 'write_file');
             if (executor.tools.length && writeTool) {
-                writeFilePath = (writeTool as any).store.basePath
+                writeFilePath = (writeTool as any).store.basePath;
             }
             return `${await rephraseString(
                 sentence,
@@ -181,9 +184,9 @@ class AutoGPT_Agents implements INode {
                           model
                       )
                     : ''
-            }`
+            }`;
         } catch (e) {
-            throw new Error(e)
+            throw new Error(e);
         }
     }
 }
@@ -192,10 +195,10 @@ const rephraseString = async (sentence: string, model: BaseChatModel) => {
     const promptTemplate = new PromptTemplate({
         template: 'You are a helpful Assistant that rephrase a sentence: {sentence}',
         inputVariables: ['sentence']
-    })
-    const chain = new LLMChain({ llm: model, prompt: promptTemplate })
-    const res = await chain.call({ sentence })
-    return res?.text
-}
+    });
+    const chain = new LLMChain({ llm: model, prompt: promptTemplate });
+    const res = await chain.call({ sentence });
+    return res?.text;
+};
 
-module.exports = { nodeClass: AutoGPT_Agents }
+module.exports = { nodeClass: AutoGPT_Agents };

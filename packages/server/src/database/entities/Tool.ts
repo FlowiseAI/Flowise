@@ -1,33 +1,33 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { ITool } from '../../Interface'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { ITool } from '../../Interface';
 
 @Entity()
 export class Tool implements ITool {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ type: 'text' })
-    description: string
+    description: string;
 
     @Column()
-    color: string
+    color: string;
 
     @Column({ nullable: true })
-    iconSrc?: string
+    iconSrc?: string;
 
     @Column({ nullable: true, type: 'text' })
-    schema?: string
+    schema?: string;
 
     @Column({ nullable: true, type: 'text' })
-    func?: string
+    func?: string;
 
     @CreateDateColumn()
-    createdDate: Date
+    createdDate: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date
+    updatedDate: Date;
 }

@@ -1,42 +1,42 @@
-import { flatten } from 'lodash'
-import { Client, ClientOptions } from '@elastic/elasticsearch'
-import { Document } from 'langchain/document'
-import { Embeddings } from 'langchain/embeddings/base'
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { flatten } from 'lodash';
+import { Client, ClientOptions } from '@elastic/elasticsearch';
+import { Document } from 'langchain/document';
+import { Embeddings } from 'langchain/embeddings/base';
+import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch';
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
 
 class Elasticsearch_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'Elasticsearch'
-        this.name = 'elasticsearch'
-        this.version = 1.0
+        this.label = 'Elasticsearch';
+        this.name = 'elasticsearch';
+        this.version = 1.0;
         this.description =
-            'Upsert embedded data and perform similarity search upon query using Elasticsearch, a distributed search and analytics engine'
-        this.type = 'Elasticsearch'
-        this.icon = 'elasticsearch.png'
-        this.category = 'Vector Stores'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
+            'Upsert embedded data and perform similarity search upon query using Elasticsearch, a distributed search and analytics engine';
+        this.type = 'Elasticsearch';
+        this.icon = 'elasticsearch.png';
+        this.category = 'Vector Stores';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'NEW';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['elasticsearchApi', 'elasticSearchUserPassword']
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -88,7 +88,7 @@ class Elasticsearch_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Elasticsearch Retriever',
@@ -100,68 +100,68 @@ class Elasticsearch_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(ElasticVectorSearch)]
             }
-        ]
+        ];
     }
 
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-            const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
-            const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
-            const indexName = nodeData.inputs?.indexName as string
-            const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const similarityMeasure = nodeData.inputs?.similarityMeasure as string
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+            const endPoint = getCredentialParam('endpoint', credentialData, nodeData);
+            const cloudId = getCredentialParam('cloudId', credentialData, nodeData);
+            const indexName = nodeData.inputs?.indexName as string;
+            const embeddings = nodeData.inputs?.embeddings as Embeddings;
+            const similarityMeasure = nodeData.inputs?.similarityMeasure as string;
 
-            const docs = nodeData.inputs?.document as Document[]
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
+            const docs = nodeData.inputs?.document as Document[];
+            const flattenDocs = docs && docs.length ? flatten(docs) : [];
+            const finalDocs = [];
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    finalDocs.push(new Document(flattenDocs[i]));
                 }
             }
 
             // The following code is a workaround for a bug (Langchain Issue #1589) in the underlying library.
             // Store does not support object in metadata and fail silently
             finalDocs.forEach((d) => {
-                delete d.metadata.pdf
-                delete d.metadata.loc
-            })
+                delete d.metadata.pdf;
+                delete d.metadata.loc;
+            });
             // end of workaround
 
-            const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName)
-            const vectorStore = new ElasticVectorSearch(embeddings, elasticSearchClientArgs)
+            const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName);
+            const vectorStore = new ElasticVectorSearch(embeddings, elasticSearchClientArgs);
 
             try {
-                await vectorStore.addDocuments(finalDocs)
+                await vectorStore.addDocuments(finalDocs);
             } catch (e) {
-                throw new Error(e)
+                throw new Error(e);
             }
         }
-    }
+    };
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
-        const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
-        const indexName = nodeData.inputs?.indexName as string
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const topK = nodeData.inputs?.topK as string
-        const similarityMeasure = nodeData.inputs?.similarityMeasure as string
-        const k = topK ? parseFloat(topK) : 4
-        const output = nodeData.outputs?.output as string
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const endPoint = getCredentialParam('endpoint', credentialData, nodeData);
+        const cloudId = getCredentialParam('cloudId', credentialData, nodeData);
+        const indexName = nodeData.inputs?.indexName as string;
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const topK = nodeData.inputs?.topK as string;
+        const similarityMeasure = nodeData.inputs?.similarityMeasure as string;
+        const k = topK ? parseFloat(topK) : 4;
+        const output = nodeData.outputs?.output as string;
 
-        const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName)
-        const vectorStore = await ElasticVectorSearch.fromExistingIndex(embeddings, elasticSearchClientArgs)
+        const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName);
+        const vectorStore = await ElasticVectorSearch.fromExistingIndex(embeddings, elasticSearchClientArgs);
 
         if (output === 'retriever') {
-            return vectorStore.asRetriever(k)
+            return vectorStore.asRetriever(k);
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
@@ -171,18 +171,18 @@ const prepareConnectionOptions = (
     credentialData: ICommonObject,
     nodeData: INodeData
 ) => {
-    let elasticSearchClientOptions: ClientOptions = {}
+    let elasticSearchClientOptions: ClientOptions = {};
     if (endPoint) {
-        let apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        let apiKey = getCredentialParam('apiKey', credentialData, nodeData);
         elasticSearchClientOptions = {
             node: endPoint,
             auth: {
                 apiKey: apiKey
             }
-        }
+        };
     } else if (cloudId) {
-        let username = getCredentialParam('username', credentialData, nodeData)
-        let password = getCredentialParam('password', credentialData, nodeData)
+        let username = getCredentialParam('username', credentialData, nodeData);
+        let password = getCredentialParam('password', credentialData, nodeData);
         elasticSearchClientOptions = {
             cloud: {
                 id: cloudId
@@ -191,10 +191,10 @@ const prepareConnectionOptions = (
                 username: username,
                 password: password
             }
-        }
+        };
     }
-    return elasticSearchClientOptions
-}
+    return elasticSearchClientOptions;
+};
 
 const prepareClientArgs = (
     endPoint: string | undefined,
@@ -204,30 +204,30 @@ const prepareClientArgs = (
     similarityMeasure: string,
     indexName: string
 ) => {
-    let elasticSearchClientOptions = prepareConnectionOptions(endPoint, cloudId, credentialData, nodeData)
-    let vectorSearchOptions = {}
+    let elasticSearchClientOptions = prepareConnectionOptions(endPoint, cloudId, credentialData, nodeData);
+    let vectorSearchOptions = {};
     switch (similarityMeasure) {
         case 'dot_product':
             vectorSearchOptions = {
                 similarity: 'dot_product'
-            }
-            break
+            };
+            break;
         case 'cosine':
             vectorSearchOptions = {
                 similarity: 'cosine'
-            }
-            break
+            };
+            break;
         default:
             vectorSearchOptions = {
                 similarity: 'l2_norm'
-            }
+            };
     }
     const elasticSearchClientArgs: ElasticClientArgs = {
         client: new Client(elasticSearchClientOptions),
         indexName: indexName,
         vectorSearchOptions: vectorSearchOptions
-    }
-    return elasticSearchClientArgs
-}
+    };
+    return elasticSearchClientArgs;
+};
 
-module.exports = { nodeClass: Elasticsearch_VectorStores }
+module.exports = { nodeClass: Elasticsearch_VectorStores };

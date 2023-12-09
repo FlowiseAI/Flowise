@@ -8,6 +8,10 @@
         "test": {},
         "dev": {
             "cache": false
+        },
+        "format": {
+            "outputs": ["**/*.{js,jsx,ts,tsx,json,css,md}"],
+            "command": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md}'"
         }
     }
 }

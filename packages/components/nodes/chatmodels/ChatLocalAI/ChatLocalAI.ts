@@ -1,30 +1,30 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { OpenAIChat } from 'langchain/llms/openai'
-import { OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { OpenAIChat } from 'langchain/llms/openai';
+import { OpenAIChatInput } from 'langchain/chat_models/openai';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 class ChatLocalAI_ChatModels implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'ChatLocalAI'
-        this.name = 'chatLocalAI'
-        this.version = 2.0
-        this.type = 'ChatLocalAI'
-        this.icon = 'localai.png'
-        this.category = 'Chat Models'
-        this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI'
-        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)]
+        this.label = 'ChatLocalAI';
+        this.name = 'chatLocalAI';
+        this.version = 2.0;
+        this.type = 'ChatLocalAI';
+        this.icon = 'localai.png';
+        this.category = 'Chat Models';
+        this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI';
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)];
         this.inputs = [
             {
                 label: 'Cache',
@@ -76,33 +76,33 @@ class ChatLocalAI_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const timeout = nodeData.inputs?.timeout as string
-        const basePath = nodeData.inputs?.basePath as string
-        const cache = nodeData.inputs?.cache as BaseCache
+        const temperature = nodeData.inputs?.temperature as string;
+        const modelName = nodeData.inputs?.modelName as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const topP = nodeData.inputs?.topP as string;
+        const timeout = nodeData.inputs?.timeout as string;
+        const basePath = nodeData.inputs?.basePath as string;
+        const cache = nodeData.inputs?.cache as BaseCache;
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
-        }
+        };
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP) obj.topP = parseFloat(topP);
+        if (timeout) obj.timeout = parseInt(timeout, 10);
+        if (cache) obj.cache = cache;
 
-        const model = new OpenAIChat(obj, { basePath })
+        const model = new OpenAIChat(obj, { basePath });
 
-        return model
+        return model;
     }
 }
 
-module.exports = { nodeClass: ChatLocalAI_ChatModels }
+module.exports = { nodeClass: ChatLocalAI_ChatModels };

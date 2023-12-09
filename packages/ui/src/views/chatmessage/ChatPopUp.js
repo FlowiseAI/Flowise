@@ -1,78 +1,78 @@
-import { useState, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import { ClickAwayListener, Paper, Popper, Button } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icons'
+import { ClickAwayListener, Paper, Popper, Button } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icons';
 
 // project import
-import { StyledFab } from 'ui-component/button/StyledFab'
-import MainCard from 'ui-component/cards/MainCard'
-import Transitions from 'ui-component/extended/Transitions'
-import { ChatMessage } from './ChatMessage'
-import ChatExpandDialog from './ChatExpandDialog'
+import { StyledFab } from 'ui-component/button/StyledFab';
+import MainCard from 'ui-component/cards/MainCard';
+import Transitions from 'ui-component/extended/Transitions';
+import { ChatMessage } from './ChatMessage';
+import ChatExpandDialog from './ChatExpandDialog';
 
 // api
-import chatmessageApi from 'api/chatmessage'
+import chatmessageApi from 'api/chatmessage';
 
 // Hooks
-import useConfirm from 'hooks/useConfirm'
-import useNotifier from 'utils/useNotifier'
+import useConfirm from 'hooks/useConfirm';
+import useNotifier from 'utils/useNotifier';
 
 // Const
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
 
 export const ChatPopUp = ({ chatflowid }) => {
-    const theme = useTheme()
-    const { confirm } = useConfirm()
-    const dispatch = useDispatch()
+    const theme = useTheme();
+    const { confirm } = useConfirm();
+    const dispatch = useDispatch();
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    useNotifier();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [open, setOpen] = useState(false)
-    const [showExpandDialog, setShowExpandDialog] = useState(false)
-    const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [open, setOpen] = useState(false);
+    const [showExpandDialog, setShowExpandDialog] = useState(false);
+    const [expandDialogProps, setExpandDialogProps] = useState({});
 
-    const anchorRef = useRef(null)
-    const prevOpen = useRef(open)
+    const anchorRef = useRef(null);
+    const prevOpen = useRef(open);
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
-            return
+            return;
         }
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
-    }
+        setOpen((prevOpen) => !prevOpen);
+    };
 
     const expandChat = () => {
         const props = {
             open: true,
             chatflowid: chatflowid
-        }
-        setExpandDialogProps(props)
-        setShowExpandDialog(true)
-    }
+        };
+        setExpandDialogProps(props);
+        setShowExpandDialog(true);
+    };
 
     const resetChatDialog = () => {
         const props = {
             ...expandDialogProps,
             open: false
-        }
-        setExpandDialogProps(props)
+        };
+        setExpandDialogProps(props);
         setTimeout(() => {
             const resetProps = {
                 ...expandDialogProps,
                 open: true
-            }
-            setExpandDialogProps(resetProps)
-        }, 500)
-    }
+            };
+            setExpandDialogProps(resetProps);
+        }, 500);
+    };
 
     const clearChat = async () => {
         const confirmPayload = {
@@ -80,17 +80,17 @@ export const ChatPopUp = ({ chatflowid }) => {
             description: `Are you sure you want to clear all chat history?`,
             confirmButtonName: 'Clear',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
-                if (!chatDetails) return
-                const objChatDetails = JSON.parse(chatDetails)
-                await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
-                localStorage.removeItem(`${chatflowid}_INTERNAL`)
-                resetChatDialog()
+                const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`);
+                if (!chatDetails) return;
+                const objChatDetails = JSON.parse(chatDetails);
+                await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' });
+                localStorage.removeItem(`${chatflowid}_INTERNAL`);
+                resetChatDialog();
                 enqueueSnackbar({
                     message: 'Succesfully cleared all chat history',
                     options: {
@@ -102,9 +102,9 @@ export const ChatPopUp = ({ chatflowid }) => {
                             </Button>
                         )
                     }
-                })
+                });
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: errorData,
                     options: {
@@ -117,19 +117,19 @@ export const ChatPopUp = ({ chatflowid }) => {
                             </Button>
                         )
                     }
-                })
+                });
             }
         }
-    }
+    };
 
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus()
+            anchorRef.current.focus();
         }
-        prevOpen.current = open
+        prevOpen.current = open;
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, chatflowid])
+    }, [open, chatflowid]);
 
     return (
         <>
@@ -206,7 +206,7 @@ export const ChatPopUp = ({ chatflowid }) => {
                 onCancel={() => setShowExpandDialog(false)}
             ></ChatExpandDialog>
         </>
-    )
-}
+    );
+};
 
-ChatPopUp.propTypes = { chatflowid: PropTypes.string }
+ChatPopUp.propTypes = { chatflowid: PropTypes.string };

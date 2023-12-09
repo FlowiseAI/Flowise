@@ -1,10 +1,10 @@
-import { IconClipboard, IconDownload } from '@tabler/icons'
-import { memo, useState } from 'react'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import PropTypes from 'prop-types'
-import { Box, IconButton, Popover, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { IconClipboard, IconDownload } from '@tabler/icons';
+import { memo, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import PropTypes from 'prop-types';
+import { Box, IconButton, Popover, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 const programmingLanguages = {
     javascript: '.js',
@@ -30,50 +30,50 @@ const programmingLanguages = {
     sql: '.sql',
     html: '.html',
     css: '.css'
-}
+};
 
 export const CodeBlock = memo(({ language, chatflowid, isDialog, value }) => {
-    const theme = useTheme()
-    const [anchorEl, setAnchorEl] = useState(null)
-    const openPopOver = Boolean(anchorEl)
+    const theme = useTheme();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const openPopOver = Boolean(anchorEl);
 
     const handleClosePopOver = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+    };
 
     const copyToClipboard = (event) => {
         if (!navigator.clipboard || !navigator.clipboard.writeText) {
-            return
+            return;
         }
 
-        navigator.clipboard.writeText(value)
-        setAnchorEl(event.currentTarget)
+        navigator.clipboard.writeText(value);
+        setAnchorEl(event.currentTarget);
         setTimeout(() => {
-            handleClosePopOver()
-        }, 1500)
-    }
+            handleClosePopOver();
+        }, 1500);
+    };
 
     const downloadAsFile = () => {
-        const fileExtension = programmingLanguages[language] || '.file'
-        const suggestedFileName = `file-${chatflowid}${fileExtension}`
-        const fileName = suggestedFileName
+        const fileExtension = programmingLanguages[language] || '.file';
+        const suggestedFileName = `file-${chatflowid}${fileExtension}`;
+        const fileName = suggestedFileName;
 
         if (!fileName) {
             // user pressed cancel on prompt
-            return
+            return;
         }
 
-        const blob = new Blob([value], { type: 'text/plain' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.download = fileName
-        link.href = url
-        link.style.display = 'none'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-    }
+        const blob = new Blob([value], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = url;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div style={{ width: isDialog ? '' : 300 }}>
@@ -111,13 +111,13 @@ export const CodeBlock = memo(({ language, chatflowid, isDialog, value }) => {
                 {value}
             </SyntaxHighlighter>
         </div>
-    )
-})
-CodeBlock.displayName = 'CodeBlock'
+    );
+});
+CodeBlock.displayName = 'CodeBlock';
 
 CodeBlock.propTypes = {
     language: PropTypes.string,
     chatflowid: PropTypes.string,
     isDialog: PropTypes.bool,
     value: PropTypes.string
-}
+};

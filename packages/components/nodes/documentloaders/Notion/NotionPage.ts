@@ -1,35 +1,35 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { NotionAPILoader, NotionAPILoaderOptions } from 'langchain/document_loaders/web/notionapi'
-import { getCredentialData, getCredentialParam } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { TextSplitter } from 'langchain/text_splitter';
+import { NotionAPILoader, NotionAPILoaderOptions } from 'langchain/document_loaders/web/notionapi';
+import { getCredentialData, getCredentialParam } from '../../../src';
 
 class NotionPage_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Notion Page'
-        this.name = 'notionPage'
-        this.version = 1.0
-        this.type = 'Document'
-        this.icon = 'notion.png'
-        this.category = 'Document Loaders'
-        this.description = 'Load data from Notion Page (including child pages all as separate documents)'
-        this.baseClasses = [this.type]
+        this.label = 'Notion Page';
+        this.name = 'notionPage';
+        this.version = 1.0;
+        this.type = 'Document';
+        this.icon = 'notion.png';
+        this.category = 'Document Loaders';
+        this.description = 'Load data from Notion Page (including child pages all as separate documents)';
+        this.baseClasses = [this.type];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['notionApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Text Splitter',
@@ -51,16 +51,16 @@ class NotionPage_DocumentLoaders implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const pageId = nodeData.inputs?.pageId as string
-        const metadata = nodeData.inputs?.metadata
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter;
+        const pageId = nodeData.inputs?.pageId as string;
+        const metadata = nodeData.inputs?.metadata;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData);
 
         const obj: NotionAPILoaderOptions = {
             clientOptions: {
@@ -68,19 +68,19 @@ class NotionPage_DocumentLoaders implements INode {
             },
             id: pageId,
             type: 'page'
-        }
-        const loader = new NotionAPILoader(obj)
+        };
+        const loader = new NotionAPILoader(obj);
 
-        let docs = []
+        let docs = [];
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.loadAndSplit(textSplitter);
         } else {
-            docs = await loader.load()
+            docs = await loader.load();
         }
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
+            let finaldocs = [];
             for (const doc of docs) {
                 const newdoc = {
                     ...doc,
@@ -88,14 +88,14 @@ class NotionPage_DocumentLoaders implements INode {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-                finaldocs.push(newdoc)
+                };
+                finaldocs.push(newdoc);
             }
-            return finaldocs
+            return finaldocs;
         }
 
-        return docs
+        return docs;
     }
 }
 
-module.exports = { nodeClass: NotionPage_DocumentLoaders }
+module.exports = { nodeClass: NotionPage_DocumentLoaders };

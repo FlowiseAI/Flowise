@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
-import { motion } from 'framer-motion'
+import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
 
 // ==============================|| ANIMATION FOR CONTENT ||============================== //
 
@@ -17,23 +17,23 @@ const NavMotion = ({ children }) => {
             opacity: 0,
             scale: 1.01
         }
-    }
+    };
 
     const motionTransition = {
         type: 'tween',
         ease: 'anticipate',
         duration: 0.4
-    }
+    };
 
     return (
         <motion.div initial='initial' animate='in' exit='out' variants={motionVariants} transition={motionTransition}>
             {children}
         </motion.div>
-    )
-}
+    );
+};
 
 NavMotion.propTypes = {
     children: PropTypes.node
-}
+};
 
-export default NavMotion
+export default NavMotion;

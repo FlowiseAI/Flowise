@@ -1,8 +1,8 @@
-import { ChatFlow } from './ChatFlow'
-import { ChatMessage } from './ChatMessage'
-import { Credential } from './Credential'
-import { Tool } from './Tool'
-import { Assistant } from './Assistant'
+import { ChatFlow } from './ChatFlow';
+import { ChatMessage } from './ChatMessage';
+import { Credential } from './Credential';
+import { Tool } from './Tool';
+import { Assistant } from './Assistant';
 
 export const entities = {
     ChatFlow,
@@ -10,4 +10,4 @@ export const entities = {
     Credential,
     Tool,
     Assistant
-}
+};

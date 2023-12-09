@@ -1,38 +1,38 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { QdrantClient } from '@qdrant/js-client-rest'
-import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { flatten } from 'lodash'
-import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { QdrantClient } from '@qdrant/js-client-rest';
+import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant';
+import { Embeddings } from 'langchain/embeddings/base';
+import { Document } from 'langchain/document';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { flatten } from 'lodash';
+import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base';
 
-type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
+type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>;
 
 class QdrantUpsert_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'Qdrant Upsert Document'
-        this.name = 'qdrantUpsert'
-        this.version = 2.0
-        this.type = 'Qdrant'
-        this.icon = 'qdrant.png'
-        this.category = 'Vector Stores'
-        this.description = 'Upsert documents to Qdrant'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'DEPRECATING'
+        this.label = 'Qdrant Upsert Document';
+        this.name = 'qdrantUpsert';
+        this.version = 2.0;
+        this.type = 'Qdrant';
+        this.icon = 'qdrant.png';
+        this.category = 'Vector Stores';
+        this.description = 'Upsert documents to Qdrant';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'DEPRECATING';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -40,7 +40,7 @@ class QdrantUpsert_VectorStores implements INode {
             description: 'Only needed when using Qdrant cloud hosted',
             optional: true,
             credentialNames: ['qdrantApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -110,7 +110,7 @@ class QdrantUpsert_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Qdrant Retriever',
@@ -122,35 +122,35 @@ class QdrantUpsert_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(QdrantVectorStore)]
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
-        const collectionName = nodeData.inputs?.qdrantCollection as string
-        const docs = nodeData.inputs?.document as Document[]
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
-        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+        const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string;
+        const collectionName = nodeData.inputs?.qdrantCollection as string;
+        const docs = nodeData.inputs?.document as Document[];
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity;
+        const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension;
 
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
-        let queryFilter = nodeData.inputs?.qdrantFilter
+        const output = nodeData.outputs?.output as string;
+        const topK = nodeData.inputs?.topK as string;
+        const k = topK ? parseFloat(topK) : 4;
+        let queryFilter = nodeData.inputs?.qdrantFilter;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData);
 
         const client = new QdrantClient({
             url: qdrantServerUrl,
             apiKey: qdrantApiKey
-        })
+        });
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
+        const flattenDocs = docs && docs.length ? flatten(docs) : [];
+        const finalDocs = [];
         for (let i = 0; i < flattenDocs.length; i += 1) {
             if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                finalDocs.push(new Document(flattenDocs[i]))
+                finalDocs.push(new Document(flattenDocs[i]));
             }
         }
 
@@ -164,27 +164,27 @@ class QdrantUpsert_VectorStores implements INode {
                     distance: qdrantSimilarity ?? 'Cosine'
                 }
             }
-        }
+        };
 
         const retrieverConfig: RetrieverConfig = {
             k
-        }
+        };
 
         if (queryFilter) {
-            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter);
         }
 
-        const vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+        const vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig);
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(retrieverConfig)
-            return retriever
+            const retriever = vectorStore.asRetriever(retrieverConfig);
+            return retriever;
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
-module.exports = { nodeClass: QdrantUpsert_VectorStores }
+module.exports = { nodeClass: QdrantUpsert_VectorStores };

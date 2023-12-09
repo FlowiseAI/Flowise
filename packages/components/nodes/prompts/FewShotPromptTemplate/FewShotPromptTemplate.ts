@@ -1,29 +1,29 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getInputVariables } from '../../../src/utils'
-import { FewShotPromptTemplate, FewShotPromptTemplateInput, PromptTemplate } from 'langchain/prompts'
-import { Example } from 'langchain/schema'
-import { TemplateFormat } from 'langchain/dist/prompts/template'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getInputVariables } from '../../../src/utils';
+import { FewShotPromptTemplate, FewShotPromptTemplateInput, PromptTemplate } from 'langchain/prompts';
+import { Example } from 'langchain/schema';
+import { TemplateFormat } from 'langchain/dist/prompts/template';
 
 class FewShotPromptTemplate_Prompts implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Few Shot Prompt Template'
-        this.name = 'fewShotPromptTemplate'
-        this.version = 1.0
-        this.type = 'FewShotPromptTemplate'
-        this.icon = 'prompt.svg'
-        this.category = 'Prompts'
-        this.description = 'Prompt template you can build with examples'
-        this.baseClasses = [this.type, ...getBaseClasses(FewShotPromptTemplate)]
+        this.label = 'Few Shot Prompt Template';
+        this.name = 'fewShotPromptTemplate';
+        this.version = 1.0;
+        this.type = 'FewShotPromptTemplate';
+        this.icon = 'prompt.svg';
+        this.category = 'Prompts';
+        this.description = 'Prompt template you can build with examples';
+        this.baseClasses = [this.type, ...getBaseClasses(FewShotPromptTemplate)];
         this.inputs = [
             {
                 label: 'Examples',
@@ -76,25 +76,25 @@ class FewShotPromptTemplate_Prompts implements INode {
                 ],
                 default: `f-string`
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const examplesStr = nodeData.inputs?.examples
-        const prefix = nodeData.inputs?.prefix as string
-        const suffix = nodeData.inputs?.suffix as string
-        const exampleSeparator = nodeData.inputs?.exampleSeparator as string
-        const templateFormat = nodeData.inputs?.templateFormat as TemplateFormat
-        const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate
+        const examplesStr = nodeData.inputs?.examples;
+        const prefix = nodeData.inputs?.prefix as string;
+        const suffix = nodeData.inputs?.suffix as string;
+        const exampleSeparator = nodeData.inputs?.exampleSeparator as string;
+        const templateFormat = nodeData.inputs?.templateFormat as TemplateFormat;
+        const examplePrompt = nodeData.inputs?.examplePrompt as PromptTemplate;
 
-        const inputVariables = getInputVariables(suffix)
+        const inputVariables = getInputVariables(suffix);
 
-        let examples: Example[] = []
+        let examples: Example[] = [];
         if (examplesStr) {
             try {
-                examples = typeof examplesStr === 'object' ? examplesStr : JSON.parse(examplesStr)
+                examples = typeof examplesStr === 'object' ? examplesStr : JSON.parse(examplesStr);
             } catch (exception) {
-                throw new Error("Invalid JSON in the FewShotPromptTemplate's examples: " + exception)
+                throw new Error("Invalid JSON in the FewShotPromptTemplate's examples: " + exception);
             }
         }
 
@@ -107,13 +107,13 @@ class FewShotPromptTemplate_Prompts implements INode {
                 inputVariables,
                 exampleSeparator,
                 templateFormat
-            }
-            const prompt = new FewShotPromptTemplate(obj)
-            return prompt
+            };
+            const prompt = new FewShotPromptTemplate(obj);
+            return prompt;
         } catch (e) {
-            throw new Error(e)
+            throw new Error(e);
         }
     }
 }
 
-module.exports = { nodeClass: FewShotPromptTemplate_Prompts }
+module.exports = { nodeClass: FewShotPromptTemplate_Prompts };

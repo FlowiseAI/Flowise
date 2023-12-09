@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Bedrock } from 'langchain/llms/bedrock'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { Bedrock } from 'langchain/llms/bedrock';
+import { BaseBedrockInput } from 'langchain/dist/util/bedrock';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 /**
  * I had to run the following to build the component
@@ -13,33 +13,33 @@ import { BaseLLMParams } from 'langchain/llms/base'
  * @author Michael Connor <mlconnor@yahoo.com>
  */
 class AWSBedrock_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'AWS Bedrock'
-        this.name = 'awsBedrock'
-        this.version = 2.0
-        this.type = 'AWSBedrock'
-        this.icon = 'awsBedrock.png'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around AWS Bedrock large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(Bedrock)]
+        this.label = 'AWS Bedrock';
+        this.name = 'awsBedrock';
+        this.version = 2.0;
+        this.type = 'AWSBedrock';
+        this.icon = 'awsBedrock.png';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around AWS Bedrock large language models';
+        this.baseClasses = [this.type, ...getBaseClasses(Bedrock)];
         this.credential = {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['awsApi'],
             optional: true
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -123,21 +123,21 @@ class AWSBedrock_LLMs implements INode {
                 optional: true,
                 default: 200
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const iRegion = nodeData.inputs?.region as string
-        const iModel = nodeData.inputs?.model as string
-        const iTemperature = nodeData.inputs?.temperature as string
-        const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
-        const cache = nodeData.inputs?.cache as BaseCache
+        const iRegion = nodeData.inputs?.region as string;
+        const iModel = nodeData.inputs?.model as string;
+        const iTemperature = nodeData.inputs?.temperature as string;
+        const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string;
+        const cache = nodeData.inputs?.cache as BaseCache;
         const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
             model: iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
             maxTokens: parseInt(iMax_tokens_to_sample, 10)
-        }
+        };
 
         /**
          * Long-term credentials specified in LLM configuration are optional.
@@ -146,23 +146,23 @@ class AWSBedrock_LLMs implements INode {
          * When specified, we override the default provider with configured values.
          * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
          */
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
         if (credentialData && Object.keys(credentialData).length !== 0) {
-            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
+            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData);
+            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData);
+            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData);
 
             obj.credentials = {
                 accessKeyId: credentialApiKey,
                 secretAccessKey: credentialApiSecret,
                 sessionToken: credentialApiSession
-            }
+            };
         }
-        if (cache) obj.cache = cache
+        if (cache) obj.cache = cache;
 
-        const amazonBedrock = new Bedrock(obj)
-        return amazonBedrock
+        const amazonBedrock = new Bedrock(obj);
+        return amazonBedrock;
     }
 }
 
-module.exports = { nodeClass: AWSBedrock_LLMs }
+module.exports = { nodeClass: AWSBedrock_LLMs };

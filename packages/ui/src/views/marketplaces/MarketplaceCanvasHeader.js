@@ -1,19 +1,19 @@
-import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { useTheme } from '@mui/material/styles';
+import { Avatar, Box, ButtonBase, Typography, Stack } from '@mui/material';
+import { StyledButton } from 'ui-component/button/StyledButton';
 
 // icons
-import { IconCopy, IconChevronLeft } from '@tabler/icons'
+import { IconCopy, IconChevronLeft } from '@tabler/icons';
 
 // ==============================|| CANVAS HEADER ||============================== //
 
 const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
-    const theme = useTheme()
-    const navigate = useNavigate()
+    const theme = useTheme();
+    const navigate = useNavigate();
 
     return (
         <>
@@ -64,13 +64,13 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
                 </StyledButton>
             </Box>
         </>
-    )
-}
+    );
+};
 
 MarketplaceCanvasHeader.propTypes = {
     flowName: PropTypes.string,
     flowData: PropTypes.object,
     onChatflowCopy: PropTypes.func
-}
+};
 
-export default MarketplaceCanvasHeader
+export default MarketplaceCanvasHeader;

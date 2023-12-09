@@ -1,41 +1,41 @@
-import { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Box, List, Paper, Popper, ClickAwayListener } from '@mui/material'
+import { useTheme } from '@mui/material/styles';
+import { Box, List, Paper, Popper, ClickAwayListener } from '@mui/material';
 
 // third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import Transitions from 'ui-component/extended/Transitions'
-import NavItem from 'layout/MainLayout/Sidebar/MenuList/NavItem'
+import MainCard from 'ui-component/cards/MainCard';
+import Transitions from 'ui-component/extended/Transitions';
+import NavItem from 'layout/MainLayout/Sidebar/MenuList/NavItem';
 
-import settings from 'menu-items/settings'
+import settings from 'menu-items/settings';
 
 // ==============================|| SETTINGS ||============================== //
 
 const Settings = ({ chatflow, isSettingsOpen, anchorEl, onSettingsItemClick, onUploadFile, onClose }) => {
-    const theme = useTheme()
-    const [settingsMenu, setSettingsMenu] = useState([])
+    const theme = useTheme();
+    const [settingsMenu, setSettingsMenu] = useState([]);
 
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         if (chatflow && !chatflow.id) {
-            const settingsMenu = settings.children.filter((menu) => menu.id === 'loadChatflow')
-            setSettingsMenu(settingsMenu)
+            const settingsMenu = settings.children.filter((menu) => menu.id === 'loadChatflow');
+            setSettingsMenu(settingsMenu);
         } else if (chatflow && chatflow.id) {
-            const settingsMenu = settings.children
-            setSettingsMenu(settingsMenu)
+            const settingsMenu = settings.children;
+            setSettingsMenu(settingsMenu);
         }
-    }, [chatflow])
+    }, [chatflow]);
 
     useEffect(() => {
-        setOpen(isSettingsOpen)
-    }, [isSettingsOpen])
+        setOpen(isSettingsOpen);
+    }, [isSettingsOpen]);
 
     // settings list items
     const items = settingsMenu.map((menu) => {
@@ -48,8 +48,8 @@ const Settings = ({ chatflow, isSettingsOpen, anchorEl, onSettingsItemClick, onU
                 onClick={(id) => onSettingsItemClick(id)}
                 onUploadFile={onUploadFile}
             />
-        )
-    })
+        );
+    });
 
     return (
         <>
@@ -89,8 +89,8 @@ const Settings = ({ chatflow, isSettingsOpen, anchorEl, onSettingsItemClick, onU
                 )}
             </Popper>
         </>
-    )
-}
+    );
+};
 
 Settings.propTypes = {
     chatflow: PropTypes.object,
@@ -99,6 +99,6 @@ Settings.propTypes = {
     onSettingsItemClick: PropTypes.func,
     onUploadFile: PropTypes.func,
     onClose: PropTypes.func
-}
+};
 
-export default Settings
+export default Settings;

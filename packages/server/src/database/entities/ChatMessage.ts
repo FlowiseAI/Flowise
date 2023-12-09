@@ -1,46 +1,46 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IChatMessage, MessageType } from '../../Interface'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { IChatMessage, MessageType } from '../../Interface';
 
 @Entity()
 export class ChatMessage implements IChatMessage {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    role: MessageType
+    role: MessageType;
 
     @Index()
     @Column()
-    chatflowid: string
+    chatflowid: string;
 
     @Column({ type: 'text' })
-    content: string
+    content: string;
 
     @Column({ nullable: true, type: 'text' })
-    sourceDocuments?: string
+    sourceDocuments?: string;
 
     @Column({ nullable: true, type: 'text' })
-    usedTools?: string
+    usedTools?: string;
 
     @Column({ nullable: true, type: 'text' })
-    fileAnnotations?: string
+    fileAnnotations?: string;
 
     @Column()
-    chatType: string
+    chatType: string;
 
     @Column()
-    chatId: string
+    chatId: string;
 
     @Column({ nullable: true })
-    memoryType?: string
+    memoryType?: string;
 
     @Column({ nullable: true })
-    sessionId?: string
+    sessionId?: string;
 
     @CreateDateColumn()
-    createdDate: Date
+    createdDate: Date;
 
     @Column({ type: 'json', nullable: true })
-    feedback?: { feedbackType: string; feedbackMessage: string }
+    feedback?: { feedbackType: string; feedbackMessage: string };
 }

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
-import moment from 'moment'
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
+import moment from 'moment';
 
 // material-ui
 import {
@@ -20,74 +20,74 @@ import {
     TextField,
     InputAdornment,
     ButtonGroup
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import CredentialListDialog from './CredentialListDialog'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import AddEditCredentialDialog from './AddEditCredentialDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import CredentialListDialog from './CredentialListDialog';
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog';
+import AddEditCredentialDialog from './AddEditCredentialDialog';
 
 // API
-import credentialsApi from 'api/credentials'
+import credentialsApi from 'api/credentials';
 
 // Hooks
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import useApi from 'hooks/useApi';
+import useConfirm from 'hooks/useConfirm';
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from 'utils/useNotifier';
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons'
-import CredentialEmptySVG from 'assets/images/credential_empty.svg'
+import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons';
+import CredentialEmptySVG from 'assets/images/credential_empty.svg';
 
 // const
-import { baseURL } from 'store/constant'
-import { SET_COMPONENT_CREDENTIALS } from 'store/actions'
+import { baseURL } from 'store/constant';
+import { SET_COMPONENT_CREDENTIALS } from 'store/actions';
 
 // ==============================|| Credentials ||============================== //
 
 const Credentials = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
 
-    const dispatch = useDispatch()
-    useNotifier()
+    const dispatch = useDispatch();
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [showCredentialListDialog, setShowCredentialListDialog] = useState(false)
-    const [credentialListDialogProps, setCredentialListDialogProps] = useState({})
-    const [showSpecificCredentialDialog, setShowSpecificCredentialDialog] = useState(false)
-    const [specificCredentialDialogProps, setSpecificCredentialDialogProps] = useState({})
-    const [credentials, setCredentials] = useState([])
-    const [componentsCredentials, setComponentsCredentials] = useState([])
+    const [showCredentialListDialog, setShowCredentialListDialog] = useState(false);
+    const [credentialListDialogProps, setCredentialListDialogProps] = useState({});
+    const [showSpecificCredentialDialog, setShowSpecificCredentialDialog] = useState(false);
+    const [specificCredentialDialogProps, setSpecificCredentialDialogProps] = useState({});
+    const [credentials, setCredentials] = useState([]);
+    const [componentsCredentials, setComponentsCredentials] = useState([]);
 
-    const { confirm } = useConfirm()
+    const { confirm } = useConfirm();
 
-    const getAllCredentialsApi = useApi(credentialsApi.getAllCredentials)
-    const getAllComponentsCredentialsApi = useApi(credentialsApi.getAllComponentsCredentials)
+    const getAllCredentialsApi = useApi(credentialsApi.getAllCredentials);
+    const getAllComponentsCredentialsApi = useApi(credentialsApi.getAllComponentsCredentials);
 
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState('');
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+        setSearch(event.target.value);
+    };
     function filterCredentials(data) {
-        return data.credentialName.toLowerCase().indexOf(search.toLowerCase()) > -1
+        return data.credentialName.toLowerCase().indexOf(search.toLowerCase()) > -1;
     }
 
     const listCredential = () => {
         const dialogProp = {
             title: 'Add New Credential',
             componentsCredentials
-        }
-        setCredentialListDialogProps(dialogProp)
-        setShowCredentialListDialog(true)
-    }
+        };
+        setCredentialListDialogProps(dialogProp);
+        setShowCredentialListDialog(true);
+    };
 
     const addNew = (credentialComponent) => {
         const dialogProp = {
@@ -95,10 +95,10 @@ const Credentials = () => {
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add',
             credentialComponent
-        }
-        setSpecificCredentialDialogProps(dialogProp)
-        setShowSpecificCredentialDialog(true)
-    }
+        };
+        setSpecificCredentialDialogProps(dialogProp);
+        setShowSpecificCredentialDialog(true);
+    };
 
     const edit = (credential) => {
         const dialogProp = {
@@ -106,10 +106,10 @@ const Credentials = () => {
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
             data: credential
-        }
-        setSpecificCredentialDialogProps(dialogProp)
-        setShowSpecificCredentialDialog(true)
-    }
+        };
+        setSpecificCredentialDialogProps(dialogProp);
+        setShowSpecificCredentialDialog(true);
+    };
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
@@ -117,12 +117,12 @@ const Credentials = () => {
             description: `Delete credential ${credential.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                const deleteResp = await credentialsApi.deleteCredential(credential.id)
+                const deleteResp = await credentialsApi.deleteCredential(credential.id);
                 if (deleteResp.data) {
                     enqueueSnackbar({
                         message: 'Credential deleted',
@@ -135,11 +135,11 @@ const Credentials = () => {
                                 </Button>
                             )
                         }
-                    })
-                    onConfirm()
+                    });
+                    onConfirm();
                 }
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: `Failed to delete Credential: ${errorData}`,
                     options: {
@@ -152,41 +152,41 @@ const Credentials = () => {
                             </Button>
                         )
                     }
-                })
-                onCancel()
+                });
+                onCancel();
             }
         }
-    }
+    };
 
     const onCredentialSelected = (credentialComponent) => {
-        setShowCredentialListDialog(false)
-        addNew(credentialComponent)
-    }
+        setShowCredentialListDialog(false);
+        addNew(credentialComponent);
+    };
 
     const onConfirm = () => {
-        setShowCredentialListDialog(false)
-        setShowSpecificCredentialDialog(false)
-        getAllCredentialsApi.request()
-    }
+        setShowCredentialListDialog(false);
+        setShowSpecificCredentialDialog(false);
+        getAllCredentialsApi.request();
+    };
 
     useEffect(() => {
-        getAllCredentialsApi.request()
-        getAllComponentsCredentialsApi.request()
+        getAllCredentialsApi.request();
+        getAllComponentsCredentialsApi.request();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (getAllCredentialsApi.data) {
-            setCredentials(getAllCredentialsApi.data)
+            setCredentials(getAllCredentialsApi.data);
         }
-    }, [getAllCredentialsApi.data])
+    }, [getAllCredentialsApi.data]);
 
     useEffect(() => {
         if (getAllComponentsCredentialsApi.data) {
-            setComponentsCredentials(getAllComponentsCredentialsApi.data)
-            dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data })
+            setComponentsCredentials(getAllComponentsCredentialsApi.data);
+            dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data });
         }
-    }, [getAllComponentsCredentialsApi.data, dispatch])
+    }, [getAllComponentsCredentialsApi.data, dispatch]);
 
     return (
         <>
@@ -330,7 +330,7 @@ const Credentials = () => {
             ></AddEditCredentialDialog>
             <ConfirmDialog />
         </>
-    )
-}
+    );
+};
 
-export default Credentials
+export default Credentials;

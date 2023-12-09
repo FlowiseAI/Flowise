@@ -1,33 +1,33 @@
-import { flatten } from 'lodash'
-import { Document } from 'langchain/document'
-import { FaissStore } from 'langchain/vectorstores/faiss'
-import { Embeddings } from 'langchain/embeddings/base'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { flatten } from 'lodash';
+import { Document } from 'langchain/document';
+import { FaissStore } from 'langchain/vectorstores/faiss';
+import { Embeddings } from 'langchain/embeddings/base';
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
 
 class Faiss_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'Faiss'
-        this.name = 'faiss'
-        this.version = 1.0
-        this.type = 'Faiss'
-        this.icon = 'faiss.svg'
-        this.category = 'Vector Stores'
-        this.description = 'Upsert embedded data and perform similarity search upon query using Faiss library from Meta'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
+        this.label = 'Faiss';
+        this.name = 'faiss';
+        this.version = 1.0;
+        this.type = 'Faiss';
+        this.icon = 'faiss.svg';
+        this.category = 'Vector Stores';
+        this.description = 'Upsert embedded data and perform similarity search upon query using Faiss library from Meta';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'NEW';
         this.inputs = [
             {
                 label: 'Document',
@@ -57,7 +57,7 @@ class Faiss_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Faiss Retriever',
@@ -69,77 +69,77 @@ class Faiss_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(FaissStore)]
             }
-        ]
+        ];
     }
 
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData): Promise<void> {
-            const docs = nodeData.inputs?.document as Document[]
-            const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const basePath = nodeData.inputs?.basePath as string
+            const docs = nodeData.inputs?.document as Document[];
+            const embeddings = nodeData.inputs?.embeddings as Embeddings;
+            const basePath = nodeData.inputs?.basePath as string;
 
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
+            const flattenDocs = docs && docs.length ? flatten(docs) : [];
+            const finalDocs = [];
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    finalDocs.push(new Document(flattenDocs[i]));
                 }
             }
 
             try {
-                const vectorStore = await FaissStore.fromDocuments(finalDocs, embeddings)
-                await vectorStore.save(basePath)
+                const vectorStore = await FaissStore.fromDocuments(finalDocs, embeddings);
+                await vectorStore.save(basePath);
 
                 // Avoid illegal invocation error
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
-                    return await similaritySearchVectorWithScore(query, k, vectorStore)
-                }
+                    return await similaritySearchVectorWithScore(query, k, vectorStore);
+                };
             } catch (e) {
-                throw new Error(e)
+                throw new Error(e);
             }
         }
-    }
+    };
 
     async init(nodeData: INodeData): Promise<any> {
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const basePath = nodeData.inputs?.basePath as string
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const basePath = nodeData.inputs?.basePath as string;
+        const output = nodeData.outputs?.output as string;
+        const topK = nodeData.inputs?.topK as string;
+        const k = topK ? parseFloat(topK) : 4;
 
-        const vectorStore = await FaissStore.load(basePath, embeddings)
+        const vectorStore = await FaissStore.load(basePath, embeddings);
 
         // Avoid illegal invocation error
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
-            return await similaritySearchVectorWithScore(query, k, vectorStore)
-        }
+            return await similaritySearchVectorWithScore(query, k, vectorStore);
+        };
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
+            const retriever = vectorStore.asRetriever(k);
+            return retriever;
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
 const similaritySearchVectorWithScore = async (query: number[], k: number, vectorStore: FaissStore) => {
-    const index = vectorStore.index
+    const index = vectorStore.index;
 
     if (k > index.ntotal()) {
-        const total = index.ntotal()
-        console.warn(`k (${k}) is greater than the number of elements in the index (${total}), setting k to ${total}`)
-        k = total
+        const total = index.ntotal();
+        console.warn(`k (${k}) is greater than the number of elements in the index (${total}), setting k to ${total}`);
+        k = total;
     }
 
-    const result = index.search(query, k)
+    const result = index.search(query, k);
     return result.labels.map((id, index) => {
-        const uuid = vectorStore._mapping[id]
-        return [vectorStore.docstore.search(uuid), result.distances[index]] as [Document, number]
-    })
-}
+        const uuid = vectorStore._mapping[id];
+        return [vectorStore.docstore.search(uuid), result.distances[index]] as [Document, number];
+    });
+};
 
-module.exports = { nodeClass: Faiss_VectorStores }
+module.exports = { nodeClass: Faiss_VectorStores };
