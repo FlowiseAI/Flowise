@@ -58,6 +58,9 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
+import axios from 'axios'
+import { Client } from 'langchainhub'
+import { parsePrompt } from './utils/hub'
 
 export class App {
     app: express.Application
@@ -1037,6 +1040,56 @@ export class App {
         })
 
         // ----------------------------------------
+        // Prompt from Hub
+        // ----------------------------------------
+        this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
+            try {
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: req.body.credential
+                })
+
+                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
+
+                // Decrypt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
+                let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
+                const prompt = await hub.pull(req.body.promptName)
+                const templates = parsePrompt(prompt)
+
+                return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
+            } catch (e: any) {
+                return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
+            }
+        })
+
+        this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
+            try {
+                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
+                    id: req.body.credential
+                })
+
+                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
+                // Decrypt credentialData
+                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
+
+                const headers = {}
+                // @ts-ignore
+                headers['x-api-key'] = decryptedCredentialData.langsmithApiKey
+
+                const tags = req.body.tags ? `tags=${req.body.tags}` : ''
+                // Default to 100, TODO: add pagination and use offset & limit
+                const url = `https://web.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
+                axios.get(url, headers).then((response) => {
+                    if (response.data.repos) {
+                        return res.json({ status: 'OK', repos: response.data.repos })
+                    }
+                })
+            } catch (e: any) {
+                return res.json({ status: 'ERROR', repos: [] })
+            }
+        })
+
+        // ----------------------------------------
         // Prediction
         // ----------------------------------------
 
@@ -1341,16 +1394,19 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
 
-            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
+            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
+             * - Its not an Upsert request
+             * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
                 return (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                    this.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
                     isSameOverrideConfig(
                         isInternal,
                         this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
@@ -1362,7 +1418,7 @@ export class App {
             }
 
             if (isFlowReusable()) {
-                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
                 isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
                 logger.debug(
                     `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
@@ -1413,6 +1469,7 @@ export class App {
                 const constructedObj = constructGraphs(nodes, edges, true)
                 const nonDirectedGraph = constructedObj.graph
                 const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                 /*** BFS to traverse from Starting Nodes to Ending Node ***/
@@ -1432,13 +1489,18 @@ export class App {
                     isUpsert,
                     incomingInput.stopNodeId
                 )
-                if (isUpsert) return res.status(201).send('Successfully Upserted')
+                if (isUpsert) {
+                    this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+                    return res.status(201).send('Successfully Upserted')
+                }
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                 if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
-                if (incomingInput.overrideConfig)
+                if (incomingInput.overrideConfig) {
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+                }
+
                 const reactFlowNodeData: INodeData = resolveVariables(
                     nodeToExecute.data,
                     reactFlowNodes,
@@ -1447,7 +1509,6 @@ export class App {
                 )
                 nodeToExecuteData = reactFlowNodeData
 
-                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
@@ -1470,6 +1531,7 @@ export class App {
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatflowid,
                       chatHistory,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId,
@@ -1480,6 +1542,7 @@ export class App {
                       chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatflowid,
                       chatHistory,
                       logger,
                       appDataSource: this.AppDataSource,
