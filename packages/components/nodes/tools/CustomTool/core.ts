@@ -80,7 +80,8 @@ export class DynamicStructuredTool<
                 sandbox[`$${item}`] = arg[item]
             }
         }
-
+        sandbox['$env'] = { USER: 'VINOD' }
+        console.log('sandbox === ' + JSON.stringify(sandbox))
         const defaultAllowBuiltInDep = [
             'assert',
             'buffer',

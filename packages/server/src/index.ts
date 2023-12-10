@@ -62,7 +62,7 @@ import { sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
-import { Variable } from "./database/entities/Variable";
+import { Variable } from './database/entities/Variable'
 
 export class App {
     app: express.Application
