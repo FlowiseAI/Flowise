@@ -1,8 +1,8 @@
-import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import {
     Tabs,
@@ -15,44 +15,44 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography
-} from '@mui/material'
-import { CopyBlock, atomOneDark } from 'react-code-blocks'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+} from '@mui/material';
+import { CopyBlock, atomOneDark } from 'react-code-blocks';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 // Project import
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import ShareChatbot from './ShareChatbot'
-import EmbedChat from './EmbedChat'
-import Configuration from './Configuration'
+import { Dropdown } from 'ui-component/dropdown/Dropdown';
+import ShareChatbot from './ShareChatbot';
+import EmbedChat from './EmbedChat';
+import Configuration from './Configuration';
 
 // Const
-import { baseURL } from 'store/constant'
-import { SET_CHATFLOW } from 'store/actions'
+import { baseURL } from 'store/constant';
+import { SET_CHATFLOW } from 'store/actions';
 
 // Images
-import pythonSVG from 'assets/images/python.svg'
-import javascriptSVG from 'assets/images/javascript.svg'
-import cURLSVG from 'assets/images/cURL.svg'
-import EmbedSVG from 'assets/images/embed.svg'
-import ShareChatbotSVG from 'assets/images/sharing.png'
-import settingsSVG from 'assets/images/settings.svg'
-import { IconBulb } from '@tabler/icons'
+import pythonSVG from 'assets/images/python.svg';
+import javascriptSVG from 'assets/images/javascript.svg';
+import cURLSVG from 'assets/images/cURL.svg';
+import EmbedSVG from 'assets/images/embed.svg';
+import ShareChatbotSVG from 'assets/images/sharing.png';
+import settingsSVG from 'assets/images/settings.svg';
+import { IconBulb } from '@tabler/icons';
 
 // API
-import apiKeyApi from 'api/apikey'
-import chatflowsApi from 'api/chatflows'
-import configApi from 'api/config'
+import apiKeyApi from 'api/apikey';
+import chatflowsApi from 'api/chatflows';
+import configApi from 'api/config';
 
 // Hooks
-import useApi from 'hooks/useApi'
-import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
-import { TableViewOnly } from 'ui-component/table/Table'
+import useApi from 'hooks/useApi';
+import { CheckboxInput } from 'ui-component/checkbox/Checkbox';
+import { TableViewOnly } from 'ui-component/table/Table';
 
 // Helpers
-import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from 'utils/genericHelper'
+import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from 'utils/genericHelper';
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props
+    const { children, value, index, ...other } = props;
     return (
         <div
             role='tabpanel'
@@ -63,95 +63,95 @@ function TabPanel(props) {
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
         </div>
-    )
+    );
 }
 
 TabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
     value: PropTypes.number.isRequired
-}
+};
 
 function a11yProps(index) {
     return {
         id: `attachment-tab-${index}`,
         'aria-controls': `attachment-tabpanel-${index}`
-    }
+    };
 }
 
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
+    const portalElement = document.getElementById('portal');
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot', 'Configuration']
-    const [value, setValue] = useState(0)
-    const [keyOptions, setKeyOptions] = useState([])
-    const [apiKeys, setAPIKeys] = useState([])
-    const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
-    const [selectedApiKey, setSelectedApiKey] = useState({})
-    const [checkboxVal, setCheckbox] = useState(false)
-    const [nodeConfig, setNodeConfig] = useState({})
-    const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot', 'Configuration'];
+    const [value, setValue] = useState(0);
+    const [keyOptions, setKeyOptions] = useState([]);
+    const [apiKeys, setAPIKeys] = useState([]);
+    const [chatflowApiKeyId, setChatflowApiKeyId] = useState('');
+    const [selectedApiKey, setSelectedApiKey] = useState({});
+    const [checkboxVal, setCheckbox] = useState(false);
+    const [nodeConfig, setNodeConfig] = useState({});
+    const [nodeConfigExpanded, setNodeConfigExpanded] = useState({});
 
-    const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-    const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
-    const getConfigApi = useApi(configApi.getConfig)
+    const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys);
+    const updateChatflowApi = useApi(chatflowsApi.updateChatflow);
+    const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming);
+    const getConfigApi = useApi(configApi.getConfig);
 
     const onCheckBoxChanged = (newVal) => {
-        setCheckbox(newVal)
+        setCheckbox(newVal);
         if (newVal) {
-            getConfigApi.request(dialogProps.chatflowid)
+            getConfigApi.request(dialogProps.chatflowid);
         }
-    }
+    };
 
     const onApiKeySelected = (keyValue) => {
         if (keyValue === 'addnewkey') {
-            navigate('/apikey')
-            return
+            navigate('/apikey');
+            return;
         }
-        setChatflowApiKeyId(keyValue)
-        setSelectedApiKey(apiKeys.find((key) => key.id === keyValue))
+        setChatflowApiKeyId(keyValue);
+        setSelectedApiKey(apiKeys.find((key) => key.id === keyValue));
         const updateBody = {
             apikeyid: keyValue
-        }
-        updateChatflowApi.request(dialogProps.chatflowid, updateBody)
-    }
+        };
+        updateChatflowApi.request(dialogProps.chatflowid, updateBody);
+    };
 
     const groupByNodeLabel = (nodes, isFilter = false) => {
-        const accordianNodes = {}
+        const accordianNodes = {};
         const result = nodes.reduce(function (r, a) {
-            r[a.node] = r[a.node] || []
-            r[a.node].push(a)
-            accordianNodes[a.node] = isFilter ? true : false
-            return r
-        }, Object.create(null))
-        setNodeConfig(result)
-        setNodeConfigExpanded(accordianNodes)
-    }
+            r[a.node] = r[a.node] || [];
+            r[a.node].push(a);
+            accordianNodes[a.node] = isFilter ? true : false;
+            return r;
+        }, Object.create(null));
+        setNodeConfig(result);
+        setNodeConfigExpanded(accordianNodes);
+    };
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
-        const accordianNodes = { ...nodeConfigExpanded }
-        accordianNodes[nodeLabel] = isExpanded
-        setNodeConfigExpanded(accordianNodes)
-    }
+        const accordianNodes = { ...nodeConfigExpanded };
+        accordianNodes[nodeLabel] = isExpanded;
+        setNodeConfigExpanded(accordianNodes);
+    };
 
     useEffect(() => {
         if (updateChatflowApi.data) {
-            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
+            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data });
         }
-    }, [updateChatflowApi.data, dispatch])
+    }, [updateChatflowApi.data, dispatch]);
 
     useEffect(() => {
         if (getConfigApi.data) {
-            groupByNodeLabel(getConfigApi.data)
+            groupByNodeLabel(getConfigApi.data);
         }
-    }, [getConfigApi.data])
+    }, [getConfigApi.data]);
 
     const handleChange = (event, newValue) => {
-        setValue(newValue)
-    }
+        setValue(newValue);
+    };
 
     const getCode = (codeLang) => {
         if (codeLang === 'Python') {
@@ -166,7 +166,7 @@ def query(payload):
 output = query({
     "question": "Hey, how are you?",
 })
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
@@ -186,15 +186,15 @@ output = query({
 query({"question": "Hey, how are you?"}).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
-     -H "Content-Type: application/json"`
+     -H "Content-Type: application/json"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     const getCodeWithAuthorization = (codeLang) => {
         if (codeLang === 'Python') {
@@ -210,7 +210,7 @@ def query(payload):
 output = query({
     "question": "Hey, how are you?",
 })
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
@@ -231,52 +231,52 @@ output = query({
 query({"question": "Hey, how are you?"}).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
      -H "Content-Type: application/json" \\
-     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
-            return 'python'
+            return 'python';
         } else if (codeLang === 'JavaScript') {
-            return 'javascript'
+            return 'javascript';
         } else if (codeLang === 'cURL') {
-            return 'bash'
+            return 'bash';
         }
-        return 'python'
-    }
+        return 'python';
+    };
 
     const getSVG = (codeLang) => {
         if (codeLang === 'Python') {
-            return pythonSVG
+            return pythonSVG;
         } else if (codeLang === 'JavaScript') {
-            return javascriptSVG
+            return javascriptSVG;
         } else if (codeLang === 'Embed') {
-            return EmbedSVG
+            return EmbedSVG;
         } else if (codeLang === 'cURL') {
-            return cURLSVG
+            return cURLSVG;
         } else if (codeLang === 'Share Chatbot') {
-            return ShareChatbotSVG
+            return ShareChatbotSVG;
         } else if (codeLang === 'Configuration') {
-            return settingsSVG
+            return settingsSVG;
         }
-        return pythonSVG
-    }
+        return pythonSVG;
+    };
 
     // ----------------------------CONFIG FORM DATA --------------------------//
 
     const getConfigCodeWithFormData = (codeLang, configData) => {
         if (codeLang === 'Python') {
-            configData = unshiftFiles(configData)
-            let fileType = configData[0].type
-            if (fileType.includes(',')) fileType = fileType.split(',')[0]
+            configData = unshiftFiles(configData);
+            let fileType = configData[0].type;
+            if (fileType.includes(',')) fileType = fileType.split(',')[0];
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
@@ -292,7 +292,7 @@ def query(form_data):
     return response.json()
 
 output = query(form_data)
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `// use FormData to upload files
 let formData = new FormData();
@@ -312,22 +312,22 @@ async function query(formData) {
 query(formData).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
-     -H "Content-Type: multipart/form-data"`
+     -H "Content-Type: multipart/form-data"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     // ----------------------------CONFIG FORM DATA with AUTH--------------------------//
 
     const getConfigCodeWithFormDataWithAuth = (codeLang, configData) => {
         if (codeLang === 'Python') {
-            configData = unshiftFiles(configData)
-            let fileType = configData[0].type
-            if (fileType.includes(',')) fileType = fileType.split(',')[0]
+            configData = unshiftFiles(configData);
+            let fileType = configData[0].type;
+            if (fileType.includes(',')) fileType = fileType.split(',')[0];
             return `import requests
 
 API_URL = "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}"
@@ -344,7 +344,7 @@ def query(form_data):
     return response.json()
 
 output = query(form_data)
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `// use FormData to upload files
 let formData = new FormData();
@@ -365,15 +365,15 @@ async function query(formData) {
 query(formData).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData')} \\
      -H "Content-Type: multipart/form-data" \\
-     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     // ----------------------------CONFIG JSON--------------------------//
 
@@ -392,7 +392,7 @@ output = query({
     "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
     }
 })
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
@@ -416,15 +416,15 @@ query({
 }).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
-     -H "Content-Type: application/json"`
+     -H "Content-Type: application/json"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     // ----------------------------CONFIG JSON with AUTH--------------------------//
 
@@ -444,7 +444,7 @@ output = query({
     "overrideConfig": {${getConfigExamplesForPython(configData, 'json')}
     }
 })
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
@@ -469,31 +469,31 @@ query({
 }).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?", "overrideConfig": {${getConfigExamplesForCurl(configData, 'json')}}' \\
      -H "Content-Type: application/json" \\
-     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`
+     -H "Authorization: Bearer ${selectedApiKey?.apiKey}"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     const getMultiConfigCodeWithFormData = (codeLang) => {
         if (codeLang === 'Python') {
             return `body_data = {
     "openAIApiKey[chatOpenAI_0]": "sk-my-openai-1st-key",
     "openAIApiKey[openAIEmbeddings_0]": "sk-my-openai-2nd-key"
-}`
+}`;
         } else if (codeLang === 'JavaScript') {
             return `formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
-formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
+formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`;
         } else if (codeLang === 'cURL') {
             return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
--F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`
+-F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`;
         }
-    }
+    };
 
     const getMultiConfigCode = () => {
         return `{
@@ -503,8 +503,8 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
             "openAIEmbeddings_0": "sk-my-openai-2nd-key"
         }
     }
-}`
-    }
+}`;
+    };
 
     useEffect(() => {
         if (getAllAPIKeysApi.data) {
@@ -513,35 +513,35 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                     label: 'No Authorization',
                     name: ''
                 }
-            ]
+            ];
             for (const key of getAllAPIKeysApi.data) {
                 options.push({
                     label: key.keyName,
                     name: key.id
-                })
+                });
             }
             options.push({
                 label: '- Add New Key -',
                 name: 'addnewkey'
-            })
-            setKeyOptions(options)
-            setAPIKeys(getAllAPIKeysApi.data)
+            });
+            setKeyOptions(options);
+            setAPIKeys(getAllAPIKeysApi.data);
 
             if (dialogProps.chatflowApiKeyId) {
-                setChatflowApiKeyId(dialogProps.chatflowApiKeyId)
-                setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId))
+                setChatflowApiKeyId(dialogProps.chatflowApiKeyId);
+                setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId));
             }
         }
-    }, [dialogProps, getAllAPIKeysApi.data])
+    }, [dialogProps, getAllAPIKeysApi.data]);
 
     useEffect(() => {
         if (show) {
-            getAllAPIKeysApi.request()
-            getIsChatflowStreamingApi.request(dialogProps.chatflowid)
+            getAllAPIKeysApi.request();
+            getIsChatflowStreamingApi.request(dialogProps.chatflowid);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [show])
+    }, [show]);
 
     const component = show ? (
         <Dialog
@@ -645,8 +645,8 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                         <TableViewOnly
                                                             rows={nodeConfig[nodeLabel].map((obj) => {
                                                                 // eslint-disable-next-line
-                                                                const { node, nodeId, ...rest } = obj
-                                                                return rest
+                                                                const { node, nodeId, ...rest } = obj;
+                                                                return rest;
                                                             })}
                                                             columns={Object.keys(nodeConfig[nodeLabel][0]).slice(-3)}
                                                         />
@@ -726,15 +726,15 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 ))}
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 APICodeDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
-}
+};
 
-export default APICodeDialog
+export default APICodeDialog;

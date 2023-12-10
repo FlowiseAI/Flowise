@@ -1,13 +1,13 @@
-import { DynamicTool, DynamicToolInput } from 'langchain/tools'
-import { BaseChain } from 'langchain/chains'
-import { handleEscapeCharacters } from '../../../src/utils'
+import { DynamicTool, DynamicToolInput } from 'langchain/tools';
+import { BaseChain } from 'langchain/chains';
+import { handleEscapeCharacters } from '../../../src/utils';
 
 export interface ChainToolInput extends Omit<DynamicToolInput, 'func'> {
-    chain: BaseChain
+    chain: BaseChain;
 }
 
 export class ChainTool extends DynamicTool {
-    chain: BaseChain
+    chain: BaseChain;
 
     constructor({ chain, ...rest }: ChainToolInput) {
         super({
@@ -15,13 +15,13 @@ export class ChainTool extends DynamicTool {
             func: async (input, runManager) => {
                 // To enable LLM Chain which has promptValues
                 if ((chain as any).prompt && (chain as any).prompt.promptValues) {
-                    const promptValues = handleEscapeCharacters((chain as any).prompt.promptValues, true)
-                    const values = await chain.call(promptValues, runManager?.getChild())
-                    return values?.text
+                    const promptValues = handleEscapeCharacters((chain as any).prompt.promptValues, true);
+                    const values = await chain.call(promptValues, runManager?.getChild());
+                    return values?.text;
                 }
-                return chain.run(input, runManager?.getChild())
+                return chain.run(input, runManager?.getChild());
             }
-        })
-        this.chain = chain
+        });
+        this.chain = chain;
     }
 }

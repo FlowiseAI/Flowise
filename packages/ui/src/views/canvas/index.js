@@ -1,98 +1,98 @@
-import { useEffect, useRef, useState, useCallback, useContext } from 'react'
-import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
-import 'reactflow/dist/style.css'
+import { useEffect, useRef, useState, useCallback, useContext } from 'react';
+import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow';
+import 'reactflow/dist/style.css';
 
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { usePrompt } from '../../utils/usePrompt'
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { usePrompt } from '../../utils/usePrompt';
 import {
     REMOVE_DIRTY,
     SET_DIRTY,
     SET_CHATFLOW,
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
-} from 'store/actions'
-import { omit, cloneDeep } from 'lodash'
+} from 'store/actions';
+import { omit, cloneDeep } from 'lodash';
 
 // material-ui
-import { Toolbar, Box, AppBar, Button } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Toolbar, Box, AppBar, Button } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import CanvasNode from './CanvasNode'
-import ButtonEdge from './ButtonEdge'
-import CanvasHeader from './CanvasHeader'
-import AddNodes from './AddNodes'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import { ChatPopUp } from 'views/chatmessage/ChatPopUp'
-import { VectorStorePopUp } from 'views/vectorstore/VectorStorePopUp'
-import { flowContext } from 'store/context/ReactFlowContext'
+import CanvasNode from './CanvasNode';
+import ButtonEdge from './ButtonEdge';
+import CanvasHeader from './CanvasHeader';
+import AddNodes from './AddNodes';
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog';
+import { ChatPopUp } from 'views/chatmessage/ChatPopUp';
+import { VectorStorePopUp } from 'views/vectorstore/VectorStorePopUp';
+import { flowContext } from 'store/context/ReactFlowContext';
 
 // API
-import nodesApi from 'api/nodes'
-import chatflowsApi from 'api/chatflows'
+import nodesApi from 'api/nodes';
+import chatflowsApi from 'api/chatflows';
 
 // Hooks
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import useApi from 'hooks/useApi';
+import useConfirm from 'hooks/useConfirm';
 
 // icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons';
 
 // utils
-import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper'
-import useNotifier from 'utils/useNotifier'
+import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper';
+import useNotifier from 'utils/useNotifier';
 
 // const
-import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+import { FLOWISE_CREDENTIAL_ID } from 'store/constant';
 
-const nodeTypes = { customNode: CanvasNode }
-const edgeTypes = { buttonedge: ButtonEdge }
+const nodeTypes = { customNode: CanvasNode };
+const edgeTypes = { buttonedge: ButtonEdge };
 
 // ==============================|| CANVAS ||============================== //
 
 const Canvas = () => {
-    const theme = useTheme()
-    const navigate = useNavigate()
+    const theme = useTheme();
+    const navigate = useNavigate();
 
-    const { state } = useLocation()
-    const templateFlowData = state ? state.templateFlowData : ''
+    const { state } = useLocation();
+    const templateFlowData = state ? state.templateFlowData : '';
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const chatflowId = URLpath[URLpath.length - 1] === 'canvas' ? '' : URLpath[URLpath.length - 1]
+    const URLpath = document.location.pathname.toString().split('/');
+    const chatflowId = URLpath[URLpath.length - 1] === 'canvas' ? '' : URLpath[URLpath.length - 1];
 
-    const { confirm } = useConfirm()
+    const { confirm } = useConfirm();
 
-    const dispatch = useDispatch()
-    const canvas = useSelector((state) => state.canvas)
-    const [canvasDataStore, setCanvasDataStore] = useState(canvas)
-    const [chatflow, setChatflow] = useState(null)
+    const dispatch = useDispatch();
+    const canvas = useSelector((state) => state.canvas);
+    const [canvasDataStore, setCanvasDataStore] = useState(canvas);
+    const [chatflow, setChatflow] = useState(null);
 
-    const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
+    const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext);
 
     // ==============================|| Snackbar ||============================== //
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    useNotifier();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
     // ==============================|| ReactFlow ||============================== //
 
-    const [nodes, setNodes, onNodesChange] = useNodesState()
-    const [edges, setEdges, onEdgesChange] = useEdgesState()
+    const [nodes, setNodes, onNodesChange] = useNodesState();
+    const [edges, setEdges, onEdgesChange] = useEdgesState();
 
-    const [selectedNode, setSelectedNode] = useState(null)
-    const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false);
 
-    const reactFlowWrapper = useRef(null)
+    const reactFlowWrapper = useRef(null);
 
     // ==============================|| Chatflow API ||============================== //
 
-    const getNodesApi = useApi(nodesApi.getAllNodes)
-    const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
-    const testChatflowApi = useApi(chatflowsApi.testChatflow)
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-    const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const getNodesApi = useApi(nodesApi.getAllNodes);
+    const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow);
+    const testChatflowApi = useApi(chatflowsApi.testChatflow);
+    const updateChatflowApi = useApi(chatflowsApi.updateChatflow);
+    const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow);
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -102,32 +102,32 @@ const Canvas = () => {
             type: 'buttonedge',
             id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`,
             data: { label: getEdgeLabelName(params.sourceHandle) }
-        }
+        };
 
-        const targetNodeId = params.targetHandle.split('-')[0]
-        const sourceNodeId = params.sourceHandle.split('-')[0]
-        const targetInput = params.targetHandle.split('-')[2]
+        const targetNodeId = params.targetHandle.split('-')[0];
+        const sourceNodeId = params.sourceHandle.split('-')[0];
+        const targetInput = params.targetHandle.split('-')[2];
 
         setNodes((nds) =>
             nds.map((node) => {
                 if (node.id === targetNodeId) {
-                    setTimeout(() => setDirty(), 0)
-                    let value
-                    const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
-                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+                    setTimeout(() => setDirty(), 0);
+                    let value;
+                    const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput);
+                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput);
 
                     if (inputAnchor && inputAnchor.list) {
-                        const newValues = node.data.inputs[targetInput] || []
+                        const newValues = node.data.inputs[targetInput] || [];
                         if (targetInput === 'tools') {
-                            rearrangeToolsOrdering(newValues, sourceNodeId)
+                            rearrangeToolsOrdering(newValues, sourceNodeId);
                         } else {
-                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                            newValues.push(`{{${sourceNodeId}.data.instance}}`);
                         }
-                        value = newValues
+                        value = newValues;
                     } else if (inputParam && inputParam.acceptVariable) {
-                        value = node.data.inputs[targetInput] || ''
+                        value = node.data.inputs[targetInput] || '';
                     } else {
-                        value = `{{${sourceNodeId}.data.instance}}`
+                        value = `{{${sourceNodeId}.data.instance}}`;
                     }
                     node.data = {
                         ...node.data,
@@ -135,27 +135,27 @@ const Canvas = () => {
                             ...node.data.inputs,
                             [targetInput]: value
                         }
-                    }
+                    };
                 }
-                return node
+                return node;
             })
-        )
+        );
 
-        setEdges((eds) => addEdge(newEdge, eds))
-    }
+        setEdges((eds) => addEdge(newEdge, eds));
+    };
 
     const handleLoadFlow = (file) => {
         try {
-            const flowData = JSON.parse(file)
-            const nodes = flowData.nodes || []
+            const flowData = JSON.parse(file);
+            const nodes = flowData.nodes || [];
 
-            setNodes(nodes)
-            setEdges(flowData.edges || [])
-            setDirty()
+            setNodes(nodes);
+            setEdges(flowData.edges || []);
+            setDirty();
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
-    }
+    };
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
@@ -163,16 +163,16 @@ const Canvas = () => {
             description: `Delete chatflow ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                await chatflowsApi.deleteChatflow(chatflow.id)
-                localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate('/')
+                await chatflowsApi.deleteChatflow(chatflow.id);
+                localStorage.removeItem(`${chatflow.id}_INTERNAL`);
+                navigate('/');
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: errorData,
                     options: {
@@ -185,29 +185,29 @@ const Canvas = () => {
                             </Button>
                         )
                     }
-                })
+                });
             }
         }
-    }
+    };
 
     const handleSaveFlow = (chatflowName) => {
         if (reactFlowInstance) {
             const nodes = reactFlowInstance.getNodes().map((node) => {
-                const nodeData = cloneDeep(node.data)
+                const nodeData = cloneDeep(node.data);
                 if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
-                    nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
-                    nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
+                    nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID];
+                    nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID]);
                 }
                 node.data = {
                     ...nodeData,
                     selected: false
-                }
-                return node
-            })
+                };
+                return node;
+            });
 
-            const rfInstanceObject = reactFlowInstance.toObject()
-            rfInstanceObject.nodes = nodes
-            const flowData = JSON.stringify(rfInstanceObject)
+            const rfInstanceObject = reactFlowInstance.toObject();
+            rfInstanceObject.nodes = nodes;
+            const flowData = JSON.stringify(rfInstanceObject);
 
             if (!chatflow.id) {
                 const newChatflowBody = {
@@ -215,99 +215,99 @@ const Canvas = () => {
                     deployed: false,
                     isPublic: false,
                     flowData
-                }
-                createNewChatflowApi.request(newChatflowBody)
+                };
+                createNewChatflowApi.request(newChatflowBody);
             } else {
                 const updateBody = {
                     name: chatflowName,
                     flowData
-                }
-                updateChatflowApi.request(chatflow.id, updateBody)
+                };
+                updateChatflowApi.request(chatflow.id, updateBody);
             }
         }
-    }
+    };
 
     // eslint-disable-next-line
     const onNodeClick = useCallback((event, clickedNode) => {
-        setSelectedNode(clickedNode)
+        setSelectedNode(clickedNode);
         setNodes((nds) =>
             nds.map((node) => {
                 if (node.id === clickedNode.id) {
                     node.data = {
                         ...node.data,
                         selected: true
-                    }
+                    };
                 } else {
                     node.data = {
                         ...node.data,
                         selected: false
-                    }
+                    };
                 }
 
-                return node
+                return node;
             })
-        )
-    })
+        );
+    });
 
     const onDragOver = useCallback((event) => {
-        event.preventDefault()
-        event.dataTransfer.dropEffect = 'move'
-    }, [])
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }, []);
 
     const onDrop = useCallback(
         (event) => {
-            event.preventDefault()
-            const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect()
-            let nodeData = event.dataTransfer.getData('application/reactflow')
+            event.preventDefault();
+            const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+            let nodeData = event.dataTransfer.getData('application/reactflow');
 
             // check if the dropped element is valid
             if (typeof nodeData === 'undefined' || !nodeData) {
-                return
+                return;
             }
 
-            nodeData = JSON.parse(nodeData)
+            nodeData = JSON.parse(nodeData);
 
             const position = reactFlowInstance.project({
                 x: event.clientX - reactFlowBounds.left - 100,
                 y: event.clientY - reactFlowBounds.top - 50
-            })
+            });
 
-            const newNodeId = getUniqueNodeId(nodeData, reactFlowInstance.getNodes())
+            const newNodeId = getUniqueNodeId(nodeData, reactFlowInstance.getNodes());
 
             const newNode = {
                 id: newNodeId,
                 position,
                 type: 'customNode',
                 data: initNode(nodeData, newNodeId)
-            }
+            };
 
-            setSelectedNode(newNode)
+            setSelectedNode(newNode);
             setNodes((nds) =>
                 nds.concat(newNode).map((node) => {
                     if (node.id === newNode.id) {
                         node.data = {
                             ...node.data,
                             selected: true
-                        }
+                        };
                     } else {
                         node.data = {
                             ...node.data,
                             selected: false
-                        }
+                        };
                     }
 
-                    return node
+                    return node;
                 })
-            )
-            setTimeout(() => setDirty(), 0)
+            );
+            setTimeout(() => setDirty(), 0);
         },
 
         // eslint-disable-next-line
         [reactFlowInstance]
-    )
+    );
 
     const saveChatflowSuccess = () => {
-        dispatch({ type: REMOVE_DIRTY })
+        dispatch({ type: REMOVE_DIRTY });
         enqueueSnackbar({
             message: 'Chatflow saved',
             options: {
@@ -319,8 +319,8 @@ const Canvas = () => {
                     </Button>
                 )
             }
-        })
-    }
+        });
+    };
 
     const errorFailed = (message) => {
         enqueueSnackbar({
@@ -335,67 +335,67 @@ const Canvas = () => {
                     </Button>
                 )
             }
-        })
-    }
+        });
+    };
 
     const setDirty = () => {
-        dispatch({ type: SET_DIRTY })
-    }
+        dispatch({ type: SET_DIRTY });
+    };
 
     const checkIfUpsertAvailable = (nodes, edges) => {
-        const upsertNodeDetails = getUpsertDetails(nodes, edges)
-        if (upsertNodeDetails.length) setIsUpsertButtonEnabled(true)
-        else setIsUpsertButtonEnabled(false)
-    }
+        const upsertNodeDetails = getUpsertDetails(nodes, edges);
+        if (upsertNodeDetails.length) setIsUpsertButtonEnabled(true);
+        else setIsUpsertButtonEnabled(false);
+    };
 
     // ==============================|| useEffect ||============================== //
 
     // Get specific chatflow successful
     useEffect(() => {
         if (getSpecificChatflowApi.data) {
-            const chatflow = getSpecificChatflowApi.data
-            const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
-            setNodes(initialFlow.nodes || [])
-            setEdges(initialFlow.edges || [])
-            dispatch({ type: SET_CHATFLOW, chatflow })
+            const chatflow = getSpecificChatflowApi.data;
+            const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : [];
+            setNodes(initialFlow.nodes || []);
+            setEdges(initialFlow.edges || []);
+            dispatch({ type: SET_CHATFLOW, chatflow });
         } else if (getSpecificChatflowApi.error) {
-            const error = getSpecificChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to retrieve chatflow: ${errorData}`)
+            const error = getSpecificChatflowApi.error;
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
+            errorFailed(`Failed to retrieve chatflow: ${errorData}`);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
+    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error]);
 
     // Create new chatflow successful
     useEffect(() => {
         if (createNewChatflowApi.data) {
-            const chatflow = createNewChatflowApi.data
-            dispatch({ type: SET_CHATFLOW, chatflow })
-            saveChatflowSuccess()
-            window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
+            const chatflow = createNewChatflowApi.data;
+            dispatch({ type: SET_CHATFLOW, chatflow });
+            saveChatflowSuccess();
+            window.history.replaceState(null, null, `/canvas/${chatflow.id}`);
         } else if (createNewChatflowApi.error) {
-            const error = createNewChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            const error = createNewChatflowApi.error;
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
+            errorFailed(`Failed to save chatflow: ${errorData}`);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [createNewChatflowApi.data, createNewChatflowApi.error])
+    }, [createNewChatflowApi.data, createNewChatflowApi.error]);
 
     // Update chatflow successful
     useEffect(() => {
         if (updateChatflowApi.data) {
-            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
-            saveChatflowSuccess()
+            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data });
+            saveChatflowSuccess();
         } else if (updateChatflowApi.error) {
-            const error = updateChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            const error = updateChatflowApi.error;
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
+            errorFailed(`Failed to save chatflow: ${errorData}`);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateChatflowApi.data, updateChatflowApi.error])
+    }, [updateChatflowApi.data, updateChatflowApi.error]);
 
     // Test chatflow failed
     useEffect(() => {
@@ -412,81 +412,81 @@ const Canvas = () => {
                         </Button>
                     )
                 }
-            })
+            });
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [testChatflowApi.error])
+    }, [testChatflowApi.error]);
 
     useEffect(() => {
-        setChatflow(canvasDataStore.chatflow)
+        setChatflow(canvasDataStore.chatflow);
         if (canvasDataStore.chatflow) {
-            const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
-            checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
+            const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : [];
+            checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || []);
         }
-    }, [canvasDataStore.chatflow])
+    }, [canvasDataStore.chatflow]);
 
     // Initialization
     useEffect(() => {
         if (chatflowId) {
-            getSpecificChatflowApi.request(chatflowId)
+            getSpecificChatflowApi.request(chatflowId);
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
-                handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
-                setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0)
+                handleLoadFlow(localStorage.getItem('duplicatedFlowData'));
+                setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0);
             } else {
-                setNodes([])
-                setEdges([])
+                setNodes([]);
+                setEdges([]);
             }
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
                     name: 'Untitled chatflow'
                 }
-            })
+            });
         }
 
-        getNodesApi.request()
+        getNodesApi.request();
 
         // Clear dirty state before leaving and remove any ongoing test triggers and webhooks
         return () => {
-            setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0)
-        }
+            setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0);
+        };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
-        setCanvasDataStore(canvas)
-    }, [canvas])
+        setCanvasDataStore(canvas);
+    }, [canvas]);
 
     useEffect(() => {
         function handlePaste(e) {
-            const pasteData = e.clipboardData.getData('text')
+            const pasteData = e.clipboardData.getData('text');
             //TODO: prevent paste event when input focused, temporary fix: catch chatflow syntax
             if (pasteData.includes('{"nodes":[') && pasteData.includes('],"edges":[')) {
-                handleLoadFlow(pasteData)
+                handleLoadFlow(pasteData);
             }
         }
 
-        window.addEventListener('paste', handlePaste)
+        window.addEventListener('paste', handlePaste);
 
         return () => {
-            window.removeEventListener('paste', handlePaste)
-        }
+            window.removeEventListener('paste', handlePaste);
+        };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (templateFlowData && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
-            handleLoadFlow(templateFlowData)
+            handleLoadFlow(templateFlowData);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [templateFlowData])
+    }, [templateFlowData]);
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty);
 
     return (
         <>
@@ -548,7 +548,7 @@ const Canvas = () => {
                 <ConfirmDialog />
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default Canvas
+export default Canvas;

@@ -1,65 +1,65 @@
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import MuiAvatar from '@mui/material/Avatar'
+import { useTheme } from '@mui/material/styles';
+import MuiAvatar from '@mui/material/Avatar';
 
 // ==============================|| AVATAR ||============================== //
 
 const Avatar = ({ color, outline, size, sx, ...others }) => {
-    const theme = useTheme()
+    const theme = useTheme();
 
-    const colorSX = color && !outline && { color: theme.palette.background.paper, bgcolor: `${color}.main` }
+    const colorSX = color && !outline && { color: theme.palette.background.paper, bgcolor: `${color}.main` };
     const outlineSX = outline && {
         color: color ? `${color}.main` : `primary.main`,
         bgcolor: theme.palette.background.paper,
         border: '2px solid',
         borderColor: color ? `${color}.main` : `primary.main`
-    }
-    let sizeSX = {}
+    };
+    let sizeSX = {};
     switch (size) {
         case 'badge':
             sizeSX = {
                 width: theme.spacing(3.5),
                 height: theme.spacing(3.5)
-            }
-            break
+            };
+            break;
         case 'xs':
             sizeSX = {
                 width: theme.spacing(4.25),
                 height: theme.spacing(4.25)
-            }
-            break
+            };
+            break;
         case 'sm':
             sizeSX = {
                 width: theme.spacing(5),
                 height: theme.spacing(5)
-            }
-            break
+            };
+            break;
         case 'lg':
             sizeSX = {
                 width: theme.spacing(9),
                 height: theme.spacing(9)
-            }
-            break
+            };
+            break;
         case 'xl':
             sizeSX = {
                 width: theme.spacing(10.25),
                 height: theme.spacing(10.25)
-            }
-            break
+            };
+            break;
         case 'md':
             sizeSX = {
                 width: theme.spacing(7.5),
                 height: theme.spacing(7.5)
-            }
-            break
+            };
+            break;
         default:
-            sizeSX = {}
+            sizeSX = {};
     }
 
-    return <MuiAvatar sx={{ ...colorSX, ...outlineSX, ...sizeSX, ...sx }} {...others} />
-}
+    return <MuiAvatar sx={{ ...colorSX, ...outlineSX, ...sizeSX, ...sx }} {...others} />;
+};
 
 Avatar.propTypes = {
     className: PropTypes.string,
@@ -67,6 +67,6 @@ Avatar.propTypes = {
     outline: PropTypes.bool,
     size: PropTypes.string,
     sx: PropTypes.object
-}
+};
 
-export default Avatar
+export default Avatar;

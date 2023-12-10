@@ -1,17 +1,17 @@
-import axios from 'axios'
-import { load } from 'cheerio'
-import * as fs from 'fs'
-import * as path from 'path'
-import { JSDOM } from 'jsdom'
-import { z } from 'zod'
-import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
-import { AES, enc } from 'crypto-js'
-import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage } from 'langchain/schema'
+import axios from 'axios';
+import { load } from 'cheerio';
+import * as fs from 'fs';
+import * as path from 'path';
+import { JSDOM } from 'jsdom';
+import { z } from 'zod';
+import { DataSource } from 'typeorm';
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface';
+import { AES, enc } from 'crypto-js';
+import { ChatMessageHistory } from 'langchain/memory';
+import { AIMessage, HumanMessage } from 'langchain/schema';
 
-export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
-export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$'; //return true if string consists only numbers OR expression {{}}
+export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*'; //return true if string is not empty or blank
 
 /**
  * Get base classes of components
@@ -21,24 +21,24 @@ export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is no
  * @returns {string[]}
  */
 export const getBaseClasses = (targetClass: any) => {
-    const baseClasses: string[] = []
-    const skipClassNames = ['BaseLangChain', 'Serializable']
+    const baseClasses: string[] = [];
+    const skipClassNames = ['BaseLangChain', 'Serializable'];
 
     if (targetClass instanceof Function) {
-        let baseClass = targetClass
+        let baseClass = targetClass;
 
         while (baseClass) {
-            const newBaseClass = Object.getPrototypeOf(baseClass)
+            const newBaseClass = Object.getPrototypeOf(baseClass);
             if (newBaseClass && newBaseClass !== Object && newBaseClass.name) {
-                baseClass = newBaseClass
-                if (!skipClassNames.includes(baseClass.name)) baseClasses.push(baseClass.name)
+                baseClass = newBaseClass;
+                if (!skipClassNames.includes(baseClass.name)) baseClasses.push(baseClass.name);
             } else {
-                break
+                break;
             }
         }
     }
-    return baseClasses
-}
+    return baseClasses;
+};
 
 /**
  * Serialize axios query params
@@ -49,7 +49,7 @@ export const getBaseClasses = (targetClass: any) => {
  * @returns {string}
  */
 export function serializeQueryParams(params: any, skipIndex?: boolean): string {
-    const parts: any[] = []
+    const parts: any[] = [];
 
     const encode = (val: string) => {
         return encodeURIComponent(val)
@@ -58,24 +58,24 @@ export function serializeQueryParams(params: any, skipIndex?: boolean): string {
             .replace(/%2C/gi, ',')
             .replace(/%20/g, '+')
             .replace(/%5B/gi, '[')
-            .replace(/%5D/gi, ']')
-    }
+            .replace(/%5D/gi, ']');
+    };
 
     const convertPart = (key: string, val: any) => {
-        if (val instanceof Date) val = val.toISOString()
-        else if (val instanceof Object) val = JSON.stringify(val)
+        if (val instanceof Date) val = val.toISOString();
+        else if (val instanceof Object) val = JSON.stringify(val);
 
-        parts.push(encode(key) + '=' + encode(val))
-    }
+        parts.push(encode(key) + '=' + encode(val));
+    };
 
     Object.entries(params).forEach(([key, val]) => {
-        if (val === null || typeof val === 'undefined') return
+        if (val === null || typeof val === 'undefined') return;
 
-        if (Array.isArray(val)) val.forEach((v, i) => convertPart(`${key}${skipIndex ? '' : `[${i}]`}`, v))
-        else convertPart(key, val)
-    })
+        if (Array.isArray(val)) val.forEach((v, i) => convertPart(`${key}${skipIndex ? '' : `[${i}]`}`, v));
+        else convertPart(key, val);
+    });
 
-    return parts.join('&')
+    return parts.join('&');
 }
 
 /**
@@ -86,24 +86,24 @@ export function serializeQueryParams(params: any, skipIndex?: boolean): string {
  * @returns {string}
  */
 export function handleErrorMessage(error: any): string {
-    let errorMessage = ''
+    let errorMessage = '';
 
     if (error.message) {
-        errorMessage += error.message + '. '
+        errorMessage += error.message + '. ';
     }
 
     if (error.response && error.response.data) {
         if (error.response.data.error) {
-            if (typeof error.response.data.error === 'object') errorMessage += JSON.stringify(error.response.data.error) + '. '
-            else if (typeof error.response.data.error === 'string') errorMessage += error.response.data.error + '. '
-        } else if (error.response.data.msg) errorMessage += error.response.data.msg + '. '
-        else if (error.response.data.Message) errorMessage += error.response.data.Message + '. '
-        else if (typeof error.response.data === 'string') errorMessage += error.response.data + '. '
+            if (typeof error.response.data.error === 'object') errorMessage += JSON.stringify(error.response.data.error) + '. ';
+            else if (typeof error.response.data.error === 'string') errorMessage += error.response.data.error + '. ';
+        } else if (error.response.data.msg) errorMessage += error.response.data.msg + '. ';
+        else if (error.response.data.Message) errorMessage += error.response.data.Message + '. ';
+        else if (typeof error.response.data === 'string') errorMessage += error.response.data + '. ';
     }
 
-    if (!errorMessage) errorMessage = 'Unexpected Error.'
+    if (!errorMessage) errorMessage = 'Unexpected Error.';
 
-    return errorMessage
+    return errorMessage;
 }
 
 /**
@@ -118,14 +118,14 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
         path.join(__dirname, '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
-    ]
+    ];
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
-            return checkPath
+            return checkPath;
         }
     }
-    return ''
-}
+    return '';
+};
 
 /**
  * Get input variables
@@ -133,33 +133,33 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
  * @returns {boolean}
  */
 export const getInputVariables = (paramValue: string): string[] => {
-    if (typeof paramValue !== 'string') return []
-    let returnVal = paramValue
-    const variableStack = []
-    const inputVariables = []
-    let startIdx = 0
-    const endIdx = returnVal.length
+    if (typeof paramValue !== 'string') return [];
+    let returnVal = paramValue;
+    const variableStack = [];
+    const inputVariables = [];
+    let startIdx = 0;
+    const endIdx = returnVal.length;
 
     while (startIdx < endIdx) {
-        const substr = returnVal.substring(startIdx, startIdx + 1)
+        const substr = returnVal.substring(startIdx, startIdx + 1);
 
         // Store the opening double curly bracket
         if (substr === '{') {
-            variableStack.push({ substr, startIdx: startIdx + 1 })
+            variableStack.push({ substr, startIdx: startIdx + 1 });
         }
 
         // Found the complete variable
         if (substr === '}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{') {
-            const variableStartIdx = variableStack[variableStack.length - 1].startIdx
-            const variableEndIdx = startIdx
-            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
-            inputVariables.push(variableFullPath)
-            variableStack.pop()
+            const variableStartIdx = variableStack[variableStack.length - 1].startIdx;
+            const variableEndIdx = startIdx;
+            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx);
+            inputVariables.push(variableFullPath);
+            variableStack.pop();
         }
-        startIdx += 1
+        startIdx += 1;
     }
-    return inputVariables
-}
+    return inputVariables;
+};
 
 /**
  * Crawl all available urls given a domain url and limit
@@ -169,42 +169,42 @@ export const getInputVariables = (paramValue: string): string[] => {
  */
 export const getAvailableURLs = async (url: string, limit: number) => {
     try {
-        const availableUrls: string[] = []
+        const availableUrls: string[] = [];
 
-        console.info(`Crawling: ${url}`)
-        availableUrls.push(url)
+        console.info(`Crawling: ${url}`);
+        availableUrls.push(url);
 
-        const response = await axios.get(url)
-        const $ = load(response.data)
+        const response = await axios.get(url);
+        const $ = load(response.data);
 
-        const relativeLinks = $("a[href^='/']")
-        console.info(`Available Relative Links: ${relativeLinks.length}`)
-        if (relativeLinks.length === 0) return availableUrls
+        const relativeLinks = $("a[href^='/']");
+        console.info(`Available Relative Links: ${relativeLinks.length}`);
+        if (relativeLinks.length === 0) return availableUrls;
 
-        limit = Math.min(limit + 1, relativeLinks.length) // limit + 1 is because index start from 0 and index 0 is occupy by url
-        console.info(`True Limit: ${limit}`)
+        limit = Math.min(limit + 1, relativeLinks.length); // limit + 1 is because index start from 0 and index 0 is occupy by url
+        console.info(`True Limit: ${limit}`);
 
         // availableUrls.length cannot exceed limit
         for (let i = 0; availableUrls.length < limit; i++) {
-            if (i === limit) break // some links are repetitive so it won't added into the array which cause the length to be lesser
-            console.info(`index: ${i}`)
-            const element = relativeLinks[i]
+            if (i === limit) break; // some links are repetitive so it won't added into the array which cause the length to be lesser
+            console.info(`index: ${i}`);
+            const element = relativeLinks[i];
 
-            const relativeUrl = $(element).attr('href')
-            if (!relativeUrl) continue
+            const relativeUrl = $(element).attr('href');
+            if (!relativeUrl) continue;
 
-            const absoluteUrl = new URL(relativeUrl, url).toString()
+            const absoluteUrl = new URL(relativeUrl, url).toString();
             if (!availableUrls.includes(absoluteUrl)) {
-                availableUrls.push(absoluteUrl)
-                console.info(`Found unique relative link: ${absoluteUrl}`)
+                availableUrls.push(absoluteUrl);
+                console.info(`Found unique relative link: ${absoluteUrl}`);
             }
         }
 
-        return availableUrls
+        return availableUrls;
     } catch (err) {
-        throw new Error(`getAvailableURLs: ${err?.message}`)
+        throw new Error(`getAvailableURLs: ${err?.message}`);
     }
-}
+};
 
 /**
  * Search for href through htmlBody string
@@ -213,29 +213,29 @@ export const getAvailableURLs = async (url: string, limit: number) => {
  * @returns {string[]}
  */
 function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
-    const dom = new JSDOM(htmlBody)
-    const linkElements = dom.window.document.querySelectorAll('a')
-    const urls: string[] = []
+    const dom = new JSDOM(htmlBody);
+    const linkElements = dom.window.document.querySelectorAll('a');
+    const urls: string[] = [];
     for (const linkElement of linkElements) {
         if (linkElement.href.slice(0, 1) === '/') {
             try {
-                const urlObj = new URL(baseURL + linkElement.href)
-                urls.push(urlObj.href) //relative
+                const urlObj = new URL(baseURL + linkElement.href);
+                urls.push(urlObj.href); //relative
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
-                continue
+                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`);
+                continue;
             }
         } else {
             try {
-                const urlObj = new URL(linkElement.href)
-                urls.push(urlObj.href) //absolute
+                const urlObj = new URL(linkElement.href);
+                urls.push(urlObj.href); //absolute
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
-                continue
+                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`);
+                continue;
             }
         }
     }
-    return urls
+    return urls;
 }
 
 /**
@@ -244,13 +244,13 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  * @returns {string}
  */
 function normalizeURL(urlString: string): string {
-    const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname
+    const urlObj = new URL(urlString);
+    const hostPath = urlObj.hostname + urlObj.pathname;
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
-        return hostPath.slice(0, -1)
+        return hostPath.slice(0, -1);
     }
-    return hostPath
+    return hostPath;
 }
 
 /**
@@ -262,44 +262,44 @@ function normalizeURL(urlString: string): string {
  * @returns {Promise<string[]>}
  */
 async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
-    const baseURLObj = new URL(baseURL)
-    const currentURLObj = new URL(currentURL)
+    const baseURLObj = new URL(baseURL);
+    const currentURLObj = new URL(currentURL);
 
-    if (limit !== 0 && pages.length === limit) return pages
+    if (limit !== 0 && pages.length === limit) return pages;
 
-    if (baseURLObj.hostname !== currentURLObj.hostname) return pages
+    if (baseURLObj.hostname !== currentURLObj.hostname) return pages;
 
-    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL);
     if (pages.includes(normalizeCurrentURL)) {
-        return pages
+        return pages;
     }
 
-    pages.push(normalizeCurrentURL)
+    pages.push(normalizeCurrentURL);
 
-    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
+    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`);
     try {
-        const resp = await fetch(currentURL)
+        const resp = await fetch(currentURL);
 
         if (resp.status > 399) {
-            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
-            return pages
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`);
+            return pages;
         }
 
-        const contentType: string | null = resp.headers.get('content-type')
+        const contentType: string | null = resp.headers.get('content-type');
         if ((contentType && !contentType.includes('text/html')) || !contentType) {
-            if (process.env.DEBUG === 'true') console.error(`non html response, content type: ${contentType}, on page: ${currentURL}`)
-            return pages
+            if (process.env.DEBUG === 'true') console.error(`non html response, content type: ${contentType}, on page: ${currentURL}`);
+            return pages;
         }
 
-        const htmlBody = await resp.text()
-        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
+        const htmlBody = await resp.text();
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL);
         for (const nextURL of nextURLs) {
-            pages = await crawl(baseURL, nextURL, pages, limit)
+            pages = await crawl(baseURL, nextURL, pages, limit);
         }
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`);
     }
-    return pages
+    return pages;
 }
 
 /**
@@ -309,48 +309,48 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
  * @returns {Promise<string[]>}
  */
 export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
-    const URLObj = new URL(stringURL)
-    const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
-    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
+    const URLObj = new URL(stringURL);
+    const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL;
+    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit);
 }
 
 export function getURLsFromXML(xmlBody: string, limit: number): string[] {
-    const dom = new JSDOM(xmlBody, { contentType: 'text/xml' })
-    const linkElements = dom.window.document.querySelectorAll('url')
-    const urls: string[] = []
+    const dom = new JSDOM(xmlBody, { contentType: 'text/xml' });
+    const linkElements = dom.window.document.querySelectorAll('url');
+    const urls: string[] = [];
     for (const linkElement of linkElements) {
-        const locElement = linkElement.querySelector('loc')
-        if (limit !== 0 && urls.length === limit) break
+        const locElement = linkElement.querySelector('loc');
+        if (limit !== 0 && urls.length === limit) break;
         if (locElement?.textContent) {
-            urls.push(locElement.textContent)
+            urls.push(locElement.textContent);
         }
     }
-    return urls
+    return urls;
 }
 
 export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
-    let urls: string[] = []
-    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
+    let urls: string[] = [];
+    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`);
     try {
-        const resp = await fetch(currentURL)
+        const resp = await fetch(currentURL);
 
         if (resp.status > 399) {
-            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
-            return urls
+            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`);
+            return urls;
         }
 
-        const contentType: string | null = resp.headers.get('content-type')
+        const contentType: string | null = resp.headers.get('content-type');
         if ((contentType && !contentType.includes('application/xml') && !contentType.includes('text/xml')) || !contentType) {
-            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
-            return urls
+            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`);
+            return urls;
         }
 
-        const xmlBody = await resp.text()
-        urls = getURLsFromXML(xmlBody, limit)
+        const xmlBody = await resp.text();
+        urls = getURLsFromXML(xmlBody, limit);
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`);
     }
-    return urls
+    return urls;
 }
 
 /**
@@ -360,11 +360,11 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
     try {
-        return typeof process !== 'undefined' ? process.env?.[name] : undefined
+        return typeof process !== 'undefined' ? process.env?.[name] : undefined;
     } catch (e) {
-        return undefined
+        return undefined;
     }
-}
+};
 
 /**
  * Returns the path of encryption key
@@ -380,18 +380,18 @@ const getEncryptionKeyFilePath = (): string => {
         path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
-    ]
+    ];
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
-            return checkPath
+            return checkPath;
         }
     }
-    return ''
-}
+    return '';
+};
 
 const getEncryptionKeyPath = (): string => {
-    return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
-}
+    return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath();
+};
 
 /**
  * Returns the encryption key
@@ -399,14 +399,14 @@ const getEncryptionKeyPath = (): string => {
  */
 const getEncryptionKey = async (): Promise<string> => {
     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+        return process.env.FLOWISE_SECRETKEY_OVERWRITE;
     }
     try {
-        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8');
     } catch (error) {
-        throw new Error(error)
+        throw new Error(error);
     }
-}
+};
 
 /**
  * Decrypt credential data
@@ -416,15 +416,15 @@ const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<ICommonObject>}
  */
 const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const encryptKey = await getEncryptionKey();
+    const decryptedData = AES.decrypt(encryptedData, encryptKey);
     try {
-        return JSON.parse(decryptedData.toString(enc.Utf8))
+        return JSON.parse(decryptedData.toString(enc.Utf8));
     } catch (e) {
-        console.error(e)
-        throw new Error('Credentials could not be decrypted.')
+        console.error(e);
+        throw new Error('Credentials could not be decrypted.');
     }
-}
+};
 
 /**
  * Get credential data
@@ -433,32 +433,32 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
  * @returns {Promise<ICommonObject>}
  */
 export const getCredentialData = async (selectedCredentialId: string, options: ICommonObject): Promise<ICommonObject> => {
-    const appDataSource = options.appDataSource as DataSource
-    const databaseEntities = options.databaseEntities as IDatabaseEntity
+    const appDataSource = options.appDataSource as DataSource;
+    const databaseEntities = options.databaseEntities as IDatabaseEntity;
 
     try {
         if (!selectedCredentialId) {
-            return {}
+            return {};
         }
 
         const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
             id: selectedCredentialId
-        })
+        });
 
-        if (!credential) return {}
+        if (!credential) return {};
 
         // Decrypt credentialData
-        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData);
 
-        return decryptedCredentialData
+        return decryptedCredentialData;
     } catch (e) {
-        throw new Error(e)
+        throw new Error(e);
     }
-}
+};
 
 export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
-    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
-}
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined;
+};
 
 // reference https://www.freeformatter.com/json-escape.html
 const jsonEscapeCharacters = [
@@ -469,29 +469,29 @@ const jsonEscapeCharacters = [
     { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
     { escape: '\t', value: 'FLOWISE_TAB' },
     { escape: '\\', value: 'FLOWISE_BACKSLASH' }
-]
+];
 
 function handleEscapesJSONParse(input: string, reverse: Boolean): string {
     for (const element of jsonEscapeCharacters) {
-        input = reverse ? input.replaceAll(element.value, element.escape) : input.replaceAll(element.escape, element.value)
+        input = reverse ? input.replaceAll(element.value, element.escape) : input.replaceAll(element.escape, element.value);
     }
-    return input
+    return input;
 }
 
 function iterateEscapesJSONParse(input: any, reverse: Boolean): any {
     for (const element in input) {
-        const type = typeof input[element]
-        if (type === 'string') input[element] = handleEscapesJSONParse(input[element], reverse)
-        else if (type === 'object') input[element] = iterateEscapesJSONParse(input[element], reverse)
+        const type = typeof input[element];
+        if (type === 'string') input[element] = handleEscapesJSONParse(input[element], reverse);
+        else if (type === 'object') input[element] = iterateEscapesJSONParse(input[element], reverse);
     }
-    return input
+    return input;
 }
 
 export function handleEscapeCharacters(input: any, reverse: Boolean): any {
-    const type = typeof input
-    if (type === 'string') return handleEscapesJSONParse(input, reverse)
-    else if (type === 'object') return iterateEscapesJSONParse(input, reverse)
-    return input
+    const type = typeof input;
+    if (type === 'string') return handleEscapesJSONParse(input, reverse);
+    else if (type === 'object') return iterateEscapesJSONParse(input, reverse);
+    return input;
 }
 
 /**
@@ -499,17 +499,17 @@ export function handleEscapeCharacters(input: any, reverse: Boolean): any {
  * @returns {string}
  */
 export const getUserHome = (): string => {
-    let variableName = 'HOME'
+    let variableName = 'HOME';
     if (process.platform === 'win32') {
-        variableName = 'USERPROFILE'
+        variableName = 'USERPROFILE';
     }
 
     if (process.env[variableName] === undefined) {
         // If for some reason the variable does not exist, fall back to current folder
-        return process.cwd()
+        return process.cwd();
     }
-    return process.env[variableName] as string
-}
+    return process.env[variableName] as string;
+};
 
 /**
  * Map incoming chat history to ChatMessageHistory
@@ -517,18 +517,18 @@ export const getUserHome = (): string => {
  * @returns {ChatMessageHistory}
  */
 export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
-    const chatHistory = []
-    const histories: IMessage[] = options.chatHistory ?? []
+    const chatHistory = [];
+    const histories: IMessage[] = options.chatHistory ?? [];
 
     for (const message of histories) {
         if (message.type === 'apiMessage') {
-            chatHistory.push(new AIMessage(message.message))
+            chatHistory.push(new AIMessage(message.message));
         } else if (message.type === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.message))
+            chatHistory.push(new HumanMessage(message.message));
         }
     }
-    return new ChatMessageHistory(chatHistory)
-}
+    return new ChatMessageHistory(chatHistory);
+};
 
 /**
  * Convert incoming chat history to string
@@ -539,15 +539,15 @@ export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string =
     return chatHistory
         .map((chatMessage) => {
             if (chatMessage.type === 'apiMessage') {
-                return `Assistant: ${chatMessage.message}`
+                return `Assistant: ${chatMessage.message}`;
             } else if (chatMessage.type === 'userMessage') {
-                return `Human: ${chatMessage.message}`
+                return `Human: ${chatMessage.message}`;
             } else {
-                return `${chatMessage.message}`
+                return `${chatMessage.message}`;
             }
         })
-        .join('\n')
-}
+        .join('\n');
+};
 
 /**
  * Serialize array chat history to string
@@ -556,10 +556,10 @@ export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string =
  */
 export const serializeChatHistory = (chatHistory: string | Array<string>) => {
     if (Array.isArray(chatHistory)) {
-        return chatHistory.join('\n')
+        return chatHistory.join('\n');
     }
-    return chatHistory
-}
+    return chatHistory;
+};
 
 /**
  * Convert schema to zod schema
@@ -568,22 +568,22 @@ export const serializeChatHistory = (chatHistory: string | Array<string>) => {
  */
 export const convertSchemaToZod = (schema: string | object): ICommonObject => {
     try {
-        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
-        const zodObj: ICommonObject = {}
+        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema;
+        const zodObj: ICommonObject = {};
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
-                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.string().describe(sch.description)
+                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description);
+                zodObj[sch.property] = z.string().describe(sch.description);
             } else if (sch.type === 'number') {
-                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.number().describe(sch.description)
+                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description);
+                zodObj[sch.property] = z.number().describe(sch.description);
             } else if (sch.type === 'boolean') {
-                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.boolean().describe(sch.description)
+                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description);
+                zodObj[sch.property] = z.boolean().describe(sch.description);
             }
         }
-        return zodObj
+        return zodObj;
     } catch (e) {
-        throw new Error(e)
+        throw new Error(e);
     }
-}
+};

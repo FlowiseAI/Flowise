@@ -1,19 +1,19 @@
-import 'reflect-metadata'
-import path from 'path'
-import { DataSource } from 'typeorm'
-import { getUserHome } from './utils'
-import { entities } from './database/entities'
-import { sqliteMigrations } from './database/migrations/sqlite'
-import { mysqlMigrations } from './database/migrations/mysql'
-import { postgresMigrations } from './database/migrations/postgres'
+import 'reflect-metadata';
+import path from 'path';
+import { DataSource } from 'typeorm';
+import { getUserHome } from './utils';
+import { entities } from './database/entities';
+import { sqliteMigrations } from './database/migrations/sqlite';
+import { mysqlMigrations } from './database/migrations/mysql';
+import { postgresMigrations } from './database/migrations/postgres';
 
-let appDataSource: DataSource
+let appDataSource: DataSource;
 
 export const init = async (): Promise<void> => {
-    let homePath
+    let homePath;
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise');
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
@@ -21,8 +21,8 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: sqliteMigrations
-            })
-            break
+            });
+            break;
         case 'mysql':
             appDataSource = new DataSource({
                 type: 'mysql',
@@ -36,8 +36,8 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: mysqlMigrations
-            })
-            break
+            });
+            break;
         case 'postgres':
             appDataSource = new DataSource({
                 type: 'postgres',
@@ -50,10 +50,10 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: postgresMigrations
-            })
-            break
+            });
+            break;
         default:
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise');
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
@@ -61,14 +61,14 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: sqliteMigrations
-            })
-            break
+            });
+            break;
     }
-}
+};
 
 export function getDataSource(): DataSource {
     if (appDataSource === undefined) {
-        init()
+        init();
     }
-    return appDataSource
+    return appDataSource;
 }

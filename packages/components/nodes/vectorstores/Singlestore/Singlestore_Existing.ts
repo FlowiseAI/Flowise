@@ -1,32 +1,32 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { Embeddings } from 'langchain/embeddings/base';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore';
 
 class SingleStoreExisting_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'SingleStore Load Existing Table'
-        this.name = 'singlestoreExisting'
-        this.version = 1.0
-        this.type = 'SingleStore'
-        this.icon = 'singlestore.svg'
-        this.category = 'Vector Stores'
-        this.description = 'Load existing document from SingleStore'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'DEPRECATING'
+        this.label = 'SingleStore Load Existing Table';
+        this.name = 'singlestoreExisting';
+        this.version = 1.0;
+        this.type = 'SingleStore';
+        this.icon = 'singlestore.svg';
+        this.category = 'Vector Stores';
+        this.description = 'Load existing document from SingleStore';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'DEPRECATING';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -34,7 +34,7 @@ class SingleStoreExisting_VectorStores implements INode {
             description: 'Needed when using SingleStore cloud hosted',
             optional: true,
             credentialNames: ['singleStoreApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -91,7 +91,7 @@ class SingleStoreExisting_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'SingleStore Retriever',
@@ -103,13 +103,13 @@ class SingleStoreExisting_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(SingleStoreVectorStore)]
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const user = getCredentialParam('user', credentialData, nodeData)
-        const password = getCredentialParam('password', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const user = getCredentialParam('user', credentialData, nodeData);
+        const password = getCredentialParam('password', credentialData, nodeData);
 
         const singleStoreConnectionConfig = {
             connectionOptions: {
@@ -123,26 +123,26 @@ class SingleStoreExisting_VectorStores implements INode {
             ...(nodeData.inputs?.contentColumnName ? { contentColumnName: nodeData.inputs.contentColumnName as string } : {}),
             ...(nodeData.inputs?.vectorColumnName ? { vectorColumnName: nodeData.inputs.vectorColumnName as string } : {}),
             ...(nodeData.inputs?.metadataColumnName ? { metadataColumnName: nodeData.inputs.metadataColumnName as string } : {})
-        } as SingleStoreVectorStoreConfig
+        } as SingleStoreVectorStoreConfig;
 
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const output = nodeData.outputs?.output as string;
+        const topK = nodeData.inputs?.topK as string;
+        const k = topK ? parseFloat(topK) : 4;
 
-        let vectorStore: SingleStoreVectorStore
+        let vectorStore: SingleStoreVectorStore;
 
-        vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
+        vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig);
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
+            const retriever = vectorStore.asRetriever(k);
+            return retriever;
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
-module.exports = { nodeClass: SingleStoreExisting_VectorStores }
+module.exports = { nodeClass: SingleStoreExisting_VectorStores };

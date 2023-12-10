@@ -1,13 +1,13 @@
-import PropTypes from 'prop-types'
-import { DataGrid } from '@mui/x-data-grid'
-import { IconPlus } from '@tabler/icons'
-import { Button } from '@mui/material'
+import PropTypes from 'prop-types';
+import { DataGrid } from '@mui/x-data-grid';
+import { IconPlus } from '@tabler/icons';
+import { Button } from '@mui/material';
 
 export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addNewRow }) => {
     const handleProcessRowUpdate = (newRow) => {
-        onRowUpdate(newRow)
-        return newRow
-    }
+        onRowUpdate(newRow);
+        return newRow;
+    };
 
     return (
         <>
@@ -21,7 +21,7 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addN
                     <DataGrid
                         processRowUpdate={handleProcessRowUpdate}
                         isCellEditable={() => {
-                            return !disabled
+                            return !disabled;
                         }}
                         onProcessRowUpdateError={(error) => console.error(error)}
                         rows={rows}
@@ -30,8 +30,8 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, addN
                 </div>
             )}
         </>
-    )
-}
+    );
+};
 
 Grid.propTypes = {
     rows: PropTypes.array,
@@ -40,4 +40,4 @@ Grid.propTypes = {
     disabled: PropTypes.bool,
     addNewRow: PropTypes.func,
     onRowUpdate: PropTypes.func
-}
+};

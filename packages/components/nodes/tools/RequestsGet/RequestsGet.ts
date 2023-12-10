@@ -1,27 +1,27 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { desc, RequestParameters, RequestsGetTool } from './core'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { desc, RequestParameters, RequestsGetTool } from './core';
 
 class RequestsGet_Tools implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Requests Get'
-        this.name = 'requestsGet'
-        this.version = 1.0
-        this.type = 'RequestsGet'
-        this.icon = 'requestsget.svg'
-        this.category = 'Tools'
-        this.description = 'Execute HTTP GET requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsGetTool)]
+        this.label = 'Requests Get';
+        this.name = 'requestsGet';
+        this.version = 1.0;
+        this.type = 'RequestsGet';
+        this.icon = 'requestsget.svg';
+        this.category = 'Tools';
+        this.description = 'Execute HTTP GET requests';
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsGetTool)];
         this.inputs = [
             {
                 label: 'URL',
@@ -49,24 +49,24 @@ class RequestsGet_Tools implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const headers = nodeData.inputs?.headers as string
-        const url = nodeData.inputs?.url as string
-        const description = nodeData.inputs?.description as string
+        const headers = nodeData.inputs?.headers as string;
+        const url = nodeData.inputs?.url as string;
+        const description = nodeData.inputs?.description as string;
 
-        const obj: RequestParameters = {}
-        if (url) obj.url = url
-        if (description) obj.description = description
+        const obj: RequestParameters = {};
+        if (url) obj.url = url;
+        if (description) obj.description = description;
         if (headers) {
-            const parsedHeaders = typeof headers === 'object' ? headers : JSON.parse(headers)
-            obj.headers = parsedHeaders
+            const parsedHeaders = typeof headers === 'object' ? headers : JSON.parse(headers);
+            obj.headers = parsedHeaders;
         }
 
-        return new RequestsGetTool(obj)
+        return new RequestsGetTool(obj);
     }
 }
 
-module.exports = { nodeClass: RequestsGet_Tools }
+module.exports = { nodeClass: RequestsGet_Tools };

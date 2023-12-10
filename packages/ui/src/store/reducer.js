@@ -1,10 +1,10 @@
-import { combineReducers } from 'redux'
+import { combineReducers } from 'redux';
 
 // reducer import
-import customizationReducer from './reducers/customizationReducer'
-import canvasReducer from './reducers/canvasReducer'
-import notifierReducer from './reducers/notifierReducer'
-import dialogReducer from './reducers/dialogReducer'
+import customizationReducer from './reducers/customizationReducer';
+import canvasReducer from './reducers/canvasReducer';
+import notifierReducer from './reducers/notifierReducer';
+import dialogReducer from './reducers/dialogReducer';
 
 // ==============================|| COMBINE REDUCER ||============================== //
 
@@ -13,6 +13,6 @@ const reducer = combineReducers({
     canvas: canvasReducer,
     notifier: notifierReducer,
     dialog: dialogReducer
-})
+});
 
-export default reducer
+export default reducer;

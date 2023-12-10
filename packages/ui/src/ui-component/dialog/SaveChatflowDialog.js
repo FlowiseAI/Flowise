@@ -1,20 +1,20 @@
-import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material';
+import { StyledButton } from 'ui-component/button/StyledButton';
 
 const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = document.getElementById('portal');
 
-    const [chatflowName, setChatflowName] = useState('')
-    const [isReadyToSave, setIsReadyToSave] = useState(false)
+    const [chatflowName, setChatflowName] = useState('');
+    const [isReadyToSave, setIsReadyToSave] = useState(false);
 
     useEffect(() => {
-        if (chatflowName) setIsReadyToSave(true)
-        else setIsReadyToSave(false)
-    }, [chatflowName])
+        if (chatflowName) setIsReadyToSave(true);
+        else setIsReadyToSave(false);
+    }, [chatflowName]);
 
     const component = show ? (
         <Dialog
@@ -46,16 +46,16 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </StyledButton>
             </DialogActions>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 SaveChatflowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
-}
+};
 
-export default SaveChatflowDialog
+export default SaveChatflowDialog;

@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
-import { TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Paper } from '@mui/material'
+import PropTypes from 'prop-types';
+import { TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Paper } from '@mui/material';
 
 export const TableViewOnly = ({ columns, rows, sx }) => {
     return (
@@ -25,11 +25,11 @@ export const TableViewOnly = ({ columns, rows, sx }) => {
                 </Table>
             </TableContainer>
         </>
-    )
-}
+    );
+};
 
 TableViewOnly.propTypes = {
     rows: PropTypes.array,
     columns: PropTypes.array,
     sx: PropTypes.object
-}
+};

@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
+import { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles';
 import {
     Box,
     ButtonBase,
@@ -17,52 +17,52 @@ import {
     Paper,
     Popper,
     Typography
-} from '@mui/material'
+} from '@mui/material';
 
 // third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import Transitions from 'ui-component/extended/Transitions'
-import AboutDialog from 'ui-component/dialog/AboutDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import Transitions from 'ui-component/extended/Transitions';
+import AboutDialog from 'ui-component/dialog/AboutDialog';
 
 // assets
-import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons'
+import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons';
 
-import './index.css'
+import './index.css';
 
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = ({ username, handleLogout }) => {
-    const theme = useTheme()
+    const theme = useTheme();
 
-    const customization = useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization);
 
-    const [open, setOpen] = useState(false)
-    const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
 
-    const anchorRef = useRef(null)
+    const anchorRef = useRef(null);
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
-            return
+            return;
         }
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
-    }
+        setOpen((prevOpen) => !prevOpen);
+    };
 
-    const prevOpen = useRef(open)
+    const prevOpen = useRef(open);
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus()
+            anchorRef.current.focus();
         }
 
-        prevOpen.current = open
-    }, [open])
+        prevOpen.current = open;
+    }, [open]);
 
     return (
         <>
@@ -138,8 +138,8 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
+                                                        setOpen(false);
+                                                        setAboutDialogOpen(true);
                                                     }}
                                                 >
                                                     <ListItemIcon>
@@ -169,12 +169,12 @@ const ProfileSection = ({ username, handleLogout }) => {
             </Popper>
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
         </>
-    )
-}
+    );
+};
 
 ProfileSection.propTypes = {
     username: PropTypes.string,
     handleLogout: PropTypes.func
-}
+};
 
-export default ProfileSection
+export default ProfileSection;

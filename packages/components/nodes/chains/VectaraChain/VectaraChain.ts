@@ -1,59 +1,59 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { VectorDBQAChain } from 'langchain/chains'
-import { Document } from 'langchain/document'
-import { VectaraStore } from 'langchain/vectorstores/vectara'
-import fetch from 'node-fetch'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { VectorDBQAChain } from 'langchain/chains';
+import { Document } from 'langchain/document';
+import { VectaraStore } from 'langchain/vectorstores/vectara';
+import fetch from 'node-fetch';
 
 // functionality based on https://github.com/vectara/vectara-answer
 const reorderCitations = (unorderedSummary: string) => {
-    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || [];
 
-    const uniqueCitations = [...new Set(allCitations)]
-    const citationToReplacement: { [key: string]: string } = {}
+    const uniqueCitations = [...new Set(allCitations)];
+    const citationToReplacement: { [key: string]: string } = {};
     uniqueCitations.forEach((citation, index) => {
-        citationToReplacement[citation] = `[${index + 1}]`
-    })
+        citationToReplacement[citation] = `[${index + 1}]`;
+    });
 
-    return unorderedSummary.replace(/\[\d+\]/g, (match) => citationToReplacement[match])
-}
+    return unorderedSummary.replace(/\[\d+\]/g, (match) => citationToReplacement[match]);
+};
 const applyCitationOrder = (searchResults: any[], unorderedSummary: string) => {
-    const orderedSearchResults: any[] = []
-    const allCitations = unorderedSummary.match(/\[\d+\]/g) || []
+    const orderedSearchResults: any[] = [];
+    const allCitations = unorderedSummary.match(/\[\d+\]/g) || [];
 
-    const addedIndices = new Set<number>()
+    const addedIndices = new Set<number>();
     for (let i = 0; i < allCitations.length; i++) {
-        const citation = allCitations[i]
-        const index = Number(citation.slice(1, citation.length - 1)) - 1
+        const citation = allCitations[i];
+        const index = Number(citation.slice(1, citation.length - 1)) - 1;
 
-        if (addedIndices.has(index)) continue
-        orderedSearchResults.push(searchResults[index])
-        addedIndices.add(index)
+        if (addedIndices.has(index)) continue;
+        orderedSearchResults.push(searchResults[index]);
+        addedIndices.add(index);
     }
 
-    return orderedSearchResults
-}
+    return orderedSearchResults;
+};
 
 class VectaraChain_Chains implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Vectara QA Chain'
-        this.name = 'vectaraQAChain'
-        this.version = 1.0
-        this.type = 'VectaraQAChain'
-        this.icon = 'vectara.png'
-        this.category = 'Chains'
-        this.description = 'QA chain for Vectara'
-        this.baseClasses = [this.type, ...getBaseClasses(VectorDBQAChain)]
+        this.label = 'Vectara QA Chain';
+        this.name = 'vectaraQAChain';
+        this.version = 1.0;
+        this.type = 'VectaraQAChain';
+        this.icon = 'vectara.png';
+        this.category = 'Chains';
+        this.description = 'QA chain for Vectara';
+        this.baseClasses = [this.type, ...getBaseClasses(VectorDBQAChain)];
         this.inputs = [
             {
                 label: 'Vectara Store',
@@ -219,33 +219,33 @@ class VectaraChain_Chains implements INode {
                 type: 'number',
                 default: 7
             }
-        ]
+        ];
     }
 
     async init(): Promise<any> {
-        return null
+        return null;
     }
 
     async run(nodeData: INodeData, input: string): Promise<object> {
-        const vectorStore = nodeData.inputs?.vectaraStore as VectaraStore
-        const responseLang = (nodeData.inputs?.responseLang as string) ?? 'auto'
-        const summarizerPromptName = nodeData.inputs?.summarizerPromptName as string
-        const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults as string
-        const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7
+        const vectorStore = nodeData.inputs?.vectaraStore as VectaraStore;
+        const responseLang = (nodeData.inputs?.responseLang as string) ?? 'auto';
+        const summarizerPromptName = nodeData.inputs?.summarizerPromptName as string;
+        const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults as string;
+        const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7;
 
-        const topK = (vectorStore as any)?.k ?? 10
+        const topK = (vectorStore as any)?.k ?? 10;
 
-        const headers = await vectorStore.getJsonHeader()
-        const vectaraFilter = (vectorStore as any).vectaraFilter ?? {}
-        const corpusId: number[] = (vectorStore as any).corpusId ?? []
-        const customerId = (vectorStore as any).customerId ?? ''
+        const headers = await vectorStore.getJsonHeader();
+        const vectaraFilter = (vectorStore as any).vectaraFilter ?? {};
+        const corpusId: number[] = (vectorStore as any).corpusId ?? [];
+        const customerId = (vectorStore as any).customerId ?? '';
 
         const corpusKeys = corpusId.map((corpusId) => ({
             customerId,
             corpusId,
             metadataFilter: vectaraFilter?.filter ?? '',
             lexicalInterpolationConfig: { lambda: vectaraFilter?.lambda ?? 0.025 }
-        }))
+        }));
 
         const data = {
             query: [
@@ -267,45 +267,45 @@ class VectaraChain_Chains implements INode {
                     ]
                 }
             ]
-        }
+        };
 
         try {
             const response = await fetch(`https://api.vectara.io/v1/query`, {
                 method: 'POST',
                 headers: headers?.headers,
                 body: JSON.stringify(data)
-            })
+            });
 
             if (response.status !== 200) {
-                throw new Error(`Vectara API returned status code ${response.status}`)
+                throw new Error(`Vectara API returned status code ${response.status}`);
             }
 
-            const result = await response.json()
-            const responses = result.responseSet[0].response
-            const documents = result.responseSet[0].document
-            let rawSummarizedText = ''
+            const result = await response.json();
+            const responses = result.responseSet[0].response;
+            const documents = result.responseSet[0].document;
+            let rawSummarizedText = '';
 
             for (let i = 0; i < responses.length; i += 1) {
-                const responseMetadata = responses[i].metadata
-                const documentMetadata = documents[responses[i].documentIndex].metadata
-                const combinedMetadata: Record<string, unknown> = {}
+                const responseMetadata = responses[i].metadata;
+                const documentMetadata = documents[responses[i].documentIndex].metadata;
+                const combinedMetadata: Record<string, unknown> = {};
 
                 responseMetadata.forEach((item: { name: string; value: unknown }) => {
-                    combinedMetadata[item.name] = item.value
-                })
+                    combinedMetadata[item.name] = item.value;
+                });
 
                 documentMetadata.forEach((item: { name: string; value: unknown }) => {
-                    combinedMetadata[item.name] = item.value
-                })
+                    combinedMetadata[item.name] = item.value;
+                });
 
-                responses[i].metadata = combinedMetadata
+                responses[i].metadata = combinedMetadata;
             }
 
-            const summaryStatus = result.responseSet[0].summary[0].status
+            const summaryStatus = result.responseSet[0].summary[0].status;
             if (summaryStatus.length > 0 && summaryStatus[0].code === 'BAD_REQUEST') {
                 throw new Error(
                     `BAD REQUEST: Too much text for the summarizer to summarize. Please try reducing the number of search results to summarize, or the context of each result by adjusting the 'summary_num_sentences', and 'summary_num_results' parameters respectively.`
-                )
+                );
             }
 
             if (
@@ -313,13 +313,13 @@ class VectaraChain_Chains implements INode {
                 summaryStatus[0].code === 'NOT_FOUND' &&
                 summaryStatus[0].statusDetail === 'Failed to retrieve summarizer.'
             ) {
-                throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`)
+                throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`);
             }
 
-            rawSummarizedText = result.responseSet[0].summary[0]?.text
+            rawSummarizedText = result.responseSet[0].summary[0]?.text;
 
-            let summarizedText = reorderCitations(rawSummarizedText)
-            let summaryResponses = applyCitationOrder(responses, rawSummarizedText)
+            let summarizedText = reorderCitations(rawSummarizedText);
+            let summaryResponses = applyCitationOrder(responses, rawSummarizedText);
 
             const sourceDocuments: Document[] = summaryResponses.map(
                 (response: { text: string; metadata: Record<string, unknown>; score: number }) =>
@@ -327,13 +327,13 @@ class VectaraChain_Chains implements INode {
                         pageContent: response.text,
                         metadata: response.metadata
                     })
-            )
+            );
 
-            return { text: summarizedText, sourceDocuments: sourceDocuments }
+            return { text: summarizedText, sourceDocuments: sourceDocuments };
         } catch (error) {
-            throw new Error(error)
+            throw new Error(error);
         }
     }
 }
 
-module.exports = { nodeClass: VectaraChain_Chains }
+module.exports = { nodeClass: VectaraChain_Chains };

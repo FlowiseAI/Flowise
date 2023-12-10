@@ -1,23 +1,23 @@
-import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
-import { Dialog, DialogContent, DialogTitle } from '@mui/material'
-import ReactJson from 'flowise-react-json-view'
+import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import ReactJson from 'flowise-react-json-view';
 
 const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const customization = useSelector((state) => state.customization)
+    const portalElement = document.getElementById('portal');
+    const customization = useSelector((state) => state.customization);
 
-    const [data, setData] = useState({})
+    const [data, setData] = useState({});
 
     useEffect(() => {
-        if (dialogProps.data) setData(dialogProps.data)
+        if (dialogProps.data) setData(dialogProps.data);
 
         return () => {
-            setData({})
-        }
-    }, [dialogProps])
+            setData({});
+        };
+    }, [dialogProps]);
 
     const component = show ? (
         <Dialog
@@ -43,15 +43,15 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
                 />
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 SourceDocDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
-}
+};
 
-export default SourceDocDialog
+export default SourceDocDialog;

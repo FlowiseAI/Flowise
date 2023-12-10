@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 
 // material-ui
-import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { IconHierarchy, IconTool } from '@tabler/icons'
+import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { IconHierarchy, IconTool } from '@tabler/icons';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import ItemCard from 'ui-component/cards/ItemCard'
-import { gridSpacing } from 'store/constant'
-import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import ToolDialog from 'views/tools/ToolDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import ItemCard from 'ui-component/cards/ItemCard';
+import { gridSpacing } from 'store/constant';
+import WorkflowEmptySVG from 'assets/images/workflow_empty.svg';
+import ToolDialog from 'views/tools/ToolDialog';
 
 // API
-import marketplacesApi from 'api/marketplaces'
+import marketplacesApi from 'api/marketplaces';
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from 'hooks/useApi';
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props
+    const { children, value, index, ...other } = props;
     return (
         <div
             role='tabpanel'
@@ -36,33 +36,33 @@ function TabPanel(props) {
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
         </div>
-    )
+    );
 }
 
 TabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
     value: PropTypes.number.isRequired
-}
+};
 
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
 
-    const [isChatflowsLoading, setChatflowsLoading] = useState(true)
-    const [isToolsLoading, setToolsLoading] = useState(true)
-    const [images, setImages] = useState({})
-    const tabItems = ['Chatflows', 'Tools']
-    const [value, setValue] = useState(0)
-    const [showToolDialog, setShowToolDialog] = useState(false)
-    const [toolDialogProps, setToolDialogProps] = useState({})
+    const [isChatflowsLoading, setChatflowsLoading] = useState(true);
+    const [isToolsLoading, setToolsLoading] = useState(true);
+    const [images, setImages] = useState({});
+    const tabItems = ['Chatflows', 'Tools'];
+    const [value, setValue] = useState(0);
+    const [showToolDialog, setShowToolDialog] = useState(false);
+    const [toolDialogProps, setToolDialogProps] = useState({});
 
-    const getAllChatflowsMarketplacesApi = useApi(marketplacesApi.getAllChatflowsMarketplaces)
-    const getAllToolsMarketplacesApi = useApi(marketplacesApi.getAllToolsMarketplaces)
+    const getAllChatflowsMarketplacesApi = useApi(marketplacesApi.getAllChatflowsMarketplaces);
+    const getAllToolsMarketplacesApi = useApi(marketplacesApi.getAllToolsMarketplaces);
 
     const onUseTemplate = (selectedTool) => {
         const dialogProp = {
@@ -71,67 +71,67 @@ const Marketplace = () => {
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add',
             data: selectedTool
-        }
-        setToolDialogProps(dialogProp)
-        setShowToolDialog(true)
-    }
+        };
+        setToolDialogProps(dialogProp);
+        setShowToolDialog(true);
+    };
 
     const goToTool = (selectedTool) => {
         const dialogProp = {
             title: selectedTool.templateName,
             type: 'TEMPLATE',
             data: selectedTool
-        }
-        setToolDialogProps(dialogProp)
-        setShowToolDialog(true)
-    }
+        };
+        setToolDialogProps(dialogProp);
+        setShowToolDialog(true);
+    };
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
-    }
+        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow });
+    };
 
     const handleChange = (event, newValue) => {
-        setValue(newValue)
-    }
+        setValue(newValue);
+    };
 
     useEffect(() => {
-        getAllChatflowsMarketplacesApi.request()
-        getAllToolsMarketplacesApi.request()
+        getAllChatflowsMarketplacesApi.request();
+        getAllToolsMarketplacesApi.request();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
-        setChatflowsLoading(getAllChatflowsMarketplacesApi.loading)
-    }, [getAllChatflowsMarketplacesApi.loading])
+        setChatflowsLoading(getAllChatflowsMarketplacesApi.loading);
+    }, [getAllChatflowsMarketplacesApi.loading]);
 
     useEffect(() => {
-        setToolsLoading(getAllToolsMarketplacesApi.loading)
-    }, [getAllToolsMarketplacesApi.loading])
+        setToolsLoading(getAllToolsMarketplacesApi.loading);
+    }, [getAllToolsMarketplacesApi.loading]);
 
     useEffect(() => {
         if (getAllChatflowsMarketplacesApi.data) {
             try {
-                const chatflows = getAllChatflowsMarketplacesApi.data
-                const images = {}
+                const chatflows = getAllChatflowsMarketplacesApi.data;
+                const images = {};
                 for (let i = 0; i < chatflows.length; i += 1) {
-                    const flowDataStr = chatflows[i].flowData
-                    const flowData = JSON.parse(flowDataStr)
-                    const nodes = flowData.nodes || []
-                    images[chatflows[i].id] = []
+                    const flowDataStr = chatflows[i].flowData;
+                    const flowData = JSON.parse(flowDataStr);
+                    const nodes = flowData.nodes || [];
+                    images[chatflows[i].id] = [];
                     for (let j = 0; j < nodes.length; j += 1) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`;
                         if (!images[chatflows[i].id].includes(imageSrc)) {
-                            images[chatflows[i].id].push(imageSrc)
+                            images[chatflows[i].id].push(imageSrc);
                         }
                     }
                 }
-                setImages(images)
+                setImages(images);
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
         }
-    }, [getAllChatflowsMarketplacesApi.data])
+    }, [getAllChatflowsMarketplacesApi.data]);
 
     return (
         <>
@@ -225,7 +225,7 @@ const Marketplace = () => {
                 onUseTemplate={(tool) => onUseTemplate(tool)}
             ></ToolDialog>
         </>
-    )
-}
+    );
+};
 
-export default Marketplace
+export default Marketplace;

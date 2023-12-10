@@ -1,32 +1,32 @@
-import { createPortal } from 'react-dom'
-import { useState } from 'react'
-import PropTypes from 'prop-types'
+import { createPortal } from 'react-dom';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 
-import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { Input } from 'ui-component/input/Input'
+import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { Input } from 'ui-component/input/Input';
 
 const LoginDialog = ({ show, dialogProps, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = document.getElementById('portal');
     const usernameInput = {
         label: 'Username',
         name: 'username',
         type: 'string',
         placeholder: 'john doe'
-    }
+    };
     const passwordInput = {
         label: 'Password',
         name: 'password',
         type: 'password'
-    }
-    const [usernameVal, setUsernameVal] = useState('')
-    const [passwordVal, setPasswordVal] = useState('')
+    };
+    const [usernameVal, setUsernameVal] = useState('');
+    const [passwordVal, setPasswordVal] = useState('');
 
     const component = show ? (
         <Dialog
             onKeyUp={(e) => {
                 if (e.key === 'Enter') {
-                    onConfirm(usernameVal, passwordVal)
+                    onConfirm(usernameVal, passwordVal);
                 }
             }}
             open={show}
@@ -56,15 +56,15 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
                 </StyledButton>
             </DialogActions>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 LoginDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onConfirm: PropTypes.func
-}
+};
 
-export default LoginDialog
+export default LoginDialog;

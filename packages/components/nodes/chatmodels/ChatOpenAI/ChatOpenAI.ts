@@ -1,36 +1,36 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 class ChatOpenAI_ChatModels implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'ChatOpenAI'
-        this.name = 'chatOpenAI'
-        this.version = 2.0
-        this.type = 'ChatOpenAI'
-        this.icon = 'openai.png'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.label = 'ChatOpenAI';
+        this.name = 'chatOpenAI';
+        this.version = 2.0;
+        this.type = 'ChatOpenAI';
+        this.icon = 'openai.png';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint';
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['openAIApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -153,55 +153,55 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-        const presencePenalty = nodeData.inputs?.presencePenalty as string
-        const timeout = nodeData.inputs?.timeout as string
-        const streaming = nodeData.inputs?.streaming as boolean
-        const basePath = nodeData.inputs?.basepath as string
-        const baseOptions = nodeData.inputs?.baseOptions
+        const temperature = nodeData.inputs?.temperature as string;
+        const modelName = nodeData.inputs?.modelName as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const topP = nodeData.inputs?.topP as string;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string;
+        const presencePenalty = nodeData.inputs?.presencePenalty as string;
+        const timeout = nodeData.inputs?.timeout as string;
+        const streaming = nodeData.inputs?.streaming as boolean;
+        const basePath = nodeData.inputs?.basepath as string;
+        const baseOptions = nodeData.inputs?.baseOptions;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData);
 
-        const cache = nodeData.inputs?.cache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache;
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             streaming: streaming ?? true
-        }
+        };
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP) obj.topP = parseFloat(topP);
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout) obj.timeout = parseInt(timeout, 10);
+        if (cache) obj.cache = cache;
 
-        let parsedBaseOptions: any | undefined = undefined
+        let parsedBaseOptions: any | undefined = undefined;
 
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions);
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception);
             }
         }
         const model = new ChatOpenAI(obj, {
             basePath,
             baseOptions: parsedBaseOptions
-        })
-        return model
+        });
+        return model;
     }
 }
 
-module.exports = { nodeClass: ChatOpenAI_ChatModels }
+module.exports = { nodeClass: ChatOpenAI_ChatModels };

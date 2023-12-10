@@ -1,7 +1,7 @@
-import { z } from 'zod'
-import { CallbackManagerForToolRun } from 'langchain/callbacks'
-import { StructuredTool, ToolParams } from 'langchain/tools'
-import { NodeVM } from 'vm2'
+import { z } from 'zod';
+import { CallbackManagerForToolRun } from 'langchain/callbacks';
+import { StructuredTool, ToolParams } from 'langchain/tools';
+import { NodeVM } from 'vm2';
 
 /*
  * List of dependencies allowed to be import in vm2
@@ -32,52 +32,52 @@ const availableDependencies = [
     'srt-parser-2',
     'typeorm',
     'weaviate-ts-client'
-]
+];
 
 export interface BaseDynamicToolInput extends ToolParams {
-    name: string
-    description: string
-    code: string
-    returnDirect?: boolean
+    name: string;
+    description: string;
+    code: string;
+    returnDirect?: boolean;
 }
 
 export interface DynamicStructuredToolInput<
     // eslint-disable-next-line
     T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
 > extends BaseDynamicToolInput {
-    func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun) => Promise<string>
-    schema: T
+    func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun) => Promise<string>;
+    schema: T;
 }
 
 export class DynamicStructuredTool<
     // eslint-disable-next-line
     T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
 > extends StructuredTool {
-    name: string
+    name: string;
 
-    description: string
+    description: string;
 
-    code: string
+    code: string;
 
-    func: DynamicStructuredToolInput['func']
+    func: DynamicStructuredToolInput['func'];
 
-    schema: T
+    schema: T;
 
     constructor(fields: DynamicStructuredToolInput<T>) {
-        super(fields)
-        this.name = fields.name
-        this.description = fields.description
-        this.code = fields.code
-        this.func = fields.func
-        this.returnDirect = fields.returnDirect ?? this.returnDirect
-        this.schema = fields.schema
+        super(fields);
+        this.name = fields.name;
+        this.description = fields.description;
+        this.code = fields.code;
+        this.func = fields.func;
+        this.returnDirect = fields.returnDirect ?? this.returnDirect;
+        this.schema = fields.schema;
     }
 
     protected async _call(arg: z.output<T>): Promise<string> {
-        let sandbox: any = {}
+        let sandbox: any = {};
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
-                sandbox[`$${item}`] = arg[item]
+                sandbox[`$${item}`] = arg[item];
             }
         }
 
@@ -95,13 +95,13 @@ export class DynamicStructuredTool<
             'tls',
             'url',
             'zlib'
-        ]
+        ];
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+            : defaultAllowBuiltInDep;
+        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : [];
+        const deps = availableDependencies.concat(externalDeps);
 
         const options = {
             console: 'inherit',
@@ -110,11 +110,11 @@ export class DynamicStructuredTool<
                 external: { modules: deps },
                 builtin: builtinDeps
             }
-        } as any
+        } as any;
 
-        const vm = new NodeVM(options)
-        const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)
+        const vm = new NodeVM(options);
+        const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname);
 
-        return response
+        return response;
     }
 }

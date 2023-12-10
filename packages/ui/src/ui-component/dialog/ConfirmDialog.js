@@ -1,11 +1,11 @@
-import { createPortal } from 'react-dom'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
-import useConfirm from 'hooks/useConfirm'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { createPortal } from 'react-dom';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import useConfirm from 'hooks/useConfirm';
+import { StyledButton } from 'ui-component/button/StyledButton';
 
 const ConfirmDialog = () => {
-    const { onConfirm, onCancel, confirmState } = useConfirm()
-    const portalElement = document.getElementById('portal')
+    const { onConfirm, onCancel, confirmState } = useConfirm();
+    const portalElement = document.getElementById('portal');
 
     const component = confirmState.show ? (
         <Dialog
@@ -29,9 +29,9 @@ const ConfirmDialog = () => {
                 </StyledButton>
             </DialogActions>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
-export default ConfirmDialog
+export default ConfirmDialog;

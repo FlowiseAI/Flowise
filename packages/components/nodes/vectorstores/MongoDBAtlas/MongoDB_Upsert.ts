@@ -1,25 +1,25 @@
-import { flatten } from 'lodash'
-import { Collection } from 'mongodb'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
-import { MongoDBSearchBase } from './MongoDBSearchBase'
+import { flatten } from 'lodash';
+import { Collection } from 'mongodb';
+import { Embeddings } from 'langchain/embeddings/base';
+import { Document } from 'langchain/document';
+import { VectorStore } from 'langchain/vectorstores/base';
+import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas';
+import { ICommonObject, INode, INodeData } from '../../../src/Interface';
+import { MongoDBSearchBase } from './MongoDBSearchBase';
 
 class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
     constructor() {
-        super()
-        this.label = 'MongoDB Atlas Upsert Document'
-        this.name = 'MongoDBUpsert'
-        this.version = 1.0
-        this.description = 'Upsert documents to MongoDB Atlas'
+        super();
+        this.label = 'MongoDB Atlas Upsert Document';
+        this.name = 'MongoDBUpsert';
+        this.version = 1.0;
+        this.description = 'Upsert documents to MongoDB Atlas';
         this.inputs.unshift({
             label: 'Document',
             name: 'document',
             type: 'Document',
             list: true
-        })
+        });
     }
 
     async constructVectorStore(
@@ -35,25 +35,25 @@ class MongoDBUpsert_VectorStores extends MongoDBSearchBase implements INode {
             indexName: indexName,
             textKey: textKey,
             embeddingKey: embeddingKey
-        })
-        await mongoDBAtlasVectorSearch.addDocuments(docs)
-        return mongoDBAtlasVectorSearch
+        });
+        await mongoDBAtlasVectorSearch.addDocuments(docs);
+        return mongoDBAtlasVectorSearch;
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const docs = nodeData.inputs?.document as Document[]
+        const docs = nodeData.inputs?.document as Document[];
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
+        const flattenDocs = docs && docs.length ? flatten(docs) : [];
+        const finalDocs = [];
         for (let i = 0; i < flattenDocs.length; i += 1) {
             if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                const document = new Document(flattenDocs[i])
-                finalDocs.push(document)
+                const document = new Document(flattenDocs[i]);
+                finalDocs.push(document);
             }
         }
 
-        return super.init(nodeData, _, options, finalDocs)
+        return super.init(nodeData, _, options, finalDocs);
     }
 }
 
-module.exports = { nodeClass: MongoDBUpsert_VectorStores }
+module.exports = { nodeClass: MongoDBUpsert_VectorStores };

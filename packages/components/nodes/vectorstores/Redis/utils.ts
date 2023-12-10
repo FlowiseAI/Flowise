@@ -4,22 +4,22 @@
  * to escape it
  */
 export const escapeSpecialChars = (str: string) => {
-    return str.replaceAll('-', '\\-')
-}
+    return str.replaceAll('-', '\\-');
+};
 
 export const escapeAllStrings = (obj: object) => {
     Object.keys(obj).forEach((key: string) => {
         // @ts-ignore
-        let item = obj[key]
+        let item = obj[key];
         if (typeof item === 'object') {
-            escapeAllStrings(item)
+            escapeAllStrings(item);
         } else if (typeof item === 'string') {
             // @ts-ignore
-            obj[key] = escapeSpecialChars(item)
+            obj[key] = escapeSpecialChars(item);
         }
-    })
-}
+    });
+};
 
 export const unEscapeSpecialChars = (str: string) => {
-    return str.replaceAll('\\-', '-')
-}
+    return str.replaceAll('\\-', '-');
+};

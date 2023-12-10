@@ -1,28 +1,28 @@
-import PropTypes from 'prop-types'
-import { forwardRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import PropTypes from 'prop-types';
+import { forwardRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles';
+import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material';
 
 // project imports
-import { MENU_OPEN, SET_MENU } from 'store/actions'
-import config from 'config'
+import { MENU_OPEN, SET_MENU } from 'store/actions';
+import config from 'config';
 
 // assets
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
 const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
-    const theme = useTheme()
-    const dispatch = useDispatch()
-    const customization = useSelector((state) => state.customization)
-    const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
+    const theme = useTheme();
+    const dispatch = useDispatch();
+    const customization = useSelector((state) => state.customization);
+    const matchesSM = useMediaQuery(theme.breakpoints.down('lg'));
 
-    const Icon = item.icon
+    const Icon = item.icon;
     const itemIcon = item?.icon ? (
         <Icon stroke={1.5} size='1.3rem' />
     ) : (
@@ -33,49 +33,49 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             }}
             fontSize={level > 0 ? 'inherit' : 'medium'}
         />
-    )
+    );
 
-    let itemTarget = '_self'
+    let itemTarget = '_self';
     if (item.target) {
-        itemTarget = '_blank'
+        itemTarget = '_blank';
     }
 
     let listItemProps = {
         component: forwardRef(function ListItemPropsComponent(props, ref) {
-            return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
+            return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />;
         })
-    }
+    };
     if (item?.external) {
-        listItemProps = { component: 'a', href: item.url, target: itemTarget }
+        listItemProps = { component: 'a', href: item.url, target: itemTarget };
     }
     if (item?.id === 'loadChatflow') {
-        listItemProps.component = 'label'
+        listItemProps.component = 'label';
     }
 
     const handleFileUpload = (e) => {
-        if (!e.target.files) return
+        if (!e.target.files) return;
 
-        const file = e.target.files[0]
+        const file = e.target.files[0];
 
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = (evt) => {
             if (!evt?.target?.result) {
-                return
+                return;
             }
-            const { result } = evt.target
-            onUploadFile(result)
-        }
-        reader.readAsText(file)
-    }
+            const { result } = evt.target;
+            onUploadFile(result);
+        };
+        reader.readAsText(file);
+    };
 
     const itemHandler = (id) => {
         if (navType === 'SETTINGS' && id !== 'loadChatflow') {
-            onClick(id)
+            onClick(id);
         } else {
-            dispatch({ type: MENU_OPEN, id })
-            if (matchesSM) dispatch({ type: SET_MENU, opened: false })
+            dispatch({ type: MENU_OPEN, id });
+            if (matchesSM) dispatch({ type: SET_MENU, opened: false });
         }
-    }
+    };
 
     // active menu item on page load
     useEffect(() => {
@@ -83,17 +83,17 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             const currentIndex = document.location.pathname
                 .toString()
                 .split('/')
-                .findIndex((id) => id === item.id)
+                .findIndex((id) => id === item.id);
             if (currentIndex > -1) {
-                dispatch({ type: MENU_OPEN, id: item.id })
+                dispatch({ type: MENU_OPEN, id: item.id });
             }
             if (!document.location.pathname.toString().split('/')[1]) {
-                itemHandler('chatflows')
+                itemHandler('chatflows');
             }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navType])
+    }, [navType]);
 
     return (
         <ListItemButton
@@ -136,8 +136,8 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 />
             )}
         </ListItemButton>
-    )
-}
+    );
+};
 
 NavItem.propTypes = {
     item: PropTypes.object,
@@ -145,6 +145,6 @@ NavItem.propTypes = {
     navType: PropTypes.string,
     onClick: PropTypes.func,
     onUploadFile: PropTypes.func
-}
+};
 
-export default NavItem
+export default NavItem;

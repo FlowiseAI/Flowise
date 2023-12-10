@@ -1,17 +1,17 @@
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
-import { ICommonObject } from '../../src'
-import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
+import { BaseOutputParser } from 'langchain/schema/output_parser';
+import { LLMChain } from 'langchain/chains';
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language';
+import { ICommonObject } from '../../src';
+import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts';
 
-export const CATEGORY = 'Output Parsers'
+export const CATEGORY = 'Output Parsers';
 
 export const formatResponse = (response: string | object): string | object => {
     if (typeof response === 'object') {
-        return { json: response }
+        return { json: response };
     }
-    return response
-}
+    return response;
+};
 
 export const injectOutputParser = (
     outputParser: BaseOutputParser<unknown>,
@@ -19,28 +19,28 @@ export const injectOutputParser = (
     promptValues: ICommonObject | undefined = undefined
 ) => {
     if (outputParser && chain.prompt) {
-        const formatInstructions = outputParser.getFormatInstructions()
+        const formatInstructions = outputParser.getFormatInstructions();
         if (chain.prompt instanceof PromptTemplate) {
-            let pt = chain.prompt
-            pt.template = pt.template + '\n{format_instructions}'
-            chain.prompt.partialVariables = { format_instructions: formatInstructions }
+            let pt = chain.prompt;
+            pt.template = pt.template + '\n{format_instructions}';
+            chain.prompt.partialVariables = { format_instructions: formatInstructions };
         } else if (chain.prompt instanceof ChatPromptTemplate) {
-            let pt = chain.prompt
+            let pt = chain.prompt;
             pt.promptMessages.forEach((msg) => {
                 if (msg instanceof SystemMessagePromptTemplate) {
-                    ;(msg.prompt as any).partialVariables = { format_instructions: outputParser.getFormatInstructions() }
-                    ;(msg.prompt as any).template = ((msg.prompt as any).template + '\n{format_instructions}') as string
+                    (msg.prompt as any).partialVariables = { format_instructions: outputParser.getFormatInstructions() };
+                    (msg.prompt as any).template = ((msg.prompt as any).template + '\n{format_instructions}') as string;
                 }
-            })
+            });
         } else if (chain.prompt instanceof FewShotPromptTemplate) {
-            chain.prompt.examplePrompt.partialVariables = { format_instructions: formatInstructions }
-            chain.prompt.examplePrompt.template = chain.prompt.examplePrompt.template + '\n{format_instructions}'
+            chain.prompt.examplePrompt.partialVariables = { format_instructions: formatInstructions };
+            chain.prompt.examplePrompt.template = chain.prompt.examplePrompt.template + '\n{format_instructions}';
         }
 
-        chain.prompt.inputVariables.push('format_instructions')
+        chain.prompt.inputVariables.push('format_instructions');
         if (promptValues) {
-            promptValues = { ...promptValues, format_instructions: outputParser.getFormatInstructions() }
+            promptValues = { ...promptValues, format_instructions: outputParser.getFormatInstructions() };
         }
     }
-    return promptValues
-}
+    return promptValues;
+};

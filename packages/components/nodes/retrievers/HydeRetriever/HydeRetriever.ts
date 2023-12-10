@@ -1,29 +1,29 @@
-import { VectorStore } from 'langchain/vectorstores/base'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate } from 'langchain/prompts'
+import { VectorStore } from 'langchain/vectorstores/base';
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde';
+import { BaseLanguageModel } from 'langchain/base_language';
+import { PromptTemplate } from 'langchain/prompts';
 
 class HydeRetriever_Retrievers implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Hyde Retriever'
-        this.name = 'HydeRetriever'
-        this.version = 2.0
-        this.type = 'HydeRetriever'
-        this.icon = 'hyderetriever.svg'
-        this.category = 'Retrievers'
-        this.description = 'Use HyDE retriever to retrieve from a vector store'
-        this.baseClasses = [this.type, 'BaseRetriever']
+        this.label = 'Hyde Retriever';
+        this.name = 'HydeRetriever';
+        this.version = 2.0;
+        this.type = 'HydeRetriever';
+        this.icon = 'hyderetriever.svg';
+        this.category = 'Retrievers';
+        this.description = 'Use HyDE retriever to retrieve from a vector store';
+        this.baseClasses = [this.type, 'BaseRetriever'];
         this.inputs = [
             {
                 label: 'Language Model',
@@ -120,29 +120,29 @@ Passage:`
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const llm = nodeData.inputs?.model as BaseLanguageModel
-        const vectorStore = nodeData.inputs?.vectorStore as VectorStore
-        const promptKey = nodeData.inputs?.promptKey as PromptKey
-        const customPrompt = nodeData.inputs?.customPrompt as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const llm = nodeData.inputs?.model as BaseLanguageModel;
+        const vectorStore = nodeData.inputs?.vectorStore as VectorStore;
+        const promptKey = nodeData.inputs?.promptKey as PromptKey;
+        const customPrompt = nodeData.inputs?.customPrompt as string;
+        const topK = nodeData.inputs?.topK as string;
+        const k = topK ? parseFloat(topK) : 4;
 
         const obj: HydeRetrieverOptions<any> = {
             llm,
             vectorStore,
             k
-        }
+        };
 
-        if (customPrompt) obj.promptTemplate = PromptTemplate.fromTemplate(customPrompt)
-        else if (promptKey) obj.promptTemplate = promptKey
+        if (customPrompt) obj.promptTemplate = PromptTemplate.fromTemplate(customPrompt);
+        else if (promptKey) obj.promptTemplate = promptKey;
 
-        const retriever = new HydeRetriever(obj)
-        return retriever
+        const retriever = new HydeRetriever(obj);
+        return retriever;
     }
 }
 
-module.exports = { nodeClass: HydeRetriever_Retrievers }
+module.exports = { nodeClass: HydeRetriever_Retrievers };

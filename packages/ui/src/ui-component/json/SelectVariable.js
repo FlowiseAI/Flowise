@@ -1,19 +1,19 @@
-import { useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
-import { Box, List, ListItemButton, ListItem, ListItemAvatar, ListItemText, Typography, Stack } from '@mui/material'
-import PerfectScrollbar from 'react-perfect-scrollbar'
-import robotPNG from 'assets/images/robot.png'
-import chatPNG from 'assets/images/chathistory.png'
-import { baseURL } from 'store/constant'
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import { Box, List, ListItemButton, ListItem, ListItemAvatar, ListItemText, Typography, Stack } from '@mui/material';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import robotPNG from 'assets/images/robot.png';
+import chatPNG from 'assets/images/chathistory.png';
+import { baseURL } from 'store/constant';
 
 const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectAndReturnVal }) => {
-    const customization = useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization);
 
     const onSelectOutputResponseClick = (node, prefix) => {
-        let variablePath = node ? `${node.id}.data.instance` : prefix
-        const newInput = `{{${variablePath}}}`
-        onSelectAndReturnVal(newInput)
-    }
+        let variablePath = node ? `${node.id}.data.instance` : prefix;
+        const newInput = `{{${variablePath}}}`;
+        onSelectAndReturnVal(newInput);
+    };
 
     return (
         <>
@@ -104,7 +104,7 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                     availableNodesForVariable.map((node, index) => {
                                         const selectedOutputAnchor = node.data.outputAnchors[0].options.find(
                                             (ancr) => ancr.name === node.data.outputs['output']
-                                        )
+                                        );
                                         return (
                                             <ListItemButton
                                                 key={index}
@@ -146,7 +146,7 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                     />
                                                 </ListItem>
                                             </ListItemButton>
-                                        )
+                                        );
                                     })}
                             </List>
                         </Box>
@@ -154,13 +154,13 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                 </div>
             )}
         </>
-    )
-}
+    );
+};
 
 SelectVariable.propTypes = {
     availableNodesForVariable: PropTypes.array,
     disabled: PropTypes.bool,
     onSelectAndReturnVal: PropTypes.func
-}
+};
 
-export default SelectVariable
+export default SelectVariable;

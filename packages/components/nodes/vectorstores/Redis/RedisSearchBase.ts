@@ -6,42 +6,42 @@ import {
     INodeData,
     INodeOutputsValue,
     INodeParams
-} from '../../../src'
+} from '../../../src';
 
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
-import { createClient, SearchOptions } from 'redis'
-import { RedisVectorStore } from 'langchain/vectorstores/redis'
-import { escapeSpecialChars, unEscapeSpecialChars } from './utils'
+import { Embeddings } from 'langchain/embeddings/base';
+import { VectorStore } from 'langchain/vectorstores/base';
+import { Document } from 'langchain/document';
+import { createClient, SearchOptions } from 'redis';
+import { RedisVectorStore } from 'langchain/vectorstores/redis';
+import { escapeSpecialChars, unEscapeSpecialChars } from './utils';
 
 export abstract class RedisSearchBase {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
-    redisClient: ReturnType<typeof createClient>
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
+    redisClient: ReturnType<typeof createClient>;
 
     protected constructor() {
-        this.type = 'Redis'
-        this.icon = 'redis.svg'
-        this.category = 'Vector Stores'
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'DEPRECATING'
+        this.type = 'Redis';
+        this.icon = 'redis.svg';
+        this.category = 'Vector Stores';
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
+        this.badge = 'DEPRECATING';
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['redisCacheUrlApi', 'redisCacheApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Embeddings',
@@ -97,7 +97,7 @@ export abstract class RedisSearchBase {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Redis Retriever',
@@ -109,7 +109,7 @@ export abstract class RedisSearchBase {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(RedisVectorStore)]
             }
-        ]
+        ];
     }
 
     abstract constructVectorStore(
@@ -117,50 +117,50 @@ export abstract class RedisSearchBase {
         indexName: string,
         replaceIndex: boolean,
         docs: Document<Record<string, any>>[] | undefined
-    ): Promise<VectorStore>
+    ): Promise<VectorStore>;
 
     async init(nodeData: INodeData, _: string, options: ICommonObject, docs: Document<Record<string, any>>[] | undefined): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const indexName = nodeData.inputs?.indexName as string
-        let contentKey = nodeData.inputs?.contentKey as string
-        let metadataKey = nodeData.inputs?.metadataKey as string
-        let vectorKey = nodeData.inputs?.vectorKey as string
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const topK = nodeData.inputs?.topK as string
-        const replaceIndex = nodeData.inputs?.replaceIndex as boolean
-        const k = topK ? parseFloat(topK) : 4
-        const output = nodeData.outputs?.output as string
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const indexName = nodeData.inputs?.indexName as string;
+        let contentKey = nodeData.inputs?.contentKey as string;
+        let metadataKey = nodeData.inputs?.metadataKey as string;
+        let vectorKey = nodeData.inputs?.vectorKey as string;
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const topK = nodeData.inputs?.topK as string;
+        const replaceIndex = nodeData.inputs?.replaceIndex as boolean;
+        const k = topK ? parseFloat(topK) : 4;
+        const output = nodeData.outputs?.output as string;
 
-        let redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
+        let redisUrl = getCredentialParam('redisUrl', credentialData, nodeData);
         if (!redisUrl || redisUrl === '') {
-            const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
-            const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
-            const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
-            const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+            const username = getCredentialParam('redisCacheUser', credentialData, nodeData);
+            const password = getCredentialParam('redisCachePwd', credentialData, nodeData);
+            const portStr = getCredentialParam('redisCachePort', credentialData, nodeData);
+            const host = getCredentialParam('redisCacheHost', credentialData, nodeData);
 
-            redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
+            redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr;
         }
 
-        this.redisClient = createClient({ url: redisUrl })
-        await this.redisClient.connect()
+        this.redisClient = createClient({ url: redisUrl });
+        await this.redisClient.connect();
 
-        const vectorStore = await this.constructVectorStore(embeddings, indexName, replaceIndex, docs)
-        if (!contentKey || contentKey === '') contentKey = 'content'
-        if (!metadataKey || metadataKey === '') metadataKey = 'metadata'
-        if (!vectorKey || vectorKey === '') vectorKey = 'content_vector'
+        const vectorStore = await this.constructVectorStore(embeddings, indexName, replaceIndex, docs);
+        if (!contentKey || contentKey === '') contentKey = 'content';
+        if (!metadataKey || metadataKey === '') metadataKey = 'metadata';
+        if (!vectorKey || vectorKey === '') vectorKey = 'content_vector';
 
         const buildQuery = (query: number[], k: number, filter?: string[]): [string, SearchOptions] => {
-            const vectorScoreField = 'vector_score'
+            const vectorScoreField = 'vector_score';
 
-            let hybridFields = '*'
+            let hybridFields = '*';
             // if a filter is set, modify the hybrid query
             if (filter && filter.length) {
                 // `filter` is a list of strings, then it's applied using the OR operator in the metadata key
-                hybridFields = `@${metadataKey}:(${filter.map(escapeSpecialChars).join('|')})`
+                hybridFields = `@${metadataKey}:(${filter.map(escapeSpecialChars).join('|')})`;
             }
 
-            const baseQuery = `${hybridFields} => [KNN ${k} @${vectorKey} $vector AS ${vectorScoreField}]`
-            const returnFields = [metadataKey, contentKey, vectorScoreField]
+            const baseQuery = `${hybridFields} => [KNN ${k} @${vectorKey} $vector AS ${vectorScoreField}]`;
+            const returnFields = [metadataKey, contentKey, vectorScoreField];
 
             const options: SearchOptions = {
                 PARAMS: {
@@ -173,45 +173,45 @@ export abstract class RedisSearchBase {
                     from: 0,
                     size: k
                 }
-            }
+            };
 
-            return [baseQuery, options]
-        }
+            return [baseQuery, options];
+        };
 
         vectorStore.similaritySearchVectorWithScore = async (
             query: number[],
             k: number,
             filter?: string[]
         ): Promise<[Document, number][]> => {
-            const results = await this.redisClient.ft.search(indexName, ...buildQuery(query, k, filter))
-            const result: [Document, number][] = []
+            const results = await this.redisClient.ft.search(indexName, ...buildQuery(query, k, filter));
+            const result: [Document, number][] = [];
 
             if (results.total) {
                 for (const res of results.documents) {
                     if (res.value) {
-                        const document = res.value
+                        const document = res.value;
                         if (document.vector_score) {
-                            const metadataString = unEscapeSpecialChars(document[metadataKey] as string)
+                            const metadataString = unEscapeSpecialChars(document[metadataKey] as string);
                             result.push([
                                 new Document({
                                     pageContent: document[contentKey] as string,
                                     metadata: JSON.parse(metadataString)
                                 }),
                                 Number(document.vector_score)
-                            ])
+                            ]);
                         }
                     }
                 }
             }
-            return result
-        }
+            return result;
+        };
 
         if (output === 'retriever') {
-            return vectorStore.asRetriever(k)
+            return vectorStore.asRetriever(k);
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
+            (vectorStore as any).k = k;
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }

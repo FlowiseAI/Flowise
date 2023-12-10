@@ -1,15 +1,15 @@
-import Editor from 'react-simple-code-editor'
-import { highlight, languages } from 'prismjs/components/prism-core'
-import 'prismjs/components/prism-clike'
-import 'prismjs/components/prism-javascript'
-import 'prismjs/components/prism-json'
-import 'prismjs/components/prism-markup'
-import './prism-light.css'
-import PropTypes from 'prop-types'
-import { useTheme } from '@mui/material/styles'
+import Editor from 'react-simple-code-editor';
+import { highlight, languages } from 'prismjs/components/prism-core';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-markup';
+import './prism-light.css';
+import PropTypes from 'prop-types';
+import { useTheme } from '@mui/material/styles';
 
 export const LightCodeEditor = ({ value, placeholder, disabled = false, type, style, onValueChange, onMouseUp, onBlur }) => {
-    const theme = useTheme()
+    const theme = useTheme();
 
     return (
         <Editor
@@ -28,8 +28,8 @@ export const LightCodeEditor = ({ value, placeholder, disabled = false, type, st
             }}
             textareaClassName='editor__textarea'
         />
-    )
-}
+    );
+};
 
 LightCodeEditor.propTypes = {
     value: PropTypes.string,
@@ -40,4 +40,4 @@ LightCodeEditor.propTypes = {
     onValueChange: PropTypes.func,
     onMouseUp: PropTypes.func,
     onBlur: PropTypes.func
-}
+};

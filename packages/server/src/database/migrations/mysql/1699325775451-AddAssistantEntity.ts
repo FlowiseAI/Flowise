@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from 'typeorm'
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddAssistantEntity1699325775451 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -12,10 +12,10 @@ export class AddAssistantEntity1699325775451 implements MigrationInterface {
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 PRIMARY KEY (\`id\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
-        )
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE assistant`)
+        await queryRunner.query(`DROP TABLE assistant`);
     }
 }

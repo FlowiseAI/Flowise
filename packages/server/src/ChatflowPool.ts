@@ -1,13 +1,13 @@
-import { ICommonObject } from 'flowise-components'
-import { IActiveChatflows, INodeData, IReactFlowNode } from './Interface'
-import logger from './utils/logger'
+import { ICommonObject } from 'flowise-components';
+import { IActiveChatflows, INodeData, IReactFlowNode } from './Interface';
+import logger from './utils/logger';
 
 /**
  * This pool is to keep track of active chatflow pools
  * so we can prevent building langchain flow all over again
  */
 export class ChatflowPool {
-    activeChatflows: IActiveChatflows = {}
+    activeChatflows: IActiveChatflows = {};
 
     /**
      * Add to the pool
@@ -21,9 +21,9 @@ export class ChatflowPool {
             startingNodes,
             endingNodeData,
             inSync: true
-        }
-        if (overrideConfig) this.activeChatflows[chatflowid].overrideConfig = overrideConfig
-        logger.info(`[server]: Chatflow ${chatflowid} added into ChatflowPool`)
+        };
+        if (overrideConfig) this.activeChatflows[chatflowid].overrideConfig = overrideConfig;
+        logger.info(`[server]: Chatflow ${chatflowid} added into ChatflowPool`);
     }
 
     /**
@@ -33,8 +33,8 @@ export class ChatflowPool {
      */
     updateInSync(chatflowid: string, inSync: boolean) {
         if (Object.prototype.hasOwnProperty.call(this.activeChatflows, chatflowid)) {
-            this.activeChatflows[chatflowid].inSync = inSync
-            logger.info(`[server]: Chatflow ${chatflowid} updated inSync=${inSync} in ChatflowPool`)
+            this.activeChatflows[chatflowid].inSync = inSync;
+            logger.info(`[server]: Chatflow ${chatflowid} updated inSync=${inSync} in ChatflowPool`);
         }
     }
 
@@ -44,8 +44,8 @@ export class ChatflowPool {
      */
     async remove(chatflowid: string) {
         if (Object.prototype.hasOwnProperty.call(this.activeChatflows, chatflowid)) {
-            delete this.activeChatflows[chatflowid]
-            logger.info(`[server]: Chatflow ${chatflowid} removed from ChatflowPool`)
+            delete this.activeChatflows[chatflowid];
+            logger.info(`[server]: Chatflow ${chatflowid} removed from ChatflowPool`);
         }
     }
 }

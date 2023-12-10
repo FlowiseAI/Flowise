@@ -1,5 +1,5 @@
-import React from 'react'
+import React from 'react';
 
-const ConfirmContext = React.createContext()
+const ConfirmContext = React.createContext();
 
-export default ConfirmContext
+export default ConfirmContext;

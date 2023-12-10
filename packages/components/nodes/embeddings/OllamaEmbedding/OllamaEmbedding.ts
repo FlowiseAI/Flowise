@@ -1,29 +1,29 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { OllamaEmbeddings } from 'langchain/embeddings/ollama'
-import { OllamaInput } from 'langchain/dist/util/ollama'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { OllamaEmbeddings } from 'langchain/embeddings/ollama';
+import { OllamaInput } from 'langchain/dist/util/ollama';
 
 class OllamaEmbedding_Embeddings implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Ollama Embeddings'
-        this.name = 'ollamaEmbedding'
-        this.version = 1.0
-        this.type = 'OllamaEmbeddings'
-        this.icon = 'ollama.png'
-        this.category = 'Embeddings'
-        this.description = 'Generate embeddings for a given text using open source model on Ollama'
-        this.baseClasses = [this.type, ...getBaseClasses(OllamaEmbeddings)]
+        this.label = 'Ollama Embeddings';
+        this.name = 'ollamaEmbedding';
+        this.version = 1.0;
+        this.type = 'OllamaEmbeddings';
+        this.icon = 'ollama.png';
+        this.category = 'Embeddings';
+        this.description = 'Generate embeddings for a given text using open source model on Ollama';
+        this.baseClasses = [this.type, ...getBaseClasses(OllamaEmbeddings)];
         this.inputs = [
             {
                 label: 'Base URL',
@@ -64,32 +64,32 @@ class OllamaEmbedding_Embeddings implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as string
-        const baseUrl = nodeData.inputs?.baseUrl as string
-        const numThread = nodeData.inputs?.numThread as string
-        const numGpu = nodeData.inputs?.numGpu as string
-        const useMMap = nodeData.inputs?.useMMap as boolean
+        const modelName = nodeData.inputs?.modelName as string;
+        const baseUrl = nodeData.inputs?.baseUrl as string;
+        const numThread = nodeData.inputs?.numThread as string;
+        const numGpu = nodeData.inputs?.numGpu as string;
+        const useMMap = nodeData.inputs?.useMMap as boolean;
 
         const obj = {
             model: modelName,
             baseUrl,
             requestOptions: {}
-        }
+        };
 
-        const requestOptions: OllamaInput = {}
-        if (numThread) requestOptions.numThread = parseFloat(numThread)
-        if (numGpu) requestOptions.numGpu = parseFloat(numGpu)
-        if (useMMap !== undefined) requestOptions.useMMap = useMMap
+        const requestOptions: OllamaInput = {};
+        if (numThread) requestOptions.numThread = parseFloat(numThread);
+        if (numGpu) requestOptions.numGpu = parseFloat(numGpu);
+        if (useMMap !== undefined) requestOptions.useMMap = useMMap;
 
-        if (Object.keys(requestOptions).length) obj.requestOptions = requestOptions
+        if (Object.keys(requestOptions).length) obj.requestOptions = requestOptions;
 
-        const model = new OllamaEmbeddings(obj)
-        return model
+        const model = new OllamaEmbeddings(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: OllamaEmbedding_Embeddings }
+module.exports = { nodeClass: OllamaEmbedding_Embeddings };

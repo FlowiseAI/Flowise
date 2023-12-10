@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
-import { Backdrop, CircularProgress } from '@mui/material'
+import PropTypes from 'prop-types';
+import { Backdrop, CircularProgress } from '@mui/material';
 
 export const BackdropLoader = ({ open }) => {
     return (
@@ -8,9 +8,9 @@ export const BackdropLoader = ({ open }) => {
                 <CircularProgress color='inherit' />
             </Backdrop>
         </div>
-    )
-}
+    );
+};
 
 BackdropLoader.propTypes = {
     open: PropTypes.bool
-}
+};

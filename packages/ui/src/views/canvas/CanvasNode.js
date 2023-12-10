@@ -1,23 +1,23 @@
-import PropTypes from 'prop-types'
-import { useContext, useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import PropTypes from 'prop-types';
+import { useContext, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { styled, useTheme } from '@mui/material/styles'
-import { IconButton, Box, Typography, Divider, Button } from '@mui/material'
-import Tooltip, { tooltipClasses } from '@mui/material/Tooltip'
+import { styled, useTheme } from '@mui/material/styles';
+import { IconButton, Box, Typography, Divider, Button } from '@mui/material';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import NodeInputHandler from './NodeInputHandler'
-import NodeOutputHandler from './NodeOutputHandler'
-import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
-import NodeInfoDialog from 'ui-component/dialog/NodeInfoDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import NodeInputHandler from './NodeInputHandler';
+import NodeOutputHandler from './NodeOutputHandler';
+import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog';
+import NodeInfoDialog from 'ui-component/dialog/NodeInfoDialog';
 
 // const
-import { baseURL } from 'store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons'
-import { flowContext } from 'store/context/ReactFlowContext'
+import { baseURL } from 'store/constant';
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons';
+import { flowContext } from 'store/context/ReactFlowContext';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -31,7 +31,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     '&:hover': {
         borderColor: theme.palette.primary.main
     }
-}))
+}));
 
 const LightTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)(({ theme }) => ({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -39,33 +39,33 @@ const LightTooltip = styled(({ className, ...props }) => <Tooltip {...props} cla
         color: theme.palette.nodeToolTip.color,
         boxShadow: theme.shadows[1]
     }
-}))
+}));
 
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = ({ data }) => {
-    const theme = useTheme()
-    const canvas = useSelector((state) => state.canvas)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const theme = useTheme();
+    const canvas = useSelector((state) => state.canvas);
+    const { deleteNode, duplicateNode } = useContext(flowContext);
 
-    const [showDialog, setShowDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState({})
-    const [showInfoDialog, setShowInfoDialog] = useState(false)
-    const [infoDialogProps, setInfoDialogProps] = useState({})
-    const [warningMessage, setWarningMessage] = useState('')
-    const [open, setOpen] = useState(false)
+    const [showDialog, setShowDialog] = useState(false);
+    const [dialogProps, setDialogProps] = useState({});
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
+    const [infoDialogProps, setInfoDialogProps] = useState({});
+    const [warningMessage, setWarningMessage] = useState('');
+    const [open, setOpen] = useState(false);
 
     const handleClose = () => {
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     const handleOpen = () => {
-        setOpen(true)
-    }
+        setOpen(true);
+    };
 
-    const nodeOutdatedMessage = (oldVersion, newVersion) => `Node version ${oldVersion} outdated\nUpdate to latest version ${newVersion}`
+    const nodeOutdatedMessage = (oldVersion, newVersion) => `Node version ${oldVersion} outdated\nUpdate to latest version ${newVersion}`;
 
-    const nodeVersionEmptyMessage = (newVersion) => `Node outdated\nUpdate to latest version ${newVersion}`
+    const nodeVersionEmptyMessage = (newVersion) => `Node outdated\nUpdate to latest version ${newVersion}`;
 
     const onDialogClicked = () => {
         const dialogProps = {
@@ -73,23 +73,23 @@ const CanvasNode = ({ data }) => {
             inputParams: data.inputParams.filter((param) => param.additionalParams),
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
-        }
-        setDialogProps(dialogProps)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProps);
+        setShowDialog(true);
+    };
 
     useEffect(() => {
-        const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
+        const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name);
         if (componentNode) {
             if (!data.version) {
-                setWarningMessage(nodeVersionEmptyMessage(componentNode.version))
+                setWarningMessage(nodeVersionEmptyMessage(componentNode.version));
             } else if (data.version && componentNode.version > data.version) {
-                setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
+                setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version));
             } else if (componentNode.badge === 'DEPRECATING') {
-                setWarningMessage('This node will be deprecated in the next release. Change to a new node tagged with NEW')
+                setWarningMessage('This node will be deprecated in the next release. Change to a new node tagged with NEW');
             }
         }
-    }, [canvas.componentNodes, data.name, data.version])
+    }, [canvas.componentNodes, data.name, data.version]);
 
     return (
         <>
@@ -117,7 +117,7 @@ const CanvasNode = ({ data }) => {
                             <IconButton
                                 title='Duplicate'
                                 onClick={() => {
-                                    duplicateNode(data.id)
+                                    duplicateNode(data.id);
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
@@ -127,7 +127,7 @@ const CanvasNode = ({ data }) => {
                             <IconButton
                                 title='Delete'
                                 onClick={() => {
-                                    deleteNode(data.id)
+                                    deleteNode(data.id);
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
@@ -137,8 +137,8 @@ const CanvasNode = ({ data }) => {
                             <IconButton
                                 title='Info'
                                 onClick={() => {
-                                    setInfoDialogProps({ data })
-                                    setShowInfoDialog(true)
+                                    setInfoDialogProps({ data });
+                                    setShowInfoDialog(true);
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.secondary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
@@ -256,11 +256,11 @@ const CanvasNode = ({ data }) => {
             ></AdditionalParamsDialog>
             <NodeInfoDialog show={showInfoDialog} dialogProps={infoDialogProps} onCancel={() => setShowInfoDialog(false)}></NodeInfoDialog>
         </>
-    )
-}
+    );
+};
 
 CanvasNode.propTypes = {
     data: PropTypes.object
-}
+};
 
-export default CanvasNode
+export default CanvasNode;

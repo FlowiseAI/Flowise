@@ -1,33 +1,44 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
-import { v4 as uuidv4 } from 'uuid'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
+import { v4 as uuidv4 } from 'uuid';
 
-import { Box, Typography, Button, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    OutlinedInput
+} from '@mui/material';
 
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
-import { File } from 'ui-component/file/File'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
-import DeleteConfirmDialog from './DeleteConfirmDialog'
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
+import { Dropdown } from 'ui-component/dropdown/Dropdown';
+import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown';
+import CredentialInputHandler from 'views/canvas/CredentialInputHandler';
+import { File } from 'ui-component/file/File';
+import { BackdropLoader } from 'ui-component/loading/BackdropLoader';
+import DeleteConfirmDialog from './DeleteConfirmDialog';
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons';
 
 // API
-import assistantsApi from 'api/assistants'
+import assistantsApi from 'api/assistants';
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from 'hooks/useApi';
 
 // utils
-import useNotifier from 'utils/useNotifier'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useNotifier from 'utils/useNotifier';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
 
 const assistantAvailableModels = [
     {
@@ -66,140 +77,140 @@ const assistantAvailableModels = [
         label: 'gpt-3.5-turbo-16k-0613',
         name: 'gpt-3.5-turbo-16k-0613'
     }
-]
+];
 
 const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
-    useNotifier()
-    const dispatch = useDispatch()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const portalElement = document.getElementById('portal');
+    useNotifier();
+    const dispatch = useDispatch();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant)
-    const getAssistantObjApi = useApi(assistantsApi.getAssistantObj)
+    const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant);
+    const getAssistantObjApi = useApi(assistantsApi.getAssistantObj);
 
-    const [assistantId, setAssistantId] = useState('')
-    const [openAIAssistantId, setOpenAIAssistantId] = useState('')
-    const [assistantName, setAssistantName] = useState('')
-    const [assistantDesc, setAssistantDesc] = useState('')
-    const [assistantIcon, setAssistantIcon] = useState(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`)
-    const [assistantModel, setAssistantModel] = useState('')
-    const [assistantCredential, setAssistantCredential] = useState('')
-    const [assistantInstructions, setAssistantInstructions] = useState('')
-    const [assistantTools, setAssistantTools] = useState(['code_interpreter', 'retrieval'])
-    const [assistantFiles, setAssistantFiles] = useState([])
-    const [uploadAssistantFiles, setUploadAssistantFiles] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [deleteDialogProps, setDeleteDialogProps] = useState({})
+    const [assistantId, setAssistantId] = useState('');
+    const [openAIAssistantId, setOpenAIAssistantId] = useState('');
+    const [assistantName, setAssistantName] = useState('');
+    const [assistantDesc, setAssistantDesc] = useState('');
+    const [assistantIcon, setAssistantIcon] = useState(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`);
+    const [assistantModel, setAssistantModel] = useState('');
+    const [assistantCredential, setAssistantCredential] = useState('');
+    const [assistantInstructions, setAssistantInstructions] = useState('');
+    const [assistantTools, setAssistantTools] = useState(['code_interpreter', 'retrieval']);
+    const [assistantFiles, setAssistantFiles] = useState([]);
+    const [uploadAssistantFiles, setUploadAssistantFiles] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteDialogProps, setDeleteDialogProps] = useState({});
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     useEffect(() => {
         if (getSpecificAssistantApi.data) {
-            setAssistantId(getSpecificAssistantApi.data.id)
-            setAssistantIcon(getSpecificAssistantApi.data.iconSrc)
-            setAssistantCredential(getSpecificAssistantApi.data.credential)
+            setAssistantId(getSpecificAssistantApi.data.id);
+            setAssistantIcon(getSpecificAssistantApi.data.iconSrc);
+            setAssistantCredential(getSpecificAssistantApi.data.credential);
 
-            const assistantDetails = JSON.parse(getSpecificAssistantApi.data.details)
-            setOpenAIAssistantId(assistantDetails.id)
-            setAssistantName(assistantDetails.name)
-            setAssistantDesc(assistantDetails.description)
-            setAssistantModel(assistantDetails.model)
-            setAssistantInstructions(assistantDetails.instructions)
-            setAssistantTools(assistantDetails.tools ?? [])
-            setAssistantFiles(assistantDetails.files ?? [])
+            const assistantDetails = JSON.parse(getSpecificAssistantApi.data.details);
+            setOpenAIAssistantId(assistantDetails.id);
+            setAssistantName(assistantDetails.name);
+            setAssistantDesc(assistantDetails.description);
+            setAssistantModel(assistantDetails.model);
+            setAssistantInstructions(assistantDetails.instructions);
+            setAssistantTools(assistantDetails.tools ?? []);
+            setAssistantFiles(assistantDetails.files ?? []);
         }
-    }, [getSpecificAssistantApi.data])
+    }, [getSpecificAssistantApi.data]);
 
     useEffect(() => {
         if (getAssistantObjApi.data) {
-            syncData(getAssistantObjApi.data)
+            syncData(getAssistantObjApi.data);
         }
-    }, [getAssistantObjApi.data])
+    }, [getAssistantObjApi.data]);
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             // When assistant dialog is opened from Assistants dashboard
-            setAssistantId(dialogProps.data.id)
-            setAssistantIcon(dialogProps.data.iconSrc)
-            setAssistantCredential(dialogProps.data.credential)
+            setAssistantId(dialogProps.data.id);
+            setAssistantIcon(dialogProps.data.iconSrc);
+            setAssistantCredential(dialogProps.data.credential);
 
-            const assistantDetails = JSON.parse(dialogProps.data.details)
-            setOpenAIAssistantId(assistantDetails.id)
-            setAssistantName(assistantDetails.name)
-            setAssistantDesc(assistantDetails.description)
-            setAssistantModel(assistantDetails.model)
-            setAssistantInstructions(assistantDetails.instructions)
-            setAssistantTools(assistantDetails.tools ?? [])
-            setAssistantFiles(assistantDetails.files ?? [])
+            const assistantDetails = JSON.parse(dialogProps.data.details);
+            setOpenAIAssistantId(assistantDetails.id);
+            setAssistantName(assistantDetails.name);
+            setAssistantDesc(assistantDetails.description);
+            setAssistantModel(assistantDetails.model);
+            setAssistantInstructions(assistantDetails.instructions);
+            setAssistantTools(assistantDetails.tools ?? []);
+            setAssistantFiles(assistantDetails.files ?? []);
         } else if (dialogProps.type === 'EDIT' && dialogProps.assistantId) {
             // When assistant dialog is opened from OpenAIAssistant node in canvas
-            getSpecificAssistantApi.request(dialogProps.assistantId)
+            getSpecificAssistantApi.request(dialogProps.assistantId);
         } else if (dialogProps.type === 'ADD' && dialogProps.selectedOpenAIAssistantId && dialogProps.credential) {
             // When assistant dialog is to add new assistant from existing
-            setAssistantId('')
-            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`)
-            setAssistantCredential(dialogProps.credential)
+            setAssistantId('');
+            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`);
+            setAssistantCredential(dialogProps.credential);
 
-            getAssistantObjApi.request(dialogProps.selectedOpenAIAssistantId, dialogProps.credential)
+            getAssistantObjApi.request(dialogProps.selectedOpenAIAssistantId, dialogProps.credential);
         } else if (dialogProps.type === 'ADD' && !dialogProps.selectedOpenAIAssistantId) {
             // When assistant dialog is to add a blank new assistant
-            setAssistantId('')
-            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`)
-            setAssistantCredential('')
+            setAssistantId('');
+            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`);
+            setAssistantCredential('');
 
-            setOpenAIAssistantId('')
-            setAssistantName('')
-            setAssistantDesc('')
-            setAssistantModel('')
-            setAssistantInstructions('')
-            setAssistantTools(['code_interpreter', 'retrieval'])
-            setUploadAssistantFiles('')
-            setAssistantFiles([])
+            setOpenAIAssistantId('');
+            setAssistantName('');
+            setAssistantDesc('');
+            setAssistantModel('');
+            setAssistantInstructions('');
+            setAssistantTools(['code_interpreter', 'retrieval']);
+            setUploadAssistantFiles('');
+            setAssistantFiles([]);
         }
 
         return () => {
-            setAssistantId('')
-            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`)
-            setAssistantCredential('')
+            setAssistantId('');
+            setAssistantIcon(`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`);
+            setAssistantCredential('');
 
-            setOpenAIAssistantId('')
-            setAssistantName('')
-            setAssistantDesc('')
-            setAssistantModel('')
-            setAssistantInstructions('')
-            setAssistantTools(['code_interpreter', 'retrieval'])
-            setUploadAssistantFiles('')
-            setAssistantFiles([])
-            setLoading(false)
-        }
+            setOpenAIAssistantId('');
+            setAssistantName('');
+            setAssistantDesc('');
+            setAssistantModel('');
+            setAssistantInstructions('');
+            setAssistantTools(['code_interpreter', 'retrieval']);
+            setUploadAssistantFiles('');
+            setAssistantFiles([]);
+            setLoading(false);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps]);
 
     const syncData = (data) => {
-        setOpenAIAssistantId(data.id)
-        setAssistantName(data.name)
-        setAssistantDesc(data.description)
-        setAssistantModel(data.model)
-        setAssistantInstructions(data.instructions)
-        setAssistantFiles(data.files ?? [])
+        setOpenAIAssistantId(data.id);
+        setAssistantName(data.name);
+        setAssistantDesc(data.description);
+        setAssistantModel(data.model);
+        setAssistantInstructions(data.instructions);
+        setAssistantFiles(data.files ?? []);
 
-        let tools = []
+        let tools = [];
         if (data.tools && data.tools.length) {
             for (const tool of data.tools) {
-                tools.push(tool.type)
+                tools.push(tool.type);
             }
         }
-        setAssistantTools(tools)
-    }
+        setAssistantTools(tools);
+    };
 
     const addNewAssistant = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
             const assistantDetails = {
                 id: openAIAssistantId,
@@ -210,14 +221,14 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 tools: assistantTools,
                 files: assistantFiles,
                 uploadFiles: uploadAssistantFiles
-            }
+            };
             const obj = {
                 details: JSON.stringify(assistantDetails),
                 iconSrc: assistantIcon,
                 credential: assistantCredential
-            }
+            };
 
-            const createResp = await assistantsApi.createNewAssistant(obj)
+            const createResp = await assistantsApi.createNewAssistant(obj);
             if (createResp.data) {
                 enqueueSnackbar({
                     message: 'New Assistant added',
@@ -230,12 +241,12 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Button>
                         )
                     }
-                })
-                onConfirm(createResp.data.id)
+                });
+                onConfirm(createResp.data.id);
             }
-            setLoading(false)
+            setLoading(false);
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to add new Assistant: ${errorData}`,
                 options: {
@@ -248,14 +259,14 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Button>
                     )
                 }
-            })
-            setLoading(false)
-            onCancel()
+            });
+            setLoading(false);
+            onCancel();
         }
-    }
+    };
 
     const saveAssistant = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
             const assistantDetails = {
                 name: assistantName,
@@ -265,13 +276,13 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 tools: assistantTools,
                 files: assistantFiles,
                 uploadFiles: uploadAssistantFiles
-            }
+            };
             const obj = {
                 details: JSON.stringify(assistantDetails),
                 iconSrc: assistantIcon,
                 credential: assistantCredential
-            }
-            const saveResp = await assistantsApi.updateAssistant(assistantId, obj)
+            };
+            const saveResp = await assistantsApi.updateAssistant(assistantId, obj);
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Assistant saved',
@@ -284,12 +295,12 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Button>
                         )
                     }
-                })
-                onConfirm(saveResp.data.id)
+                });
+                onConfirm(saveResp.data.id);
             }
-            setLoading(false)
+            setLoading(false);
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Assistant: ${errorData}`,
                 options: {
@@ -302,18 +313,18 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Button>
                     )
                 }
-            })
-            setLoading(false)
-            onCancel()
+            });
+            setLoading(false);
+            onCancel();
         }
-    }
+    };
 
     const onSyncClick = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
-            const getResp = await assistantsApi.getAssistantObj(openAIAssistantId, assistantCredential)
+            const getResp = await assistantsApi.getAssistantObj(openAIAssistantId, assistantCredential);
             if (getResp.data) {
-                syncData(getResp.data)
+                syncData(getResp.data);
                 enqueueSnackbar({
                     message: 'Assistant successfully synced!',
                     options: {
@@ -325,11 +336,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Button>
                         )
                     }
-                })
+                });
             }
-            setLoading(false)
+            setLoading(false);
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to sync Assistant: ${errorData}`,
                 options: {
@@ -342,24 +353,24 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Button>
                     )
                 }
-            })
-            setLoading(false)
+            });
+            setLoading(false);
         }
-    }
+    };
 
     const onDeleteClick = () => {
         setDeleteDialogProps({
             title: `Delete Assistant`,
             description: `Delete Assistant ${assistantName}?`,
             cancelButtonName: 'Cancel'
-        })
-        setDeleteDialogOpen(true)
-    }
+        });
+        setDeleteDialogOpen(true);
+    };
 
     const deleteAssistant = async (isDeleteBoth) => {
-        setDeleteDialogOpen(false)
+        setDeleteDialogOpen(false);
         try {
-            const delResp = await assistantsApi.deleteAssistant(assistantId, isDeleteBoth)
+            const delResp = await assistantsApi.deleteAssistant(assistantId, isDeleteBoth);
             if (delResp.data) {
                 enqueueSnackbar({
                     message: 'Assistant deleted',
@@ -372,11 +383,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Button>
                         )
                     }
-                })
-                onConfirm()
+                });
+                onConfirm();
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to delete Assistant: ${errorData}`,
                 options: {
@@ -389,14 +400,14 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const onFileDeleteClick = async (fileId) => {
-        setAssistantFiles(assistantFiles.filter((file) => file.id !== fileId))
-    }
+        setAssistantFiles(assistantFiles.filter((file) => file.id !== fileId));
+    };
 
     const component = show ? (
         <Dialog
@@ -642,16 +653,16 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             />
             {loading && <BackdropLoader open={loading} />}
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 AssistantDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
-}
+};
 
-export default AssistantDialog
+export default AssistantDialog;

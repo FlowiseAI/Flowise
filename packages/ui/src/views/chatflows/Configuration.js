@@ -1,62 +1,62 @@
-import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
-import PropTypes from 'prop-types'
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions';
+import PropTypes from 'prop-types';
 
-import { Box, Typography, Button, OutlinedInput } from '@mui/material'
+import { Box, Typography, Button, OutlinedInput } from '@mui/material';
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { StyledButton } from 'ui-component/button/StyledButton';
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons';
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from 'api/chatflows';
 
 // utils
-import useNotifier from 'utils/useNotifier'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import useNotifier from 'utils/useNotifier';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
 
 const Configuration = () => {
-    const dispatch = useDispatch()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
-    const chatflowid = chatflow.id
-    const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+    const dispatch = useDispatch();
+    const chatflow = useSelector((state) => state.canvas.chatflow);
+    const chatflowid = chatflow.id;
+    const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {};
 
-    useNotifier()
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '')
-    const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '')
-    const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
+    const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '');
+    const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '');
+    const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '');
 
     const formatObj = () => {
         const obj = {
             rateLimit: {}
-        }
-        const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
-        const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
+        };
+        const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg];
+        const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false);
         if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
-            throw new Error('Need to fill all rate limit input fields')
+            throw new Error('Need to fill all rate limit input fields');
         } else if (rateLimitFilledValues.length === 3) {
             obj.rateLimit = {
                 limitMax,
                 limitDuration,
                 limitMsg
-            }
+            };
         }
 
-        return obj
-    }
+        return obj;
+    };
 
     const onSave = async () => {
         try {
             const saveResp = await chatflowsApi.updateChatflow(chatflowid, {
                 apiConfig: JSON.stringify(formatObj())
-            })
+            });
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'API Configuration Saved',
@@ -69,14 +69,14 @@ const Configuration = () => {
                             </Button>
                         )
                     }
-                })
-                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                });
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data });
             }
         } catch (error) {
-            console.error(error)
+            console.error(error);
             const errorData = error.response
                 ? error.response.data || `${error.response.status}: ${error.response.statusText}`
-                : error.message
+                : error.message;
             enqueueSnackbar({
                 message: `Failed to save API Configuration: ${errorData}`,
                 options: {
@@ -89,23 +89,23 @@ const Configuration = () => {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const onTextChanged = (value, fieldName) => {
         switch (fieldName) {
             case 'limitMax':
-                setLimitMax(value)
-                break
+                setLimitMax(value);
+                break;
             case 'limitDuration':
-                setLimitDuration(value)
-                break
+                setLimitDuration(value);
+                break;
             case 'limitMsg':
-                setLimitMsg(value)
-                break
+                setLimitMsg(value);
+                break;
         }
-    }
+    };
 
     const textField = (message, fieldName, fieldLabel, fieldType = 'string', placeholder = '') => {
         return (
@@ -120,13 +120,13 @@ const Configuration = () => {
                         placeholder={placeholder}
                         name={fieldName}
                         onChange={(e) => {
-                            onTextChanged(e.target.value, fieldName)
+                            onTextChanged(e.target.value, fieldName);
                         }}
                     />
                 </div>
             </Box>
-        )
-    }
+        );
+    };
 
     return (
         <>
@@ -148,11 +148,11 @@ const Configuration = () => {
                 Save Changes
             </StyledButton>
         </>
-    )
-}
+    );
+};
 
 Configuration.propTypes = {
     isSessionMemory: PropTypes.bool
-}
+};
 
-export default Configuration
+export default Configuration;

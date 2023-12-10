@@ -1,51 +1,51 @@
-import { useState, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import { Button } from '@mui/material'
-import { IconDatabaseImport, IconX } from '@tabler/icons'
+import { Button } from '@mui/material';
+import { IconDatabaseImport, IconX } from '@tabler/icons';
 
 // project import
-import { StyledFab } from 'ui-component/button/StyledFab'
-import VectorStoreDialog from './VectorStoreDialog'
+import { StyledFab } from 'ui-component/button/StyledFab';
+import VectorStoreDialog from './VectorStoreDialog';
 
 // api
-import vectorstoreApi from 'api/vectorstore'
+import vectorstoreApi from 'api/vectorstore';
 
 // Hooks
-import useNotifier from 'utils/useNotifier'
+import useNotifier from 'utils/useNotifier';
 
 // Const
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
 
 export const VectorStorePopUp = ({ chatflowid }) => {
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    useNotifier();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [open, setOpen] = useState(false)
-    const [showExpandDialog, setShowExpandDialog] = useState(false)
-    const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [open, setOpen] = useState(false);
+    const [showExpandDialog, setShowExpandDialog] = useState(false);
+    const [expandDialogProps, setExpandDialogProps] = useState({});
 
-    const anchorRef = useRef(null)
-    const prevOpen = useRef(open)
+    const anchorRef = useRef(null);
+    const prevOpen = useRef(open);
 
     const handleToggle = () => {
-        setOpen((prevopen) => !prevopen)
+        setOpen((prevopen) => !prevopen);
         const props = {
             open: true,
             title: 'Upsert Vector Store',
             chatflowid
-        }
-        setExpandDialogProps(props)
-        setShowExpandDialog(true)
-    }
+        };
+        setExpandDialogProps(props);
+        setShowExpandDialog(true);
+    };
 
     const onUpsert = async () => {
         try {
-            await vectorstoreApi.upsertVectorStore(chatflowid, {})
+            await vectorstoreApi.upsertVectorStore(chatflowid, {});
             enqueueSnackbar({
                 message: 'Succesfully upserted vector store',
                 options: {
@@ -57,9 +57,9 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                         </Button>
                     )
                 }
-            })
+            });
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: errorData,
                 options: {
@@ -72,18 +72,18 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus()
+            anchorRef.current.focus();
         }
-        prevOpen.current = open
+        prevOpen.current = open;
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, chatflowid])
+    }, [open, chatflowid]);
 
     return (
         <>
@@ -103,12 +103,12 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                 dialogProps={expandDialogProps}
                 onUpsert={onUpsert}
                 onCancel={() => {
-                    setShowExpandDialog(false)
-                    setOpen((prevopen) => !prevopen)
+                    setShowExpandDialog(false);
+                    setOpen((prevopen) => !prevopen);
                 }}
             ></VectorStoreDialog>
         </>
-    )
-}
+    );
+};
 
-VectorStorePopUp.propTypes = { chatflowid: PropTypes.string }
+VectorStorePopUp.propTypes = { chatflowid: PropTypes.string };

@@ -1,16 +1,16 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface';
 
 class PineconeApi implements INodeCredential {
-    label: string
-    name: string
-    version: number
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Pinecone API'
-        this.name = 'pineconeApi'
-        this.version = 1.0
+        this.label = 'Pinecone API';
+        this.name = 'pineconeApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Pinecone Api Key',
@@ -22,8 +22,8 @@ class PineconeApi implements INodeCredential {
                 name: 'pineconeEnv',
                 type: 'string'
             }
-        ]
+        ];
     }
 }
 
-module.exports = { credClass: PineconeApi }
+module.exports = { credClass: PineconeApi };

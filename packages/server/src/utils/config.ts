@@ -1,9 +1,9 @@
 // BEWARE: This file is an intereem solution until we have a proper config strategy
 
-import path from 'path'
-import dotenv from 'dotenv'
+import path from 'path';
+import dotenv from 'dotenv';
 
-dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true });
 
 // default config
 const loggingConfig = {
@@ -18,8 +18,8 @@ const loggingConfig = {
         format: 'jsonl', // can't be changed currently
         filename: 'server-requests.log.jsonl' // should end with .jsonl
     }
-}
+};
 
 export default {
     logging: loggingConfig
-}
+};

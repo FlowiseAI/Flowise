@@ -1,16 +1,16 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface';
 
 class RedisCacheApi implements INodeCredential {
-    label: string
-    name: string
-    version: number
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Redis API'
-        this.name = 'redisCacheApi'
-        this.version = 1.0
+        this.label = 'Redis API';
+        this.name = 'redisCacheApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Redis Host',
@@ -36,8 +36,8 @@ class RedisCacheApi implements INodeCredential {
                 type: 'password',
                 placeholder: '<REDIS_PASSWORD>'
             }
-        ]
+        ];
     }
 }
 
-module.exports = { credClass: RedisCacheApi }
+module.exports = { credClass: RedisCacheApi };

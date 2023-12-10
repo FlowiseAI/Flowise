@@ -1,26 +1,26 @@
-import PropTypes from 'prop-types'
-import { useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import PropTypes from 'prop-types';
+import { useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { Box, Typography, IconButton } from '@mui/material'
-import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons'
+import { Box, Typography, IconButton } from '@mui/material';
+import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons';
 
 // project import
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import { Input } from 'ui-component/input/Input'
-import { SwitchInput } from 'ui-component/switch/Switch'
-import { JsonEditorInput } from 'ui-component/json/JsonEditor'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import { Dropdown } from 'ui-component/dropdown/Dropdown';
+import { Input } from 'ui-component/input/Input';
+import { SwitchInput } from 'ui-component/switch/Switch';
+import { JsonEditorInput } from 'ui-component/json/JsonEditor';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
 
 // ===========================|| NodeInputHandler ||=========================== //
 
 const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
-    const customization = useSelector((state) => state.customization)
-    const ref = useRef(null)
+    const customization = useSelector((state) => state.customization);
+    const ref = useRef(null);
 
-    const [showExpandDialog, setShowExpandDialog] = useState(false)
-    const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [showExpandDialog, setShowExpandDialog] = useState(false);
+    const [expandDialogProps, setExpandDialogProps] = useState({});
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -29,15 +29,15 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
             disabled,
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
-        }
-        setExpandDialogProps(dialogProp)
-        setShowExpandDialog(true)
-    }
+        };
+        setExpandDialogProps(dialogProp);
+        setShowExpandDialog(true);
+    };
 
     const onExpandDialogSave = (newValue, inputParamName) => {
-        setShowExpandDialog(false)
-        data[inputParamName] = newValue
-    }
+        setShowExpandDialog(false);
+        data[inputParamName] = newValue;
+    };
 
     return (
         <div ref={ref}>
@@ -124,14 +124,14 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                 </>
             )}
         </div>
-    )
-}
+    );
+};
 
 CredentialInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
     inputParam: PropTypes.object,
     data: PropTypes.object,
     disabled: PropTypes.bool
-}
+};
 
-export default CredentialInputHandler
+export default CredentialInputHandler;

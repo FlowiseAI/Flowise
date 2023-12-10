@@ -1,35 +1,35 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AzureOpenAIInput, OpenAI, OpenAIInput } from 'langchain/llms/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { AzureOpenAIInput, OpenAI, OpenAIInput } from 'langchain/llms/openai';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 class AzureOpenAI_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Azure OpenAI'
-        this.name = 'azureOpenAI'
-        this.version = 2.0
-        this.type = 'AzureOpenAI'
-        this.icon = 'Azure.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Azure OpenAI large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
+        this.label = 'Azure OpenAI';
+        this.name = 'azureOpenAI';
+        this.version = 2.0;
+        this.type = 'AzureOpenAI';
+        this.icon = 'Azure.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around Azure OpenAI large language models';
+        this.baseClasses = [this.type, ...getBaseClasses(OpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['azureOpenAIApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -150,27 +150,27 @@ class AzureOpenAI_LLMs implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-        const presencePenalty = nodeData.inputs?.presencePenalty as string
-        const timeout = nodeData.inputs?.timeout as string
-        const bestOf = nodeData.inputs?.bestOf as string
-        const streaming = nodeData.inputs?.streaming as boolean
+        const temperature = nodeData.inputs?.temperature as string;
+        const modelName = nodeData.inputs?.modelName as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const topP = nodeData.inputs?.topP as string;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string;
+        const presencePenalty = nodeData.inputs?.presencePenalty as string;
+        const timeout = nodeData.inputs?.timeout as string;
+        const bestOf = nodeData.inputs?.bestOf as string;
+        const streaming = nodeData.inputs?.streaming as boolean;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
-        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData)
-        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
-        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData);
+        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData);
+        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData);
+        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData);
 
-        const cache = nodeData.inputs?.cache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache;
 
         const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIInput> = {
             temperature: parseFloat(temperature),
@@ -180,19 +180,19 @@ class AzureOpenAI_LLMs implements INode {
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
             streaming: streaming ?? true
-        }
+        };
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (bestOf) obj.bestOf = parseInt(bestOf, 10)
-        if (cache) obj.cache = cache
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10);
+        if (topP) obj.topP = parseFloat(topP);
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout) obj.timeout = parseInt(timeout, 10);
+        if (bestOf) obj.bestOf = parseInt(bestOf, 10);
+        if (cache) obj.cache = cache;
 
-        const model = new OpenAI(obj)
-        return model
+        const model = new OpenAI(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: AzureOpenAI_LLMs }
+module.exports = { nodeClass: AzureOpenAI_LLMs };

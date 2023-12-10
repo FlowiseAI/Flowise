@@ -1,15 +1,15 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface';
 
 class GoogleVertexAuth implements INodeCredential {
-    label: string
-    name: string
-    version: number
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Google Vertex Auth'
-        this.name = 'googleVertexAuth'
-        this.version = 1.0
+        this.label = 'Google Vertex Auth';
+        this.name = 'googleVertexAuth';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'Google Application Credential File Path',
@@ -48,8 +48,8 @@ class GoogleVertexAuth implements INodeCredential {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 }
 
-module.exports = { credClass: GoogleVertexAuth }
+module.exports = { credClass: GoogleVertexAuth };

@@ -1,4 +1,4 @@
-import { SHOW_CONFIRM, HIDE_CONFIRM } from '../actions'
+import { SHOW_CONFIRM, HIDE_CONFIRM } from '../actions';
 
 export const initialState = {
     show: false,
@@ -6,7 +6,7 @@ export const initialState = {
     description: '',
     confirmButtonName: 'OK',
     cancelButtonName: 'Cancel'
-}
+};
 
 const alertReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -17,12 +17,12 @@ const alertReducer = (state = initialState, action) => {
                 description: action.payload.description,
                 confirmButtonName: action.payload.confirmButtonName,
                 cancelButtonName: action.payload.cancelButtonName
-            }
+            };
         case HIDE_CONFIRM:
-            return initialState
+            return initialState;
         default:
-            return state
+            return state;
     }
-}
+};
 
-export default alertReducer
+export default alertReducer;

@@ -1,98 +1,98 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
-import parser from 'html-react-parser'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
+import parser from 'html-react-parser';
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material';
 
 // Project imports
-import { StyledButton } from 'ui-component/button/StyledButton'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import CredentialInputHandler from './CredentialInputHandler'
+import { StyledButton } from 'ui-component/button/StyledButton';
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog';
+import CredentialInputHandler from './CredentialInputHandler';
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons';
 
 // API
-import credentialsApi from 'api/credentials'
+import credentialsApi from 'api/credentials';
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from 'hooks/useApi';
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from 'utils/useNotifier';
 
 // const
-import { baseURL, REDACTED_CREDENTIAL_VALUE } from 'store/constant'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { baseURL, REDACTED_CREDENTIAL_VALUE } from 'store/constant';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = document.getElementById('portal');
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     // ==============================|| Snackbar ||============================== //
 
-    useNotifier()
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const getSpecificCredentialApi = useApi(credentialsApi.getSpecificCredential)
-    const getSpecificComponentCredentialApi = useApi(credentialsApi.getSpecificComponentCredential)
+    const getSpecificCredentialApi = useApi(credentialsApi.getSpecificCredential);
+    const getSpecificComponentCredentialApi = useApi(credentialsApi.getSpecificComponentCredential);
 
-    const [credential, setCredential] = useState({})
-    const [name, setName] = useState('')
-    const [credentialData, setCredentialData] = useState({})
-    const [componentCredential, setComponentCredential] = useState({})
+    const [credential, setCredential] = useState({});
+    const [name, setName] = useState('');
+    const [credentialData, setCredentialData] = useState({});
+    const [componentCredential, setComponentCredential] = useState({});
 
     useEffect(() => {
         if (getSpecificCredentialApi.data) {
-            setCredential(getSpecificCredentialApi.data)
+            setCredential(getSpecificCredentialApi.data);
             if (getSpecificCredentialApi.data.name) {
-                setName(getSpecificCredentialApi.data.name)
+                setName(getSpecificCredentialApi.data.name);
             }
             if (getSpecificCredentialApi.data.plainDataObj) {
-                setCredentialData(getSpecificCredentialApi.data.plainDataObj)
+                setCredentialData(getSpecificCredentialApi.data.plainDataObj);
             }
-            getSpecificComponentCredentialApi.request(getSpecificCredentialApi.data.credentialName)
+            getSpecificComponentCredentialApi.request(getSpecificCredentialApi.data.credentialName);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificCredentialApi.data])
+    }, [getSpecificCredentialApi.data]);
 
     useEffect(() => {
         if (getSpecificComponentCredentialApi.data) {
-            setComponentCredential(getSpecificComponentCredentialApi.data)
+            setComponentCredential(getSpecificComponentCredentialApi.data);
         }
-    }, [getSpecificComponentCredentialApi.data])
+    }, [getSpecificComponentCredentialApi.data]);
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             // When credential dialog is opened from Credentials dashboard
-            getSpecificCredentialApi.request(dialogProps.data.id)
+            getSpecificCredentialApi.request(dialogProps.data.id);
         } else if (dialogProps.type === 'EDIT' && dialogProps.credentialId) {
             // When credential dialog is opened from node in canvas
-            getSpecificCredentialApi.request(dialogProps.credentialId)
+            getSpecificCredentialApi.request(dialogProps.credentialId);
         } else if (dialogProps.type === 'ADD' && dialogProps.credentialComponent) {
             // When credential dialog is to add a new credential
-            setName('')
-            setCredential({})
-            setCredentialData({})
-            setComponentCredential(dialogProps.credentialComponent)
+            setName('');
+            setCredential({});
+            setCredentialData({});
+            setComponentCredential(dialogProps.credentialComponent);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps]);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     const addNewCredential = async () => {
         try {
@@ -100,8 +100,8 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 name,
                 credentialName: componentCredential.name,
                 plainDataObj: credentialData
-            }
-            const createResp = await credentialsApi.createCredential(obj)
+            };
+            const createResp = await credentialsApi.createCredential(obj);
             if (createResp.data) {
                 enqueueSnackbar({
                     message: 'New Credential added',
@@ -114,11 +114,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                             </Button>
                         )
                     }
-                })
-                onConfirm(createResp.data.id)
+                });
+                onConfirm(createResp.data.id);
             }
         } catch (error) {
-            const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`
+            const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to add new Credential: ${errorData}`,
                 options: {
@@ -131,27 +131,27 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const saveCredential = async () => {
         try {
             const saveObj = {
                 name,
                 credentialName: componentCredential.name
-            }
+            };
 
-            let plainDataObj = {}
+            let plainDataObj = {};
             for (const key in credentialData) {
                 if (credentialData[key] !== REDACTED_CREDENTIAL_VALUE) {
-                    plainDataObj[key] = credentialData[key]
+                    plainDataObj[key] = credentialData[key];
                 }
             }
-            if (Object.keys(plainDataObj).length) saveObj.plainDataObj = plainDataObj
+            if (Object.keys(plainDataObj).length) saveObj.plainDataObj = plainDataObj;
 
-            const saveResp = await credentialsApi.updateCredential(credential.id, saveObj)
+            const saveResp = await credentialsApi.updateCredential(credential.id, saveObj);
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Credential saved',
@@ -164,11 +164,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                             </Button>
                         )
                     }
-                })
-                onConfirm(saveResp.data.id)
+                });
+                onConfirm(saveResp.data.id);
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Credential: ${errorData}`,
                 options: {
@@ -181,10 +181,10 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const component = show ? (
         <Dialog
@@ -277,16 +277,16 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             </DialogActions>
             <ConfirmDialog />
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 AddEditCredentialDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
-}
+};
 
-export default AddEditCredentialDialog
+export default AddEditCredentialDialog;

@@ -1,39 +1,39 @@
-import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
-import { AgentExecutor } from 'langchain/agents'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import axios from 'axios'
+import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface';
+import { AgentExecutor } from 'langchain/agents';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core';
+import { LLMChain } from 'langchain/chains';
+import { BaseLanguageModel } from 'langchain/base_language';
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler';
+import axios from 'axios';
 
 class Airtable_Agents implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Airtable Agent'
-        this.name = 'airtableAgent'
-        this.version = 1.0
-        this.type = 'AgentExecutor'
-        this.category = 'Agents'
-        this.icon = 'airtable.svg'
-        this.description = 'Agent used to to answer queries on Airtable table'
-        this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.label = 'Airtable Agent';
+        this.name = 'airtableAgent';
+        this.version = 1.0;
+        this.type = 'AgentExecutor';
+        this.category = 'Agents';
+        this.icon = 'airtable.svg';
+        this.description = 'Agent used to to answer queries on Airtable table';
+        this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['airtableApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Language Model',
@@ -72,43 +72,43 @@ class Airtable_Agents implements INode {
                 additionalParams: true,
                 description: 'Number of results to return'
             }
-        ]
+        ];
     }
 
     async init(): Promise<any> {
         // Not used
-        return undefined
+        return undefined;
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const model = nodeData.inputs?.model as BaseLanguageModel
-        const baseId = nodeData.inputs?.baseId as string
-        const tableId = nodeData.inputs?.tableId as string
-        const returnAll = nodeData.inputs?.returnAll as boolean
-        const limit = nodeData.inputs?.limit as string
+        const model = nodeData.inputs?.model as BaseLanguageModel;
+        const baseId = nodeData.inputs?.baseId as string;
+        const tableId = nodeData.inputs?.tableId as string;
+        const returnAll = nodeData.inputs?.returnAll as boolean;
+        const limit = nodeData.inputs?.limit as string;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData);
 
-        let airtableData: ICommonObject[] = []
+        let airtableData: ICommonObject[] = [];
 
         if (returnAll) {
-            airtableData = await loadAll(baseId, tableId, accessToken)
+            airtableData = await loadAll(baseId, tableId, accessToken);
         } else {
-            airtableData = await loadLimit(limit ? parseInt(limit, 10) : 100, baseId, tableId, accessToken)
+            airtableData = await loadLimit(limit ? parseInt(limit, 10) : 100, baseId, tableId, accessToken);
         }
 
-        let base64String = Buffer.from(JSON.stringify(airtableData)).toString('base64')
+        let base64String = Buffer.from(JSON.stringify(airtableData)).toString('base64');
 
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-        const callbacks = await additionalCallbacks(nodeData, options)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger);
+        const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId);
+        const callbacks = await additionalCallbacks(nodeData, options);
 
-        const pyodide = await LoadPyodide()
+        const pyodide = await LoadPyodide();
 
         // First load the csv file and get the dataframe dictionary of column types
         // For example using titanic.csv: {'PassengerId': 'int64', 'Survived': 'int64', 'Pclass': 'int64', 'Name': 'object', 'Sex': 'object', 'Age': 'float64', 'SibSp': 'int64', 'Parch': 'int64', 'Ticket': 'object', 'Fare': 'float64', 'Cabin': 'object', 'Embarked': 'object'}
-        let dataframeColDict = ''
+        let dataframeColDict = '';
         try {
             const code = `import pandas as pd
 import base64
@@ -123,37 +123,37 @@ json_data = json.loads(decoded_data)
 df = pd.DataFrame(json_data)
 my_dict = df.dtypes.astype(str).to_dict()
 print(my_dict)
-json.dumps(my_dict)`
-            dataframeColDict = await pyodide.runPythonAsync(code)
+json.dumps(my_dict)`;
+            dataframeColDict = await pyodide.runPythonAsync(code);
         } catch (error) {
-            throw new Error(error)
+            throw new Error(error);
         }
 
         // Then tell GPT to come out with ONLY python code
         // For example: len(df), df[df['SibSp'] > 3]['PassengerId'].count()
-        let pythonCode = ''
+        let pythonCode = '';
         if (dataframeColDict) {
             const chain = new LLMChain({
                 llm: model,
                 prompt: PromptTemplate.fromTemplate(systemPrompt),
                 verbose: process.env.DEBUG === 'true' ? true : false
-            })
+            });
             const inputs = {
                 dict: dataframeColDict,
                 question: input
-            }
-            const res = await chain.call(inputs, [loggerHandler, ...callbacks])
-            pythonCode = res?.text
+            };
+            const res = await chain.call(inputs, [loggerHandler, ...callbacks]);
+            pythonCode = res?.text;
         }
 
         // Then run the code using Pyodide
-        let finalResult = ''
+        let finalResult = '';
         if (pythonCode) {
             try {
-                const code = `import pandas as pd\n${pythonCode}`
-                finalResult = await pyodide.runPythonAsync(code)
+                const code = `import pandas as pd\n${pythonCode}`;
+                finalResult = await pyodide.runPythonAsync(code);
             } catch (error) {
-                throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`)
+                throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`);
             }
         }
 
@@ -163,34 +163,34 @@ json.dumps(my_dict)`
                 llm: model,
                 prompt: PromptTemplate.fromTemplate(finalSystemPrompt),
                 verbose: process.env.DEBUG === 'true' ? true : false
-            })
+            });
             const inputs = {
                 question: input,
                 answer: finalResult
-            }
+            };
 
             if (options.socketIO && options.socketIOClientId) {
-                const result = await chain.call(inputs, [loggerHandler, handler, ...callbacks])
-                return result?.text
+                const result = await chain.call(inputs, [loggerHandler, handler, ...callbacks]);
+                return result?.text;
             } else {
-                const result = await chain.call(inputs, [loggerHandler, ...callbacks])
-                return result?.text
+                const result = await chain.call(inputs, [loggerHandler, ...callbacks]);
+                return result?.text;
             }
         }
 
-        return pythonCode
+        return pythonCode;
     }
 }
 
 interface AirtableLoaderResponse {
-    records: AirtableLoaderPage[]
-    offset?: string
+    records: AirtableLoaderPage[];
+    offset?: string;
 }
 
 interface AirtableLoaderPage {
-    id: string
-    createdTime: string
-    fields: ICommonObject
+    id: string;
+    createdTime: string;
+    fields: ICommonObject;
 }
 
 const fetchAirtableData = async (url: string, params: ICommonObject, accessToken: string): Promise<AirtableLoaderResponse> => {
@@ -199,35 +199,35 @@ const fetchAirtableData = async (url: string, params: ICommonObject, accessToken
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
             Accept: 'application/json'
-        }
-        const response = await axios.get(url, { params, headers })
-        return response.data
+        };
+        const response = await axios.get(url, { params, headers });
+        return response.data;
     } catch (error) {
-        throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
+        throw new Error(`Failed to fetch ${url} from Airtable: ${error}`);
     }
-}
+};
 
 const loadAll = async (baseId: string, tableId: string, accessToken: string): Promise<ICommonObject[]> => {
-    const params: ICommonObject = { pageSize: 100 }
-    let data: AirtableLoaderResponse
-    let returnPages: AirtableLoaderPage[] = []
+    const params: ICommonObject = { pageSize: 100 };
+    let data: AirtableLoaderResponse;
+    let returnPages: AirtableLoaderPage[] = [];
 
     do {
-        data = await fetchAirtableData(`https://api.airtable.com/v0/${baseId}/${tableId}`, params, accessToken)
-        returnPages.push.apply(returnPages, data.records)
-        params.offset = data.offset
-    } while (data.offset !== undefined)
+        data = await fetchAirtableData(`https://api.airtable.com/v0/${baseId}/${tableId}`, params, accessToken);
+        returnPages.push.apply(returnPages, data.records);
+        params.offset = data.offset;
+    } while (data.offset !== undefined);
 
-    return data.records.map((page) => page.fields)
-}
+    return data.records.map((page) => page.fields);
+};
 
 const loadLimit = async (limit: number, baseId: string, tableId: string, accessToken: string): Promise<ICommonObject[]> => {
-    const params = { maxRecords: limit }
-    const data = await fetchAirtableData(`https://api.airtable.com/v0/${baseId}/${tableId}`, params, accessToken)
+    const params = { maxRecords: limit };
+    const data = await fetchAirtableData(`https://api.airtable.com/v0/${baseId}/${tableId}`, params, accessToken);
     if (data.records.length === 0) {
-        return []
+        return [];
     }
-    return data.records.map((page) => page.fields)
-}
+    return data.records.map((page) => page.fields);
+};
 
-module.exports = { nodeClass: Airtable_Agents }
+module.exports = { nodeClass: Airtable_Agents };

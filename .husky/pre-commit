@@ -1,5 +1,14 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn quick # prettify
-yarn lint-staged # eslint lint(also include prettify but prettify support more file extensions than eslint, so run prettify first)
+# Running a quick format (assuming this is a custom script you've set up)
+yarn quick
+
+# Running Prettier format
+yarn format
+
+# Running Prettier format check
+yarn format:check
+
+# Running ESLint through lint-staged
+yarn lint-staged

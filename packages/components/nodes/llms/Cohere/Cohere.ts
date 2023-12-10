@@ -1,35 +1,35 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Cohere, CohereInput } from './core'
-import { BaseCache } from 'langchain/schema'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { Cohere, CohereInput } from './core';
+import { BaseCache } from 'langchain/schema';
 
 class Cohere_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Cohere'
-        this.name = 'cohere'
-        this.version = 2.0
-        this.type = 'Cohere'
-        this.icon = 'cohere.png'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Cohere large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(Cohere)]
+        this.label = 'Cohere';
+        this.name = 'cohere';
+        this.version = 2.0;
+        this.type = 'Cohere';
+        this.icon = 'cohere.png';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around Cohere large language models';
+        this.baseClasses = [this.type, ...getBaseClasses(Cohere)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['cohereApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -85,28 +85,28 @@ class Cohere_LLMs implements INode {
                 step: 1,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const cache = nodeData.inputs?.cache as BaseCache
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
+        const temperature = nodeData.inputs?.temperature as string;
+        const modelName = nodeData.inputs?.modelName as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const cache = nodeData.inputs?.cache as BaseCache;
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData);
 
         const obj: CohereInput = {
             apiKey: cohereApiKey
-        }
+        };
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (modelName) obj.model = modelName
-        if (temperature) obj.temperature = parseFloat(temperature)
-        if (cache) obj.cache = cache
-        const model = new Cohere(obj)
-        return model
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10);
+        if (modelName) obj.model = modelName;
+        if (temperature) obj.temperature = parseFloat(temperature);
+        if (cache) obj.cache = cache;
+        const model = new Cohere(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: Cohere_LLMs }
+module.exports = { nodeClass: Cohere_LLMs };

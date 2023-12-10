@@ -1,54 +1,54 @@
-import { useEffect, useRef } from 'react'
-import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow'
-import 'reactflow/dist/style.css'
-import 'views/canvas/index.css'
+import { useEffect, useRef } from 'react';
+import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow';
+import 'reactflow/dist/style.css';
+import 'views/canvas/index.css';
 
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // material-ui
-import { Toolbar, Box, AppBar } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Toolbar, Box, AppBar } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import MarketplaceCanvasNode from './MarketplaceCanvasNode'
+import MarketplaceCanvasNode from './MarketplaceCanvasNode';
 
-import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
+import MarketplaceCanvasHeader from './MarketplaceCanvasHeader';
 
-const nodeTypes = { customNode: MarketplaceCanvasNode }
-const edgeTypes = { buttonedge: '' }
+const nodeTypes = { customNode: MarketplaceCanvasNode };
+const edgeTypes = { buttonedge: '' };
 
 // ==============================|| CANVAS ||============================== //
 
 const MarketplaceCanvas = () => {
-    const theme = useTheme()
-    const navigate = useNavigate()
+    const theme = useTheme();
+    const navigate = useNavigate();
 
-    const { state } = useLocation()
-    const { flowData, name } = state
+    const { state } = useLocation();
+    const { flowData, name } = state;
 
     // ==============================|| ReactFlow ||============================== //
 
-    const [nodes, setNodes, onNodesChange] = useNodesState()
-    const [edges, setEdges, onEdgesChange] = useEdgesState()
+    const [nodes, setNodes, onNodesChange] = useNodesState();
+    const [edges, setEdges, onEdgesChange] = useEdgesState();
 
-    const reactFlowWrapper = useRef(null)
+    const reactFlowWrapper = useRef(null);
 
     // ==============================|| useEffect ||============================== //
 
     useEffect(() => {
         if (flowData) {
-            const initialFlow = JSON.parse(flowData)
-            setNodes(initialFlow.nodes || [])
-            setEdges(initialFlow.edges || [])
+            const initialFlow = JSON.parse(flowData);
+            setNodes(initialFlow.nodes || []);
+            setEdges(initialFlow.edges || []);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [flowData])
+    }, [flowData]);
 
     const onChatflowCopy = (flowData) => {
-        const templateFlowData = JSON.stringify(flowData)
-        navigate(`/canvas`, { state: { templateFlowData } })
-    }
+        const templateFlowData = JSON.stringify(flowData);
+        navigate(`/canvas`, { state: { templateFlowData } });
+    };
 
     return (
         <>
@@ -99,7 +99,7 @@ const MarketplaceCanvas = () => {
                 </Box>
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default MarketplaceCanvas
+export default MarketplaceCanvas;

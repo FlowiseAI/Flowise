@@ -1,30 +1,30 @@
-import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
-import { CATEGORY } from '../OutputParserHelpers'
-import { z } from 'zod'
+import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src';
+import { BaseOutputParser } from 'langchain/schema/output_parser';
+import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers';
+import { CATEGORY } from '../OutputParserHelpers';
+import { z } from 'zod';
 
 class StructuredOutputParser implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
 
     constructor() {
-        this.label = 'Structured Output Parser'
-        this.name = 'structuredOutputParser'
-        this.version = 1.0
-        this.type = 'StructuredOutputParser'
-        this.description = 'Parse the output of an LLM call into a given (JSON) structure.'
-        this.icon = 'structure.png'
-        this.category = CATEGORY
-        this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
+        this.label = 'Structured Output Parser';
+        this.name = 'structuredOutputParser';
+        this.version = 1.0;
+        this.type = 'StructuredOutputParser';
+        this.description = 'Parse the output of an LLM call into a given (JSON) structure.';
+        this.icon = 'structure.png';
+        this.category = CATEGORY;
+        this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)];
         this.inputs = [
             {
                 label: 'Autofix',
@@ -63,15 +63,15 @@ class StructuredOutputParser implements INode {
                 ],
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const jsonStructure = nodeData.inputs?.jsonStructure as string
-        const autoFix = nodeData.inputs?.autofixParser as boolean
+        const jsonStructure = nodeData.inputs?.jsonStructure as string;
+        const autoFix = nodeData.inputs?.autofixParser as boolean;
 
         try {
-            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(z.object(convertSchemaToZod(jsonStructure)))
+            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(z.object(convertSchemaToZod(jsonStructure)));
 
             // NOTE: When we change Flowise to return a json response, the following has to be changed to: JsonStructuredOutputParser
             Object.defineProperty(structuredOutputParser, 'autoFix', {
@@ -79,12 +79,12 @@ class StructuredOutputParser implements INode {
                 configurable: true,
                 writable: true,
                 value: autoFix
-            })
-            return structuredOutputParser
+            });
+            return structuredOutputParser;
         } catch (exception) {
-            throw new Error('Invalid JSON in StructuredOutputParser: ' + exception)
+            throw new Error('Invalid JSON in StructuredOutputParser: ' + exception);
         }
     }
 }
 
-module.exports = { nodeClass: StructuredOutputParser }
+module.exports = { nodeClass: StructuredOutputParser };

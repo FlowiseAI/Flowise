@@ -1,17 +1,17 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import config from './config' // should be replaced by node-config or similar
-import { createLogger, transports, format } from 'winston'
-import { NextFunction, Request, Response } from 'express'
+import * as path from 'path';
+import * as fs from 'fs';
+import config from './config'; // should be replaced by node-config or similar
+import { createLogger, transports, format } from 'winston';
+import { NextFunction, Request, Response } from 'express';
 
-const { combine, timestamp, printf, errors } = format
+const { combine, timestamp, printf, errors } = format;
 
 // expect the log dir be relative to the projects root
-const logDir = config.logging.dir
+const logDir = config.logging.dir;
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir)
+    fs.mkdirSync(logDir);
 }
 
 const logger = createLogger({
@@ -19,8 +19,8 @@ const logger = createLogger({
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.json(),
         printf(({ level, message, timestamp, stack }) => {
-            const text = `${timestamp} [${level.toUpperCase()}]: ${message}`
-            return stack ? text + '\n' + stack : text
+            const text = `${timestamp} [${level.toUpperCase()}]: ${message}`;
+            return stack ? text + '\n' + stack : text;
         }),
         errors({ stack: true })
     ),
@@ -48,7 +48,7 @@ const logger = createLogger({
             filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
         })
     ]
-})
+});
 
 /**
  * This function is used by express as a middleware.
@@ -57,7 +57,7 @@ const logger = createLogger({
  *   this.app.use(expressRequestLogger)
  */
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
-    const unwantedLogURLs = ['/api/v1/node-icon/']
+    const unwantedLogURLs = ['/api/v1/node-icon/'];
     if (req.url.includes('/api/v1/') && !unwantedLogURLs.some((url) => req.url.includes(url))) {
         const fileLogger = createLogger({
             format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
@@ -78,7 +78,7 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                     level: config.logging.express.level ?? 'debug'
                 })
             ]
-        })
+        });
 
         const getRequestEmoji = (method: string) => {
             const requetsEmojis: Record<string, string> = {
@@ -87,20 +87,20 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                 PUT: '🖊',
                 DELETE: '❌',
                 OPTION: '🔗'
-            }
+            };
 
-            return requetsEmojis[method] || '?'
-        }
+            return requetsEmojis[method] || '?';
+        };
 
         if (req.method !== 'GET') {
-            fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
-            logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`);
+            logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`);
         } else {
-            fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`);
         }
     }
 
-    next()
+    next();
 }
 
-export default logger
+export default logger;

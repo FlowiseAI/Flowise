@@ -1,31 +1,31 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { Ollama } from 'langchain/llms/ollama'
-import { BaseCache } from 'langchain/schema'
-import { OllamaInput } from 'langchain/dist/util/ollama'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { Ollama } from 'langchain/llms/ollama';
+import { BaseCache } from 'langchain/schema';
+import { OllamaInput } from 'langchain/dist/util/ollama';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 class Ollama_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Ollama'
-        this.name = 'ollama'
-        this.version = 2.0
-        this.type = 'Ollama'
-        this.icon = 'ollama.png'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around open source large language models on Ollama'
-        this.baseClasses = [this.type, ...getBaseClasses(Ollama)]
+        this.label = 'Ollama';
+        this.name = 'ollama';
+        this.version = 2.0;
+        this.type = 'Ollama';
+        this.icon = 'ollama.png';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around open source large language models on Ollama';
+        this.baseClasses = [this.type, ...getBaseClasses(Ollama)];
         this.inputs = [
             {
                 label: 'Cache',
@@ -186,56 +186,56 @@ class Ollama_LLMs implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const baseUrl = nodeData.inputs?.baseUrl as string
-        const modelName = nodeData.inputs?.modelName as string
-        const topP = nodeData.inputs?.topP as string
-        const topK = nodeData.inputs?.topK as string
-        const mirostat = nodeData.inputs?.mirostat as string
-        const mirostatEta = nodeData.inputs?.mirostatEta as string
-        const mirostatTau = nodeData.inputs?.mirostatTau as string
-        const numCtx = nodeData.inputs?.numCtx as string
-        const numGqa = nodeData.inputs?.numGqa as string
-        const numGpu = nodeData.inputs?.numGpu as string
-        const numThread = nodeData.inputs?.numThread as string
-        const repeatLastN = nodeData.inputs?.repeatLastN as string
-        const repeatPenalty = nodeData.inputs?.repeatPenalty as string
-        const stop = nodeData.inputs?.stop as string
-        const tfsZ = nodeData.inputs?.tfsZ as string
+        const temperature = nodeData.inputs?.temperature as string;
+        const baseUrl = nodeData.inputs?.baseUrl as string;
+        const modelName = nodeData.inputs?.modelName as string;
+        const topP = nodeData.inputs?.topP as string;
+        const topK = nodeData.inputs?.topK as string;
+        const mirostat = nodeData.inputs?.mirostat as string;
+        const mirostatEta = nodeData.inputs?.mirostatEta as string;
+        const mirostatTau = nodeData.inputs?.mirostatTau as string;
+        const numCtx = nodeData.inputs?.numCtx as string;
+        const numGqa = nodeData.inputs?.numGqa as string;
+        const numGpu = nodeData.inputs?.numGpu as string;
+        const numThread = nodeData.inputs?.numThread as string;
+        const repeatLastN = nodeData.inputs?.repeatLastN as string;
+        const repeatPenalty = nodeData.inputs?.repeatPenalty as string;
+        const stop = nodeData.inputs?.stop as string;
+        const tfsZ = nodeData.inputs?.tfsZ as string;
 
-        const cache = nodeData.inputs?.cache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache;
 
         const obj: OllamaInput & BaseLLMParams = {
             baseUrl,
             temperature: parseFloat(temperature),
             model: modelName
-        }
+        };
 
-        if (topP) obj.topP = parseFloat(topP)
-        if (topK) obj.topK = parseFloat(topK)
-        if (mirostat) obj.mirostat = parseFloat(mirostat)
-        if (mirostatEta) obj.mirostatEta = parseFloat(mirostatEta)
-        if (mirostatTau) obj.mirostatTau = parseFloat(mirostatTau)
-        if (numCtx) obj.numCtx = parseFloat(numCtx)
-        if (numGqa) obj.numGqa = parseFloat(numGqa)
-        if (numGpu) obj.numGpu = parseFloat(numGpu)
-        if (numThread) obj.numThread = parseFloat(numThread)
-        if (repeatLastN) obj.repeatLastN = parseFloat(repeatLastN)
-        if (repeatPenalty) obj.repeatPenalty = parseFloat(repeatPenalty)
-        if (tfsZ) obj.tfsZ = parseFloat(tfsZ)
+        if (topP) obj.topP = parseFloat(topP);
+        if (topK) obj.topK = parseFloat(topK);
+        if (mirostat) obj.mirostat = parseFloat(mirostat);
+        if (mirostatEta) obj.mirostatEta = parseFloat(mirostatEta);
+        if (mirostatTau) obj.mirostatTau = parseFloat(mirostatTau);
+        if (numCtx) obj.numCtx = parseFloat(numCtx);
+        if (numGqa) obj.numGqa = parseFloat(numGqa);
+        if (numGpu) obj.numGpu = parseFloat(numGpu);
+        if (numThread) obj.numThread = parseFloat(numThread);
+        if (repeatLastN) obj.repeatLastN = parseFloat(repeatLastN);
+        if (repeatPenalty) obj.repeatPenalty = parseFloat(repeatPenalty);
+        if (tfsZ) obj.tfsZ = parseFloat(tfsZ);
         if (stop) {
-            const stopSequences = stop.split(',')
-            obj.stop = stopSequences
+            const stopSequences = stop.split(',');
+            obj.stop = stopSequences;
         }
-        if (cache) obj.cache = cache
+        if (cache) obj.cache = cache;
 
-        const model = new Ollama(obj)
-        return model
+        const model = new Ollama(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: Ollama_LLMs }
+module.exports = { nodeClass: Ollama_LLMs };

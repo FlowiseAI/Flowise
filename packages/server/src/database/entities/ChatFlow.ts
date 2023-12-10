@@ -1,42 +1,42 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { IChatFlow } from '../../Interface'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { IChatFlow } from '../../Interface';
 
 @Entity()
 export class ChatFlow implements IChatFlow {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ type: 'text' })
-    flowData: string
+    flowData: string;
 
     @Column({ nullable: true })
-    deployed?: boolean
+    deployed?: boolean;
 
     @Column({ nullable: true })
-    isPublic?: boolean
+    isPublic?: boolean;
 
     @Column({ nullable: true })
-    apikeyid?: string
+    apikeyid?: string;
 
     @Column({ nullable: true, type: 'text' })
-    chatbotConfig?: string
+    chatbotConfig?: string;
 
     @Column({ nullable: true, type: 'text' })
-    apiConfig?: string
+    apiConfig?: string;
 
     @Column({ nullable: true, type: 'text' })
-    analytic?: string
+    analytic?: string;
 
     @CreateDateColumn()
-    createdDate: Date
+    createdDate: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date
+    updatedDate: Date;
 
     @Column({ nullable: true, type: 'text' })
-    category?: string
+    category?: string;
 }

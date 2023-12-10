@@ -1,8 +1,8 @@
-import { createPortal } from 'react-dom'
-import { useDispatch } from 'react-redux'
-import { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
+import { createPortal } from 'react-dom';
+import { useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions';
 
 // material-ui
 import {
@@ -19,26 +19,26 @@ import {
     ListItem,
     ListItemAvatar,
     ListItemText
-} from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconX } from '@tabler/icons'
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { IconX } from '@tabler/icons';
 
 // Project import
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import { SwitchInput } from 'ui-component/switch/Switch'
-import { Input } from 'ui-component/input/Input'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import langsmithPNG from 'assets/images/langchain.png'
-import langfusePNG from 'assets/images/langfuse.png'
-import llmonitorPNG from 'assets/images/llmonitor.png'
+import CredentialInputHandler from 'views/canvas/CredentialInputHandler';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
+import { SwitchInput } from 'ui-component/switch/Switch';
+import { Input } from 'ui-component/input/Input';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import langsmithPNG from 'assets/images/langchain.png';
+import langfusePNG from 'assets/images/langfuse.png';
+import llmonitorPNG from 'assets/images/llmonitor.png';
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import useNotifier from 'utils/useNotifier'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
+import useNotifier from 'utils/useNotifier';
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from 'api/chatflows';
 
 const analyticProviders = [
     {
@@ -116,25 +116,25 @@ const analyticProviders = [
             }
         ]
     }
-]
+];
 
 const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const dispatch = useDispatch()
+    const portalElement = document.getElementById('portal');
+    const dispatch = useDispatch();
 
-    useNotifier()
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [analytic, setAnalytic] = useState({})
-    const [providerExpanded, setProviderExpanded] = useState({})
+    const [analytic, setAnalytic] = useState({});
+    const [providerExpanded, setProviderExpanded] = useState({});
 
     const onSave = async () => {
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 analytic: JSON.stringify(analytic)
-            })
+            });
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Analytic Configuration Saved',
@@ -147,12 +147,12 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
                             </Button>
                         )
                     }
-                })
-                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                });
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data });
             }
-            onCancel()
+            onCancel();
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Analytic Configuration: ${errorData}`,
                 options: {
@@ -165,49 +165,49 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const setValue = (value, providerName, inputParamName) => {
-        let newVal = {}
+        let newVal = {};
         if (!Object.prototype.hasOwnProperty.call(analytic, providerName)) {
-            newVal = { ...analytic, [providerName]: {} }
+            newVal = { ...analytic, [providerName]: {} };
         } else {
-            newVal = { ...analytic }
+            newVal = { ...analytic };
         }
 
-        newVal[providerName][inputParamName] = value
-        setAnalytic(newVal)
-    }
+        newVal[providerName][inputParamName] = value;
+        setAnalytic(newVal);
+    };
 
     const handleAccordionChange = (providerName) => (event, isExpanded) => {
-        const accordianProviders = { ...providerExpanded }
-        accordianProviders[providerName] = isExpanded
-        setProviderExpanded(accordianProviders)
-    }
+        const accordianProviders = { ...providerExpanded };
+        accordianProviders[providerName] = isExpanded;
+        setProviderExpanded(accordianProviders);
+    };
 
     useEffect(() => {
         if (dialogProps.chatflow && dialogProps.chatflow.analytic) {
             try {
-                setAnalytic(JSON.parse(dialogProps.chatflow.analytic))
+                setAnalytic(JSON.parse(dialogProps.chatflow.analytic));
             } catch (e) {
-                setAnalytic({})
-                console.error(e)
+                setAnalytic({});
+                console.error(e);
             }
         }
 
         return () => {
-            setAnalytic({})
-            setProviderExpanded({})
-        }
-    }, [dialogProps])
+            setAnalytic({});
+            setProviderExpanded({});
+        };
+    }, [dialogProps]);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     const component = show ? (
         <Dialog
@@ -344,15 +344,15 @@ const AnalyseFlowDialog = ({ show, dialogProps, onCancel }) => {
                 </StyledButton>
             </DialogActions>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 AnalyseFlowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
-}
+};
 
-export default AnalyseFlowDialog
+export default AnalyseFlowDialog;

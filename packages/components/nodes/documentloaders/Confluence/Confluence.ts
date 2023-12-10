@@ -1,35 +1,35 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence'
-import { getCredentialData, getCredentialParam } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { TextSplitter } from 'langchain/text_splitter';
+import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence';
+import { getCredentialData, getCredentialParam } from '../../../src';
 
 class Confluence_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Confluence'
-        this.name = 'confluence'
-        this.version = 1.0
-        this.type = 'Document'
-        this.icon = 'confluence.png'
-        this.category = 'Document Loaders'
-        this.description = `Load data from a Confluence Document`
-        this.baseClasses = [this.type]
+        this.label = 'Confluence';
+        this.name = 'confluence';
+        this.version = 1.0;
+        this.type = 'Document';
+        this.icon = 'confluence.png';
+        this.category = 'Document Loaders';
+        this.description = `Load data from a Confluence Document`;
+        this.baseClasses = [this.type];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['confluenceApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Text Splitter',
@@ -65,19 +65,19 @@ class Confluence_DocumentLoaders implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const spaceKey = nodeData.inputs?.spaceKey as string
-        const baseUrl = nodeData.inputs?.baseUrl as string
-        const limit = nodeData.inputs?.limit as number
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const metadata = nodeData.inputs?.metadata
+        const spaceKey = nodeData.inputs?.spaceKey as string;
+        const baseUrl = nodeData.inputs?.baseUrl as string;
+        const limit = nodeData.inputs?.limit as number;
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter;
+        const metadata = nodeData.inputs?.metadata;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
-        const username = getCredentialParam('username', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData);
+        const username = getCredentialParam('username', credentialData, nodeData);
 
         const confluenceOptions: ConfluencePagesLoaderParams = {
             username,
@@ -85,21 +85,21 @@ class Confluence_DocumentLoaders implements INode {
             baseUrl,
             spaceKey,
             limit
-        }
+        };
 
-        const loader = new ConfluencePagesLoader(confluenceOptions)
+        const loader = new ConfluencePagesLoader(confluenceOptions);
 
-        let docs = []
+        let docs = [];
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.loadAndSplit(textSplitter);
         } else {
-            docs = await loader.load()
+            docs = await loader.load();
         }
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
+            let finaldocs = [];
             for (const doc of docs) {
                 const newdoc = {
                     ...doc,
@@ -107,14 +107,14 @@ class Confluence_DocumentLoaders implements INode {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-                finaldocs.push(newdoc)
+                };
+                finaldocs.push(newdoc);
             }
-            return finaldocs
+            return finaldocs;
         }
 
-        return docs
+        return docs;
     }
 }
 
-module.exports = { nodeClass: Confluence_DocumentLoaders }
+module.exports = { nodeClass: Confluence_DocumentLoaders };

@@ -1,24 +1,24 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { IAssistant } from '../../Interface'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { IAssistant } from '../../Interface';
 
 @Entity()
 export class Assistant implements IAssistant {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column({ type: 'text' })
-    details: string
+    details: string;
 
     @Column()
-    credential: string
+    credential: string;
 
     @Column({ nullable: true })
-    iconSrc?: string
+    iconSrc?: string;
 
     @CreateDateColumn()
-    createdDate: Date
+    createdDate: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date
+    updatedDate: Date;
 }

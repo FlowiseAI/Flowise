@@ -1,43 +1,43 @@
-import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { Stack, Typography, Dialog, DialogContent, DialogTitle, DialogActions, Box } from '@mui/material'
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import assistantsApi from 'api/assistants'
-import useApi from 'hooks/useApi'
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { Stack, Typography, Dialog, DialogContent, DialogTitle, DialogActions, Box } from '@mui/material';
+import CredentialInputHandler from 'views/canvas/CredentialInputHandler';
+import { Dropdown } from 'ui-component/dropdown/Dropdown';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import assistantsApi from 'api/assistants';
+import useApi from 'hooks/useApi';
 
 const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = document.getElementById('portal');
 
-    const getAllAvailableAssistantsApi = useApi(assistantsApi.getAllAvailableAssistants)
+    const getAllAvailableAssistantsApi = useApi(assistantsApi.getAllAvailableAssistants);
 
-    const [credentialId, setCredentialId] = useState('')
-    const [availableAssistantsOptions, setAvailableAssistantsOptions] = useState([])
-    const [selectedOpenAIAssistantId, setSelectedOpenAIAssistantId] = useState('')
+    const [credentialId, setCredentialId] = useState('');
+    const [availableAssistantsOptions, setAvailableAssistantsOptions] = useState([]);
+    const [selectedOpenAIAssistantId, setSelectedOpenAIAssistantId] = useState('');
 
     useEffect(() => {
         return () => {
-            setCredentialId('')
-            setAvailableAssistantsOptions([])
-            setSelectedOpenAIAssistantId('')
-        }
-    }, [dialogProps])
+            setCredentialId('');
+            setAvailableAssistantsOptions([]);
+            setSelectedOpenAIAssistantId('');
+        };
+    }, [dialogProps]);
 
     useEffect(() => {
         if (getAllAvailableAssistantsApi.data && getAllAvailableAssistantsApi.data.length) {
-            const assistants = []
+            const assistants = [];
             for (let i = 0; i < getAllAvailableAssistantsApi.data.length; i += 1) {
                 assistants.push({
                     label: getAllAvailableAssistantsApi.data[i].name,
                     name: getAllAvailableAssistantsApi.data[i].id,
                     description: getAllAvailableAssistantsApi.data[i].instructions
-                })
+                });
             }
-            setAvailableAssistantsOptions(assistants)
+            setAvailableAssistantsOptions(assistants);
         }
-    }, [getAllAvailableAssistantsApi.data])
+    }, [getAllAvailableAssistantsApi.data]);
 
     const component = show ? (
         <Dialog
@@ -69,8 +69,8 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                             credentialNames: ['openAIApi']
                         }}
                         onSelect={(newValue) => {
-                            setCredentialId(newValue)
-                            if (newValue) getAllAvailableAssistantsApi.request(newValue)
+                            setCredentialId(newValue);
+                            if (newValue) getAllAvailableAssistantsApi.request(newValue);
                         }}
                     />
                 </Box>
@@ -99,16 +99,16 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
                 </DialogActions>
             )}
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 LoadAssistantDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onAssistantSelected: PropTypes.func
-}
+};
 
-export default LoadAssistantDialog
+export default LoadAssistantDialog;

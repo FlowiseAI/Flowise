@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
-import { SketchPicker } from 'react-color'
-import PropTypes from 'prop-types'
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions';
+import { SketchPicker } from 'react-color';
+import PropTypes from 'prop-types';
 
-import { Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
 
 // Icons
-import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons'
+import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons';
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from 'api/chatflows';
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from 'utils/useNotifier';
 
 // Const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 const defaultConfig = {
     backgroundColor: '#ffffff',
@@ -40,65 +40,65 @@ const defaultConfig = {
         textColor: '#303235',
         sendButtonColor: '#3B81F6'
     }
-}
+};
 
 const ShareChatbot = ({ isSessionMemory }) => {
-    const dispatch = useDispatch()
-    const theme = useTheme()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
-    const chatflowid = chatflow.id
-    const chatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
+    const dispatch = useDispatch();
+    const theme = useTheme();
+    const chatflow = useSelector((state) => state.canvas.chatflow);
+    const chatflowid = chatflow.id;
+    const chatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {};
 
-    useNotifier()
+    useNotifier();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false)
-    const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false)
+    const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false);
+    const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false);
 
-    const [title, setTitle] = useState(chatbotConfig?.title ?? '')
-    const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '')
+    const [title, setTitle] = useState(chatbotConfig?.title ?? '');
+    const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '');
 
-    const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
-    const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
-    const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
-    const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
+    const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '');
+    const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor);
+    const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize);
+    const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor);
 
     const [botMessageBackgroundColor, setBotMessageBackgroundColor] = useState(
         chatbotConfig?.botMessage?.backgroundColor ?? defaultConfig.botMessage.backgroundColor
-    )
+    );
     const [botMessageTextColor, setBotMessageTextColor] = useState(
         chatbotConfig?.botMessage?.textColor ?? defaultConfig.botMessage.textColor
-    )
-    const [botMessageAvatarSrc, setBotMessageAvatarSrc] = useState(chatbotConfig?.botMessage?.avatarSrc ?? '')
-    const [botMessageShowAvatar, setBotMessageShowAvatar] = useState(chatbotConfig?.botMessage?.showAvatar ?? false)
+    );
+    const [botMessageAvatarSrc, setBotMessageAvatarSrc] = useState(chatbotConfig?.botMessage?.avatarSrc ?? '');
+    const [botMessageShowAvatar, setBotMessageShowAvatar] = useState(chatbotConfig?.botMessage?.showAvatar ?? false);
 
     const [userMessageBackgroundColor, setUserMessageBackgroundColor] = useState(
         chatbotConfig?.userMessage?.backgroundColor ?? defaultConfig.userMessage.backgroundColor
-    )
+    );
     const [userMessageTextColor, setUserMessageTextColor] = useState(
         chatbotConfig?.userMessage?.textColor ?? defaultConfig.userMessage.textColor
-    )
-    const [userMessageAvatarSrc, setUserMessageAvatarSrc] = useState(chatbotConfig?.userMessage?.avatarSrc ?? '')
-    const [userMessageShowAvatar, setUserMessageShowAvatar] = useState(chatbotConfig?.userMessage?.showAvatar ?? false)
+    );
+    const [userMessageAvatarSrc, setUserMessageAvatarSrc] = useState(chatbotConfig?.userMessage?.avatarSrc ?? '');
+    const [userMessageShowAvatar, setUserMessageShowAvatar] = useState(chatbotConfig?.userMessage?.showAvatar ?? false);
 
     const [textInputBackgroundColor, setTextInputBackgroundColor] = useState(
         chatbotConfig?.textInput?.backgroundColor ?? defaultConfig.textInput.backgroundColor
-    )
-    const [textInputTextColor, setTextInputTextColor] = useState(chatbotConfig?.textInput?.textColor ?? defaultConfig.textInput.textColor)
-    const [textInputPlaceholder, setTextInputPlaceholder] = useState(chatbotConfig?.textInput?.placeholder ?? '')
+    );
+    const [textInputTextColor, setTextInputTextColor] = useState(chatbotConfig?.textInput?.textColor ?? defaultConfig.textInput.textColor);
+    const [textInputPlaceholder, setTextInputPlaceholder] = useState(chatbotConfig?.textInput?.placeholder ?? '');
     const [textInputSendButtonColor, setTextInputSendButtonColor] = useState(
         chatbotConfig?.textInput?.sendButtonColor ?? defaultConfig.textInput.sendButtonColor
-    )
+    );
 
-    const [colorAnchorEl, setColorAnchorEl] = useState(null)
-    const [selectedColorConfig, setSelectedColorConfig] = useState('')
-    const [sketchPickerColor, setSketchPickerColor] = useState('')
-    const openColorPopOver = Boolean(colorAnchorEl)
+    const [colorAnchorEl, setColorAnchorEl] = useState(null);
+    const [selectedColorConfig, setSelectedColorConfig] = useState('');
+    const [sketchPickerColor, setSketchPickerColor] = useState('');
+    const openColorPopOver = Boolean(colorAnchorEl);
 
-    const [copyAnchorEl, setCopyAnchorEl] = useState(null)
-    const openCopyPopOver = Boolean(copyAnchorEl)
+    const [copyAnchorEl, setCopyAnchorEl] = useState(null);
+    const openCopyPopOver = Boolean(copyAnchorEl);
 
     const formatObj = () => {
         const obj = {
@@ -110,39 +110,39 @@ const ShareChatbot = ({ isSessionMemory }) => {
             },
             textInput: {},
             overrideConfig: {}
-        }
-        if (title) obj.title = title
-        if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc
-        if (welcomeMessage) obj.welcomeMessage = welcomeMessage
-        if (backgroundColor) obj.backgroundColor = backgroundColor
-        if (fontSize) obj.fontSize = fontSize
-        if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor
+        };
+        if (title) obj.title = title;
+        if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc;
+        if (welcomeMessage) obj.welcomeMessage = welcomeMessage;
+        if (backgroundColor) obj.backgroundColor = backgroundColor;
+        if (fontSize) obj.fontSize = fontSize;
+        if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor;
 
-        if (botMessageBackgroundColor) obj.botMessage.backgroundColor = botMessageBackgroundColor
-        if (botMessageTextColor) obj.botMessage.textColor = botMessageTextColor
-        if (botMessageAvatarSrc) obj.botMessage.avatarSrc = botMessageAvatarSrc
-        if (botMessageShowAvatar) obj.botMessage.showAvatar = botMessageShowAvatar
+        if (botMessageBackgroundColor) obj.botMessage.backgroundColor = botMessageBackgroundColor;
+        if (botMessageTextColor) obj.botMessage.textColor = botMessageTextColor;
+        if (botMessageAvatarSrc) obj.botMessage.avatarSrc = botMessageAvatarSrc;
+        if (botMessageShowAvatar) obj.botMessage.showAvatar = botMessageShowAvatar;
 
-        if (userMessageBackgroundColor) obj.userMessage.backgroundColor = userMessageBackgroundColor
-        if (userMessageTextColor) obj.userMessage.textColor = userMessageTextColor
-        if (userMessageAvatarSrc) obj.userMessage.avatarSrc = userMessageAvatarSrc
-        if (userMessageShowAvatar) obj.userMessage.showAvatar = userMessageShowAvatar
+        if (userMessageBackgroundColor) obj.userMessage.backgroundColor = userMessageBackgroundColor;
+        if (userMessageTextColor) obj.userMessage.textColor = userMessageTextColor;
+        if (userMessageAvatarSrc) obj.userMessage.avatarSrc = userMessageAvatarSrc;
+        if (userMessageShowAvatar) obj.userMessage.showAvatar = userMessageShowAvatar;
 
-        if (textInputBackgroundColor) obj.textInput.backgroundColor = textInputBackgroundColor
-        if (textInputTextColor) obj.textInput.textColor = textInputTextColor
-        if (textInputPlaceholder) obj.textInput.placeholder = textInputPlaceholder
-        if (textInputSendButtonColor) obj.textInput.sendButtonColor = textInputSendButtonColor
+        if (textInputBackgroundColor) obj.textInput.backgroundColor = textInputBackgroundColor;
+        if (textInputTextColor) obj.textInput.textColor = textInputTextColor;
+        if (textInputPlaceholder) obj.textInput.placeholder = textInputPlaceholder;
+        if (textInputSendButtonColor) obj.textInput.sendButtonColor = textInputSendButtonColor;
 
-        if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
+        if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession;
 
-        return obj
-    }
+        return obj;
+    };
 
     const onSave = async () => {
         try {
             const saveResp = await chatflowsApi.updateChatflow(chatflowid, {
                 chatbotConfig: JSON.stringify(formatObj())
-            })
+            });
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Chatbot Configuration Saved',
@@ -155,12 +155,12 @@ const ShareChatbot = ({ isSessionMemory }) => {
                             </Button>
                         )
                     }
-                })
-                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                });
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data });
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            console.error(error);
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Chatbot Configuration: ${errorData}`,
                 options: {
@@ -173,13 +173,13 @@ const ShareChatbot = ({ isSessionMemory }) => {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const onSwitchChange = async (checked) => {
         try {
-            const saveResp = await chatflowsApi.updateChatflow(chatflowid, { isPublic: checked })
+            const saveResp = await chatflowsApi.updateChatflow(chatflowid, { isPublic: checked });
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Chatbot Configuration Saved',
@@ -192,12 +192,12 @@ const ShareChatbot = ({ isSessionMemory }) => {
                             </Button>
                         )
                     }
-                })
-                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                });
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data });
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            console.error(error);
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Chatbot Configuration: ${errorData}`,
                 options: {
@@ -210,90 +210,90 @@ const ShareChatbot = ({ isSessionMemory }) => {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const handleClosePopOver = () => {
-        setColorAnchorEl(null)
-    }
+        setColorAnchorEl(null);
+    };
 
     const handleCloseCopyPopOver = () => {
-        setCopyAnchorEl(null)
-    }
+        setCopyAnchorEl(null);
+    };
 
     const onColorSelected = (hexColor) => {
         switch (selectedColorConfig) {
             case 'backgroundColor':
-                setBackgroundColor(hexColor)
-                break
+                setBackgroundColor(hexColor);
+                break;
             case 'poweredByTextColor':
-                setPoweredByTextColor(hexColor)
-                break
+                setPoweredByTextColor(hexColor);
+                break;
             case 'botMessageBackgroundColor':
-                setBotMessageBackgroundColor(hexColor)
-                break
+                setBotMessageBackgroundColor(hexColor);
+                break;
             case 'botMessageTextColor':
-                setBotMessageTextColor(hexColor)
-                break
+                setBotMessageTextColor(hexColor);
+                break;
             case 'userMessageBackgroundColor':
-                setUserMessageBackgroundColor(hexColor)
-                break
+                setUserMessageBackgroundColor(hexColor);
+                break;
             case 'userMessageTextColor':
-                setUserMessageTextColor(hexColor)
-                break
+                setUserMessageTextColor(hexColor);
+                break;
             case 'textInputBackgroundColor':
-                setTextInputBackgroundColor(hexColor)
-                break
+                setTextInputBackgroundColor(hexColor);
+                break;
             case 'textInputTextColor':
-                setTextInputTextColor(hexColor)
-                break
+                setTextInputTextColor(hexColor);
+                break;
             case 'textInputSendButtonColor':
-                setTextInputSendButtonColor(hexColor)
-                break
+                setTextInputSendButtonColor(hexColor);
+                break;
         }
-        setSketchPickerColor(hexColor)
-    }
+        setSketchPickerColor(hexColor);
+    };
 
     const onTextChanged = (value, fieldName) => {
         switch (fieldName) {
             case 'title':
-                setTitle(value)
-                break
+                setTitle(value);
+                break;
             case 'titleAvatarSrc':
-                setTitleAvatarSrc(value)
-                break
+                setTitleAvatarSrc(value);
+                break;
             case 'welcomeMessage':
-                setWelcomeMessage(value)
-                break
+                setWelcomeMessage(value);
+                break;
             case 'fontSize':
-                setFontSize(value)
-                break
+                setFontSize(value);
+                break;
             case 'botMessageAvatarSrc':
-                setBotMessageAvatarSrc(value)
-                break
+                setBotMessageAvatarSrc(value);
+                break;
             case 'userMessageAvatarSrc':
-                setUserMessageAvatarSrc(value)
-                break
+                setUserMessageAvatarSrc(value);
+                break;
             case 'textInputPlaceholder':
-                setTextInputPlaceholder(value)
-                break
+                setTextInputPlaceholder(value);
+                break;
         }
-    }
+    };
 
     const onBooleanChanged = (value, fieldName) => {
         switch (fieldName) {
             case 'botMessageShowAvatar':
-                setBotMessageShowAvatar(value)
-                break
+                setBotMessageShowAvatar(value);
+                break;
             case 'userMessageShowAvatar':
-                setUserMessageShowAvatar(value)
-                break
+                setUserMessageShowAvatar(value);
+                break;
             case 'generateNewSession':
-                setGenerateNewSession(value)
-                break
+                setGenerateNewSession(value);
+                break;
         }
-    }
+    };
 
     const colorField = (color, fieldName, fieldLabel) => {
         return (
@@ -311,15 +311,15 @@ const ShareChatbot = ({ isSessionMemory }) => {
                             borderRadius: '5px'
                         }}
                         onClick={(event) => {
-                            setSelectedColorConfig(fieldName)
-                            setSketchPickerColor(color ?? '#ffffff')
-                            setColorAnchorEl(event.currentTarget)
+                            setSelectedColorConfig(fieldName);
+                            setSketchPickerColor(color ?? '#ffffff');
+                            setColorAnchorEl(event.currentTarget);
                         }}
                     ></Box>
                 </div>
             </Box>
-        )
-    }
+        );
+    };
 
     const booleanField = (value, fieldName, fieldLabel) => {
         return (
@@ -330,13 +330,13 @@ const ShareChatbot = ({ isSessionMemory }) => {
                         id={fieldName}
                         checked={value}
                         onChange={(event) => {
-                            onBooleanChanged(event.target.checked, fieldName)
+                            onBooleanChanged(event.target.checked, fieldName);
                         }}
                     />
                 </div>
             </Box>
-        )
-    }
+        );
+    };
 
     const textField = (message, fieldName, fieldLabel, fieldType = 'string', placeholder = '') => {
         return (
@@ -351,13 +351,13 @@ const ShareChatbot = ({ isSessionMemory }) => {
                         placeholder={placeholder}
                         name={fieldName}
                         onChange={(e) => {
-                            onTextChanged(e.target.value, fieldName)
+                            onTextChanged(e.target.value, fieldName);
                         }}
                     />
                 </div>
             </Box>
-        )
-    }
+        );
+    };
 
     return (
         <>
@@ -378,11 +378,11 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     title='Copy Link'
                     color='success'
                     onClick={(event) => {
-                        navigator.clipboard.writeText(`${baseURL}/chatbot/${chatflowid}`)
-                        setCopyAnchorEl(event.currentTarget)
+                        navigator.clipboard.writeText(`${baseURL}/chatbot/${chatflowid}`);
+                        setCopyAnchorEl(event.currentTarget);
                         setTimeout(() => {
-                            handleCloseCopyPopOver()
-                        }, 1500)
+                            handleCloseCopyPopOver();
+                        }, 1500);
                     }}
                 >
                     <IconCopy />
@@ -395,8 +395,8 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     <Switch
                         checked={isPublicChatflow}
                         onChange={(event) => {
-                            setChatflowIsPublic(event.target.checked)
-                            onSwitchChange(event.target.checked)
+                            setChatflowIsPublic(event.target.checked);
+                            onSwitchChange(event.target.checked);
                         }}
                     />
                     <Typography>Make Public</Typography>
@@ -504,11 +504,11 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 </Typography>
             </Popover>
         </>
-    )
-}
+    );
+};
 
 ShareChatbot.propTypes = {
     isSessionMemory: PropTypes.bool
-}
+};
 
-export default ShareChatbot
+export default ShareChatbot;

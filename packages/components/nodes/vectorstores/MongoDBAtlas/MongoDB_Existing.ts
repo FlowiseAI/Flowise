@@ -1,22 +1,22 @@
-import { Collection } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
-import { MongoDBSearchBase } from './MongoDBSearchBase'
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
+import { Collection } from 'mongodb';
+import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas';
+import { Embeddings } from 'langchain/embeddings/base';
+import { VectorStore } from 'langchain/vectorstores/base';
+import { Document } from 'langchain/document';
+import { MongoDBSearchBase } from './MongoDBSearchBase';
+import { ICommonObject, INode, INodeData } from '../../../src/Interface';
 
 class MongoDBExisting_VectorStores extends MongoDBSearchBase implements INode {
     constructor() {
-        super()
-        this.label = 'MongoDB Atlas Load Existing Index'
-        this.name = 'MongoDBIndex'
-        this.version = 1.0
-        this.description = 'Load existing data from MongoDB Atlas (i.e: Document has been upserted)'
+        super();
+        this.label = 'MongoDB Atlas Load Existing Index';
+        this.name = 'MongoDBIndex';
+        this.version = 1.0;
+        this.description = 'Load existing data from MongoDB Atlas (i.e: Document has been upserted)';
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return super.init(nodeData, _, options, undefined)
+        return super.init(nodeData, _, options, undefined);
     }
 
     async constructVectorStore(
@@ -32,8 +32,8 @@ class MongoDBExisting_VectorStores extends MongoDBSearchBase implements INode {
             indexName: indexName,
             textKey: textKey,
             embeddingKey: embeddingKey
-        })
+        });
     }
 }
 
-module.exports = { nodeClass: MongoDBExisting_VectorStores }
+module.exports = { nodeClass: MongoDBExisting_VectorStores };

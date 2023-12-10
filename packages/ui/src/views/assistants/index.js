@@ -1,53 +1,53 @@
-import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Grid, Box, Stack, Button } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import ItemCard from 'ui-component/cards/ItemCard'
-import { gridSpacing } from 'store/constant'
-import ToolEmptySVG from 'assets/images/tools_empty.svg'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import AssistantDialog from './AssistantDialog'
-import LoadAssistantDialog from './LoadAssistantDialog'
+import MainCard from 'ui-component/cards/MainCard';
+import ItemCard from 'ui-component/cards/ItemCard';
+import { gridSpacing } from 'store/constant';
+import ToolEmptySVG from 'assets/images/tools_empty.svg';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import AssistantDialog from './AssistantDialog';
+import LoadAssistantDialog from './LoadAssistantDialog';
 
 // API
-import assistantsApi from 'api/assistants'
+import assistantsApi from 'api/assistants';
 
 // Hooks
-import useApi from 'hooks/useApi'
+import useApi from 'hooks/useApi';
 
 // icons
-import { IconPlus, IconFileImport } from '@tabler/icons'
+import { IconPlus, IconFileImport } from '@tabler/icons';
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Assistants = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
 
-    const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
+    const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants);
 
-    const [showDialog, setShowDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState({})
-    const [showLoadDialog, setShowLoadDialog] = useState(false)
-    const [loadDialogProps, setLoadDialogProps] = useState({})
+    const [showDialog, setShowDialog] = useState(false);
+    const [dialogProps, setDialogProps] = useState({});
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [loadDialogProps, setLoadDialogProps] = useState({});
 
     const loadExisting = () => {
         const dialogProp = {
             title: 'Load Existing Assistant'
-        }
-        setLoadDialogProps(dialogProp)
-        setShowLoadDialog(true)
-    }
+        };
+        setLoadDialogProps(dialogProp);
+        setShowLoadDialog(true);
+    };
 
     const onAssistantSelected = (selectedOpenAIAssistantId, credential) => {
-        setShowLoadDialog(false)
-        addNew(selectedOpenAIAssistantId, credential)
-    }
+        setShowLoadDialog(false);
+        addNew(selectedOpenAIAssistantId, credential);
+    };
 
     const addNew = (selectedOpenAIAssistantId, credential) => {
         const dialogProp = {
@@ -57,10 +57,10 @@ const Assistants = () => {
             confirmButtonName: 'Add',
             selectedOpenAIAssistantId,
             credential
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProp);
+        setShowDialog(true);
+    };
 
     const edit = (selectedAssistant) => {
         const dialogProp = {
@@ -69,21 +69,21 @@ const Assistants = () => {
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
             data: selectedAssistant
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
+        };
+        setDialogProps(dialogProp);
+        setShowDialog(true);
+    };
 
     const onConfirm = () => {
-        setShowDialog(false)
-        getAllAssistantsApi.request()
-    }
+        setShowDialog(false);
+        getAllAssistantsApi.request();
+    };
 
     useEffect(() => {
-        getAllAssistantsApi.request()
+        getAllAssistantsApi.request();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     return (
         <>
@@ -140,7 +140,7 @@ const Assistants = () => {
                 onConfirm={onConfirm}
             ></AssistantDialog>
         </>
-    )
-}
+    );
+};
 
-export default Assistants
+export default Assistants;

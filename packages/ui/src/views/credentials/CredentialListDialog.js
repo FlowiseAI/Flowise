@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 import {
     List,
     ListItemButton,
@@ -14,46 +14,46 @@ import {
     Box,
     OutlinedInput,
     InputAdornment
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { IconSearch, IconX } from '@tabler/icons'
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { IconSearch, IconX } from '@tabler/icons';
 
 // const
-import { baseURL } from 'store/constant'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { baseURL } from 'store/constant';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
 
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
-    const portalElement = document.getElementById('portal')
-    const customization = useSelector((state) => state.customization)
-    const dispatch = useDispatch()
-    const theme = useTheme()
-    const [searchValue, setSearchValue] = useState('')
-    const [componentsCredentials, setComponentsCredentials] = useState([])
+    const portalElement = document.getElementById('portal');
+    const customization = useSelector((state) => state.customization);
+    const dispatch = useDispatch();
+    const theme = useTheme();
+    const [searchValue, setSearchValue] = useState('');
+    const [componentsCredentials, setComponentsCredentials] = useState([]);
 
     const filterSearch = (value) => {
-        setSearchValue(value)
+        setSearchValue(value);
         setTimeout(() => {
             if (value) {
-                const searchData = dialogProps.componentsCredentials.filter((crd) => crd.name.toLowerCase().includes(value.toLowerCase()))
-                setComponentsCredentials(searchData)
+                const searchData = dialogProps.componentsCredentials.filter((crd) => crd.name.toLowerCase().includes(value.toLowerCase()));
+                setComponentsCredentials(searchData);
             } else if (value === '') {
-                setComponentsCredentials(dialogProps.componentsCredentials)
+                setComponentsCredentials(dialogProps.componentsCredentials);
             }
             // scrollTop()
-        }, 500)
-    }
+        }, 500);
+    };
 
     useEffect(() => {
         if (dialogProps.componentsCredentials) {
-            setComponentsCredentials(dialogProps.componentsCredentials)
+            setComponentsCredentials(dialogProps.componentsCredentials);
         }
-    }, [dialogProps])
+    }, [dialogProps]);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     const component = show ? (
         <Dialog
@@ -164,16 +164,16 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                 </List>
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 CredentialListDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onCredentialSelected: PropTypes.func
-}
+};
 
-export default CredentialListDialog
+export default CredentialListDialog;

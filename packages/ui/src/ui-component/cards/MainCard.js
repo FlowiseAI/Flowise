@@ -1,14 +1,14 @@
-import PropTypes from 'prop-types'
-import { forwardRef } from 'react'
+import PropTypes from 'prop-types';
+import { forwardRef } from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles';
+import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material';
 
 // constant
 const headerSX = {
     '& .MuiCardHeader-action': { mr: 0 }
-}
+};
 
 // ==============================|| CUSTOM MAIN CARD ||============================== //
 
@@ -29,7 +29,7 @@ const MainCard = forwardRef(function MainCard(
     },
     ref
 ) {
-    const theme = useTheme()
+    const theme = useTheme();
 
     return (
         <Card
@@ -59,8 +59,8 @@ const MainCard = forwardRef(function MainCard(
             )}
             {!content && children}
         </Card>
-    )
-})
+    );
+});
 
 MainCard.propTypes = {
     border: PropTypes.bool,
@@ -74,6 +74,6 @@ MainCard.propTypes = {
     shadow: PropTypes.string,
     sx: PropTypes.object,
     title: PropTypes.oneOfType([PropTypes.node, PropTypes.string, PropTypes.object])
-}
+};
 
-export default MainCard
+export default MainCard;

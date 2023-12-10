@@ -1,8 +1,8 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage } from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage } from '@tabler/icons';
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage };
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -54,6 +54,6 @@ const settings = {
             icon: icons.IconTrash
         }
     ]
-}
+};
 
-export default settings
+export default settings;

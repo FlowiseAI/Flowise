@@ -1,35 +1,35 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
-import { cloneDeep } from 'lodash'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
+import { cloneDeep } from 'lodash';
 
-import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { Grid } from 'ui-component/grid/Grid'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import { GridActionsCellItem } from '@mui/x-data-grid'
-import DeleteIcon from '@mui/icons-material/Delete'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor'
-import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
-import { useTheme } from '@mui/material/styles'
+import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material';
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { Grid } from 'ui-component/grid/Grid';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
+import { GridActionsCellItem } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog';
+import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor';
+import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor';
+import { useTheme } from '@mui/material/styles';
 
 // Icons
-import { IconX, IconFileExport } from '@tabler/icons'
+import { IconX, IconFileExport } from '@tabler/icons';
 
 // API
-import toolsApi from 'api/tools'
+import toolsApi from 'api/tools';
 
 // Hooks
-import useConfirm from 'hooks/useConfirm'
-import useApi from 'hooks/useApi'
+import useConfirm from 'hooks/useConfirm';
+import useApi from 'hooks/useApi';
 
 // utils
-import useNotifier from 'utils/useNotifier'
-import { generateRandomGradient, formatDataGridRows } from 'utils/genericHelper'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useNotifier from 'utils/useNotifier';
+import { generateRandomGradient, formatDataGridRows } from 'utils/genericHelper';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
@@ -52,70 +52,70 @@ try {
 } catch (error) {
     console.error(error);
     return '';
-}`
+}`;
 
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
-    const theme = useTheme()
+    const portalElement = document.getElementById('portal');
+    const theme = useTheme();
 
-    const customization = useSelector((state) => state.customization)
-    const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization);
+    const dispatch = useDispatch();
 
     // ==============================|| Snackbar ||============================== //
 
-    useNotifier()
-    const { confirm } = useConfirm()
+    useNotifier();
+    const { confirm } = useConfirm();
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const getSpecificToolApi = useApi(toolsApi.getSpecificTool)
+    const getSpecificToolApi = useApi(toolsApi.getSpecificTool);
 
-    const [toolId, setToolId] = useState('')
-    const [toolName, setToolName] = useState('')
-    const [toolDesc, setToolDesc] = useState('')
-    const [toolIcon, setToolIcon] = useState('')
-    const [toolSchema, setToolSchema] = useState([])
-    const [toolFunc, setToolFunc] = useState('')
+    const [toolId, setToolId] = useState('');
+    const [toolName, setToolName] = useState('');
+    const [toolDesc, setToolDesc] = useState('');
+    const [toolIcon, setToolIcon] = useState('');
+    const [toolSchema, setToolSchema] = useState([]);
+    const [toolFunc, setToolFunc] = useState('');
 
     const deleteItem = useCallback(
         (id) => () => {
             setTimeout(() => {
-                setToolSchema((prevRows) => prevRows.filter((row) => row.id !== id))
-            })
+                setToolSchema((prevRows) => prevRows.filter((row) => row.id !== id));
+            });
         },
         []
-    )
+    );
 
     const addNewRow = () => {
         setTimeout(() => {
             setToolSchema((prevRows) => {
-                let allRows = [...cloneDeep(prevRows)]
-                const lastRowId = allRows.length ? allRows[allRows.length - 1].id + 1 : 1
+                let allRows = [...cloneDeep(prevRows)];
+                const lastRowId = allRows.length ? allRows[allRows.length - 1].id + 1 : 1;
                 allRows.push({
                     id: lastRowId,
                     property: '',
                     description: '',
                     type: '',
                     required: false
-                })
-                return allRows
-            })
-        })
-    }
+                });
+                return allRows;
+            });
+        });
+    };
 
     const onRowUpdate = (newRow) => {
         setTimeout(() => {
             setToolSchema((prevRows) => {
-                let allRows = [...cloneDeep(prevRows)]
-                const indexToUpdate = allRows.findIndex((row) => row.id === newRow.id)
+                let allRows = [...cloneDeep(prevRows)];
+                const indexToUpdate = allRows.findIndex((row) => row.id === newRow.id);
                 if (indexToUpdate >= 0) {
-                    allRows[indexToUpdate] = { ...newRow }
+                    allRows[indexToUpdate] = { ...newRow };
                 }
-                return allRows
-            })
-        })
-    }
+                return allRows;
+            });
+        });
+    };
 
     const columns = useMemo(
         () => [
@@ -140,91 +140,91 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             }
         ],
         [deleteItem]
-    )
+    );
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     useEffect(() => {
         if (getSpecificToolApi.data) {
-            setToolId(getSpecificToolApi.data.id)
-            setToolName(getSpecificToolApi.data.name)
-            setToolDesc(getSpecificToolApi.data.description)
-            setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema))
-            if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func)
-            else setToolFunc('')
+            setToolId(getSpecificToolApi.data.id);
+            setToolName(getSpecificToolApi.data.name);
+            setToolDesc(getSpecificToolApi.data.description);
+            setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema));
+            if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func);
+            else setToolFunc('');
         }
-    }, [getSpecificToolApi.data])
+    }, [getSpecificToolApi.data]);
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             // When tool dialog is opened from Tools dashboard
-            setToolId(dialogProps.data.id)
-            setToolName(dialogProps.data.name)
-            setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
-            if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
-            else setToolFunc('')
+            setToolId(dialogProps.data.id);
+            setToolName(dialogProps.data.name);
+            setToolDesc(dialogProps.data.description);
+            setToolIcon(dialogProps.data.iconSrc);
+            setToolSchema(formatDataGridRows(dialogProps.data.schema));
+            if (dialogProps.data.func) setToolFunc(dialogProps.data.func);
+            else setToolFunc('');
         } else if (dialogProps.type === 'EDIT' && dialogProps.toolId) {
             // When tool dialog is opened from CustomTool node in canvas
-            getSpecificToolApi.request(dialogProps.toolId)
+            getSpecificToolApi.request(dialogProps.toolId);
         } else if (dialogProps.type === 'IMPORT' && dialogProps.data) {
             // When tool dialog is to import existing tool
-            setToolName(dialogProps.data.name)
-            setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
-            if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
-            else setToolFunc('')
+            setToolName(dialogProps.data.name);
+            setToolDesc(dialogProps.data.description);
+            setToolIcon(dialogProps.data.iconSrc);
+            setToolSchema(formatDataGridRows(dialogProps.data.schema));
+            if (dialogProps.data.func) setToolFunc(dialogProps.data.func);
+            else setToolFunc('');
         } else if (dialogProps.type === 'TEMPLATE' && dialogProps.data) {
             // When tool dialog is a template
-            setToolName(dialogProps.data.name)
-            setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
-            if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
-            else setToolFunc('')
+            setToolName(dialogProps.data.name);
+            setToolDesc(dialogProps.data.description);
+            setToolIcon(dialogProps.data.iconSrc);
+            setToolSchema(formatDataGridRows(dialogProps.data.schema));
+            if (dialogProps.data.func) setToolFunc(dialogProps.data.func);
+            else setToolFunc('');
         } else if (dialogProps.type === 'ADD') {
             // When tool dialog is to add a new tool
-            setToolId('')
-            setToolName('')
-            setToolDesc('')
-            setToolIcon('')
-            setToolSchema([])
-            setToolFunc('')
+            setToolId('');
+            setToolName('');
+            setToolDesc('');
+            setToolIcon('');
+            setToolSchema([]);
+            setToolFunc('');
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps]);
 
     const useToolTemplate = () => {
-        onUseTemplate(dialogProps.data)
-    }
+        onUseTemplate(dialogProps.data);
+    };
 
     const exportTool = async () => {
         try {
-            const toolResp = await toolsApi.getSpecificTool(toolId)
+            const toolResp = await toolsApi.getSpecificTool(toolId);
             if (toolResp.data) {
-                const toolData = toolResp.data
-                delete toolData.id
-                delete toolData.createdDate
-                delete toolData.updatedDate
-                let dataStr = JSON.stringify(toolData, null, 2)
-                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                const toolData = toolResp.data;
+                delete toolData.id;
+                delete toolData.createdDate;
+                delete toolData.updatedDate;
+                let dataStr = JSON.stringify(toolData, null, 2);
+                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-                let exportFileDefaultName = `${toolName}-CustomTool.json`
+                let exportFileDefaultName = `${toolName}-CustomTool.json`;
 
-                let linkElement = document.createElement('a')
-                linkElement.setAttribute('href', dataUri)
-                linkElement.setAttribute('download', exportFileDefaultName)
-                linkElement.click()
+                let linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to export Tool: ${errorData}`,
                 options: {
@@ -237,10 +237,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const addNewTool = async () => {
         try {
@@ -251,8 +251,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
                 iconSrc: toolIcon
-            }
-            const createResp = await toolsApi.createNewTool(obj)
+            };
+            const createResp = await toolsApi.createNewTool(obj);
             if (createResp.data) {
                 enqueueSnackbar({
                     message: 'New Tool added',
@@ -265,11 +265,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             </Button>
                         )
                     }
-                })
-                onConfirm(createResp.data.id)
+                });
+                onConfirm(createResp.data.id);
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to add new Tool: ${errorData}`,
                 options: {
@@ -282,10 +282,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const saveTool = async () => {
         try {
@@ -295,7 +295,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
                 iconSrc: toolIcon
-            })
+            });
             if (saveResp.data) {
                 enqueueSnackbar({
                     message: 'Tool saved',
@@ -308,12 +308,12 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             </Button>
                         )
                     }
-                })
-                onConfirm(saveResp.data.id)
+                });
+                onConfirm(saveResp.data.id);
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            console.error(error);
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: `Failed to save Tool: ${errorData}`,
                 options: {
@@ -326,10 +326,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         </Button>
                     )
                 }
-            })
-            onCancel()
+            });
+            onCancel();
         }
-    }
+    };
 
     const deleteTool = async () => {
         const confirmPayload = {
@@ -337,12 +337,12 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             description: `Delete tool ${toolName}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                const delResp = await toolsApi.deleteTool(toolId)
+                const delResp = await toolsApi.deleteTool(toolId);
                 if (delResp.data) {
                     enqueueSnackbar({
                         message: 'Tool deleted',
@@ -355,11 +355,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                                 </Button>
                             )
                         }
-                    })
-                    onConfirm()
+                    });
+                    onConfirm();
                 }
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: `Failed to delete Tool: ${errorData}`,
                     options: {
@@ -372,11 +372,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             </Button>
                         )
                     }
-                })
-                onCancel()
+                });
+                onCancel();
             }
         }
-    }
+    };
 
     const component = show ? (
         <Dialog
@@ -541,10 +541,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             </DialogActions>
             <ConfirmDialog />
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 ToolDialog.propTypes = {
     show: PropTypes.bool,
@@ -552,6 +552,6 @@ ToolDialog.propTypes = {
     onUseTemplate: PropTypes.func,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func
-}
+};
 
-export default ToolDialog
+export default ToolDialog;
