@@ -1,64 +1,64 @@
-import PropTypes from 'prop-types'
-import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
-import { useEffect, useRef, useState, useContext } from 'react'
-import { useSelector } from 'react-redux'
+import PropTypes from 'prop-types';
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
+import { useEffect, useRef, useState, useContext } from 'react';
+import { useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme, styled } from '@mui/material/styles'
-import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
-import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
-import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
+import { useTheme, styled } from '@mui/material/styles';
+import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material';
+import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh';
+import { tooltipClasses } from '@mui/material/Tooltip';
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons';
 
 // project import
-import { Dropdown } from 'ui-component/dropdown/Dropdown'
-import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown'
-import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
-import { Input } from 'ui-component/input/Input'
-import { DataGrid } from 'ui-component/grid/DataGrid'
-import { File } from 'ui-component/file/File'
-import { SwitchInput } from 'ui-component/switch/Switch'
-import { flowContext } from 'store/context/ReactFlowContext'
-import { isValidConnection } from 'utils/genericHelper'
-import { JsonEditorInput } from 'ui-component/json/JsonEditor'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import ToolDialog from 'views/tools/ToolDialog'
-import AssistantDialog from 'views/assistants/AssistantDialog'
-import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
-import CredentialInputHandler from './CredentialInputHandler'
+import { Dropdown } from 'ui-component/dropdown/Dropdown';
+import { MultiDropdown } from 'ui-component/dropdown/MultiDropdown';
+import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown';
+import { Input } from 'ui-component/input/Input';
+import { DataGrid } from 'ui-component/grid/DataGrid';
+import { File } from 'ui-component/file/File';
+import { SwitchInput } from 'ui-component/switch/Switch';
+import { flowContext } from 'store/context/ReactFlowContext';
+import { isValidConnection } from 'utils/genericHelper';
+import { JsonEditorInput } from 'ui-component/json/JsonEditor';
+import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser';
+import ToolDialog from 'views/tools/ToolDialog';
+import AssistantDialog from 'views/assistants/AssistantDialog';
+import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog';
+import CredentialInputHandler from './CredentialInputHandler';
 
 // utils
-import { getInputVariables } from 'utils/genericHelper'
+import { getInputVariables } from 'utils/genericHelper';
 
 // const
-import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
-import PromptLangsmithHubDialog from '../../ui-component/dialog/PromptLangsmithHubDialog'
+import { FLOWISE_CREDENTIAL_ID } from 'store/constant';
+import PromptLangsmithHubDialog from '../../ui-component/dialog/PromptLangsmithHubDialog';
 
-const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
+const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant'];
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
         maxWidth: 500
     }
-})
+});
 
 // ===========================|| NodeInputHandler ||=========================== //
 
 const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isAdditionalParams = false }) => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-    const ref = useRef(null)
-    const { reactFlowInstance } = useContext(flowContext)
-    const updateNodeInternals = useUpdateNodeInternals()
-    const [position, setPosition] = useState(0)
-    const [showExpandDialog, setShowExpandDialog] = useState(false)
-    const [expandDialogProps, setExpandDialogProps] = useState({})
-    const [showAsyncOptionDialog, setAsyncOptionEditDialog] = useState('')
-    const [asyncOptionEditDialogProps, setAsyncOptionEditDialogProps] = useState({})
-    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
-    const [showFormatPromptValuesDialog, setShowFormatPromptValuesDialog] = useState(false)
-    const [formatPromptValuesDialogProps, setFormatPromptValuesDialogProps] = useState({})
-    const [showPromptHubDialog, setShowPromptHubDialog] = useState(false)
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
+    const ref = useRef(null);
+    const { reactFlowInstance } = useContext(flowContext);
+    const updateNodeInternals = useUpdateNodeInternals();
+    const [position, setPosition] = useState(0);
+    const [showExpandDialog, setShowExpandDialog] = useState(false);
+    const [expandDialogProps, setExpandDialogProps] = useState({});
+    const [showAsyncOptionDialog, setAsyncOptionEditDialog] = useState('');
+    const [asyncOptionEditDialogProps, setAsyncOptionEditDialogProps] = useState({});
+    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString());
+    const [showFormatPromptValuesDialog, setShowFormatPromptValuesDialog] = useState(false);
+    const [formatPromptValuesDialogProps, setFormatPromptValuesDialogProps] = useState({});
+    const [showPromptHubDialog, setShowPromptHubDialog] = useState(false);
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -67,34 +67,34 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             disabled,
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
-        }
-        setExpandDialogProps(dialogProp)
-        setShowExpandDialog(true)
-    }
+        };
+        setExpandDialogProps(dialogProp);
+        setShowExpandDialog(true);
+    };
 
     const onShowPromptHubButtonClicked = () => {
-        setShowPromptHubDialog(true)
-    }
+        setShowPromptHubDialog(true);
+    };
     const onShowPromptHubButtonSubmit = (templates) => {
-        setShowPromptHubDialog(false)
+        setShowPromptHubDialog(false);
         for (const t of templates) {
             if (Object.prototype.hasOwnProperty.call(data.inputs, t.type)) {
-                data.inputs[t.type] = t.template
+                data.inputs[t.type] = t.template;
             }
         }
-    }
+    };
     const onFormatPromptValuesClicked = (value, inputParam) => {
         // Preset values if the field is format prompt values
-        let inputValue = value
+        let inputValue = value;
         if (inputParam.name === 'promptValues' && !value) {
-            const obj = {}
+            const obj = {};
             const templateValue =
-                (data.inputs['template'] ?? '') + (data.inputs['systemMessagePrompt'] ?? '') + (data.inputs['humanMessagePrompt'] ?? '')
-            const inputVariables = getInputVariables(templateValue)
+                (data.inputs['template'] ?? '') + (data.inputs['systemMessagePrompt'] ?? '') + (data.inputs['humanMessagePrompt'] ?? '');
+            const inputVariables = getInputVariables(templateValue);
             for (const inputVariable of inputVariables) {
-                obj[inputVariable] = ''
+                obj[inputVariable] = '';
             }
-            if (Object.keys(obj).length) inputValue = JSON.stringify(obj)
+            if (Object.keys(obj).length) inputValue = JSON.stringify(obj);
         }
         const dialogProp = {
             value: inputValue,
@@ -102,15 +102,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             nodes: reactFlowInstance.getNodes(),
             edges: reactFlowInstance.getEdges(),
             nodeId: data.id
-        }
-        setFormatPromptValuesDialogProps(dialogProp)
-        setShowFormatPromptValuesDialog(true)
-    }
+        };
+        setFormatPromptValuesDialogProps(dialogProp);
+        setShowFormatPromptValuesDialog(true);
+    };
 
     const onExpandDialogSave = (newValue, inputParamName) => {
-        setShowExpandDialog(false)
-        data.inputs[inputParamName] = newValue
-    }
+        setShowExpandDialog(false);
+        data.inputs[inputParamName] = newValue;
+    };
 
     const editAsyncOption = (inputParamName, inputValue) => {
         if (inputParamName === 'selectedTool') {
@@ -120,7 +120,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Save',
                 toolId: inputValue
-            })
+            });
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
                 title: 'Edit Assistant',
@@ -128,10 +128,10 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Save',
                 assistantId: inputValue
-            })
+            });
         }
-        setAsyncOptionEditDialog(inputParamName)
-    }
+        setAsyncOptionEditDialog(inputParamName);
+    };
 
     const addAsyncOption = (inputParamName) => {
         if (inputParamName === 'selectedTool') {
@@ -140,39 +140,39 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 type: 'ADD',
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Add'
-            })
+            });
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
                 title: 'Add New Assistant',
                 type: 'ADD',
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Add'
-            })
+            });
         }
-        setAsyncOptionEditDialog(inputParamName)
-    }
+        setAsyncOptionEditDialog(inputParamName);
+    };
 
     const onConfirmAsyncOption = (selectedOptionId = '') => {
         if (!selectedOptionId) {
-            data.inputs[showAsyncOptionDialog] = ''
+            data.inputs[showAsyncOptionDialog] = '';
         } else {
-            data.inputs[showAsyncOptionDialog] = selectedOptionId
-            setReloadTimestamp(Date.now().toString())
+            data.inputs[showAsyncOptionDialog] = selectedOptionId;
+            setReloadTimestamp(Date.now().toString());
         }
-        setAsyncOptionEditDialogProps({})
-        setAsyncOptionEditDialog('')
-    }
+        setAsyncOptionEditDialogProps({});
+        setAsyncOptionEditDialog('');
+    };
 
     useEffect(() => {
         if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
+            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2);
+            updateNodeInternals(data.id);
         }
-    }, [data.id, ref, updateNodeInternals])
+    }, [data.id, ref, updateNodeInternals]);
 
     useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+        updateNodeInternals(data.id);
+    }, [data.id, position, updateNodeInternals]);
 
     return (
         <div ref={ref}>
@@ -294,8 +294,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 data={data}
                                 inputParam={inputParam}
                                 onSelect={(newValue) => {
-                                    data.credential = newValue
-                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                    data.credential = newValue;
+                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue; // in case data.credential is not updated
                                 }}
                             />
                         )}
@@ -429,8 +429,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 onConfirm={onConfirmAsyncOption}
             ></AssistantDialog>
         </div>
-    )
-}
+    );
+};
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
@@ -438,6 +438,6 @@ NodeInputHandler.propTypes = {
     data: PropTypes.object,
     disabled: PropTypes.bool,
     isAdditionalParams: PropTypes.bool
-}
+};
 
-export default NodeInputHandler
+export default NodeInputHandler;

@@ -1,52 +1,52 @@
-import { useState, useEffect } from 'react'
-import Dialog from '@mui/material/Dialog'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import TextField from '@mui/material/TextField'
-import Chip from '@mui/material/Chip'
-import PropTypes from 'prop-types'
-import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
+import { useState, useEffect } from 'react';
+import Dialog from '@mui/material/Dialog';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Chip from '@mui/material/Chip';
+import PropTypes from 'prop-types';
+import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 
 const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
-    const [inputValue, setInputValue] = useState('')
-    const [categoryValues, setCategoryValues] = useState([])
+    const [inputValue, setInputValue] = useState('');
+    const [categoryValues, setCategoryValues] = useState([]);
 
     const handleInputChange = (event) => {
-        setInputValue(event.target.value)
-    }
+        setInputValue(event.target.value);
+    };
 
     const handleInputKeyDown = (event) => {
         if (event.key === 'Enter' && inputValue.trim()) {
-            event.preventDefault()
+            event.preventDefault();
             if (!categoryValues.includes(inputValue)) {
-                setCategoryValues([...categoryValues, inputValue])
-                setInputValue('')
+                setCategoryValues([...categoryValues, inputValue]);
+                setInputValue('');
             }
         }
-    }
+    };
 
     const handleDeleteTag = (categoryToDelete) => {
-        setCategoryValues(categoryValues.filter((category) => category !== categoryToDelete))
-    }
+        setCategoryValues(categoryValues.filter((category) => category !== categoryToDelete));
+    };
 
     const handleSubmit = (event) => {
-        event.preventDefault()
-        let newCategories = [...categoryValues]
+        event.preventDefault();
+        let newCategories = [...categoryValues];
         if (inputValue.trim() && !categoryValues.includes(inputValue)) {
-            newCategories = [...newCategories, inputValue]
-            setCategoryValues(newCategories)
+            newCategories = [...newCategories, inputValue];
+            setCategoryValues(newCategories);
         }
-        onSubmit(newCategories)
-    }
+        onSubmit(newCategories);
+    };
 
     useEffect(() => {
-        if (dialogProps.category) setCategoryValues(dialogProps.category)
+        if (dialogProps.category) setCategoryValues(dialogProps.category);
 
         return () => {
-            setInputValue('')
-            setCategoryValues([])
-        }
-    }, [dialogProps])
+            setInputValue('');
+            setCategoryValues([]);
+        };
+    }, [dialogProps]);
 
     return (
         <Dialog
@@ -97,14 +97,14 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                 </Button>
             </DialogActions>
         </Dialog>
-    )
-}
+    );
+};
 
 TagDialog.propTypes = {
     isOpen: PropTypes.bool,
     dialogProps: PropTypes.object,
     onClose: PropTypes.func,
     onSubmit: PropTypes.func
-}
+};
 
-export default TagDialog
+export default TagDialog;

@@ -104,5 +104,5 @@ export default function themePalette(theme) {
             background: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.paper,
             color: theme.customization.isDarkMode ? theme.colors?.paper : 'rgba(0, 0, 0, 0.87)'
         }
-    }
+    };
 }

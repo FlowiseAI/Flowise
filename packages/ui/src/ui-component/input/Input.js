@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
-import { FormControl, OutlinedInput, Popover } from '@mui/material'
-import ExpandTextDialog from 'ui-component/dialog/ExpandTextDialog'
-import SelectVariable from 'ui-component/json/SelectVariable'
-import { getAvailableNodesForVariable } from 'utils/genericHelper'
+import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { FormControl, OutlinedInput, Popover } from '@mui/material';
+import ExpandTextDialog from 'ui-component/dialog/ExpandTextDialog';
+import SelectVariable from 'ui-component/json/SelectVariable';
+import { getAvailableNodesForVariable } from 'utils/genericHelper';
 
 export const Input = ({
     inputParam,
@@ -18,48 +18,48 @@ export const Input = ({
     onDialogCancel,
     onDialogConfirm
 }) => {
-    const [myValue, setMyValue] = useState(value ?? '')
-    const [anchorEl, setAnchorEl] = useState(null)
-    const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
-    const ref = useRef(null)
+    const [myValue, setMyValue] = useState(value ?? '');
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [availableNodesForVariable, setAvailableNodesForVariable] = useState([]);
+    const ref = useRef(null);
 
-    const openPopOver = Boolean(anchorEl)
+    const openPopOver = Boolean(anchorEl);
 
     const handleClosePopOver = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+    };
 
     const setNewVal = (val) => {
-        const newVal = myValue + val.substring(2)
-        onChange(newVal)
-        setMyValue(newVal)
-    }
+        const newVal = myValue + val.substring(2);
+        onChange(newVal);
+        setMyValue(newVal);
+    };
 
     const getInputType = (type) => {
         switch (type) {
             case 'string':
-                return 'text'
+                return 'text';
             case 'password':
-                return 'password'
+                return 'password';
             case 'number':
-                return 'number'
+                return 'number';
             default:
-                return 'text'
+                return 'text';
         }
-    }
+    };
 
     useEffect(() => {
         if (!disabled && nodes && edges && nodeId && inputParam) {
-            const nodesForVariable = inputParam?.acceptVariable ? getAvailableNodesForVariable(nodes, edges, nodeId, inputParam.id) : []
-            setAvailableNodesForVariable(nodesForVariable)
+            const nodesForVariable = inputParam?.acceptVariable ? getAvailableNodesForVariable(nodes, edges, nodeId, inputParam.id) : [];
+            setAvailableNodesForVariable(nodesForVariable);
         }
-    }, [disabled, inputParam, nodes, edges, nodeId])
+    }, [disabled, inputParam, nodes, edges, nodeId]);
 
     useEffect(() => {
         if (typeof myValue === 'string' && myValue && myValue.endsWith('{{')) {
-            setAnchorEl(ref.current)
+            setAnchorEl(ref.current);
         }
-    }, [myValue])
+    }, [myValue]);
 
     return (
         <>
@@ -75,8 +75,8 @@ export const Input = ({
                     value={myValue}
                     name={inputParam.name}
                     onChange={(e) => {
-                        setMyValue(e.target.value)
-                        onChange(e.target.value)
+                        setMyValue(e.target.value);
+                        onChange(e.target.value);
                     }}
                     inputProps={{
                         step: inputParam.step ?? 1,
@@ -92,8 +92,8 @@ export const Input = ({
                     dialogProps={dialogProps}
                     onCancel={onDialogCancel}
                     onConfirm={(newValue, inputParamName) => {
-                        setMyValue(newValue)
-                        onDialogConfirm(newValue, inputParamName)
+                        setMyValue(newValue);
+                        onDialogConfirm(newValue, inputParamName);
                     }}
                 ></ExpandTextDialog>
             )}
@@ -116,15 +116,15 @@ export const Input = ({
                         disabled={disabled}
                         availableNodesForVariable={availableNodesForVariable}
                         onSelectAndReturnVal={(val) => {
-                            setNewVal(val)
-                            handleClosePopOver()
+                            setNewVal(val);
+                            handleClosePopOver();
                         }}
                     />
                 </Popover>
             )}
         </>
-    )
-}
+    );
+};
 
 Input.propTypes = {
     inputParam: PropTypes.object,
@@ -138,4 +138,4 @@ Input.propTypes = {
     nodeId: PropTypes.string,
     onDialogCancel: PropTypes.func,
     onDialogConfirm: PropTypes.func
-}
+};

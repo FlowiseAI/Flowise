@@ -1,24 +1,24 @@
 /* eslint-disable */
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm'
-import { ICredential } from '../../Interface'
+import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { ICredential } from '../../Interface';
 
 @Entity()
 export class Credential implements ICredential {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column()
-    credentialName: string
+    credentialName: string;
 
     @Column({ type: 'text' })
-    encryptedData: string
+    encryptedData: string;
 
     @CreateDateColumn()
-    createdDate: Date
+    createdDate: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date
+    updatedDate: Date;
 }

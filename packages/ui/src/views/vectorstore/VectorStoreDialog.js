@@ -1,9 +1,9 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { useDispatch } from 'react-redux'
-import { useContext, useState, useEffect } from 'react'
-import PerfectScrollbar from 'react-perfect-scrollbar'
-import { CopyBlock, atomOneDark } from 'react-code-blocks'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { useContext, useState, useEffect } from 'react';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import { CopyBlock, atomOneDark } from 'react-code-blocks';
 
 import {
     Dialog,
@@ -17,21 +17,21 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography
-} from '@mui/material'
+} from '@mui/material';
 
-import { CheckboxInput } from 'ui-component/checkbox/Checkbox'
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
-import { TableViewOnly } from 'ui-component/table/Table'
+import { CheckboxInput } from 'ui-component/checkbox/Checkbox';
+import { BackdropLoader } from 'ui-component/loading/BackdropLoader';
+import { TableViewOnly } from 'ui-component/table/Table';
 
-import { IconX } from '@tabler/icons'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import pythonSVG from 'assets/images/python.svg'
-import javascriptSVG from 'assets/images/javascript.svg'
-import cURLSVG from 'assets/images/cURL.svg'
+import { IconX } from '@tabler/icons';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import pythonSVG from 'assets/images/python.svg';
+import javascriptSVG from 'assets/images/javascript.svg';
+import cURLSVG from 'assets/images/cURL.svg';
 
-import useApi from 'hooks/useApi'
-import configApi from 'api/config'
-import vectorstoreApi from 'api/vectorstore'
+import useApi from 'hooks/useApi';
+import configApi from 'api/config';
+import vectorstoreApi from 'api/vectorstore';
 
 // Utils
 import {
@@ -41,17 +41,17 @@ import {
     getConfigExamplesForJS,
     getConfigExamplesForPython,
     getConfigExamplesForCurl
-} from 'utils/genericHelper'
-import useNotifier from 'utils/useNotifier'
+} from 'utils/genericHelper';
+import useNotifier from 'utils/useNotifier';
 
 // Store
-import { flowContext } from 'store/context/ReactFlowContext'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import { baseURL } from 'store/constant'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { flowContext } from 'store/context/ReactFlowContext';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
+import { baseURL } from 'store/constant';
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions';
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props
+    const { children, value, index, ...other } = props;
     return (
         <div
             role='tabpanel'
@@ -62,44 +62,44 @@ function TabPanel(props) {
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
         </div>
-    )
+    );
 }
 
 TabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
     value: PropTypes.number.isRequired
-}
+};
 
 function a11yProps(index) {
     return {
         id: `attachment-tab-${index}`,
         'aria-controls': `attachment-tabpanel-${index}`
-    }
+    };
 }
 
 const VectorStoreDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const { reactFlowInstance } = useContext(flowContext)
-    const dispatch = useDispatch()
+    const portalElement = document.getElementById('portal');
+    const { reactFlowInstance } = useContext(flowContext);
+    const dispatch = useDispatch();
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-    const getConfigApi = useApi(configApi.getConfig)
+    useNotifier();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
+    const getConfigApi = useApi(configApi.getConfig);
 
-    const [nodes, setNodes] = useState([])
-    const [loading, setLoading] = useState(false)
-    const [isFormDataRequired, setIsFormDataRequired] = useState({})
-    const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
-    const [nodeCheckboxExpanded, setCheckboxExpanded] = useState({})
-    const [tabValue, setTabValue] = useState(0)
-    const [expandedVectorNodeId, setExpandedVectorNodeId] = useState('')
-    const [configData, setConfigData] = useState({})
+    const [nodes, setNodes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [isFormDataRequired, setIsFormDataRequired] = useState({});
+    const [nodeConfigExpanded, setNodeConfigExpanded] = useState({});
+    const [nodeCheckboxExpanded, setCheckboxExpanded] = useState({});
+    const [tabValue, setTabValue] = useState(0);
+    const [expandedVectorNodeId, setExpandedVectorNodeId] = useState('');
+    const [configData, setConfigData] = useState({});
 
     const reformatConfigData = (configData, nodes) => {
-        return configData.filter((item1) => nodes.some((item2) => item1.nodeId === item2.id))
-    }
+        return configData.filter((item1) => nodes.some((item2) => item1.nodeId === item2.id));
+    };
 
     const getCode = (codeLang, vectorNodeId, isMultiple, configData) => {
         if (codeLang === 'Python') {
@@ -120,7 +120,7 @@ output = query({
             )}
     }
 })
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `async function query(data) {
     const response = await fetch(
@@ -148,7 +148,7 @@ query({
 }).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid} \\
       -X POST \\
@@ -162,16 +162,16 @@ query({
                 )}}' \\`
               : `-d '{"overrideConfig": {${getConfigExamplesForCurl(configData, 'json', isMultiple, vectorNodeId)}}' \\`
       }
-      -H "Content-Type: application/json"`
+      -H "Content-Type: application/json"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     const getCodeWithFormData = (codeLang, vectorNodeId, isMultiple, configData) => {
         if (codeLang === 'Python') {
-            configData = unshiftFiles(configData)
-            let fileType = configData[0].type
-            if (fileType.includes(',')) fileType = fileType.split(',')[0]
+            configData = unshiftFiles(configData);
+            let fileType = configData[0].type;
+            if (fileType.includes(',')) fileType = fileType.split(',')[0];
             return `import requests
 
 API_URL = "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}"
@@ -187,7 +187,7 @@ def query(form_data, body_data):
     return response.json()
 
 output = query(form_data, body_data)
-`
+`;
         } else if (codeLang === 'JavaScript') {
             return `// use FormData to upload files
 let formData = new FormData();
@@ -207,76 +207,76 @@ async function query(formData) {
 query(formData).then((response) => {
     console.log(response);
 });
-`
+`;
         } else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid} \\
      -X POST \\${getConfigExamplesForCurl(configData, 'formData', isMultiple, vectorNodeId)} \\
-     -H "Content-Type: multipart/form-data"`
+     -H "Content-Type: multipart/form-data"`;
         }
-        return ''
-    }
+        return '';
+    };
 
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
-            return 'python'
+            return 'python';
         } else if (codeLang === 'JavaScript') {
-            return 'javascript'
+            return 'javascript';
         } else if (codeLang === 'cURL') {
-            return 'bash'
+            return 'bash';
         }
-        return 'python'
-    }
+        return 'python';
+    };
 
     const getSVG = (codeLang) => {
         if (codeLang === 'Python') {
-            return pythonSVG
+            return pythonSVG;
         } else if (codeLang === 'JavaScript') {
-            return javascriptSVG
+            return javascriptSVG;
         } else if (codeLang === 'Embed') {
-            return EmbedSVG
+            return EmbedSVG;
         } else if (codeLang === 'cURL') {
-            return cURLSVG
+            return cURLSVG;
         } else if (codeLang === 'Share Chatbot') {
-            return ShareChatbotSVG
+            return ShareChatbotSVG;
         } else if (codeLang === 'Configuration') {
-            return settingsSVG
+            return settingsSVG;
         }
-        return pythonSVG
-    }
+        return pythonSVG;
+    };
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
-        const accordianNodes = { ...nodeConfigExpanded }
-        accordianNodes[nodeLabel] = isExpanded
-        setNodeConfigExpanded(accordianNodes)
-    }
+        const accordianNodes = { ...nodeConfigExpanded };
+        accordianNodes[nodeLabel] = isExpanded;
+        setNodeConfigExpanded(accordianNodes);
+    };
 
     const onCheckBoxChanged = (vectorNodeId) => {
-        const checkboxNodes = { ...nodeCheckboxExpanded }
-        if (Object.keys(checkboxNodes).includes(vectorNodeId)) checkboxNodes[vectorNodeId] = !checkboxNodes[vectorNodeId]
-        else checkboxNodes[vectorNodeId] = true
+        const checkboxNodes = { ...nodeCheckboxExpanded };
+        if (Object.keys(checkboxNodes).includes(vectorNodeId)) checkboxNodes[vectorNodeId] = !checkboxNodes[vectorNodeId];
+        else checkboxNodes[vectorNodeId] = true;
 
-        if (checkboxNodes[vectorNodeId] === true) getConfigApi.request(dialogProps.chatflowid)
-        setCheckboxExpanded(checkboxNodes)
-        setExpandedVectorNodeId(vectorNodeId)
+        if (checkboxNodes[vectorNodeId] === true) getConfigApi.request(dialogProps.chatflowid);
+        setCheckboxExpanded(checkboxNodes);
+        setExpandedVectorNodeId(vectorNodeId);
 
-        const newIsFormDataRequired = { ...isFormDataRequired }
-        newIsFormDataRequired[vectorNodeId] = false
-        setIsFormDataRequired(newIsFormDataRequired)
-        const newNodes = nodes.find((node) => node.vectorNode.data.id === vectorNodeId)?.nodes ?? []
+        const newIsFormDataRequired = { ...isFormDataRequired };
+        newIsFormDataRequired[vectorNodeId] = false;
+        setIsFormDataRequired(newIsFormDataRequired);
+        const newNodes = nodes.find((node) => node.vectorNode.data.id === vectorNodeId)?.nodes ?? [];
 
         for (const node of newNodes) {
             if (node.data.inputParams.find((param) => param.type === 'file')) {
-                newIsFormDataRequired[vectorNodeId] = true
-                setIsFormDataRequired(newIsFormDataRequired)
-                break
+                newIsFormDataRequired[vectorNodeId] = true;
+                setIsFormDataRequired(newIsFormDataRequired);
+                break;
             }
         }
-    }
+    };
 
     const onUpsertClicked = async (vectorStoreNode) => {
-        setLoading(true)
+        setLoading(true);
         try {
-            await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
+            await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id });
             enqueueSnackbar({
                 message: 'Succesfully upserted vector store. You can start chatting now!',
                 options: {
@@ -288,10 +288,10 @@ query(formData).then((response) => {
                         </Button>
                     )
                 }
-            })
-            setLoading(false)
+            });
+            setLoading(false);
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: errorData,
                 options: {
@@ -304,14 +304,14 @@ query(formData).then((response) => {
                         </Button>
                     )
                 }
-            })
-            setLoading(false)
+            });
+            setLoading(false);
         }
-    }
+    };
 
     const getNodeDetail = (node) => {
-        const nodeDetails = []
-        const inputKeys = Object.keys(node.data.inputs)
+        const nodeDetails = [];
+        const inputKeys = Object.keys(node.data.inputs);
         for (let i = 0; i < node.data.inputParams.length; i += 1) {
             if (inputKeys.includes(node.data.inputParams[i].name)) {
                 nodeDetails.push({
@@ -322,50 +322,50 @@ query(formData).then((response) => {
                         node.data.inputParams[i].type === 'file'
                             ? getFileName(node.data.inputs[node.data.inputParams[i].name])
                             : node.data.inputs[node.data.inputParams[i].name] ?? ''
-                })
+                });
             }
         }
-        return nodeDetails
-    }
+        return nodeDetails;
+    };
 
     useEffect(() => {
         if (getConfigApi.data) {
-            const newConfigData = { ...configData }
+            const newConfigData = { ...configData };
             newConfigData[expandedVectorNodeId] = reformatConfigData(
                 getConfigApi.data,
                 nodes.find((node) => node.vectorNode.data.id === expandedVectorNodeId)?.nodes ?? []
-            )
-            setConfigData(newConfigData)
+            );
+            setConfigData(newConfigData);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getConfigApi.data])
+    }, [getConfigApi.data]);
 
     useEffect(() => {
         if (dialogProps && reactFlowInstance) {
-            const nodes = reactFlowInstance.getNodes()
-            const edges = reactFlowInstance.getEdges()
-            setNodes(getUpsertDetails(nodes, edges))
+            const nodes = reactFlowInstance.getNodes();
+            const edges = reactFlowInstance.getEdges();
+            setNodes(getUpsertDetails(nodes, edges));
         }
 
         return () => {
-            setNodes([])
-            setLoading(false)
-            setIsFormDataRequired({})
-            setNodeConfigExpanded({})
-            setCheckboxExpanded({})
-            setTabValue(0)
-            setConfigData({})
-        }
+            setNodes([]);
+            setLoading(false);
+            setIsFormDataRequired({});
+            setNodeConfigExpanded({});
+            setCheckboxExpanded({});
+            setTabValue(0);
+            setConfigData({});
+        };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps]);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
+    }, [show, dispatch]);
 
     const component = show ? (
         <Dialog
@@ -456,7 +456,7 @@ query(formData).then((response) => {
                                                         />
                                                     </AccordionDetails>
                                                 </Accordion>
-                                            )
+                                            );
                                         })}
                                     <Box sx={{ p: 2 }}>
                                         <CheckboxInput
@@ -537,20 +537,20 @@ query(formData).then((response) => {
                                         )}
                                     </div>
                                 </div>
-                            )
+                            );
                         })}
                 </PerfectScrollbar>
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 VectorStoreDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
-}
+};
 
-export default VectorStoreDialog
+export default VectorStoreDialog;

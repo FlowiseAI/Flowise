@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useState, useRef, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles';
 import {
     Accordion,
     AccordionSummary,
@@ -23,147 +23,147 @@ import {
     Stack,
     Typography,
     Chip
-} from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 // third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import Transitions from 'ui-component/extended/Transitions'
-import { StyledFab } from 'ui-component/button/StyledFab'
+import MainCard from 'ui-component/cards/MainCard';
+import Transitions from 'ui-component/extended/Transitions';
+import { StyledFab } from 'ui-component/button/StyledFab';
 
 // icons
-import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons'
+import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons';
 
 // const
-import { baseURL } from 'store/constant'
-import { SET_COMPONENT_NODES } from 'store/actions'
+import { baseURL } from 'store/constant';
+import { SET_COMPONENT_NODES } from 'store/actions';
 
 // ==============================|| ADD NODES||============================== //
 
 const AddNodes = ({ nodesData, node }) => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-    const dispatch = useDispatch()
+    const theme = useTheme();
+    const customization = useSelector((state) => state.customization);
+    const dispatch = useDispatch();
 
-    const [searchValue, setSearchValue] = useState('')
-    const [nodes, setNodes] = useState({})
-    const [open, setOpen] = useState(false)
-    const [categoryExpanded, setCategoryExpanded] = useState({})
+    const [searchValue, setSearchValue] = useState('');
+    const [nodes, setNodes] = useState({});
+    const [open, setOpen] = useState(false);
+    const [categoryExpanded, setCategoryExpanded] = useState({});
 
-    const anchorRef = useRef(null)
-    const prevOpen = useRef(open)
-    const ps = useRef()
+    const anchorRef = useRef(null);
+    const prevOpen = useRef(open);
+    const ps = useRef();
 
     // Temporary method to handle Deprecating Vector Store and New ones
     const categorizeVectorStores = (nodes, accordianCategories, isFilter) => {
-        const obj = { ...nodes }
-        const vsNodes = obj['Vector Stores'] ?? []
-        const deprecatingNodes = []
-        const newNodes = []
+        const obj = { ...nodes };
+        const vsNodes = obj['Vector Stores'] ?? [];
+        const deprecatingNodes = [];
+        const newNodes = [];
         for (const vsNode of vsNodes) {
-            if (vsNode.badge === 'DEPRECATING') deprecatingNodes.push(vsNode)
-            else newNodes.push(vsNode)
+            if (vsNode.badge === 'DEPRECATING') deprecatingNodes.push(vsNode);
+            else newNodes.push(vsNode);
         }
-        delete obj['Vector Stores']
+        delete obj['Vector Stores'];
         if (deprecatingNodes.length) {
-            obj['Vector Stores;DEPRECATING'] = deprecatingNodes
-            accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
+            obj['Vector Stores;DEPRECATING'] = deprecatingNodes;
+            accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false;
         }
         if (newNodes.length) {
-            obj['Vector Stores;NEW'] = newNodes
-            accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
+            obj['Vector Stores;NEW'] = newNodes;
+            accordianCategories['Vector Stores;NEW'] = isFilter ? true : false;
         }
-        setNodes(obj)
-    }
+        setNodes(obj);
+    };
 
     const scrollTop = () => {
-        const curr = ps.current
+        const curr = ps.current;
         if (curr) {
-            curr.scrollTop = 0
+            curr.scrollTop = 0;
         }
-    }
+    };
 
     const getSearchedNodes = (value) => {
         const passed = nodesData.filter((nd) => {
-            const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
-            const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
-            return passesQuery || passesCategory
-        })
-        return passed
-    }
+            const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase());
+            const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase());
+            return passesQuery || passesCategory;
+        });
+        return passed;
+    };
 
     const filterSearch = (value) => {
-        setSearchValue(value)
+        setSearchValue(value);
         setTimeout(() => {
             if (value) {
-                const returnData = getSearchedNodes(value)
-                groupByCategory(returnData, true)
-                scrollTop()
+                const returnData = getSearchedNodes(value);
+                groupByCategory(returnData, true);
+                scrollTop();
             } else if (value === '') {
-                groupByCategory(nodesData)
-                scrollTop()
+                groupByCategory(nodesData);
+                scrollTop();
             }
-        }, 500)
-    }
+        }, 500);
+    };
 
     const groupByCategory = (nodes, isFilter) => {
-        const accordianCategories = {}
+        const accordianCategories = {};
         const result = nodes.reduce(function (r, a) {
-            r[a.category] = r[a.category] || []
-            r[a.category].push(a)
-            accordianCategories[a.category] = isFilter ? true : false
-            return r
-        }, Object.create(null))
-        setNodes(result)
-        categorizeVectorStores(result, accordianCategories, isFilter)
-        setCategoryExpanded(accordianCategories)
-    }
+            r[a.category] = r[a.category] || [];
+            r[a.category].push(a);
+            accordianCategories[a.category] = isFilter ? true : false;
+            return r;
+        }, Object.create(null));
+        setNodes(result);
+        categorizeVectorStores(result, accordianCategories, isFilter);
+        setCategoryExpanded(accordianCategories);
+    };
 
     const handleAccordionChange = (category) => (event, isExpanded) => {
-        const accordianCategories = { ...categoryExpanded }
-        accordianCategories[category] = isExpanded
-        setCategoryExpanded(accordianCategories)
-    }
+        const accordianCategories = { ...categoryExpanded };
+        accordianCategories[category] = isExpanded;
+        setCategoryExpanded(accordianCategories);
+    };
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
-            return
+            return;
         }
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
-    }
+        setOpen((prevOpen) => !prevOpen);
+    };
 
     const onDragStart = (event, node) => {
-        event.dataTransfer.setData('application/reactflow', JSON.stringify(node))
-        event.dataTransfer.effectAllowed = 'move'
-    }
+        event.dataTransfer.setData('application/reactflow', JSON.stringify(node));
+        event.dataTransfer.effectAllowed = 'move';
+    };
 
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus()
+            anchorRef.current.focus();
         }
 
-        prevOpen.current = open
-    }, [open])
+        prevOpen.current = open;
+    }, [open]);
 
     useEffect(() => {
-        if (node) setOpen(false)
-    }, [node])
+        if (node) setOpen(false);
+    }, [node]);
 
     useEffect(() => {
         if (nodesData) {
-            groupByCategory(nodesData)
-            dispatch({ type: SET_COMPONENT_NODES, componentNodes: nodesData })
+            groupByCategory(nodesData);
+            dispatch({ type: SET_COMPONENT_NODES, componentNodes: nodesData });
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nodesData, dispatch])
+    }, [nodesData, dispatch]);
 
     return (
         <>
@@ -248,7 +248,7 @@ const AddNodes = ({ nodesData, node }) => {
                                     </Box>
                                     <PerfectScrollbar
                                         containerRef={(el) => {
-                                            ps.current = el
+                                            ps.current = el;
                                         }}
                                         style={{ height: '100%', maxHeight: 'calc(100vh - 320px)', overflowX: 'hidden' }}
                                     >
@@ -414,12 +414,12 @@ const AddNodes = ({ nodesData, node }) => {
                 )}
             </Popper>
         </>
-    )
-}
+    );
+};
 
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object
-}
+};
 
-export default AddNodes
+export default AddNodes;

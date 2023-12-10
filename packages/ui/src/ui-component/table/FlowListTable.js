@@ -1,17 +1,17 @@
-import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
-import moment from 'moment'
-import { styled } from '@mui/material/styles'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import Paper from '@mui/material/Paper'
-import Chip from '@mui/material/Chip'
-import { Button, Stack, Typography } from '@mui/material'
-import FlowListMenu from '../button/FlowListMenu'
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
+import moment from 'moment';
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import { Button, Stack, Typography } from '@mui/material';
+import FlowListMenu from '../button/FlowListMenu';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -21,7 +21,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.body}`]: {
         fontSize: 14
     }
-}))
+}));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
@@ -31,13 +31,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:last-child td, &:last-child th': {
         border: 0
     }
-}))
+}));
 
 export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`)
-    }
+        navigate(`/canvas/${selectedChatflow.id}`);
+    };
 
     return (
         <>
@@ -143,12 +143,12 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                 </Table>
             </TableContainer>
         </>
-    )
-}
+    );
+};
 
 FlowListTable.propTypes = {
     data: PropTypes.array,
     images: PropTypes.object,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object
-}
+};

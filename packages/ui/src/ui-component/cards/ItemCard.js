@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 
 // material-ui
-import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography } from '@mui/material'
+import { styled } from '@mui/material/styles';
+import { Box, Grid, Typography } from '@mui/material';
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
+import MainCard from 'ui-component/cards/MainCard';
+import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -23,7 +23,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     maxWidth: '300px',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-line'
-}))
+}));
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
@@ -114,14 +114,14 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 </CardWrapper>
             )}
         </>
-    )
-}
+    );
+};
 
 ItemCard.propTypes = {
     isLoading: PropTypes.bool,
     data: PropTypes.object,
     images: PropTypes.array,
     onClick: PropTypes.func
-}
+};
 
-export default ItemCard
+export default ItemCard;

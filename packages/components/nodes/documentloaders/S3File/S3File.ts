@@ -1,47 +1,47 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { S3Loader } from 'langchain/document_loaders/web/s3'
-import { UnstructuredLoader } from 'langchain/document_loaders/fs/unstructured'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
-import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
-import { Readable } from 'node:stream'
-import * as fsDefault from 'node:fs'
-import * as path from 'node:path'
-import * as os from 'node:os'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { S3Loader } from 'langchain/document_loaders/web/s3';
+import { UnstructuredLoader } from 'langchain/document_loaders/fs/unstructured';
+import { getCredentialData, getCredentialParam } from '../../../src/utils';
+import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3';
+import { Readable } from 'node:stream';
+import * as fsDefault from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
 
 type S3Config = S3ClientConfig & {
     /** @deprecated Use the credentials object instead */
-    accessKeyId?: string
+    accessKeyId?: string;
     /** @deprecated Use the credentials object instead */
-    secretAccessKey?: string
-}
+    secretAccessKey?: string;
+};
 
 class S3_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs?: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs?: INodeParams[];
 
     constructor() {
-        this.label = 'S3'
-        this.name = 'S3'
-        this.version = 1.0
-        this.type = 'Document'
-        this.icon = 's3.svg'
-        this.category = 'Document Loaders'
-        this.description = 'Load Data from S3 Buckets'
-        this.baseClasses = [this.type]
+        this.label = 'S3';
+        this.name = 'S3';
+        this.version = 1.0;
+        this.type = 'Document';
+        this.icon = 's3.svg';
+        this.category = 'Document Loaders';
+        this.description = 'Load Data from S3 Buckets';
+        this.baseClasses = [this.type];
         this.credential = {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['awsApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Bucket',
@@ -129,20 +129,20 @@ class S3_DocumentLoaders implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const bucketName = nodeData.inputs?.bucketName as string
-        const keyName = nodeData.inputs?.keyName as string
-        const region = nodeData.inputs?.region as string
-        const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string
-        const unstructuredAPIKey = nodeData.inputs?.unstructuredAPIKey as string
-        const metadata = nodeData.inputs?.metadata
-        const narrativeTextOnly = nodeData.inputs?.narrativeTextOnly as boolean
+        const bucketName = nodeData.inputs?.bucketName as string;
+        const keyName = nodeData.inputs?.keyName as string;
+        const region = nodeData.inputs?.region as string;
+        const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string;
+        const unstructuredAPIKey = nodeData.inputs?.unstructuredAPIKey as string;
+        const metadata = nodeData.inputs?.metadata;
+        const narrativeTextOnly = nodeData.inputs?.narrativeTextOnly as boolean;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-        const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData);
+        const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData);
 
         const loader = new S3Loader({
             bucket: bucketName,
@@ -156,76 +156,76 @@ class S3_DocumentLoaders implements INode {
             },
             unstructuredAPIURL: unstructuredAPIUrl,
             unstructuredAPIKey: unstructuredAPIKey
-        })
+        });
 
         const s3Config: S3Config & {
-            accessKeyId?: string
-            secretAccessKey?: string
+            accessKeyId?: string;
+            secretAccessKey?: string;
         } = {
             region,
             credentials: {
                 accessKeyId,
                 secretAccessKey
             }
-        }
+        };
 
         loader.load = async () => {
-            const tempDir = fsDefault.mkdtempSync(path.join(os.tmpdir(), 's3fileloader-'))
+            const tempDir = fsDefault.mkdtempSync(path.join(os.tmpdir(), 's3fileloader-'));
 
-            const filePath = path.join(tempDir, keyName)
+            const filePath = path.join(tempDir, keyName);
 
             try {
-                const s3Client = new S3Client(s3Config)
+                const s3Client = new S3Client(s3Config);
 
                 const getObjectCommand = new GetObjectCommand({
                     Bucket: bucketName,
                     Key: keyName
-                })
+                });
 
-                const response = await s3Client.send(getObjectCommand)
+                const response = await s3Client.send(getObjectCommand);
 
                 const objectData = await new Promise<Buffer>((resolve, reject) => {
-                    const chunks: Buffer[] = []
+                    const chunks: Buffer[] = [];
 
                     if (response.Body instanceof Readable) {
-                        response.Body.on('data', (chunk: Buffer) => chunks.push(chunk))
-                        response.Body.on('end', () => resolve(Buffer.concat(chunks)))
-                        response.Body.on('error', reject)
+                        response.Body.on('data', (chunk: Buffer) => chunks.push(chunk));
+                        response.Body.on('end', () => resolve(Buffer.concat(chunks)));
+                        response.Body.on('error', reject);
                     } else {
-                        reject(new Error('Response body is not a readable stream.'))
+                        reject(new Error('Response body is not a readable stream.'));
                     }
-                })
+                });
 
-                fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+                fsDefault.mkdirSync(path.dirname(filePath), { recursive: true });
 
-                fsDefault.writeFileSync(filePath, objectData)
+                fsDefault.writeFileSync(filePath, objectData);
             } catch (e: any) {
-                throw new Error(`Failed to download file ${keyName} from S3 bucket ${bucketName}: ${e.message}`)
+                throw new Error(`Failed to download file ${keyName} from S3 bucket ${bucketName}: ${e.message}`);
             }
 
             try {
                 const options = {
                     apiUrl: unstructuredAPIUrl,
                     apiKey: unstructuredAPIKey
-                }
+                };
 
-                const unstructuredLoader = new UnstructuredLoader(filePath, options)
+                const unstructuredLoader = new UnstructuredLoader(filePath, options);
 
-                const docs = await unstructuredLoader.load()
+                const docs = await unstructuredLoader.load();
 
-                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true })
+                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true });
 
-                return docs
+                return docs;
             } catch {
-                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true })
-                throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
+                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true });
+                throw new Error(`Failed to load file ${filePath} using unstructured loader.`);
             }
-        }
+        };
 
-        const docs = await loader.load()
+        const docs = await loader.load();
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
             const finaldocs = docs.map((doc) => {
                 return {
                     ...doc,
@@ -233,12 +233,12 @@ class S3_DocumentLoaders implements INode {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-            })
-            return narrativeTextOnly ? finaldocs.filter((doc) => doc.metadata.category === 'NarrativeText') : finaldocs
+                };
+            });
+            return narrativeTextOnly ? finaldocs.filter((doc) => doc.metadata.category === 'NarrativeText') : finaldocs;
         }
 
-        return narrativeTextOnly ? docs.filter((doc) => doc.metadata.category === 'NarrativeText') : docs
+        return narrativeTextOnly ? docs.filter((doc) => doc.metadata.category === 'NarrativeText') : docs;
     }
 }
-module.exports = { nodeClass: S3_DocumentLoaders }
+module.exports = { nodeClass: S3_DocumentLoaders };

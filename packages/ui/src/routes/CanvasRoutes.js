@@ -1,12 +1,12 @@
-import { lazy } from 'react'
+import { lazy } from 'react';
 
 // project imports
-import Loadable from 'ui-component/loading/Loadable'
-import MinimalLayout from 'layout/MinimalLayout'
+import Loadable from 'ui-component/loading/Loadable';
+import MinimalLayout from 'layout/MinimalLayout';
 
 // canvas routing
-const Canvas = Loadable(lazy(() => import('views/canvas')))
-const MarketplaceCanvas = Loadable(lazy(() => import('views/marketplaces/MarketplaceCanvas')))
+const Canvas = Loadable(lazy(() => import('views/canvas')));
+const MarketplaceCanvas = Loadable(lazy(() => import('views/marketplaces/MarketplaceCanvas')));
 
 // ==============================|| CANVAS ROUTING ||============================== //
 
@@ -27,6 +27,6 @@ const CanvasRoutes = {
             element: <MarketplaceCanvas />
         }
     ]
-}
+};
 
-export default CanvasRoutes
+export default CanvasRoutes;

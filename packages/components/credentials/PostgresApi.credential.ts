@@ -1,16 +1,16 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeParams, INodeCredential } from '../src/Interface';
 
 class PostgresApi implements INodeCredential {
-    label: string
-    name: string
-    version: number
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Postgres API'
-        this.name = 'PostgresApi'
-        this.version = 1.0
+        this.label = 'Postgres API';
+        this.name = 'PostgresApi';
+        this.version = 1.0;
         this.inputs = [
             {
                 label: 'User',
@@ -24,8 +24,8 @@ class PostgresApi implements INodeCredential {
                 type: 'password',
                 placeholder: '<POSTGRES_PASSWORD>'
             }
-        ]
+        ];
     }
 }
 
-module.exports = { credClass: PostgresApi }
+module.exports = { credClass: PostgresApi };

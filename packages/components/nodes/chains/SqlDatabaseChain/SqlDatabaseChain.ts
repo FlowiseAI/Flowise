@@ -1,35 +1,35 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
-import { getBaseClasses, getInputVariables } from '../../../src/utils'
-import { DataSource } from 'typeorm'
-import { SqlDatabase } from 'langchain/sql_db'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { DataSourceOptions } from 'typeorm/data-source'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db';
+import { getBaseClasses, getInputVariables } from '../../../src/utils';
+import { DataSource } from 'typeorm';
+import { SqlDatabase } from 'langchain/sql_db';
+import { BaseLanguageModel } from 'langchain/base_language';
+import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts';
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler';
+import { DataSourceOptions } from 'typeorm/data-source';
 
-type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
+type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql';
 
 class SqlDatabaseChain_Chains implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    description: string
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    description: string;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Sql Database Chain'
-        this.name = 'sqlDatabaseChain'
-        this.version = 4.0
-        this.type = 'SqlDatabaseChain'
-        this.icon = 'sqlchain.svg'
-        this.category = 'Chains'
-        this.description = 'Answer questions over a SQL database'
-        this.baseClasses = [this.type, ...getBaseClasses(SqlDatabaseChain)]
+        this.label = 'Sql Database Chain';
+        this.name = 'sqlDatabaseChain';
+        this.version = 4.0;
+        this.type = 'SqlDatabaseChain';
+        this.icon = 'sqlchain.svg';
+        this.category = 'Chains';
+        this.description = 'Answer questions over a SQL database';
+        this.baseClasses = [this.type, ...getBaseClasses(SqlDatabaseChain)];
         this.inputs = [
             {
                 label: 'Language Model',
@@ -116,20 +116,20 @@ class SqlDatabaseChain_Chains implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const databaseType = nodeData.inputs?.database as DatabaseType
-        const model = nodeData.inputs?.model as BaseLanguageModel
-        const url = nodeData.inputs?.url as string
-        const includesTables = nodeData.inputs?.includesTables
-        const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
-        const ignoreTables = nodeData.inputs?.ignoreTables
-        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
-        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
-        const topK = nodeData.inputs?.topK as number
-        const customPrompt = nodeData.inputs?.customPrompt as string
+        const databaseType = nodeData.inputs?.database as DatabaseType;
+        const model = nodeData.inputs?.model as BaseLanguageModel;
+        const url = nodeData.inputs?.url as string;
+        const includesTables = nodeData.inputs?.includesTables;
+        const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',');
+        const ignoreTables = nodeData.inputs?.ignoreTables;
+        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',');
+        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number;
+        const topK = nodeData.inputs?.topK as number;
+        const customPrompt = nodeData.inputs?.customPrompt as string;
 
         const chain = await getSQLDBChain(
             databaseType,
@@ -140,21 +140,21 @@ class SqlDatabaseChain_Chains implements INode {
             sampleRowsInTableInfo,
             topK,
             customPrompt
-        )
-        return chain
+        );
+        return chain;
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const databaseType = nodeData.inputs?.database as DatabaseType
-        const model = nodeData.inputs?.model as BaseLanguageModel
-        const url = nodeData.inputs?.url as string
-        const includesTables = nodeData.inputs?.includesTables
-        const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',')
-        const ignoreTables = nodeData.inputs?.ignoreTables
-        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',')
-        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
-        const topK = nodeData.inputs?.topK as number
-        const customPrompt = nodeData.inputs?.customPrompt as string
+        const databaseType = nodeData.inputs?.database as DatabaseType;
+        const model = nodeData.inputs?.model as BaseLanguageModel;
+        const url = nodeData.inputs?.url as string;
+        const includesTables = nodeData.inputs?.includesTables;
+        const splittedIncludesTables = includesTables == '' ? undefined : includesTables?.split(',');
+        const ignoreTables = nodeData.inputs?.ignoreTables;
+        const splittedIgnoreTables = ignoreTables == '' ? undefined : ignoreTables?.split(',');
+        const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number;
+        const topK = nodeData.inputs?.topK as number;
+        const customPrompt = nodeData.inputs?.customPrompt as string;
 
         const chain = await getSQLDBChain(
             databaseType,
@@ -165,17 +165,17 @@ class SqlDatabaseChain_Chains implements INode {
             sampleRowsInTableInfo,
             topK,
             customPrompt
-        )
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const callbacks = await additionalCallbacks(nodeData, options)
+        );
+        const loggerHandler = new ConsoleCallbackHandler(options.logger);
+        const callbacks = await additionalCallbacks(nodeData, options);
 
         if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
-            const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
-            return res
+            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2);
+            const res = await chain.run(input, [loggerHandler, handler, ...callbacks]);
+            return res;
         } else {
-            const res = await chain.run(input, [loggerHandler, ...callbacks])
-            return res
+            const res = await chain.run(input, [loggerHandler, ...callbacks]);
+            return res;
         }
     }
 }
@@ -200,32 +200,32 @@ const getSQLDBChain = async (
                   type: databaseType,
                   url: url
               } as DataSourceOptions)
-    )
+    );
 
     const db = await SqlDatabase.fromDataSourceParams({
         appDataSource: datasource,
         includesTables: includesTables,
         ignoreTables: ignoreTables,
         sampleRowsInTableInfo: sampleRowsInTableInfo
-    })
+    });
 
     const obj: SqlDatabaseChainInput = {
         llm,
         database: db,
         verbose: process.env.DEBUG === 'true' ? true : false,
         topK: topK
-    }
+    };
 
     if (customPrompt) {
         const options: PromptTemplateInput = {
             template: customPrompt,
             inputVariables: getInputVariables(customPrompt)
-        }
-        obj.prompt = new PromptTemplate(options)
+        };
+        obj.prompt = new PromptTemplate(options);
     }
 
-    const chain = new SqlDatabaseChain(obj)
-    return chain
-}
+    const chain = new SqlDatabaseChain(obj);
+    return chain;
+};
 
-module.exports = { nodeClass: SqlDatabaseChain_Chains }
+module.exports = { nodeClass: SqlDatabaseChain_Chains };

@@ -1,11 +1,11 @@
-import { lazy } from 'react'
+import { lazy } from 'react';
 
 // project imports
-import Loadable from 'ui-component/loading/Loadable'
-import MinimalLayout from 'layout/MinimalLayout'
+import Loadable from 'ui-component/loading/Loadable';
+import MinimalLayout from 'layout/MinimalLayout';
 
 // canvas routing
-const ChatbotFull = Loadable(lazy(() => import('views/chatbot')))
+const ChatbotFull = Loadable(lazy(() => import('views/chatbot')));
 
 // ==============================|| CANVAS ROUTING ||============================== //
 
@@ -18,6 +18,6 @@ const ChatbotRoutes = {
             element: <ChatbotFull />
         }
     ]
-}
+};
 
-export default ChatbotRoutes
+export default ChatbotRoutes;

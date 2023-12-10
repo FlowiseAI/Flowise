@@ -1,12 +1,12 @@
-import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
+import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
+import rehypeMathjax from 'rehype-mathjax';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 
 // MUI
 import {
@@ -32,30 +32,30 @@ import {
     FormControl,
     Checkbox,
     MenuItem
-} from '@mui/material'
-import MuiAccordion from '@mui/material/Accordion'
-import MuiAccordionSummary from '@mui/material/AccordionSummary'
-import MuiAccordionDetails from '@mui/material/AccordionDetails'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'
-import ClearIcon from '@mui/icons-material/Clear'
-import { styled } from '@mui/material/styles'
+} from '@mui/material';
+import MuiAccordion from '@mui/material/Accordion';
+import MuiAccordionSummary from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import ClearIcon from '@mui/icons-material/Clear';
+import { styled } from '@mui/material/styles';
 
 //Project Import
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from 'ui-component/markdown/CodeBlock'
-import promptEmptySVG from 'assets/images/prompt_empty.svg'
+import { StyledButton } from 'ui-component/button/StyledButton';
+import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown';
+import { CodeBlock } from 'ui-component/markdown/CodeBlock';
+import promptEmptySVG from 'assets/images/prompt_empty.svg';
 
-import useApi from 'hooks/useApi'
-import promptApi from 'api/prompt'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useApi from 'hooks/useApi';
+import promptApi from 'api/prompt';
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions';
 
 const NewLineToBr = ({ children = '' }) => {
     return children.split('\n').reduce(function (arr, line) {
-        return arr.concat(line, <br />)
-    }, [])
-}
+        return arr.concat(line, <br />);
+    }, []);
+};
 
 const Accordion = styled((props) => <MuiAccordion disableGutters elevation={0} square {...props} />)(({ theme }) => ({
     border: `1px solid ${theme.palette.divider}`,
@@ -65,7 +65,7 @@ const Accordion = styled((props) => <MuiAccordion disableGutters elevation={0} s
     '&:before': {
         display: 'none'
     }
-}))
+}));
 
 const AccordionSummary = styled((props) => (
     <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
@@ -78,45 +78,45 @@ const AccordionSummary = styled((props) => (
     '& .MuiAccordionSummary-content': {
         marginLeft: theme.spacing(1)
     }
-}))
+}));
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
     padding: theme.spacing(2),
     borderTop: '1px solid rgba(0, 0, 0, .125)'
-}))
+}));
 
 const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
-    const portalElement = document.getElementById('portal')
-    const dispatch = useDispatch()
-    const customization = useSelector((state) => state.customization)
-    const getAvailablePromptsApi = useApi(promptApi.getAvailablePrompts)
+    const portalElement = document.getElementById('portal');
+    const dispatch = useDispatch();
+    const customization = useSelector((state) => state.customization);
+    const getAvailablePromptsApi = useApi(promptApi.getAvailablePrompts);
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+        if (show) dispatch({ type: SHOW_CANVAS_DIALOG });
+        else dispatch({ type: HIDE_CANVAS_DIALOG });
+        return () => dispatch({ type: HIDE_CANVAS_DIALOG });
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [show, dispatch])
+    }, [show, dispatch]);
 
     useEffect(() => {
         if (promptType) {
-            getAvailablePromptsApi.request({ tags: promptType === 'template' ? 'StringPromptTemplate&' : 'ChatPromptTemplate&' })
+            getAvailablePromptsApi.request({ tags: promptType === 'template' ? 'StringPromptTemplate&' : 'ChatPromptTemplate&' });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [promptType])
+    }, [promptType]);
 
     useEffect(() => {
         if (getAvailablePromptsApi.data && getAvailablePromptsApi.data.repos) {
-            setAvailablePrompNameList(getAvailablePromptsApi.data.repos)
-            if (getAvailablePromptsApi.data.repos?.length) handleListItemClick(0, getAvailablePromptsApi.data.repos)
+            setAvailablePrompNameList(getAvailablePromptsApi.data.repos);
+            if (getAvailablePromptsApi.data.repos?.length) handleListItemClick(0, getAvailablePromptsApi.data.repos);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAvailablePromptsApi.data])
+    }, [getAvailablePromptsApi.data]);
 
-    const ITEM_HEIGHT = 48
-    const ITEM_PADDING_TOP = 8
+    const ITEM_HEIGHT = 48;
+    const ITEM_PADDING_TOP = 8;
     const MenuProps = {
         PaperProps: {
             style: {
@@ -124,7 +124,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                 width: 250
             }
         }
-    }
+    };
 
     const models = [
         { id: 101, name: 'anthropic:claude-instant-1' },
@@ -138,8 +138,8 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         { id: 109, name: 'openai:gpt-3.5-turbo' },
         { id: 110, name: 'openai:gpt-4' },
         { id: 111, name: 'openai:text-davinci-003' }
-    ]
-    const [modelName, setModelName] = useState([])
+    ];
+    const [modelName, setModelName] = useState([]);
 
     const usecases = [
         { id: 201, name: 'Agents' },
@@ -158,8 +158,8 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         { id: 214, name: 'SQL' },
         { id: 215, name: 'Summarization' },
         { id: 216, name: 'Tagging' }
-    ]
-    const [usecase, setUsecase] = useState([])
+    ];
+    const [usecase, setUsecase] = useState([]);
 
     const languages = [
         { id: 301, name: 'Chinese' },
@@ -168,83 +168,83 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         { id: 304, name: 'German' },
         { id: 305, name: 'Russian' },
         { id: 306, name: 'Spanish' }
-    ]
-    const [language, setLanguage] = useState([])
-    const [availablePrompNameList, setAvailablePrompNameList] = useState([])
-    const [selectedPrompt, setSelectedPrompt] = useState({})
+    ];
+    const [language, setLanguage] = useState([]);
+    const [availablePrompNameList, setAvailablePrompNameList] = useState([]);
+    const [selectedPrompt, setSelectedPrompt] = useState({});
 
-    const [accordionExpanded, setAccordionExpanded] = useState(['prompt'])
+    const [accordionExpanded, setAccordionExpanded] = useState(['prompt']);
 
     const handleAccordionChange = (accordionName) => (event, isExpanded) => {
-        const accordians = [...accordionExpanded]
-        if (!isExpanded) setAccordionExpanded(accordians.filter((accr) => accr !== accordionName))
+        const accordians = [...accordionExpanded];
+        if (!isExpanded) setAccordionExpanded(accordians.filter((accr) => accr !== accordionName));
         else {
-            accordians.push(accordionName)
-            setAccordionExpanded(accordians)
+            accordians.push(accordionName);
+            setAccordionExpanded(accordians);
         }
-    }
+    };
 
     const handleListItemClick = async (index, overridePromptNameList = []) => {
-        const prompt = overridePromptNameList.length ? overridePromptNameList[index] : availablePrompNameList[index]
+        const prompt = overridePromptNameList.length ? overridePromptNameList[index] : availablePrompNameList[index];
 
         if (!prompt.detailed) {
             const createResp = await promptApi.getPrompt({
                 promptName: prompt.full_name
-            })
+            });
             if (createResp.data) {
-                prompt.detailed = createResp.data.templates
+                prompt.detailed = createResp.data.templates;
             }
         }
-        setSelectedPrompt(prompt)
-    }
+        setSelectedPrompt(prompt);
+    };
 
     const fetchPrompts = async () => {
-        let tags = promptType === 'template' ? 'StringPromptTemplate&' : 'ChatPromptTemplate&'
+        let tags = promptType === 'template' ? 'StringPromptTemplate&' : 'ChatPromptTemplate&';
         modelName.forEach((item) => {
-            tags += `tags=${item.name}&`
-        })
+            tags += `tags=${item.name}&`;
+        });
         usecase.forEach((item) => {
-            tags += `tags=${item.name}&`
-        })
+            tags += `tags=${item.name}&`;
+        });
         language.forEach((item) => {
-            tags += `tags=${item.name}&`
-        })
-        getAvailablePromptsApi.request({ tags: tags })
-    }
+            tags += `tags=${item.name}&`;
+        });
+        getAvailablePromptsApi.request({ tags: tags });
+    };
 
     const removeDuplicates = (value) => {
-        let duplicateRemoved = []
+        let duplicateRemoved = [];
 
         value.forEach((item) => {
             if (value.filter((o) => o.id === item.id).length === 1) {
-                duplicateRemoved.push(item)
+                duplicateRemoved.push(item);
             }
-        })
-        return duplicateRemoved
-    }
+        });
+        return duplicateRemoved;
+    };
 
     const handleModelChange = (event) => {
         const {
             target: { value }
-        } = event
+        } = event;
 
-        setModelName(removeDuplicates(value))
-    }
+        setModelName(removeDuplicates(value));
+    };
 
     const handleUsecaseChange = (event) => {
         const {
             target: { value }
-        } = event
+        } = event;
 
-        setUsecase(removeDuplicates(value))
-    }
+        setUsecase(removeDuplicates(value));
+    };
     const handleLanguageChange = (event) => {
         const {
             target: { value }
-        } = event
+        } = event;
 
-        setLanguage(removeDuplicates(value))
-    }
+        setLanguage(removeDuplicates(value));
+    };
 
     const component = show ? (
         <Dialog
@@ -528,7 +528,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                                                 rehypePlugins={[rehypeMathjax, rehypeRaw]}
                                                                 components={{
                                                                     code({ inline, className, children, ...props }) {
-                                                                        const match = /language-(\w+)/.exec(className || '')
+                                                                        const match = /language-(\w+)/.exec(className || '');
                                                                         return !inline ? (
                                                                             <CodeBlock
                                                                                 key={Math.random()}
@@ -541,7 +541,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                                                             <code className={className} {...props}>
                                                                                 {children}
                                                                             </code>
-                                                                        )
+                                                                        );
                                                                     }
                                                                 }}
                                                             >
@@ -572,16 +572,16 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                 </DialogActions>
             )}
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 PromptLangsmithHubDialog.propTypes = {
     promptType: PropTypes.string,
     show: PropTypes.bool,
     onCancel: PropTypes.func,
     onSubmit: PropTypes.func
-}
+};
 
-export default PromptLangsmithHubDialog
+export default PromptLangsmithHubDialog;

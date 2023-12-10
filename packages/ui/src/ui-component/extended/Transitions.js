@@ -1,48 +1,48 @@
-import PropTypes from 'prop-types'
-import { forwardRef } from 'react'
+import PropTypes from 'prop-types';
+import { forwardRef } from 'react';
 
 // material-ui
-import { Collapse, Fade, Box, Grow, Slide, Zoom } from '@mui/material'
+import { Collapse, Fade, Box, Grow, Slide, Zoom } from '@mui/material';
 
 // ==============================|| TRANSITIONS ||============================== //
 
 const Transitions = forwardRef(function Transitions({ children, position, type, direction, ...others }, ref) {
     let positionSX = {
         transformOrigin: '0 0 0'
-    }
+    };
 
     switch (position) {
         case 'top-right':
             positionSX = {
                 transformOrigin: 'top right'
-            }
-            break
+            };
+            break;
         case 'top':
             positionSX = {
                 transformOrigin: 'top'
-            }
-            break
+            };
+            break;
         case 'bottom-left':
             positionSX = {
                 transformOrigin: 'bottom left'
-            }
-            break
+            };
+            break;
         case 'bottom-right':
             positionSX = {
                 transformOrigin: 'bottom right'
-            }
-            break
+            };
+            break;
         case 'bottom':
             positionSX = {
                 transformOrigin: 'bottom'
-            }
-            break
+            };
+            break;
         case 'top-left':
         default:
             positionSX = {
                 transformOrigin: '0 0 0'
-            }
-            break
+            };
+            break;
     }
 
     return (
@@ -88,20 +88,20 @@ const Transitions = forwardRef(function Transitions({ children, position, type, 
                 </Zoom>
             )}
         </Box>
-    )
-})
+    );
+});
 
 Transitions.propTypes = {
     children: PropTypes.node,
     type: PropTypes.oneOf(['grow', 'fade', 'collapse', 'slide', 'zoom']),
     position: PropTypes.oneOf(['top-left', 'top-right', 'top', 'bottom-left', 'bottom-right', 'bottom']),
     direction: PropTypes.oneOf(['up', 'down', 'left', 'right'])
-}
+};
 
 Transitions.defaultProps = {
     type: 'grow',
     position: 'top-left',
     direction: 'up'
-}
+};
 
-export default Transitions
+export default Transitions;

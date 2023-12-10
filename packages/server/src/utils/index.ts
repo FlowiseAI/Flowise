@@ -1,6 +1,6 @@
-import path from 'path'
-import fs from 'fs'
-import logger from './logger'
+import path from 'path';
+import fs from 'fs';
+import logger from './logger';
 import {
     IComponentCredentials,
     IComponentNodes,
@@ -17,8 +17,8 @@ import {
     IReactFlowNode,
     IVariableDict,
     IncomingInput
-} from '../Interface'
-import { cloneDeep, get, isEqual } from 'lodash'
+} from '../Interface';
+import { cloneDeep, get, isEqual } from 'lodash';
 import {
     convertChatHistoryToText,
     getInputVariables,
@@ -26,21 +26,21 @@ import {
     ICommonObject,
     IDatabaseEntity,
     IMessage
-} from 'flowise-components'
-import { randomBytes } from 'crypto'
-import { AES, enc } from 'crypto-js'
+} from 'flowise-components';
+import { randomBytes } from 'crypto';
+import { AES, enc } from 'crypto-js';
 
-import { ChatFlow } from '../database/entities/ChatFlow'
-import { ChatMessage } from '../database/entities/ChatMessage'
-import { Credential } from '../database/entities/Credential'
-import { Tool } from '../database/entities/Tool'
-import { Assistant } from '../database/entities/Assistant'
-import { DataSource } from 'typeorm'
-import { CachePool } from '../CachePool'
+import { ChatFlow } from '../database/entities/ChatFlow';
+import { ChatMessage } from '../database/entities/ChatMessage';
+import { Credential } from '../database/entities/Credential';
+import { Tool } from '../database/entities/Tool';
+import { Assistant } from '../database/entities/Assistant';
+import { DataSource } from 'typeorm';
+import { CachePool } from '../CachePool';
 
-const QUESTION_VAR_PREFIX = 'question'
-const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
-const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
+const QUESTION_VAR_PREFIX = 'question';
+const CHAT_HISTORY_VAR_PREFIX = 'chat_history';
+const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db';
 
 export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
@@ -48,7 +48,7 @@ export const databaseEntities: IDatabaseEntity = {
     Tool: Tool,
     Credential: Credential,
     Assistant: Assistant
-}
+};
 
 /**
  * Returns the home folder path of the user if
@@ -57,18 +57,18 @@ export const databaseEntities: IDatabaseEntity = {
  *
  */
 export const getUserHome = (): string => {
-    let variableName = 'HOME'
+    let variableName = 'HOME';
     if (process.platform === 'win32') {
-        variableName = 'USERPROFILE'
+        variableName = 'USERPROFILE';
     }
 
     if (process.env[variableName] === undefined) {
         // If for some reason the variable does not exist
         // fall back to current folder
-        return process.cwd()
+        return process.cwd();
     }
-    return process.env[variableName] as string
-}
+    return process.env[variableName] as string;
+};
 
 /**
  * Returns the path of node modules package
@@ -82,14 +82,14 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
         path.join(__dirname, '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
         path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
-    ]
+    ];
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
-            return checkPath
+            return checkPath;
         }
     }
-    return ''
-}
+    return '';
+};
 
 /**
  * Construct graph and node dependencies score
@@ -98,37 +98,37 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
  * @param {boolean} isNondirected
  */
 export const constructGraphs = (reactFlowNodes: IReactFlowNode[], reactFlowEdges: IReactFlowEdge[], isNondirected = false) => {
-    const nodeDependencies = {} as INodeDependencies
-    const graph = {} as INodeDirectedGraph
+    const nodeDependencies = {} as INodeDependencies;
+    const graph = {} as INodeDirectedGraph;
 
     for (let i = 0; i < reactFlowNodes.length; i += 1) {
-        const nodeId = reactFlowNodes[i].id
-        nodeDependencies[nodeId] = 0
-        graph[nodeId] = []
+        const nodeId = reactFlowNodes[i].id;
+        nodeDependencies[nodeId] = 0;
+        graph[nodeId] = [];
     }
 
     for (let i = 0; i < reactFlowEdges.length; i += 1) {
-        const source = reactFlowEdges[i].source
-        const target = reactFlowEdges[i].target
+        const source = reactFlowEdges[i].source;
+        const target = reactFlowEdges[i].target;
 
         if (Object.prototype.hasOwnProperty.call(graph, source)) {
-            graph[source].push(target)
+            graph[source].push(target);
         } else {
-            graph[source] = [target]
+            graph[source] = [target];
         }
 
         if (isNondirected) {
             if (Object.prototype.hasOwnProperty.call(graph, target)) {
-                graph[target].push(source)
+                graph[target].push(source);
             } else {
-                graph[target] = [source]
+                graph[target] = [source];
             }
         }
-        nodeDependencies[target] += 1
+        nodeDependencies[target] += 1;
     }
 
-    return { graph, nodeDependencies }
-}
+    return { graph, nodeDependencies };
+};
 
 /**
  * Get starting nodes and check if flow is valid
@@ -136,48 +136,48 @@ export const constructGraphs = (reactFlowNodes: IReactFlowNode[], reactFlowEdges
  * @param {string} endNodeId
  */
 export const getStartingNodes = (graph: INodeDirectedGraph, endNodeId: string) => {
-    const visited = new Set<string>()
-    const queue: Array<[string, number]> = [[endNodeId, 0]]
+    const visited = new Set<string>();
+    const queue: Array<[string, number]> = [[endNodeId, 0]];
     const depthQueue: IDepthQueue = {
         [endNodeId]: 0
-    }
+    };
 
-    let maxDepth = 0
-    let startingNodeIds: string[] = []
+    let maxDepth = 0;
+    let startingNodeIds: string[] = [];
 
     while (queue.length > 0) {
-        const [currentNode, depth] = queue.shift()!
+        const [currentNode, depth] = queue.shift()!;
 
         if (visited.has(currentNode)) {
-            continue
+            continue;
         }
 
-        visited.add(currentNode)
+        visited.add(currentNode);
 
         if (depth > maxDepth) {
-            maxDepth = depth
-            startingNodeIds = [currentNode]
+            maxDepth = depth;
+            startingNodeIds = [currentNode];
         } else if (depth === maxDepth) {
-            startingNodeIds.push(currentNode)
+            startingNodeIds.push(currentNode);
         }
 
         for (const neighbor of graph[currentNode]) {
             if (!visited.has(neighbor)) {
-                queue.push([neighbor, depth + 1])
-                depthQueue[neighbor] = depth + 1
+                queue.push([neighbor, depth + 1]);
+                depthQueue[neighbor] = depth + 1;
             }
         }
     }
 
-    const depthQueueReversed: IDepthQueue = {}
+    const depthQueueReversed: IDepthQueue = {};
     for (const nodeId in depthQueue) {
         if (Object.prototype.hasOwnProperty.call(depthQueue, nodeId)) {
-            depthQueueReversed[nodeId] = Math.abs(depthQueue[nodeId] - maxDepth)
+            depthQueueReversed[nodeId] = Math.abs(depthQueue[nodeId] - maxDepth);
         }
     }
 
-    return { startingNodeIds, depthQueue: depthQueueReversed }
-}
+    return { startingNodeIds, depthQueue: depthQueueReversed };
+};
 
 /**
  * Get ending node and check if flow is valid
@@ -185,16 +185,16 @@ export const getStartingNodes = (graph: INodeDirectedGraph, endNodeId: string) =
  * @param {INodeDirectedGraph} graph
  */
 export const getEndingNode = (nodeDependencies: INodeDependencies, graph: INodeDirectedGraph) => {
-    let endingNodeId = ''
+    let endingNodeId = '';
     Object.keys(graph).forEach((nodeId) => {
         if (Object.keys(nodeDependencies).length === 1) {
-            endingNodeId = nodeId
+            endingNodeId = nodeId;
         } else if (!graph[nodeId].length && nodeDependencies[nodeId] > 0) {
-            endingNodeId = nodeId
+            endingNodeId = nodeId;
         }
-    })
-    return endingNodeId
-}
+    });
+    return endingNodeId;
+};
 
 /**
  * Build langchain from start to end
@@ -226,41 +226,41 @@ export const buildLangchain = async (
     isUpsert?: boolean,
     stopNodeId?: string
 ) => {
-    const flowNodes = cloneDeep(reactFlowNodes)
+    const flowNodes = cloneDeep(reactFlowNodes);
 
     // Create a Queue and add our initial node in it
-    const nodeQueue = [] as INodeQueue[]
-    const exploredNode = {} as IExploredNode
+    const nodeQueue = [] as INodeQueue[];
+    const exploredNode = {} as IExploredNode;
 
     // In the case of infinite loop, only max 3 loops will be executed
-    const maxLoop = 3
+    const maxLoop = 3;
 
     for (let i = 0; i < startingNodeIds.length; i += 1) {
-        nodeQueue.push({ nodeId: startingNodeIds[i], depth: 0 })
-        exploredNode[startingNodeIds[i]] = { remainingLoop: maxLoop, lastSeenDepth: 0 }
+        nodeQueue.push({ nodeId: startingNodeIds[i], depth: 0 });
+        exploredNode[startingNodeIds[i]] = { remainingLoop: maxLoop, lastSeenDepth: 0 };
     }
 
     while (nodeQueue.length) {
-        const { nodeId, depth } = nodeQueue.shift() as INodeQueue
+        const { nodeId, depth } = nodeQueue.shift() as INodeQueue;
 
-        const reactFlowNode = flowNodes.find((nd) => nd.id === nodeId)
-        const nodeIndex = flowNodes.findIndex((nd) => nd.id === nodeId)
-        if (!reactFlowNode || reactFlowNode === undefined || nodeIndex < 0) continue
+        const reactFlowNode = flowNodes.find((nd) => nd.id === nodeId);
+        const nodeIndex = flowNodes.findIndex((nd) => nd.id === nodeId);
+        if (!reactFlowNode || reactFlowNode === undefined || nodeIndex < 0) continue;
 
         try {
-            const nodeInstanceFilePath = componentNodes[reactFlowNode.data.name].filePath as string
-            const nodeModule = await import(nodeInstanceFilePath)
-            const newNodeInstance = new nodeModule.nodeClass()
+            const nodeInstanceFilePath = componentNodes[reactFlowNode.data.name].filePath as string;
+            const nodeModule = await import(nodeInstanceFilePath);
+            const newNodeInstance = new nodeModule.nodeClass();
 
-            let flowNodeData = cloneDeep(reactFlowNode.data)
-            if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
+            let flowNodeData = cloneDeep(reactFlowNode.data);
+            if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig);
+            const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory);
 
             if (
                 isUpsert &&
                 ((stopNodeId && reactFlowNodeData.id === stopNodeId) || (!stopNodeId && reactFlowNodeData.category === 'Vector Stores'))
             ) {
-                logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`);
                 await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
                     chatflowid,
@@ -268,11 +268,11 @@ export const buildLangchain = async (
                     databaseEntities,
                     logger,
                     cachePool
-                })
-                logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                break
+                });
+                logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`);
+                break;
             } else {
-                logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`);
                 flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
                     chatflowid,
@@ -280,48 +280,48 @@ export const buildLangchain = async (
                     databaseEntities,
                     logger,
                     cachePool
-                })
-                logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                });
+                logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`);
             }
         } catch (e: any) {
-            logger.error(e)
-            throw new Error(e)
+            logger.error(e);
+            throw new Error(e);
         }
 
-        const neighbourNodeIds = graph[nodeId]
-        const nextDepth = depth + 1
+        const neighbourNodeIds = graph[nodeId];
+        const nextDepth = depth + 1;
 
         // Find other nodes that are on the same depth level
-        const sameDepthNodeIds = Object.keys(depthQueue).filter((key) => depthQueue[key] === nextDepth)
+        const sameDepthNodeIds = Object.keys(depthQueue).filter((key) => depthQueue[key] === nextDepth);
 
         for (const id of sameDepthNodeIds) {
-            if (neighbourNodeIds.includes(id)) continue
-            neighbourNodeIds.push(id)
+            if (neighbourNodeIds.includes(id)) continue;
+            neighbourNodeIds.push(id);
         }
 
         for (let i = 0; i < neighbourNodeIds.length; i += 1) {
-            const neighNodeId = neighbourNodeIds[i]
+            const neighNodeId = neighbourNodeIds[i];
 
             // If nodeId has been seen, cycle detected
             if (Object.prototype.hasOwnProperty.call(exploredNode, neighNodeId)) {
-                const { remainingLoop, lastSeenDepth } = exploredNode[neighNodeId]
+                const { remainingLoop, lastSeenDepth } = exploredNode[neighNodeId];
 
-                if (lastSeenDepth === nextDepth) continue
+                if (lastSeenDepth === nextDepth) continue;
 
                 if (remainingLoop === 0) {
-                    break
+                    break;
                 }
-                const remainingLoopMinusOne = remainingLoop - 1
-                exploredNode[neighNodeId] = { remainingLoop: remainingLoopMinusOne, lastSeenDepth: nextDepth }
-                nodeQueue.push({ nodeId: neighNodeId, depth: nextDepth })
+                const remainingLoopMinusOne = remainingLoop - 1;
+                exploredNode[neighNodeId] = { remainingLoop: remainingLoopMinusOne, lastSeenDepth: nextDepth };
+                nodeQueue.push({ nodeId: neighNodeId, depth: nextDepth });
             } else {
-                exploredNode[neighNodeId] = { remainingLoop: maxLoop, lastSeenDepth: nextDepth }
-                nodeQueue.push({ nodeId: neighNodeId, depth: nextDepth })
+                exploredNode[neighNodeId] = { remainingLoop: maxLoop, lastSeenDepth: nextDepth };
+                nodeQueue.push({ nodeId: neighNodeId, depth: nextDepth });
             }
         }
     }
-    return flowNodes
-}
+    return flowNodes;
+};
 
 /**
  * Clear all session memories on the canvas
@@ -339,20 +339,20 @@ export const clearAllSessionMemory = async (
     sessionId?: string
 ) => {
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
-        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
-        const nodeModule = await import(nodeInstanceFilePath)
-        const newNodeInstance = new nodeModule.nodeClass()
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue;
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string;
+        const nodeModule = await import(nodeInstanceFilePath);
+        const newNodeInstance = new nodeModule.nodeClass();
 
         if (sessionId && node.data.inputs) {
-            node.data.inputs.sessionId = sessionId
+            node.data.inputs.sessionId = sessionId;
         }
 
         if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
-            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger });
         }
     }
-}
+};
 
 /**
  * Clear specific session memory from View Message Dialog UI
@@ -371,22 +371,22 @@ export const clearSessionMemoryFromViewMessageDialog = async (
     sessionId?: string,
     memoryType?: string
 ) => {
-    if (!sessionId) return
+    if (!sessionId) return;
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
-        if (memoryType && node.data.label !== memoryType) continue
-        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
-        const nodeModule = await import(nodeInstanceFilePath)
-        const newNodeInstance = new nodeModule.nodeClass()
+        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue;
+        if (memoryType && node.data.label !== memoryType) continue;
+        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string;
+        const nodeModule = await import(nodeInstanceFilePath);
+        const newNodeInstance = new nodeModule.nodeClass();
 
-        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
+        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId;
 
         if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
-            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
-            return
+            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger });
+            return;
         }
     }
-}
+};
 
 /**
  * Get variable value from outputResponses.output
@@ -403,25 +403,25 @@ export const getVariableValue = (
     chatHistory: IMessage[] | string,
     isAcceptVariable = false
 ) => {
-    let returnVal = paramValue
-    const variableStack = []
-    const variableDict = {} as IVariableDict
-    let startIdx = 0
-    const endIdx = returnVal.length - 1
+    let returnVal = paramValue;
+    const variableStack = [];
+    const variableDict = {} as IVariableDict;
+    let startIdx = 0;
+    const endIdx = returnVal.length - 1;
 
     while (startIdx < endIdx) {
-        const substr = returnVal.substring(startIdx, startIdx + 2)
+        const substr = returnVal.substring(startIdx, startIdx + 2);
 
         // Store the opening double curly bracket
         if (substr === '{{') {
-            variableStack.push({ substr, startIdx: startIdx + 2 })
+            variableStack.push({ substr, startIdx: startIdx + 2 });
         }
 
         // Found the complete variable
         if (substr === '}}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{{') {
-            const variableStartIdx = variableStack[variableStack.length - 1].startIdx
-            const variableEndIdx = startIdx
-            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
+            const variableStartIdx = variableStack[variableStack.length - 1].startIdx;
+            const variableEndIdx = startIdx;
+            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx);
 
             /**
              * Apply string transformation to convert special chars:
@@ -429,44 +429,44 @@ export const getVariableValue = (
              * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false);
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(
                     typeof chatHistory === 'string' ? chatHistory : convertChatHistoryToText(chatHistory),
                     false
-                )
+                );
             }
 
             // Split by first occurrence of '.' to get just nodeId
-            const [variableNodeId, _] = variableFullPath.split('.')
-            const executedNode = reactFlowNodes.find((nd) => nd.id === variableNodeId)
+            const [variableNodeId, _] = variableFullPath.split('.');
+            const executedNode = reactFlowNodes.find((nd) => nd.id === variableNodeId);
             if (executedNode) {
-                const variableValue = get(executedNode.data, 'instance')
+                const variableValue = get(executedNode.data, 'instance');
                 if (isAcceptVariable) {
-                    variableDict[`{{${variableFullPath}}}`] = variableValue
+                    variableDict[`{{${variableFullPath}}}`] = variableValue;
                 } else {
-                    returnVal = variableValue
+                    returnVal = variableValue;
                 }
             }
-            variableStack.pop()
+            variableStack.pop();
         }
-        startIdx += 1
+        startIdx += 1;
     }
 
     if (isAcceptVariable) {
-        const variablePaths = Object.keys(variableDict)
-        variablePaths.sort() // Sort by length of variable path because longer path could possibly contains nested variable
+        const variablePaths = Object.keys(variableDict);
+        variablePaths.sort(); // Sort by length of variable path because longer path could possibly contains nested variable
         variablePaths.forEach((path) => {
-            const variableValue = variableDict[path]
+            const variableValue = variableDict[path];
             // Replace all occurrence
-            returnVal = returnVal.split(path).join(variableValue)
-        })
-        return returnVal
+            returnVal = returnVal.split(path).join(variableValue);
+        });
+        return returnVal;
     }
-    return returnVal
-}
+    return returnVal;
+};
 
 /**
  * Loop through each inputs and resolve variable if neccessary
@@ -481,33 +481,33 @@ export const resolveVariables = (
     question: string,
     chatHistory: IMessage[] | string
 ): INodeData => {
-    let flowNodeData = cloneDeep(reactFlowNodeData)
-    const types = 'inputs'
+    let flowNodeData = cloneDeep(reactFlowNodeData);
+    const types = 'inputs';
 
     const getParamValues = (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
-            const paramValue: string = paramsObj[key]
+            const paramValue: string = paramsObj[key];
             if (Array.isArray(paramValue)) {
-                const resolvedInstances = []
+                const resolvedInstances = [];
                 for (const param of paramValue) {
-                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question, chatHistory)
-                    resolvedInstances.push(resolvedInstance)
+                    const resolvedInstance = getVariableValue(param, reactFlowNodes, question, chatHistory);
+                    resolvedInstances.push(resolvedInstance);
                 }
-                paramsObj[key] = resolvedInstances
+                paramsObj[key] = resolvedInstances;
             } else {
-                const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
-                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, chatHistory, isAcceptVariable)
-                paramsObj[key] = resolvedInstance
+                const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false;
+                const resolvedInstance = getVariableValue(paramValue, reactFlowNodes, question, chatHistory, isAcceptVariable);
+                paramsObj[key] = resolvedInstance;
             }
         }
-    }
+    };
 
-    const paramsObj = flowNodeData[types] ?? {}
+    const paramsObj = flowNodeData[types] ?? {};
 
-    getParamValues(paramsObj)
+    getParamValues(paramsObj);
 
-    return flowNodeData
-}
+    return flowNodeData;
+};
 
 /**
  * Loop through each inputs and replace their value with override config values
@@ -516,33 +516,33 @@ export const resolveVariables = (
  * @returns {INodeData}
  */
 export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
-    const types = 'inputs'
+    const types = 'inputs';
 
     const getParamValues = (paramsObj: ICommonObject) => {
         for (const config in overrideConfig) {
             // If overrideConfig[key] is object
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
-                const nodeIds = Object.keys(overrideConfig[config])
+                const nodeIds = Object.keys(overrideConfig[config]);
                 if (nodeIds.includes(flowNodeData.id)) {
-                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
-                    continue
+                    paramsObj[config] = overrideConfig[config][flowNodeData.id];
+                    continue;
                 }
             }
 
-            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            let paramValue = overrideConfig[config] ?? paramsObj[config];
             // Check if boolean
-            if (paramValue === 'true') paramValue = true
-            else if (paramValue === 'false') paramValue = false
-            paramsObj[config] = paramValue
+            if (paramValue === 'true') paramValue = true;
+            else if (paramValue === 'false') paramValue = false;
+            paramsObj[config] = paramValue;
         }
-    }
+    };
 
-    const paramsObj = flowNodeData[types] ?? {}
+    const paramsObj = flowNodeData[types] ?? {};
 
-    getParamValues(paramsObj)
+    getParamValues(paramsObj);
 
-    return flowNodeData
-}
+    return flowNodeData;
+};
 
 /**
  * Rebuild flow if LLMChain has dependency on other chains
@@ -552,29 +552,29 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
  */
 export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes: IReactFlowNode[]): boolean => {
     for (const node of startingNodes) {
-        if (node.data.category === 'Cache') return true
+        if (node.data.category === 'Cache') return true;
         for (const inputName in node.data.inputs) {
-            const inputVariables = getInputVariables(node.data.inputs[inputName])
-            if (inputVariables.length > 0) return true
+            const inputVariables = getInputVariables(node.data.inputs[inputName]);
+            if (inputVariables.length > 0) return true;
         }
     }
-    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT', 'chatPromptTemplate', 'promptTemplate'] //If these nodes are found, chatflow cannot be reused
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT', 'chatPromptTemplate', 'promptTemplate']; //If these nodes are found, chatflow cannot be reused
     for (const node of nodes) {
         if (node.data.name === 'chatPromptTemplate' || node.data.name === 'promptTemplate') {
-            let promptValues: ICommonObject = {}
-            const promptValuesRaw = node.data.inputs?.promptValues
+            let promptValues: ICommonObject = {};
+            const promptValuesRaw = node.data.inputs?.promptValues;
             if (promptValuesRaw) {
                 try {
-                    promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw)
+                    promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw);
                 } catch (exception) {
-                    console.error(exception)
+                    console.error(exception);
                 }
             }
-            if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true
-        } else if (whitelistNodeNames.includes(node.data.name)) return true
+            if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true;
+        } else if (whitelistNodeNames.includes(node.data.name)) return true;
     }
-    return false
-}
+    return false;
+};
 
 /**
  * Rebuild flow if new override config is provided
@@ -589,8 +589,8 @@ export const isSameOverrideConfig = (
     newOverrideConfig?: ICommonObject
 ): boolean => {
     if (isInternal) {
-        if (existingOverrideConfig && Object.keys(existingOverrideConfig).length) return false
-        return true
+        if (existingOverrideConfig && Object.keys(existingOverrideConfig).length) return false;
+        return true;
     }
     // If existing and new overrideconfig are the same
     if (
@@ -600,12 +600,12 @@ export const isSameOverrideConfig = (
         Object.keys(newOverrideConfig).length &&
         isEqual(existingOverrideConfig, newOverrideConfig)
     ) {
-        return true
+        return true;
     }
     // If there is no existing and new overrideconfig
-    if (!existingOverrideConfig && !newOverrideConfig) return true
-    return false
-}
+    if (!existingOverrideConfig && !newOverrideConfig) return true;
+    return false;
+};
 
 /**
  * Map MimeType to InputField
@@ -615,29 +615,29 @@ export const isSameOverrideConfig = (
 export const mapMimeTypeToInputField = (mimeType: string) => {
     switch (mimeType) {
         case 'text/plain':
-            return 'txtFile'
+            return 'txtFile';
         case 'application/pdf':
-            return 'pdfFile'
+            return 'pdfFile';
         case 'application/json':
-            return 'jsonFile'
+            return 'jsonFile';
         case 'text/csv':
-            return 'csvFile'
+            return 'csvFile';
         case 'application/json-lines':
         case 'application/jsonl':
         case 'text/jsonl':
-            return 'jsonlinesFile'
+            return 'jsonlinesFile';
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            return 'docxFile'
+            return 'docxFile';
         case 'application/vnd.yaml':
         case 'application/x-yaml':
         case 'text/vnd.yaml':
         case 'text/x-yaml':
         case 'text/yaml':
-            return 'yamlFile'
+            return 'yamlFile';
         default:
-            return ''
+            return '';
     }
-}
+};
 
 /**
  * Find all available input params config
@@ -646,11 +646,11 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
  * @returns {IOverrideConfig[]}
  */
 export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], componentCredentials: IComponentCredentials) => {
-    const configs: IOverrideConfig[] = []
+    const configs: IOverrideConfig[] = [];
 
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
-            let obj: IOverrideConfig
+            let obj: IOverrideConfig;
             if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
@@ -658,7 +658,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     label: inputParam.label,
                     name: 'files',
                     type: inputParam.fileType ?? inputParam.type
-                }
+                };
             } else if (inputParam.type === 'options') {
                 obj = {
                     node: flowNode.data.label,
@@ -668,16 +668,16 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     type: inputParam.options
                         ? inputParam.options
                               ?.map((option) => {
-                                  return option.name
+                                  return option.name;
                               })
                               .join(', ')
                         : 'string'
-                }
+                };
             } else if (inputParam.type === 'credential') {
                 // get component credential inputs
                 for (const name of inputParam.credentialNames ?? []) {
                     if (Object.prototype.hasOwnProperty.call(componentCredentials, name)) {
-                        const inputs = componentCredentials[name]?.inputs ?? []
+                        const inputs = componentCredentials[name]?.inputs ?? [];
                         for (const input of inputs) {
                             obj = {
                                 node: flowNode.data.label,
@@ -685,12 +685,12 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                                 label: input.label,
                                 name: input.name,
                                 type: input.type === 'password' ? 'string' : input.type
-                            }
-                            configs.push(obj)
+                            };
+                            configs.push(obj);
                         }
                     }
                 }
-                continue
+                continue;
             } else {
                 obj = {
                     node: flowNode.data.label,
@@ -698,16 +698,16 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     label: inputParam.label,
                     name: inputParam.name,
                     type: inputParam.type === 'password' ? 'string' : inputParam.type
-                }
+                };
             }
             if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
-                configs.push(obj)
+                configs.push(obj);
             }
         }
     }
 
-    return configs
-}
+    return configs;
+};
 
 /**
  * Check to see if flow valid for stream
@@ -719,40 +719,40 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
     const streamAvailableLLMs = {
         'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama', 'awsChatBedrock'],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
-    }
+    };
 
-    let isChatOrLLMsExist = false
+    let isChatOrLLMsExist = false;
     for (const flowNode of reactFlowNodes) {
-        const data = flowNode.data
+        const data = flowNode.data;
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
-            isChatOrLLMsExist = true
-            const validLLMs = streamAvailableLLMs[data.category]
-            if (!validLLMs.includes(data.name)) return false
+            isChatOrLLMsExist = true;
+            const validLLMs = streamAvailableLLMs[data.category];
+            if (!validLLMs.includes(data.name)) return false;
         }
     }
 
-    let isValidChainOrAgent = false
+    let isValidChainOrAgent = false;
     if (endingNodeData.category === 'Chains') {
         // Chains that are not available to stream
-        const blacklistChains = ['openApiChain', 'vectaraQAChain']
-        isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
+        const blacklistChains = ['openApiChain', 'vectaraQAChain'];
+        isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name);
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
-        isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent'];
+        isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name);
     }
 
     // If no output parser, flow is available to stream
-    let isOutputParserExist = false
+    let isOutputParserExist = false;
     for (const flowNode of reactFlowNodes) {
-        const data = flowNode.data
+        const data = flowNode.data;
         if (data.category.includes('Output Parser')) {
-            isOutputParserExist = true
+            isOutputParserExist = true;
         }
     }
 
-    return isChatOrLLMsExist && isValidChainOrAgent && !isOutputParserExist
-}
+    return isChatOrLLMsExist && isValidChainOrAgent && !isOutputParserExist;
+};
 
 /**
  * Returns the path of encryption key
@@ -761,16 +761,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH
         ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-        : path.join(__dirname, '..', '..', 'encryption.key')
-}
+        : path.join(__dirname, '..', '..', 'encryption.key');
+};
 
 /**
  * Generate an encryption key
  * @returns {string}
  */
 export const generateEncryptKey = (): string => {
-    return randomBytes(24).toString('base64')
-}
+    return randomBytes(24).toString('base64');
+};
 
 /**
  * Returns the encryption key
@@ -778,16 +778,16 @@ export const generateEncryptKey = (): string => {
  */
 export const getEncryptionKey = async (): Promise<string> => {
     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+        return process.env.FLOWISE_SECRETKEY_OVERWRITE;
     }
     try {
-        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8');
     } catch (error) {
-        const encryptKey = generateEncryptKey()
-        await fs.promises.writeFile(getEncryptionKeyPath(), encryptKey)
-        return encryptKey
+        const encryptKey = generateEncryptKey();
+        await fs.promises.writeFile(getEncryptionKeyPath(), encryptKey);
+        return encryptKey;
     }
-}
+};
 
 /**
  * Encrypt credential data
@@ -795,9 +795,9 @@ export const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<string>}
  */
 export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
-    const encryptKey = await getEncryptionKey()
-    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
-}
+    const encryptKey = await getEncryptionKey();
+    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString();
+};
 
 /**
  * Decrypt credential data
@@ -811,21 +811,21 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
-    const decryptedDataStr = decryptedData.toString(enc.Utf8)
-    if (!decryptedDataStr) return {}
+    const encryptKey = await getEncryptionKey();
+    const decryptedData = AES.decrypt(encryptedData, encryptKey);
+    const decryptedDataStr = decryptedData.toString(enc.Utf8);
+    if (!decryptedDataStr) return {};
     try {
         if (componentCredentialName && componentCredentials) {
-            const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))
-            return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials)
+            const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8));
+            return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials);
         }
-        return JSON.parse(decryptedData.toString(enc.Utf8))
+        return JSON.parse(decryptedData.toString(enc.Utf8));
     } catch (e) {
-        console.error(e)
-        return {}
+        console.error(e);
+        return {};
     }
-}
+};
 
 /**
  * Transform ICredentialBody from req to Credential entity
@@ -836,18 +836,18 @@ export const transformToCredentialEntity = async (body: ICredentialReqBody): Pro
     const credentialBody: ICommonObject = {
         name: body.name,
         credentialName: body.credentialName
-    }
+    };
 
     if (body.plainDataObj) {
-        const encryptedData = await encryptCredentialData(body.plainDataObj)
-        credentialBody.encryptedData = encryptedData
+        const encryptedData = await encryptCredentialData(body.plainDataObj);
+        credentialBody.encryptedData = encryptedData;
     }
 
-    const newCredential = new Credential()
-    Object.assign(newCredential, credentialBody)
+    const newCredential = new Credential();
+    Object.assign(newCredential, credentialBody);
 
-    return newCredential
-}
+    return newCredential;
+};
 
 /**
  * Redact values that are of password type to avoid sending back to client
@@ -861,15 +861,17 @@ export const redactCredentialWithPasswordType = (
     decryptedCredentialObj: ICredentialDataDecrypted,
     componentCredentials: IComponentCredentials
 ): ICredentialDataDecrypted => {
-    const plainDataObj = cloneDeep(decryptedCredentialObj)
+    const plainDataObj = cloneDeep(decryptedCredentialObj);
     for (const cred in plainDataObj) {
-        const inputParam = componentCredentials[componentCredentialName].inputs?.find((inp) => inp.type === 'password' && inp.name === cred)
+        const inputParam = componentCredentials[componentCredentialName].inputs?.find(
+            (inp) => inp.type === 'password' && inp.name === cred
+        );
         if (inputParam) {
-            plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE
+            plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE;
         }
     }
-    return plainDataObj
-}
+    return plainDataObj;
+};
 
 /**
  * Replace sessionId with new chatId
@@ -879,15 +881,15 @@ export const redactCredentialWithPasswordType = (
  */
 export const checkMemorySessionId = (instance: any, chatId: string): string | undefined => {
     if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
-        instance.memory.sessionId = chatId
-        instance.memory.chatHistory.sessionId = chatId
+        instance.memory.sessionId = chatId;
+        instance.memory.chatHistory.sessionId = chatId;
     }
 
-    if (instance.memory && instance.memory.sessionId) return instance.memory.sessionId
+    if (instance.memory && instance.memory.sessionId) return instance.memory.sessionId;
     else if (instance.memory && instance.memory.chatHistory && instance.memory.chatHistory.sessionId)
-        return instance.memory.chatHistory.sessionId
-    return undefined
-}
+        return instance.memory.chatHistory.sessionId;
+    return undefined;
+};
 
 /**
  * Replace chatHistory if incomingInput.history is empty and sessionId/chatId is provided
@@ -905,12 +907,12 @@ export const replaceChatHistory = async (
     databaseEntities: IDatabaseEntity,
     logger: any
 ): Promise<string> => {
-    const nodeInstanceFilePath = memoryNode.data.filePath as string
-    const nodeModule = await import(nodeInstanceFilePath)
-    const newNodeInstance = new nodeModule.nodeClass()
+    const nodeInstanceFilePath = memoryNode.data.filePath as string;
+    const nodeModule = await import(nodeInstanceFilePath);
+    const newNodeInstance = new nodeModule.nodeClass();
 
     if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
-        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
+        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId;
     }
 
     if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.getChatMessages) {
@@ -919,11 +921,11 @@ export const replaceChatHistory = async (
             appDataSource,
             databaseEntities,
             logger
-        })
+        });
     }
 
-    return ''
-}
+    return '';
+};
 
 /**
  * Get all values from a JSON object
@@ -931,24 +933,24 @@ export const replaceChatHistory = async (
  * @returns {any[]}
  */
 export const getAllValuesFromJson = (obj: any): any[] => {
-    const values: any[] = []
+    const values: any[] = [];
 
     function extractValues(data: any) {
         if (typeof data === 'object' && data !== null) {
             if (Array.isArray(data)) {
                 for (const item of data) {
-                    extractValues(item)
+                    extractValues(item);
                 }
             } else {
                 for (const key in data) {
-                    extractValues(data[key])
+                    extractValues(data[key]);
                 }
             }
         } else {
-            values.push(data)
+            values.push(data);
         }
     }
 
-    extractValues(obj)
-    return values
-}
+    extractValues(obj);
+    return values;
+};

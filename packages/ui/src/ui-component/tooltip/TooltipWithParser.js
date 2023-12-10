@@ -1,11 +1,11 @@
-import { Info } from '@mui/icons-material'
-import { IconButton, Tooltip } from '@mui/material'
-import parser from 'html-react-parser'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
+import { Info } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
+import parser from 'html-react-parser';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 export const TooltipWithParser = ({ title, style }) => {
-    const customization = useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization);
 
     return (
         <Tooltip title={parser(title)} placement='right'>
@@ -21,10 +21,10 @@ export const TooltipWithParser = ({ title, style }) => {
                 />
             </IconButton>
         </Tooltip>
-    )
-}
+    );
+};
 
 TooltipWithParser.propTypes = {
     title: PropTypes.node,
     style: PropTypes.any
-}
+};

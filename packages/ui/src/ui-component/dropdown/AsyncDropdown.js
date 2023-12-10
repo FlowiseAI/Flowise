@@ -1,18 +1,18 @@
-import { useState, useEffect, Fragment } from 'react'
-import { useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
-import axios from 'axios'
+import { useState, useEffect, Fragment } from 'react';
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import axios from 'axios';
 
 // Material
-import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
-import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete';
+import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 // API
-import credentialsApi from 'api/credentials'
+import credentialsApi from 'api/credentials';
 
 // const
-import { baseURL } from 'store/constant'
+import { baseURL } from 'store/constant';
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -24,12 +24,12 @@ const StyledPopper = styled(Popper)({
             margin: 10
         }
     }
-})
+});
 
 const fetchList = async ({ name, nodeData }) => {
-    const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod
-    const username = localStorage.getItem('username')
-    const password = localStorage.getItem('password')
+    const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod;
+    const username = localStorage.getItem('username');
+    const password = localStorage.getItem('password');
 
     let lists = await axios
         .post(
@@ -38,13 +38,13 @@ const fetchList = async ({ name, nodeData }) => {
             { auth: username && password ? { username, password } : undefined }
         )
         .then(async function (response) {
-            return response.data
+            return response.data;
         })
         .catch(function (error) {
-            console.error(error)
-        })
-    return lists
-}
+            console.error(error);
+        });
+    return lists;
+};
 
 export const AsyncDropdown = ({
     name,
@@ -57,55 +57,55 @@ export const AsyncDropdown = ({
     disabled = false,
     disableClearable = false
 }) => {
-    const customization = useSelector((state) => state.customization)
+    const customization = useSelector((state) => state.customization);
 
-    const [open, setOpen] = useState(false)
-    const [options, setOptions] = useState([])
-    const [loading, setLoading] = useState(false)
-    const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
-    const getDefaultOptionValue = () => ''
-    const addNewOption = [{ label: '- Create New -', name: '-create-' }]
-    let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
+    const [open, setOpen] = useState(false);
+    const [options, setOptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value);
+    const getDefaultOptionValue = () => '';
+    const addNewOption = [{ label: '- Create New -', name: '-create-' }];
+    let [internalValue, setInternalValue] = useState(value ?? 'choose an option');
 
     const fetchCredentialList = async () => {
         try {
-            let names = ''
+            let names = '';
             if (credentialNames.length > 1) {
-                names = credentialNames.join('&credentialName=')
+                names = credentialNames.join('&credentialName=');
             } else {
-                names = credentialNames[0]
+                names = credentialNames[0];
             }
-            const resp = await credentialsApi.getCredentialsByName(names)
+            const resp = await credentialsApi.getCredentialsByName(names);
             if (resp.data) {
-                const returnList = []
+                const returnList = [];
                 for (let i = 0; i < resp.data.length; i += 1) {
                     const data = {
                         label: resp.data[i].name,
                         name: resp.data[i].id
-                    }
-                    returnList.push(data)
+                    };
+                    returnList.push(data);
                 }
-                return returnList
+                return returnList;
             }
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
 
     useEffect(() => {
-        setLoading(true)
-        ;(async () => {
+        setLoading(true);
+        (async () => {
             const fetchData = async () => {
-                let response = credentialNames.length ? await fetchCredentialList() : await fetchList({ name, nodeData })
-                if (isCreateNewOption) setOptions([...response, ...addNewOption])
-                else setOptions([...response])
-                setLoading(false)
-            }
-            fetchData()
-        })()
+                let response = credentialNames.length ? await fetchCredentialList() : await fetchList({ name, nodeData });
+                if (isCreateNewOption) setOptions([...response, ...addNewOption]);
+                else setOptions([...response]);
+                setLoading(false);
+            };
+            fetchData();
+        })();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     return (
         <>
@@ -117,20 +117,20 @@ export const AsyncDropdown = ({
                 sx={{ width: '100%' }}
                 open={open}
                 onOpen={() => {
-                    setOpen(true)
+                    setOpen(true);
                 }}
                 onClose={() => {
-                    setOpen(false)
+                    setOpen(false);
                 }}
                 options={options}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
                 onChange={(e, selection) => {
-                    const value = selection ? selection.name : ''
+                    const value = selection ? selection.name : '';
                     if (isCreateNewOption && value === '-create-') {
-                        onCreateNew()
+                        onCreateNew();
                     } else {
-                        setInternalValue(value)
-                        onSelect(value)
+                        setInternalValue(value);
+                        onSelect(value);
                     }
                 }}
                 PopperComponent={StyledPopper}
@@ -162,8 +162,8 @@ export const AsyncDropdown = ({
                 )}
             />
         </>
-    )
-}
+    );
+};
 
 AsyncDropdown.propTypes = {
     name: PropTypes.string,
@@ -175,4 +175,4 @@ AsyncDropdown.propTypes = {
     credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
     isCreateNewOption: PropTypes.bool
-}
+};

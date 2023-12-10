@@ -1,28 +1,28 @@
-import { VectorStore } from 'langchain/vectorstores/base'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { handleEscapeCharacters } from '../../../src/utils'
+import { VectorStore } from 'langchain/vectorstores/base';
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface';
+import { handleEscapeCharacters } from '../../../src/utils';
 
 class VectorStoreToDocument_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'VectorStore To Document'
-        this.name = 'vectorStoreToDocument'
-        this.version = 2.0
-        this.type = 'Document'
-        this.icon = 'vectorretriever.svg'
-        this.category = 'Document Loaders'
-        this.description = 'Search documents with scores from vector store'
-        this.baseClasses = [this.type]
+        this.label = 'VectorStore To Document';
+        this.name = 'vectorStoreToDocument';
+        this.version = 2.0;
+        this.type = 'Document';
+        this.icon = 'vectorretriever.svg';
+        this.category = 'Document Loaders';
+        this.description = 'Search documents with scores from vector store';
+        this.baseClasses = [this.type];
         this.inputs = [
             {
                 label: 'Vector Store',
@@ -46,7 +46,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
                 step: 1,
                 description: 'Minumum score for embeddings documents to be included'
             }
-        ]
+        ];
         this.outputs = [
             {
                 label: 'Document',
@@ -58,39 +58,39 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
                 name: 'text',
                 baseClasses: ['string', 'json']
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, input: string): Promise<any> {
-        const vectorStore = nodeData.inputs?.vectorStore as VectorStore
-        const minScore = nodeData.inputs?.minScore as number
-        const query = nodeData.inputs?.query as string
-        const output = nodeData.outputs?.output as string
+        const vectorStore = nodeData.inputs?.vectorStore as VectorStore;
+        const minScore = nodeData.inputs?.minScore as number;
+        const query = nodeData.inputs?.query as string;
+        const output = nodeData.outputs?.output as string;
 
-        const topK = (vectorStore as any)?.k ?? 4
+        const topK = (vectorStore as any)?.k ?? 4;
 
-        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK)
+        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK);
         // eslint-disable-next-line no-console
-        console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m')
+        console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m');
         // eslint-disable-next-line no-console
-        console.log(docs)
+        console.log(docs);
 
         if (output === 'document') {
-            let finaldocs = []
+            let finaldocs = [];
             for (const doc of docs) {
-                if (minScore && doc[1] < minScore / 100) continue
-                finaldocs.push(doc[0])
+                if (minScore && doc[1] < minScore / 100) continue;
+                finaldocs.push(doc[0]);
             }
-            return finaldocs
+            return finaldocs;
         } else {
-            let finaltext = ''
+            let finaltext = '';
             for (const doc of docs) {
-                if (minScore && doc[1] < minScore / 100) continue
-                finaltext += `${doc[0].pageContent}\n`
+                if (minScore && doc[1] < minScore / 100) continue;
+                finaltext += `${doc[0].pageContent}\n`;
             }
-            return handleEscapeCharacters(finaltext, false)
+            return handleEscapeCharacters(finaltext, false);
         }
     }
 }
 
-module.exports = { nodeClass: VectorStoreToDocument_DocumentLoaders }
+module.exports = { nodeClass: VectorStoreToDocument_DocumentLoaders };

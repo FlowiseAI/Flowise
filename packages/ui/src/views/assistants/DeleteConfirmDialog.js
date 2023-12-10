@@ -1,10 +1,10 @@
-import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
-import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { StyledButton } from 'ui-component/button/StyledButton';
 
 const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBoth }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = document.getElementById('portal');
 
     const component = show ? (
         <Dialog
@@ -31,10 +31,10 @@ const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBo
                 </div>
             </DialogContent>
         </Dialog>
-    ) : null
+    ) : null;
 
-    return createPortal(component, portalElement)
-}
+    return createPortal(component, portalElement);
+};
 
 DeleteConfirmDialog.propTypes = {
     show: PropTypes.bool,
@@ -42,6 +42,6 @@ DeleteConfirmDialog.propTypes = {
     onDeleteBoth: PropTypes.func,
     onDelete: PropTypes.func,
     onCancel: PropTypes.func
-}
+};
 
-export default DeleteConfirmDialog
+export default DeleteConfirmDialog;

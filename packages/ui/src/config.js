@@ -4,6 +4,6 @@ const config = {
     defaultPath: '/chatflows',
     fontFamily: `'Roboto', sans-serif`,
     borderRadius: 12
-}
+};
 
-export default config
+export default config;

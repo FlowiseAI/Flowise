@@ -1,36 +1,36 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Replicate, ReplicateInput } from 'langchain/llms/replicate'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { Replicate, ReplicateInput } from 'langchain/llms/replicate';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 class Replicate_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Replicate'
-        this.name = 'replicate'
-        this.version = 2.0
-        this.type = 'Replicate'
-        this.icon = 'replicate.svg'
-        this.category = 'LLMs'
-        this.description = 'Use Replicate to run open source models on cloud'
-        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(Replicate)]
+        this.label = 'Replicate';
+        this.name = 'replicate';
+        this.version = 2.0;
+        this.type = 'Replicate';
+        this.icon = 'replicate.svg';
+        this.category = 'LLMs';
+        this.description = 'Use Replicate to run open source models on cloud';
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(Replicate)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['replicateApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -93,48 +93,48 @@ class Replicate_LLMs implements INode {
                 additionalParams: true,
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.model as string
-        const temperature = nodeData.inputs?.temperature as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const repetitionPenalty = nodeData.inputs?.repetitionPenalty as string
-        const additionalInputs = nodeData.inputs?.additionalInputs as string
+        const modelName = nodeData.inputs?.model as string;
+        const temperature = nodeData.inputs?.temperature as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const topP = nodeData.inputs?.topP as string;
+        const repetitionPenalty = nodeData.inputs?.repetitionPenalty as string;
+        const additionalInputs = nodeData.inputs?.additionalInputs as string;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('replicateApiKey', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const apiKey = getCredentialParam('replicateApiKey', credentialData, nodeData);
 
-        const version = modelName.split(':').pop()
-        const name = modelName.split(':')[0].split('/').pop()
-        const org = modelName.split(':')[0].split('/')[0]
+        const version = modelName.split(':').pop();
+        const name = modelName.split(':')[0].split('/').pop();
+        const org = modelName.split(':')[0].split('/')[0];
 
-        const cache = nodeData.inputs?.cache as BaseCache
+        const cache = nodeData.inputs?.cache as BaseCache;
 
         const obj: ReplicateInput & BaseLLMParams = {
             model: `${org}/${name}:${version}`,
             apiKey
-        }
+        };
 
-        let inputs: any = {}
-        if (maxTokens) inputs.max_length = parseInt(maxTokens, 10)
-        if (temperature) inputs.temperature = parseFloat(temperature)
-        if (topP) inputs.top_p = parseFloat(topP)
-        if (repetitionPenalty) inputs.repetition_penalty = parseFloat(repetitionPenalty)
+        let inputs: any = {};
+        if (maxTokens) inputs.max_length = parseInt(maxTokens, 10);
+        if (temperature) inputs.temperature = parseFloat(temperature);
+        if (topP) inputs.top_p = parseFloat(topP);
+        if (repetitionPenalty) inputs.repetition_penalty = parseFloat(repetitionPenalty);
         if (additionalInputs) {
             const parsedInputs =
-                typeof additionalInputs === 'object' ? additionalInputs : additionalInputs ? JSON.parse(additionalInputs) : {}
-            inputs = { ...inputs, ...parsedInputs }
+                typeof additionalInputs === 'object' ? additionalInputs : additionalInputs ? JSON.parse(additionalInputs) : {};
+            inputs = { ...inputs, ...parsedInputs };
         }
-        if (Object.keys(inputs).length) obj.input = inputs
+        if (Object.keys(inputs).length) obj.input = inputs;
 
-        if (cache) obj.cache = cache
+        if (cache) obj.cache = cache;
 
-        const model = new Replicate(obj)
-        return model
+        const model = new Replicate(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: Replicate_LLMs }
+module.exports = { nodeClass: Replicate_LLMs };

@@ -1,11 +1,11 @@
-import { IActiveCache } from './Interface'
+import { IActiveCache } from './Interface';
 
 /**
  * This pool is to keep track of in-memory cache used for LLM and Embeddings
  */
 export class CachePool {
-    activeLLMCache: IActiveCache = {}
-    activeEmbeddingCache: IActiveCache = {}
+    activeLLMCache: IActiveCache = {};
+    activeEmbeddingCache: IActiveCache = {};
 
     /**
      * Add to the llm cache pool
@@ -13,7 +13,7 @@ export class CachePool {
      * @param {Map<any, any>} value
      */
     addLLMCache(chatflowid: string, value: Map<any, any>) {
-        this.activeLLMCache[chatflowid] = value
+        this.activeLLMCache[chatflowid] = value;
     }
 
     /**
@@ -22,7 +22,7 @@ export class CachePool {
      * @param {Map<any, any>} value
      */
     addEmbeddingCache(chatflowid: string, value: Map<any, any>) {
-        this.activeEmbeddingCache[chatflowid] = value
+        this.activeEmbeddingCache[chatflowid] = value;
     }
 
     /**
@@ -30,7 +30,7 @@ export class CachePool {
      * @param {string} chatflowid
      */
     getLLMCache(chatflowid: string): Map<any, any> | undefined {
-        return this.activeLLMCache[chatflowid]
+        return this.activeLLMCache[chatflowid];
     }
 
     /**
@@ -38,16 +38,16 @@ export class CachePool {
      * @param {string} chatflowid
      */
     getEmbeddingCache(chatflowid: string): Map<any, any> | undefined {
-        return this.activeEmbeddingCache[chatflowid]
+        return this.activeEmbeddingCache[chatflowid];
     }
 }
 
-let cachePoolInstance: CachePool | undefined
+let cachePoolInstance: CachePool | undefined;
 
 export function getInstance(): CachePool {
     if (cachePoolInstance === undefined) {
-        cachePoolInstance = new CachePool()
+        cachePoolInstance = new CachePool();
     }
 
-    return cachePoolInstance
+    return cachePoolInstance;
 }

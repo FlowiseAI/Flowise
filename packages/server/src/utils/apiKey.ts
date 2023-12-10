@@ -1,26 +1,26 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'crypto'
-import { ICommonObject } from 'flowise-components'
-import moment from 'moment'
-import fs from 'fs'
-import path from 'path'
-import logger from './logger'
+import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
+import { ICommonObject } from 'flowise-components';
+import moment from 'moment';
+import fs from 'fs';
+import path from 'path';
+import logger from './logger';
 
 /**
  * Returns the api key path
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
-}
+    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json');
+};
 
 /**
  * Generate the api key
  * @returns {string}
  */
 export const generateAPIKey = (): string => {
-    const buffer = randomBytes(32)
-    return buffer.toString('base64')
-}
+    const buffer = randomBytes(32);
+    return buffer.toString('base64');
+};
 
 /**
  * Generate the secret key
@@ -28,10 +28,10 @@ export const generateAPIKey = (): string => {
  * @returns {string}
  */
 export const generateSecretHash = (apiKey: string): string => {
-    const salt = randomBytes(8).toString('hex')
-    const buffer = scryptSync(apiKey, salt, 64) as Buffer
-    return `${buffer.toString('hex')}.${salt}`
-}
+    const salt = randomBytes(8).toString('hex');
+    const buffer = scryptSync(apiKey, salt, 64) as Buffer;
+    return `${buffer.toString('hex')}.${salt}`;
+};
 
 /**
  * Verify valid keys
@@ -40,10 +40,10 @@ export const generateSecretHash = (apiKey: string): string => {
  * @returns {boolean}
  */
 export const compareKeys = (storedKey: string, suppliedKey: string): boolean => {
-    const [hashedPassword, salt] = storedKey.split('.')
-    const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
-    return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)
-}
+    const [hashedPassword, salt] = storedKey.split('.');
+    const buffer = scryptSync(suppliedKey, salt, 64) as Buffer;
+    return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer);
+};
 
 /**
  * Get API keys
@@ -51,12 +51,12 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
  */
 export const getAPIKeys = async (): Promise<ICommonObject[]> => {
     try {
-        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
-        return JSON.parse(content)
+        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8');
+        return JSON.parse(content);
     } catch (error) {
-        const keyName = 'DefaultKey'
-        const apiKey = generateAPIKey()
-        const apiSecret = generateSecretHash(apiKey)
+        const keyName = 'DefaultKey';
+        const apiKey = generateAPIKey();
+        const apiSecret = generateSecretHash(apiKey);
         const content = [
             {
                 keyName,
@@ -65,11 +65,11 @@ export const getAPIKeys = async (): Promise<ICommonObject[]> => {
                 createdAt: moment().format('DD-MMM-YY'),
                 id: randomBytes(16).toString('hex')
             }
-        ]
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-        return content
+        ];
+        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8');
+        return content;
     }
-}
+};
 
 /**
  * Add new API key
@@ -77,9 +77,9 @@ export const getAPIKeys = async (): Promise<ICommonObject[]> => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const apiKey = generateAPIKey()
-    const apiSecret = generateSecretHash(apiKey)
+    const existingAPIKeys = await getAPIKeys();
+    const apiKey = generateAPIKey();
+    const apiSecret = generateSecretHash(apiKey);
     const content = [
         ...existingAPIKeys,
         {
@@ -89,10 +89,10 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
             createdAt: moment().format('DD-MMM-YY'),
             id: randomBytes(16).toString('hex')
         }
-    ]
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-    return content
-}
+    ];
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8');
+    return content;
+};
 
 /**
  * Get API Key details
@@ -100,11 +100,11 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const getApiKey = async (apiKey: string) => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
-    if (keyIndex < 0) return undefined
-    return existingAPIKeys[keyIndex]
-}
+    const existingAPIKeys = await getAPIKeys();
+    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey);
+    if (keyIndex < 0) return undefined;
+    return existingAPIKeys[keyIndex];
+};
 
 /**
  * Update existing API key
@@ -113,13 +113,13 @@ export const getApiKey = async (apiKey: string) => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate)
-    if (keyIndex < 0) return []
-    existingAPIKeys[keyIndex].keyName = newKeyName
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8')
-    return existingAPIKeys
-}
+    const existingAPIKeys = await getAPIKeys();
+    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate);
+    if (keyIndex < 0) return [];
+    existingAPIKeys[keyIndex].keyName = newKeyName;
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8');
+    return existingAPIKeys;
+};
 
 /**
  * Delete API key
@@ -127,11 +127,11 @@ export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): P
  * @returns {Promise<ICommonObject[]>}
  */
 export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
-    return result
-}
+    const existingAPIKeys = await getAPIKeys();
+    const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete);
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8');
+    return result;
+};
 
 /**
  * Replace all api keys
@@ -140,8 +140,8 @@ export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject
  */
 export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void> => {
     try {
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8');
     } catch (error) {
-        logger.error(error)
+        logger.error(error);
     }
-}
+};

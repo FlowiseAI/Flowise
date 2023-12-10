@@ -1,8 +1,8 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot } from '@tabler/icons'
+import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot } from '@tabler/icons';
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot }
+const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -60,6 +60,6 @@ const dashboard = {
             breadcrumbs: true
         }
     ]
-}
+};
 
-export default dashboard
+export default dashboard;

@@ -25,4 +25,4 @@ module.exports = {
         'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
         'prettier/prettier': 'error'
     }
-}
+};

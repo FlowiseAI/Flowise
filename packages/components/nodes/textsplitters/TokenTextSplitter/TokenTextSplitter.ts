@@ -1,28 +1,28 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { TokenTextSplitter, TokenTextSplitterParams } from 'langchain/text_splitter'
-import { TiktokenEncoding } from '@dqbd/tiktoken'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses } from '../../../src/utils';
+import { TokenTextSplitter, TokenTextSplitterParams } from 'langchain/text_splitter';
+import { TiktokenEncoding } from '@dqbd/tiktoken';
 
 class TokenTextSplitter_TextSplitters implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Token Text Splitter'
-        this.name = 'tokenTextSplitter'
-        this.version = 1.0
-        this.type = 'TokenTextSplitter'
-        this.icon = 'tiktoken.svg'
-        this.category = 'Text Splitters'
-        this.description = `Splits a raw text string by first converting the text into BPE tokens, then split these tokens into chunks and convert the tokens within a single chunk back into text.`
-        this.baseClasses = [this.type, ...getBaseClasses(TokenTextSplitter)]
+        this.label = 'Token Text Splitter';
+        this.name = 'tokenTextSplitter';
+        this.version = 1.0;
+        this.type = 'TokenTextSplitter';
+        this.icon = 'tiktoken.svg';
+        this.category = 'Text Splitters';
+        this.description = `Splits a raw text string by first converting the text into BPE tokens, then split these tokens into chunks and convert the tokens within a single chunk back into text.`;
+        this.baseClasses = [this.type, ...getBaseClasses(TokenTextSplitter)];
         this.inputs = [
             {
                 label: 'Encoding Name',
@@ -65,24 +65,24 @@ class TokenTextSplitter_TextSplitters implements INode {
                 type: 'number',
                 optional: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const encodingName = nodeData.inputs?.encodingName as string
-        const chunkSize = nodeData.inputs?.chunkSize as string
-        const chunkOverlap = nodeData.inputs?.chunkOverlap as string
+        const encodingName = nodeData.inputs?.encodingName as string;
+        const chunkSize = nodeData.inputs?.chunkSize as string;
+        const chunkOverlap = nodeData.inputs?.chunkOverlap as string;
 
-        const obj = {} as TokenTextSplitterParams
+        const obj = {} as TokenTextSplitterParams;
 
-        obj.encodingName = encodingName as TiktokenEncoding
-        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10)
-        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10)
+        obj.encodingName = encodingName as TiktokenEncoding;
+        if (chunkSize) obj.chunkSize = parseInt(chunkSize, 10);
+        if (chunkOverlap) obj.chunkOverlap = parseInt(chunkOverlap, 10);
 
-        const splitter = new TokenTextSplitter(obj)
+        const splitter = new TokenTextSplitter(obj);
 
-        return splitter
+        return splitter;
     }
 }
 
-module.exports = { nodeClass: TokenTextSplitter_TextSplitters }
+module.exports = { nodeClass: TokenTextSplitter_TextSplitters };

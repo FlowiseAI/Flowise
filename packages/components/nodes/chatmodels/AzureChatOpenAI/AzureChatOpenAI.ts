@@ -1,37 +1,37 @@
-import { OpenAIBaseInput } from 'langchain/dist/types/openai-types'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AzureOpenAIInput, ChatOpenAI } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { OpenAIBaseInput } from 'langchain/dist/types/openai-types';
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { AzureOpenAIInput, ChatOpenAI } from 'langchain/chat_models/openai';
+import { BaseCache } from 'langchain/schema';
+import { BaseLLMParams } from 'langchain/llms/base';
 
 class AzureChatOpenAI_ChatModels implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'Azure ChatOpenAI'
-        this.name = 'azureChatOpenAI'
-        this.version = 2.0
-        this.type = 'AzureChatOpenAI'
-        this.icon = 'Azure.svg'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.label = 'Azure ChatOpenAI';
+        this.name = 'azureChatOpenAI';
+        this.version = 2.0;
+        this.type = 'AzureChatOpenAI';
+        this.icon = 'Azure.svg';
+        this.category = 'Chat Models';
+        this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint';
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['azureOpenAIApi']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -104,24 +104,24 @@ class AzureChatOpenAI_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as string
-        const temperature = nodeData.inputs?.temperature as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-        const presencePenalty = nodeData.inputs?.presencePenalty as string
-        const timeout = nodeData.inputs?.timeout as string
-        const streaming = nodeData.inputs?.streaming as boolean
-        const cache = nodeData.inputs?.cache as BaseCache
+        const modelName = nodeData.inputs?.modelName as string;
+        const temperature = nodeData.inputs?.temperature as string;
+        const maxTokens = nodeData.inputs?.maxTokens as string;
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string;
+        const presencePenalty = nodeData.inputs?.presencePenalty as string;
+        const timeout = nodeData.inputs?.timeout as string;
+        const streaming = nodeData.inputs?.streaming as boolean;
+        const cache = nodeData.inputs?.cache as BaseCache;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
-        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData)
-        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
-        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData);
+        const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData);
+        const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData);
+        const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData);
 
         const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIBaseInput> = {
             temperature: parseFloat(temperature),
@@ -131,17 +131,17 @@ class AzureChatOpenAI_ChatModels implements INode {
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
             streaming: streaming ?? true
-        }
+        };
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10);
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty);
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty);
+        if (timeout) obj.timeout = parseInt(timeout, 10);
+        if (cache) obj.cache = cache;
 
-        const model = new ChatOpenAI(obj)
-        return model
+        const model = new ChatOpenAI(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: AzureChatOpenAI_ChatModels }
+module.exports = { nodeClass: AzureChatOpenAI_ChatModels };

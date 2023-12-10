@@ -129,5 +129,5 @@ export default function themeTypography(theme) {
             height: '44px',
             fontSize: '1.5rem'
         }
-    }
+    };
 }

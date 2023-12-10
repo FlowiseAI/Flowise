@@ -1,9 +1,9 @@
-import gulp from 'gulp'
+import gulp from 'gulp';
 
-const { src, dest } = gulp
+const { src, dest } = gulp;
 
 function copyIcons() {
-    return src(['nodes/**/*.{jpg,png,svg}']).pipe(dest('dist/nodes'))
+    return src(['nodes/**/*.{jpg,png,svg}']).pipe(dest('dist/nodes'));
 }
 
-exports.default = copyIcons
+exports.default = copyIcons;

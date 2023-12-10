@@ -1,32 +1,32 @@
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import { styled, alpha } from '@mui/material/styles'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import EditIcon from '@mui/icons-material/Edit'
-import Divider from '@mui/material/Divider'
-import FileCopyIcon from '@mui/icons-material/FileCopy'
-import FileDownloadIcon from '@mui/icons-material/Downloading'
-import FileDeleteIcon from '@mui/icons-material/Delete'
-import FileCategoryIcon from '@mui/icons-material/Category'
-import Button from '@mui/material/Button'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { IconX } from '@tabler/icons'
+import { styled, alpha } from '@mui/material/styles';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import EditIcon from '@mui/icons-material/Edit';
+import Divider from '@mui/material/Divider';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import FileDownloadIcon from '@mui/icons-material/Downloading';
+import FileDeleteIcon from '@mui/icons-material/Delete';
+import FileCategoryIcon from '@mui/icons-material/Category';
+import Button from '@mui/material/Button';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { IconX } from '@tabler/icons';
 
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from 'api/chatflows';
 
-import useApi from '../../hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
-import { uiBaseURL } from '../../store/constant'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
+import useApi from '../../hooks/useApi';
+import useConfirm from 'hooks/useConfirm';
+import { uiBaseURL } from '../../store/constant';
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions';
 
-import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
-import TagDialog from '../dialog/TagDialog'
+import SaveChatflowDialog from '../dialog/SaveChatflowDialog';
+import TagDialog from '../dialog/TagDialog';
 
-import { generateExportFlowData } from '../../utils/genericHelper'
-import useNotifier from '../../utils/useNotifier'
+import { generateExportFlowData } from '../../utils/genericHelper';
+import useNotifier from '../../utils/useNotifier';
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -62,46 +62,46 @@ const StyledMenu = styled((props) => (
             }
         }
     }
-}))
+}));
 
 export default function FlowListMenu({ chatflow, updateFlowsApi }) {
-    const { confirm } = useConfirm()
-    const dispatch = useDispatch()
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
+    const { confirm } = useConfirm();
+    const dispatch = useDispatch();
+    const updateChatflowApi = useApi(chatflowsApi.updateChatflow);
 
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    useNotifier();
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args));
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args));
 
-    const [flowDialogOpen, setFlowDialogOpen] = useState(false)
-    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
-    const [categoryDialogProps, setCategoryDialogProps] = useState({})
-    const [anchorEl, setAnchorEl] = useState(null)
-    const open = Boolean(anchorEl)
+    const [flowDialogOpen, setFlowDialogOpen] = useState(false);
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+    const [categoryDialogProps, setCategoryDialogProps] = useState({});
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
 
     const handleClick = (event) => {
-        setAnchorEl(event.currentTarget)
-    }
+        setAnchorEl(event.currentTarget);
+    };
 
     const handleClose = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+    };
 
     const handleFlowRename = () => {
-        setAnchorEl(null)
-        setFlowDialogOpen(true)
-    }
+        setAnchorEl(null);
+        setFlowDialogOpen(true);
+    };
 
     const saveFlowRename = async (chatflowName) => {
         const updateBody = {
             name: chatflowName,
             chatflow
-        }
+        };
         try {
-            await updateChatflowApi.request(chatflow.id, updateBody)
-            await updateFlowsApi.request()
+            await updateChatflowApi.request(chatflow.id, updateBody);
+            await updateFlowsApi.request();
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: errorData,
                 options: {
@@ -114,33 +114,33 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const handleFlowCategory = () => {
-        setAnchorEl(null)
+        setAnchorEl(null);
         if (chatflow.category) {
             setCategoryDialogProps({
                 category: chatflow.category.split(';')
-            })
+            });
         }
-        setCategoryDialogOpen(true)
-    }
+        setCategoryDialogOpen(true);
+    };
 
     const saveFlowCategory = async (categories) => {
-        setCategoryDialogOpen(false)
+        setCategoryDialogOpen(false);
         // save categories as string
-        const categoryTags = categories.join(';')
+        const categoryTags = categories.join(';');
         const updateBody = {
             category: categoryTags,
             chatflow
-        }
+        };
         try {
-            await updateChatflowApi.request(chatflow.id, updateBody)
-            await updateFlowsApi.request()
+            await updateChatflowApi.request(chatflow.id, updateBody);
+            await updateFlowsApi.request();
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
             enqueueSnackbar({
                 message: errorData,
                 options: {
@@ -153,26 +153,26 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                         </Button>
                     )
                 }
-            })
+            });
         }
-    }
+    };
 
     const handleDelete = async () => {
-        setAnchorEl(null)
+        setAnchorEl(null);
         const confirmPayload = {
             title: `Delete`,
             description: `Delete chatflow ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
+        };
+        const isConfirmed = await confirm(confirmPayload);
 
         if (isConfirmed) {
             try {
-                await chatflowsApi.deleteChatflow(chatflow.id)
-                await updateFlowsApi.request()
+                await chatflowsApi.deleteChatflow(chatflow.id);
+                await updateFlowsApi.request();
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
                 enqueueSnackbar({
                     message: errorData,
                     options: {
@@ -185,38 +185,38 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                             </Button>
                         )
                     }
-                })
+                });
             }
         }
-    }
+    };
 
     const handleDuplicate = () => {
-        setAnchorEl(null)
+        setAnchorEl(null);
         try {
-            localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-            window.open(`${uiBaseURL}/canvas`, '_blank')
+            localStorage.setItem('duplicatedFlowData', chatflow.flowData);
+            window.open(`${uiBaseURL}/canvas`, '_blank');
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
-    }
+    };
 
     const handleExport = () => {
-        setAnchorEl(null)
+        setAnchorEl(null);
         try {
-            const flowData = JSON.parse(chatflow.flowData)
-            let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
-            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+            const flowData = JSON.parse(chatflow.flowData);
+            let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2);
+            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-            let exportFileDefaultName = `${chatflow.name} Chatflow.json`
+            let exportFileDefaultName = `${chatflow.name} Chatflow.json`;
 
-            let linkElement = document.createElement('a')
-            linkElement.setAttribute('href', dataUri)
-            linkElement.setAttribute('download', exportFileDefaultName)
-            linkElement.click()
+            let linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
-    }
+    };
 
     return (
         <div>
@@ -280,10 +280,10 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 onSubmit={saveFlowCategory}
             />
         </div>
-    )
+    );
 }
 
 FlowListMenu.propTypes = {
     chatflow: PropTypes.object,
     updateFlowsApi: PropTypes.object
-}
+};

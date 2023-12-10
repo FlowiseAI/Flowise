@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import PropTypes from 'prop-types'
-import { FormControl, Switch } from '@mui/material'
+import { useState } from 'react';
+import PropTypes from 'prop-types';
+import { FormControl, Switch } from '@mui/material';
 
 export const SwitchInput = ({ value, onChange, disabled = false }) => {
-    const [myValue, setMyValue] = useState(!!value ?? false)
+    const [myValue, setMyValue] = useState(!!value ?? false);
 
     return (
         <>
@@ -12,17 +12,17 @@ export const SwitchInput = ({ value, onChange, disabled = false }) => {
                     disabled={disabled}
                     checked={myValue}
                     onChange={(event) => {
-                        setMyValue(event.target.checked)
-                        onChange(event.target.checked)
+                        setMyValue(event.target.checked);
+                        onChange(event.target.checked);
                     }}
                 />
             </FormControl>
         </>
-    )
-}
+    );
+};
 
 SwitchInput.propTypes = {
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     onChange: PropTypes.func,
     disabled: PropTypes.bool
-}
+};

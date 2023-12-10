@@ -1,27 +1,27 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { GitbookLoader } from 'langchain/document_loaders/web/gitbook'
+import { INode, INodeData, INodeParams } from '../../../src/Interface';
+import { TextSplitter } from 'langchain/text_splitter';
+import { GitbookLoader } from 'langchain/document_loaders/web/gitbook';
 
 class Gitbook_DocumentLoaders implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    baseClasses: string[]
-    inputs?: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    baseClasses: string[];
+    inputs?: INodeParams[];
 
     constructor() {
-        this.label = 'GitBook'
-        this.name = 'gitbook'
-        this.version = 1.0
-        this.type = 'Document'
-        this.icon = 'gitbook.svg'
-        this.category = 'Document Loaders'
-        this.description = `Load data from GitBook`
-        this.baseClasses = [this.type]
+        this.label = 'GitBook';
+        this.name = 'gitbook';
+        this.version = 1.0;
+        this.type = 'Document';
+        this.icon = 'gitbook.svg';
+        this.category = 'Document Loaders';
+        this.description = `Load data from GitBook`;
+        this.baseClasses = [this.type];
         this.inputs = [
             {
                 label: 'Web Path',
@@ -50,20 +50,20 @@ class Gitbook_DocumentLoaders implements INode {
                 optional: true,
                 additionalParams: true
             }
-        ]
+        ];
     }
     async init(nodeData: INodeData): Promise<any> {
-        const webPath = nodeData.inputs?.webPath as string
-        const shouldLoadAllPaths = nodeData.inputs?.shouldLoadAllPaths as boolean
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const metadata = nodeData.inputs?.metadata
+        const webPath = nodeData.inputs?.webPath as string;
+        const shouldLoadAllPaths = nodeData.inputs?.shouldLoadAllPaths as boolean;
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter;
+        const metadata = nodeData.inputs?.metadata;
 
-        const loader = shouldLoadAllPaths ? new GitbookLoader(webPath, { shouldLoadAllPaths }) : new GitbookLoader(webPath)
+        const loader = shouldLoadAllPaths ? new GitbookLoader(webPath, { shouldLoadAllPaths }) : new GitbookLoader(webPath);
 
-        const docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
+        const docs = textSplitter ? await loader.loadAndSplit() : await loader.load();
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata);
             return docs.map((doc) => {
                 return {
                     ...doc,
@@ -71,14 +71,14 @@ class Gitbook_DocumentLoaders implements INode {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-            })
+                };
+            });
         }
 
-        return docs
+        return docs;
     }
 }
 
 module.exports = {
     nodeClass: Gitbook_DocumentLoaders
-}
+};

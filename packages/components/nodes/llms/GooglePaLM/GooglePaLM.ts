@@ -1,34 +1,34 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GooglePaLM, GooglePaLMTextInput } from 'langchain/llms/googlepalm'
-import { BaseCache } from 'langchain/schema'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { GooglePaLM, GooglePaLMTextInput } from 'langchain/llms/googlepalm';
+import { BaseCache } from 'langchain/schema';
 class GooglePaLM_LLMs implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
-    credential: INodeParams
-    inputs: INodeParams[]
+    label: string;
+    name: string;
+    version: number;
+    type: string;
+    icon: string;
+    category: string;
+    description: string;
+    baseClasses: string[];
+    credential: INodeParams;
+    inputs: INodeParams[];
 
     constructor() {
-        this.label = 'GooglePaLM'
-        this.name = 'GooglePaLM'
-        this.version = 2.0
-        this.type = 'GooglePaLM'
-        this.icon = 'Google_PaLM_Logo.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Google MakerSuite PaLM large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(GooglePaLM)]
+        this.label = 'GooglePaLM';
+        this.name = 'GooglePaLM';
+        this.version = 2.0;
+        this.type = 'GooglePaLM';
+        this.icon = 'Google_PaLM_Logo.svg';
+        this.category = 'LLMs';
+        this.description = 'Wrapper around Google MakerSuite PaLM large language models';
+        this.baseClasses = [this.type, ...getBaseClasses(GooglePaLM)];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleMakerSuite']
-        }
+        };
         this.inputs = [
             {
                 label: 'Cache',
@@ -122,45 +122,45 @@ class GooglePaLM_LLMs implements INode {
                 additionalParams: true
             } 
             */
-        ]
+        ];
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as string
-        const temperature = nodeData.inputs?.temperature as string
-        const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const topK = nodeData.inputs?.topK as string
-        const stopSequencesObj = nodeData.inputs?.stopSequencesObj
-        const cache = nodeData.inputs?.cache as BaseCache
+        const modelName = nodeData.inputs?.modelName as string;
+        const temperature = nodeData.inputs?.temperature as string;
+        const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string;
+        const topP = nodeData.inputs?.topP as string;
+        const topK = nodeData.inputs?.topK as string;
+        const stopSequencesObj = nodeData.inputs?.stopSequencesObj;
+        const cache = nodeData.inputs?.cache as BaseCache;
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const googleMakerSuiteKey = getCredentialParam('googleMakerSuiteKey', credentialData, nodeData);
 
         const obj: Partial<GooglePaLMTextInput> = {
             modelName: modelName,
             temperature: parseFloat(temperature),
             apiKey: googleMakerSuiteKey
-        }
+        };
 
-        if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (topK) obj.topK = parseFloat(topK)
-        if (cache) obj.cache = cache
+        if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10);
+        if (topP) obj.topP = parseFloat(topP);
+        if (topK) obj.topK = parseFloat(topK);
+        if (cache) obj.cache = cache;
 
-        let parsedStopSequences: any | undefined = undefined
+        let parsedStopSequences: any | undefined = undefined;
         if (stopSequencesObj) {
             try {
-                parsedStopSequences = typeof stopSequencesObj === 'object' ? stopSequencesObj : JSON.parse(stopSequencesObj)
-                obj.stopSequences = parsedStopSequences.list || []
+                parsedStopSequences = typeof stopSequencesObj === 'object' ? stopSequencesObj : JSON.parse(stopSequencesObj);
+                obj.stopSequences = parsedStopSequences.list || [];
             } catch (exception) {
-                throw new Error("Invalid JSON in the GooglePaLM's stopSequences: " + exception)
+                throw new Error("Invalid JSON in the GooglePaLM's stopSequences: " + exception);
             }
         }
 
-        const model = new GooglePaLM(obj)
-        return model
+        const model = new GooglePaLM(obj);
+        return model;
     }
 }
 
-module.exports = { nodeClass: GooglePaLM_LLMs }
+module.exports = { nodeClass: GooglePaLM_LLMs };
