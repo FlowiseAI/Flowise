@@ -162,8 +162,11 @@ class S3_DocumentLoaders implements INode {
             accessKeyId?: string
             secretAccessKey?: string
         } = {
-            accessKeyId,
-            secretAccessKey
+            region,
+            credentials: {
+                accessKeyId,
+                secretAccessKey
+            }
         }
 
         loader.load = async () => {

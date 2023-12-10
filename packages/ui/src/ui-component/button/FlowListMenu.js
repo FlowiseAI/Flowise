@@ -22,7 +22,6 @@ import useConfirm from 'hooks/useConfirm'
 import { uiBaseURL } from '../../store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
 
-import ConfirmDialog from '../dialog/ConfirmDialog'
 import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
 import TagDialog from '../dialog/TagDialog'
 
@@ -264,7 +263,6 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     Delete
                 </MenuItem>
             </StyledMenu>
-            <ConfirmDialog />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
