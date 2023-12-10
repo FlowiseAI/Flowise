@@ -10,6 +10,7 @@ import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEnt
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
 import { AddCategoryToChatFlow1699900910291 } from './1699900910291-AddCategoryToChatFlow'
 import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-AddFileAnnotationsToChatMessage'
+import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -23,5 +24,6 @@ export const mysqlMigrations = [
     AddAssistantEntity1699325775451,
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
-    AddFileAnnotationsToChatMessage1700271021237
+    AddFileAnnotationsToChatMessage1700271021237,
+    AddVariableEntity1699325775451
 ]
