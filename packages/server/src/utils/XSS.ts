@@ -6,8 +6,15 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
     const decodedURI = decodeURI(req.url)
     req.url = sanitizeHtml(decodedURI)
     for (let p in req.query) {
-        req.query[p] = sanitizeHtml(req.query[p] as string)
+        if (Array.isArray(req.query[p])) {
+            const sanitizedQ = []
+            for (const q of req.query[p] as string[]) {
+                sanitizedQ.push(sanitizeHtml(q))
+            }
+            req.query[p] = sanitizedQ
+        } else {
+            req.query[p] = sanitizeHtml(req.query[p] as string)
+        }
     }
-
     next()
 }
