@@ -1,13 +1,13 @@
 module.exports = {
     apps: [
         {
-            name: 'STARTAI_DEFAULT',
+            name: 'STARTAI_TWO',
             script: './node_modules/npm/bin/npm-cli.js',
             args: 'start',
             watch: false,
             env: {
-                NODE_ENV: 'STARTAI_DEFAULT',
-                PORT: 3000
+                NODE_ENV: 'STARTAI_TWO',
+                PORT: 3052
             }
         }
     ]
