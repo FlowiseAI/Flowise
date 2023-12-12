@@ -1,0 +1,32 @@
+name: Update Forked PR Branch
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+    schedule:
+        - cron: '0 0 * * *' # Runs every day at midnight
+
+jobs:
+    update-with-upstream:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout the PR branch
+              uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.head_ref }}
+
+            - name: Configure Git
+              run: |
+                  git config user.name "GitHub Actions"
+
+            - name: Add FlowiseAI Repository as Upstream
+              run: git remote add upstream https://github.com/FlowiseAI/Flowise.git
+
+            - name: Fetch Upstream Changes
+              run: git fetch upstream
+
+            - name: Merge Upstream Changes
+              run: git merge upstream/main
+
+            - name: Push Changes
+              run: git push origin HEAD:${{ github.head_ref }}
