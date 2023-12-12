@@ -1628,19 +1628,30 @@ export async function getAllChatFlow(): Promise<IChatFlow[]> {
 
 export async function start(): Promise<void> {
     serverApp = new App()
-    let port = parseInt(process.env.PORT || '', 10) || 3050
-    if (process.env.NODE_ENV === 'STARTAI_DEFAULT') {
-        port = parseInt(process.env.PORT || '', 10) || 3050
-    } else if (process.env.NODE_ENV === 'STARTAI_ONE') {
-        port = parseInt(process.env.PORT_ONE || '', 10) || 3051
-    } else if (process.env.NODE_ENV === 'STARTAI_TWO') {
-        port = parseInt(process.env.PORT_TWO || '', 10) || 3052
-    } else if (process.env.NODE_ENV === 'STARTAI_THREE') {
-        port = parseInt(process.env.PORT_THREE || '', 10) || 3053
-    } else if (process.env.NODE_ENV === 'STARTAI_FOUR') {
-        port = parseInt(process.env.PORT_FOUR || '', 10) || 3054
-    } else if (process.env.NODE_ENV === 'STARTAI_FIVE') {
-        port = parseInt(process.env.PORT_FIVE || '', 10) || 3055
+    let port = parseInt(process.env.PORT || '', 10) || 3000
+
+    switch (process.env.NODE_ENV) {
+        case 'STARTAI_DEFAULT':
+            port = parseInt(process.env.PORT || '', 10) || 3000
+            break
+        case 'STARTAI_ONE':
+            port = parseInt(process.env.PORT_ONE || '', 10) || 3021
+            break
+        case 'STARTAI_TWO':
+            port = parseInt(process.env.PORT_TWO || '', 10) || 3022
+            break
+        case 'STARTAI_THREE':
+            port = parseInt(process.env.PORT_THREE || '', 10) || 3023
+            break
+        case 'STARTAI_FOUR':
+            port = parseInt(process.env.PORT_FOUR || '', 10) || 3024
+            break
+        case 'STARTAI_FIVE':
+            port = parseInt(process.env.PORT_FIVE || '', 10) || 3025
+            break
+        default:
+            // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
+            break
     }
 
     const server = http.createServer(serverApp.app)
