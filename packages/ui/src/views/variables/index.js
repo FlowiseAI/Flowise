@@ -95,7 +95,7 @@ const Variables = () => {
         setShowVariableDialog(true)
     }
 
-    const deleteVariable = async (credential) => {
+    const deleteVariable = async (variable) => {
         const confirmPayload = {
             title: `Delete`,
             description: `Delete variable ${variable.name}?`,
@@ -106,7 +106,7 @@ const Variables = () => {
 
         if (isConfirmed) {
             try {
-                const deleteResp = await variablesApi.deleteVariable(credential.id)
+                const deleteResp = await variablesApi.deleteVariable(variable.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
                         message: 'Variable deleted',

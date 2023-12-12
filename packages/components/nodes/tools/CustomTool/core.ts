@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { CallbackManagerForToolRun } from 'langchain/callbacks'
 import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
-import { logger } from "@zilliz/milvus2-sdk-node";
 
 /*
  * List of dependencies allowed to be import in vm2

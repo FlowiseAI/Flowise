@@ -26,6 +26,7 @@ import useNotifier from 'utils/useNotifier'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import { TooltipWithParser } from '../../ui-component/tooltip/TooltipWithParser'
 import { Dropdown } from '../../ui-component/dropdown/Dropdown'
+import { SwitchInput } from '../../ui-component/switch/Switch'
 
 const variableTypes = [
     {
@@ -50,29 +51,29 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [name, setName] = useState('')
-    const [value, setValue] = useState('')
-    const [type, setType] = useState('')
+    const [variableName, setVariableName] = useState('')
+    const [variableValue, setVariableValue] = useState('')
+    const [variableType, setVariableType] = useState('static')
+    const [dialogType, setDialogType] = useState('ADD')
 
     const [variable, setVariable] = useState({})
 
     useEffect(() => {
-        if (dialogProps.type === 'EDIT' && dialogProps.data) {
+        if (dialogProps.type === 'EDIT') {
             // When variable dialog is opened from Variables dashboard
-            setName(dialogProps.data.name)
-            setValue(dialogProps.data.value)
-            setType(dialogProps.data.type)
+            setVariableName(dialogProps.data.name)
+            setVariableValue(dialogProps.data.value)
+            setVariableType(dialogProps.data.type)
             setVariable(dialogProps.data)
-        } else if (dialogProps.type === 'ADD' && dialogProps.data) {
+            setDialogType('EDIT')
+        } else if (dialogProps.type === 'ADD') {
             // When variable dialog is to add a new variable
-            setName('')
-            setValue('')
-            setType('static')
-            setVariable({ name: '', value: '', type: 'static' })
+            setVariableName('')
+            setVariableValue('')
+            setVariableType('static')
+            setDialogType('ADD')
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dialogProps])
+    }, [dialogProps.data, dialogProps.type])
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -83,9 +84,9 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const addNewVariable = async () => {
         try {
             const obj = {
-                name: name,
-                value: value,
-                type: type
+                name: variableName,
+                value: variableValue,
+                type: variableType
             }
             const createResp = await variablesApi.createVariable(obj)
             if (createResp.data) {
@@ -125,9 +126,9 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const saveVariable = async () => {
         try {
             const saveObj = {
-                name: name,
-                value: value,
-                type: type
+                name: variableName,
+                value: variableValue,
+                type: variableType
             }
 
             const saveResp = await variablesApi.updateVariable(variable.id, saveObj)
@@ -207,7 +208,13 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
-                    <OutlinedInput type='string' fullWidth key='name' onChange={(e) => setName(e.target.value)} value={name ?? ''} />
+                    <OutlinedInput
+                        type='string'
+                        fullWidth
+                        key='variableName'
+                        onChange={(e) => setVariableName(e.target.value)}
+                        value={variableName ?? ''}
+                    />
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -217,7 +224,13 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Typography>
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
-                    <OutlinedInput type='string' fullWidth key='value' onChange={(e) => setValue(e.target.value)} value={value ?? ''} />
+                    <OutlinedInput
+                        type='string'
+                        fullWidth
+                        key='variableValue'
+                        onChange={(e) => setVariableValue(e.target.value)}
+                        value={variableValue ?? ''}
+                    />
                     <Typography variant='subtitle2'>Leave the value empty for runtime variables. Will be populated at runtime.</Typography>
                 </Box>
                 <Box sx={{ p: 2 }}>
@@ -228,11 +241,10 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
                     <Dropdown
-                        key='type'
-                        name='variable-type'
+                        name='variableType'
                         options={variableTypes}
-                        onSelect={(newValue) => setType(newValue)}
-                        value={type ?? 'static'}
+                        onSelect={(newValue) => setVariableType(newValue)}
+                        value={variableType}
                     />
                     <Typography variant='subtitle2'>
                         Runtime: Value would be populated from env. Static: Value would be used as is.
@@ -241,9 +253,9 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             </DialogContent>
             <DialogActions>
                 <StyledButton
-                    disabled={!name}
+                    disabled={!variableName || (variableType === 'static' && !variableValue)}
                     variant='contained'
-                    onClick={() => (dialogProps.type === 'ADD' ? addNewVariable() : saveVariable())}
+                    onClick={() => (dialogType === 'ADD' ? addNewVariable() : saveVariable())}
                 >
                     {dialogProps.confirmButtonName}
                 </StyledButton>
