@@ -200,7 +200,7 @@ export class App {
 
         // Get component credential via name
         this.app.get('/api/v1/components-credentials/:name', (req: Request, res: Response) => {
-            if (!req.params.name.includes('&')) {
+            if (!req.params.name.includes('&amp;')) {
                 if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
                     return res.json(this.nodesPool.componentCredentials[req.params.name])
                 } else {
@@ -208,7 +208,7 @@ export class App {
                 }
             } else {
                 const returnResponse = []
-                for (const name of req.params.name.split('&')) {
+                for (const name of req.params.name.split('&amp;')) {
                     if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
                         returnResponse.push(this.nodesPool.componentCredentials[name])
                     } else {
