@@ -23,7 +23,9 @@ import { flowContext } from 'store/context/ReactFlowContext'
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
-    maxWidth: '100%',
+    border: 'solid 1px',
+    borderColor: theme.palette.primary[200] + 75,
+    width: '300px',
     height: 'auto',
     padding: '10px',
     boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
@@ -173,7 +175,11 @@ const CanvasNode = ({ data }) => {
                     placement='right-start'
                 >
                     <Box>
-                        <div className='header' onDoubleClick={handleDoubleClick}>
+                        <div
+                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            className='header'
+                            onDoubleClick={handleDoubleClick}
+                        >
                             <Box style={{ width: 50, marginRight: 10, padding: 5 }}>
                                 <div
                                     style={{
@@ -224,7 +230,7 @@ const CanvasNode = ({ data }) => {
                                                 textAlign: 'center'
                                             }}
                                         >
-                                            Input
+                                            Inputs
                                         </Typography>
                                     </Box>
                                     <Divider />
