@@ -85,16 +85,16 @@ class CustomTool_Tools implements INode {
 
             // override variables defined in overrideConfig
             // nodeData.inputs.variables is an Object, check each property and override the variable
-            if (nodeData?.inputs?.variables) {
-                for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.variables)) {
+            if (nodeData?.inputs?.envVars) {
+                for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.envVars)) {
                     const foundVar = variables.find((v) => v.name === propertyName)
                     if (foundVar) {
                         // even if the variable was defined as runtime, we override it with static value
                         foundVar.type = 'static'
-                        foundVar.value = nodeData.inputs.variables[propertyName]
+                        foundVar.value = nodeData.inputs.envVars[propertyName]
                     } else {
                         // add it the variables, if not found locally in the db
-                        variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.variables[propertyName] })
+                        variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.envVars[propertyName] })
                     }
                 }
             }

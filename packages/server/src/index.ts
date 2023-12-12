@@ -1382,10 +1382,6 @@ export class App {
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
 
-            if (incomingInput.question) {
-                incomingInput.question = await replaceEnvVariables(incomingInput.question, this.AppDataSource)
-            }
-
             let nodeToExecuteData: INodeData
 
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
