@@ -89,7 +89,7 @@ class RedisCache implements INode {
         redisClient.update = async (prompt: string, llmKey: string, value: Generation[]) => {
             for (let i = 0; i < value.length; i += 1) {
                 const key = getCacheKey(prompt, llmKey, String(i))
-                if (ttl !== undefined) {
+                if (ttl) {
                     await client.set(key, JSON.stringify(serializeGeneration(value[i])), 'EX', parseInt(ttl, 10))
                 } else {
                     await client.set(key, JSON.stringify(serializeGeneration(value[i])))
