@@ -26,7 +26,6 @@ import useNotifier from 'utils/useNotifier'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import { TooltipWithParser } from '../../ui-component/tooltip/TooltipWithParser'
 import { Dropdown } from '../../ui-component/dropdown/Dropdown'
-import { SwitchInput } from '../../ui-component/switch/Switch'
 
 const variableTypes = [
     {
