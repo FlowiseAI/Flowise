@@ -12,6 +12,7 @@ import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
 import LoginDialog from 'ui-component/dialog/LoginDialog'
+import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -160,7 +161,6 @@ const Chatflows = () => {
                                         variant='contained'
                                         value='card'
                                         title='Card View'
-                                        selectedColor='#00abc0'
                                     >
                                         <IconLayoutGrid />
                                     </ToggleButton>
@@ -212,6 +212,7 @@ const Chatflows = () => {
                 </Stack>
             )}
             <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+            <ConfirmDialog />
         </MainCard>
     )
 }

@@ -21,7 +21,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
     constructor() {
         this.label = 'Conversational Retrieval Agent'
         this.name = 'conversationalRetrievalAgent'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -40,9 +40,9 @@ class ConversationalRetrievalAgent_Agents implements INode {
                 type: 'BaseChatMemory'
             },
             {
-                label: 'OpenAI Chat Model',
+                label: 'OpenAI/Azure Chat Model',
                 name: 'model',
-                type: 'ChatOpenAI'
+                type: 'BaseChatModel'
             },
             {
                 label: 'System Message',
@@ -82,6 +82,8 @@ class ConversationalRetrievalAgent_Agents implements INode {
         if (executor.memory) {
             ;(executor.memory as any).memoryKey = 'chat_history'
             ;(executor.memory as any).outputKey = 'output'
+            ;(executor.memory as any).returnMessages = true
+
             const chatHistoryClassName = (executor.memory as any).chatHistory.constructor.name
             // Only replace when its In-Memory
             if (chatHistoryClassName && chatHistoryClassName === 'ChatMessageHistory') {

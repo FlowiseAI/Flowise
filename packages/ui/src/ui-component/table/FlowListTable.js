@@ -69,7 +69,9 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                     <Typography
                                         sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                     >
-                                        <Button onClick={() => goToCanvas(row)}>{row.templateName || row.name}</Button>
+                                        <Button onClick={() => goToCanvas(row)} sx={{ textAlign: 'left' }}>
+                                            {row.templateName || row.name}
+                                        </Button>
                                     </Typography>
                                 </TableCell>
                                 <TableCell key='1'>
@@ -145,8 +147,8 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
 }
 
 FlowListTable.propTypes = {
-    data: PropTypes.object,
-    images: PropTypes.array,
+    data: PropTypes.array,
+    images: PropTypes.object,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }

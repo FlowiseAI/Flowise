@@ -1,18 +1,21 @@
 import { Moderation } from '../Moderation'
-import { BaseLanguageModel } from 'langchain/base_language'
 import { OpenAIModerationChain } from 'langchain/chains'
 
 export class OpenAIModerationRunner implements Moderation {
+    private openAIApiKey = ''
     private moderationErrorMessage: string = "Text was found that violates OpenAI's content policy."
 
-    async checkForViolations(llm: BaseLanguageModel, input: string): Promise<string> {
-        const openAIApiKey = (llm as any).openAIApiKey
-        if (!openAIApiKey) {
+    constructor(openAIApiKey: string) {
+        this.openAIApiKey = openAIApiKey
+    }
+
+    async checkForViolations(input: string): Promise<string> {
+        if (!this.openAIApiKey) {
             throw Error('OpenAI API key not found')
         }
         // Create a new instance of the OpenAIModerationChain
         const moderation = new OpenAIModerationChain({
-            openAIApiKey: openAIApiKey,
+            openAIApiKey: this.openAIApiKey,
             throwError: false // If set to true, the call will throw an error when the moderation chain detects violating content. If set to false, violating content will return "Text was found that violates OpenAI's content policy.".
         })
         // Send the user's input to the moderation chain and wait for the result

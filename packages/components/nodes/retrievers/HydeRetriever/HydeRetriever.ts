@@ -18,7 +18,7 @@ class HydeRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Hyde Retriever'
         this.name = 'HydeRetriever'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'HydeRetriever'
         this.icon = 'hyderetriever.svg'
         this.category = 'Retrievers'
@@ -36,41 +36,66 @@ class HydeRetriever_Retrievers implements INode {
                 type: 'VectorStore'
             },
             {
-                label: 'Prompt Key',
+                label: 'Select Defined Prompt',
                 name: 'promptKey',
+                description: 'Select a pre-defined prompt',
                 type: 'options',
                 options: [
                     {
                         label: 'websearch',
-                        name: 'websearch'
+                        name: 'websearch',
+                        description: `Please write a passage to answer the question
+Question: {question}
+Passage:`
                     },
                     {
                         label: 'scifact',
-                        name: 'scifact'
+                        name: 'scifact',
+                        description: `Please write a scientific paper passage to support/refute the claim
+Claim: {question}
+Passage:`
                     },
                     {
                         label: 'arguana',
-                        name: 'arguana'
+                        name: 'arguana',
+                        description: `Please write a counter argument for the passage
+Passage: {question}
+Counter Argument:`
                     },
                     {
                         label: 'trec-covid',
-                        name: 'trec-covid'
+                        name: 'trec-covid',
+                        description: `Please write a scientific paper passage to answer the question
+Question: {question}
+Passage:`
                     },
                     {
                         label: 'fiqa',
-                        name: 'fiqa'
+                        name: 'fiqa',
+                        description: `Please write a financial article passage to answer the question
+Question: {question}
+Passage:`
                     },
                     {
                         label: 'dbpedia-entity',
-                        name: 'dbpedia-entity'
+                        name: 'dbpedia-entity',
+                        description: `Please write a passage to answer the question.
+Question: {question}
+Passage:`
                     },
                     {
                         label: 'trec-news',
-                        name: 'trec-news'
+                        name: 'trec-news',
+                        description: `Please write a news passage about the topic.
+Topic: {question}
+Passage:`
                     },
                     {
                         label: 'mr-tydi',
-                        name: 'mr-tydi'
+                        name: 'mr-tydi',
+                        description: `Please write a passage in Swahili/Korean/Japanese/Bengali to answer the question in detail.
+Question: {question}
+Passage:`
                     }
                 ],
                 default: 'websearch'
@@ -78,7 +103,7 @@ class HydeRetriever_Retrievers implements INode {
             {
                 label: 'Custom Prompt',
                 name: 'customPrompt',
-                description: 'If custom prompt is used, this will override Prompt Key',
+                description: 'If custom prompt is used, this will override Defined Prompt',
                 placeholder: 'Please write a passage to answer the question\nQuestion: {question}\nPassage:',
                 type: 'string',
                 rows: 4,

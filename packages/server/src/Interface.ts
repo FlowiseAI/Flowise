@@ -172,7 +172,7 @@ export interface IncomingInput {
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }
@@ -188,12 +188,6 @@ export interface IOverrideConfig {
     label: string
     name: string
     type: string
-}
-
-export interface IDatabaseExport {
-    chatmessages: IChatMessage[]
-    chatflows: IChatFlow[]
-    apikeys: ICommonObject[]
 }
 
 export type ICredentialDataDecrypted = ICommonObject

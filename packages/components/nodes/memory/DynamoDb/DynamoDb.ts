@@ -1,4 +1,13 @@
-import { ICommonObject, INode, INodeData, INodeParams, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
+import {
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    serializeChatHistory
+} from '../../../src'
 import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 
@@ -70,13 +79,23 @@ class DynamoDb_Memory implements INode {
         return initalizeDynamoDB(nodeData, options)
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-        const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
-        const sessionId = nodeData.inputs?.sessionId as string
-        const chatId = options?.chatId as string
-        options.logger.info(`Clearing DynamoDb memory session ${sessionId ? sessionId : chatId}`)
-        await dynamodbMemory.clear()
-        options.logger.info(`Successfully cleared DynamoDb memory session ${sessionId ? sessionId : chatId}`)
+    //@ts-ignore
+    memoryMethods = {
+        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
+            const sessionId = nodeData.inputs?.sessionId as string
+            const chatId = options?.chatId as string
+            options.logger.info(`Clearing DynamoDb memory session ${sessionId ? sessionId : chatId}`)
+            await dynamodbMemory.clear()
+            options.logger.info(`Successfully cleared DynamoDb memory session ${sessionId ? sessionId : chatId}`)
+        },
+        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
+            const memoryKey = nodeData.inputs?.memoryKey as string
+            const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
+            const key = memoryKey ?? 'chat_history'
+            const memoryResult = await dynamodbMemory.loadMemoryVariables({})
+            return serializeChatHistory(memoryResult[key])
+        }
     }
 }
 
@@ -109,9 +128,8 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     })
 
     const memory = new BufferMemoryExtended({
-        memoryKey,
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: dynamoDb,
-        returnMessages: true,
         isSessionIdUsingChatMessageId
     })
     return memory
