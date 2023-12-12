@@ -53,5 +53,9 @@
     },
     "engines": {
         "node": ">=18.15.0"
+    },
+    "dependencies": {
+        "node-cmd": "^5.0.0",
+        "npm": "^10.2.5"
     }
 }

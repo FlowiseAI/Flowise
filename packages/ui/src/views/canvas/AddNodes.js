@@ -528,7 +528,13 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                             : 'inherit'
                                                                                 }}
                                                                                 size='small'
-                                                                                label={category.split(';')[1]}
+                                                                                label={
+                                                                                    category.split(';')[1] === 'DEPRECATING'
+                                                                                        ? 'УСТАРЕЛ'
+                                                                                        : category.split(';')[1] === 'NEW'
+                                                                                        ? 'НОВЫЙ'
+                                                                                        : category.split(';')[1]
+                                                                                }
                                                                             />
                                                                         </div>
                                                                     ) : (
@@ -609,7 +615,15 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                                                             : 'inherit'
                                                                                                                 }}
                                                                                                                 size='small'
-                                                                                                                label={node.badge}
+                                                                                                                label={
+                                                                                                                    node.badge ===
+                                                                                                                    'DEPRECATING'
+                                                                                                                        ? 'УСТАРЕЛ'
+                                                                                                                        : node.badge ===
+                                                                                                                          'NEW'
+                                                                                                                        ? 'НОВЫЙ'
+                                                                                                                        : node.badge
+                                                                                                                }
                                                                                                             />
                                                                                                         )}
                                                                                                     </div>
