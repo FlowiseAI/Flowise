@@ -278,7 +278,7 @@ query(formData).then((response) => {
         try {
             await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
             enqueueSnackbar({
-                message: 'Succesfully upserted vector store. You can start chatting now!',
+                message: 'Успешно обновлено векторное хранилище. Вы можете начать переписываться!',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -461,7 +461,7 @@ query(formData).then((response) => {
                                     <Box sx={{ p: 2 }}>
                                         <CheckboxInput
                                             key={JSON.stringify(nodeCheckboxExpanded)}
-                                            label='Show API'
+                                            label='Показать API'
                                             value={nodeCheckboxExpanded[data.vectorNode.data.id]}
                                             onChange={() => onCheckBoxChanged(data.vectorNode.data.id)}
                                         />
@@ -532,7 +532,7 @@ query(formData).then((response) => {
                                                 title='Upsert'
                                                 onClick={() => onUpsertClicked(data.vectorNode)}
                                             >
-                                                Upsert
+                                                Обновить
                                             </Button>
                                         )}
                                     </div>

@@ -36,7 +36,7 @@ export const VectorStorePopUp = ({ chatflowid }) => {
         setOpen((prevopen) => !prevopen)
         const props = {
             open: true,
-            title: 'Upsert Vector Store',
+            title: 'Обновление векторного хранилища',
             chatflowid
         }
         setExpandDialogProps(props)
@@ -47,7 +47,7 @@ export const VectorStorePopUp = ({ chatflowid }) => {
         try {
             await vectorstoreApi.upsertVectorStore(chatflowid, {})
             enqueueSnackbar({
-                message: 'Succesfully upserted vector store',
+                message: 'Успешно обновлено векторное хранилище',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -93,7 +93,7 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                 size='small'
                 color='teal'
                 aria-label='upsert'
-                title='Upsert Vector Database'
+                title='Обновление базы данных векторов'
                 onClick={handleToggle}
             >
                 {open ? <IconX /> : <IconDatabaseImport />}

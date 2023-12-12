@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
 import parser from 'html-react-parser'
-
+import { translationObject } from '../../translate'
 // Material
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material'
 
@@ -135,7 +135,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             onCancel()
         }
     }
-
+    console.log(componentCredential.description)
     const saveCredential = async () => {
         try {
             const saveObj = {
@@ -219,7 +219,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                                 src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
                             />
                         </div>
-                        {componentCredential.label}
+                        {translationObject[componentCredential.label] || componentCredential.label}
                     </div>
                 )}
             </DialogTitle>
@@ -237,7 +237,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                                 marginBottom: 10
                             }}
                         >
-                            <span style={{ color: 'rgb(116,66,16)' }}>{parser(componentCredential.description)}</span>
+                            <span style={{ color: 'rgb(116,66,16)' }}>
+                                {parser(translationObject[componentCredential.description] || componentCredential.description)}
+                            </span>
                         </div>
                     </Box>
                 )}
@@ -253,7 +255,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                             id='credName'
                             type='string'
                             fullWidth
-                            placeholder={componentCredential.label}
+                            placeholder={translationObject[componentCredential.label] || componentCredential.label}
                             value={name}
                             name='name'
                             onChange={(e) => setName(e.target.value)}
@@ -263,7 +265,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 {componentCredential &&
                     componentCredential.inputs &&
                     componentCredential.inputs.map((inputParam, index) => (
-                        <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
+                        <CredentialInputHandler
+                            key={index}
+                            inputParam={translationObject[inputParam] || inputParam}
+                            data={credentialData}
+                        />
                     ))}
             </DialogContent>
             <DialogActions>

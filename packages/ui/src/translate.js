@@ -459,5 +459,144 @@ export const translationObject = {
     'A chain that automatically picks an appropriate retriever from multiple different vector databases':
         'Цепочка, которая автоматически выбирает подходящего ретривера из нескольких различных баз данных векторов.',
     'An agent that uses ReAct logic to decide what action to take':
-        'Агент, который использует логику ReAct, чтобы решить, какое действие предпринять.'
+        'Агент, который использует логику ReAct, чтобы решить, какое действие предпринять.',
+    'Upstash Redis REST URL': 'Upstash Redis REST URL',
+    Token: 'Токен',
+    'Upstash Redis REST Token': 'Токен REST Upstash Redis',
+    'Vectara Customer ID': 'ID клиента Vectara',
+    'Vectara Corpus ID': 'ID корпуса Vectara',
+    'Vectara API Key': 'Ключ API Vectara',
+    'Weaviate API Key': 'Ключ API Weaviate',
+    'Zapier NLA Api Key': 'Ключ API Zapier NLA',
+    'Qdrant API Key': 'Ключ API Qdrant',
+    'Redis Host': 'Хост Redis',
+    Port: 'Порт',
+    '<REDIS_USERNAME>': '<REDIS_USERNAME>',
+    '<REDIS_PASSWORD>': '<REDIS_PASSWORD>',
+    'Redis URL': 'URL Redis',
+    'Replicate Api Key': 'Ключ API Replicate',
+    'SearchApi API Key': 'Ключ API SearchApi',
+    'Serp Api Key': 'Ключ API Serp',
+    'Serper Api Key': 'Ключ API Serper',
+    '<SINGLESTORE_USERNAME>': '<SINGLESTORE_USERNAME>',
+    '<SINGLESTORE_PASSWORD>': '<SINGLESTORE_PASSWORD>',
+    'Supabase API Key': 'Ключ API Supabase',
+    User: 'Пользователь',
+    '<POSTGRES_USERNAME>': '<POSTGRES_USERNAME>',
+    Password: 'Пароль',
+    '<POSTGRES_PASSWORD>': '<POSTGRES_PASSWORD>',
+    'APP ID': 'ID приложения',
+    '<LLMonitor_APP_ID>': '<LLMonitor_APP_ID>',
+    'Milvus User': 'Пользователь Milvus',
+    'Milvus Password': 'Пароль Milvus',
+    'ATLAS Connection URL': 'URL подключения ATLAS',
+    'mongodb+srv://<user>:<pwd>@cluster0.example.mongodb.net/?retryWrites=true&w=majority':
+        'mongodb+srv://<user>:<pwd>@cluster0.example.mongodb.net/?retryWrites=true&w=majority',
+    'Client ID': 'ID клиента',
+    'Notion Integration Token': 'Токен интеграции Notion',
+    'OpenAI Api Key': 'Ключ API OpenAI',
+    'OpenAPI Token': 'Токен OpenAPI',
+    'Auth Token. For example: Bearer <TOKEN>': 'Токен авторизации. Например: Bearer <TOKEN>',
+    'Pinecone Api Key': 'Ключ API Pinecone',
+    'Pinecone Environment': 'Окружение Pinecone',
+    'Elasticsearch Endpoint': 'Конечная точка Elasticsearch',
+    'Elasticsearch API Key': 'Ключ API Elasticsearch',
+    'Cloud ID': 'ID облака',
+    'ElasticSearch User': 'Пользователь ElasticSearch',
+    'ElasticSearch Password': 'Пароль ElasticSearch',
+    '<FIGMA_ACCESS_TOKEN>': '<FIGMA_ACCESS_TOKEN>',
+    '<GITHUB_ACCESS_TOKEN>': '<GITHUB_ACCESS_TOKEN>',
+    'Google Application Credential File Path': 'Путь к файлу учетных данных Google Application',
+    'your-path/application_default_credentials.json': 'your-path/application_default_credentials.json',
+    'Google Credential JSON Object': 'JSON-объект учетных данных Google',
+    'JSON object of your google application credential. You can also use the file path (either one)':
+        'JSON-объект учетных данных вашего приложения Google. Вы также можете использовать путь к файлу (любой из них)',
+    '`{': '`{',
+    'Project ID': 'ID проекта',
+    'Project ID of GCP. If not provided, it will be read from the credential file':
+        'ID проекта GCP. Если не указан, будет прочитан из файла учетных данных',
+    'MakerSuite API Key': 'Ключ API MakerSuite',
+    'Google Custom Search Api Key': 'Ключ API пользовательского поиска Google',
+    'Programmable Search Engine ID': 'ID программного поисковика',
+    'HuggingFace Api Key': 'Ключ API HuggingFace',
+    'Secret Key': 'Секретный ключ',
+    'sk-lf-abcdefg': 'sk-lf-abcdefg',
+    'Public Key': 'Публичный ключ',
+    'pk-lf-abcdefg': 'pk-lf-abcdefg',
+    'API Key': 'Ключ API',
+    '<LANGSMITH_API_KEY>': '<LANGSMITH_API_KEY>',
+    'Access Key': 'Ключ доступа',
+    'Secret Access Key': 'Секретный ключ доступа',
+    'Access Token': 'Токен доступа',
+    '<AIRTABLE_ACCESS_TOKEN>': '<AIRTABLE_ACCESS_TOKEN>',
+    'Anthropic Api Key': 'Ключ API Anthropic',
+    'Apify API': 'API Apify',
+    'AWS Access Key': 'Ключ доступа AWS',
+    '<AWS_ACCESS_KEY_ID>': '<AWS_ACCESS_KEY_ID>',
+    'The access key for your AWS account.': 'Ключ доступа к вашему аккаунту AWS.',
+    'AWS Secret Access Key': 'Секретный ключ доступа AWS',
+    '<AWS_SECRET_ACCESS_KEY>': '<AWS_SECRET_ACCESS_KEY>',
+    'The secret key for your AWS account.': 'Секретный ключ для вашего аккаунта AWS.',
+    'AWS Session Key': 'Ключ сессии AWS',
+    '<AWS_SESSION_TOKEN>': '<AWS_SESSION_TOKEN>',
+    'The session key for your AWS account. This is only needed when you are using temporary credentials.':
+        'Ключ сессии для вашего аккаунта AWS. Необходим только при использовании временных учетных данных.',
+    'Azure OpenAI Api Key': 'Ключ API Azure OpenAI',
+    '`Refer to <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=rest-api#set-up">official guide</a> on how to create API key on Azure OpenAI`':
+        '`Ссылка на <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=rest-api#set-up">официальное руководство</a> по созданию ключа API на Azure OpenAI`',
+    'Azure OpenAI Api Instance Name': 'Имя экземпляра API Azure OpenAI',
+    'YOUR-INSTANCE-NAME': 'YOUR-INSTANCE-NAME',
+    'Azure OpenAI Api Deployment Name': 'Имя развертывания API Azure OpenAI',
+    'YOUR-DEPLOYMENT-NAME': 'YOUR-DEPLOYMENT-NAME',
+    'Azure OpenAI Api Version': 'Версия API Azure OpenAI',
+    '2023-06-01-preview': '2023-06-01-preview',
+    '': '',
+    'BraveSearch Api Key': 'Ключ API BraveSearch',
+    'Chroma Api Key': 'Ключ API Chroma',
+    'Cohere Api Key': 'Ключ API Cohere',
+    '<CONFLUENCE_ACCESS_TOKEN>': '<CONFLUENCE_ACCESS_TOKEN>',
+    Username: 'Имя пользователя',
+    '<CONFLUENCE_USERNAME>': '<CONFLUENCE_USERNAME>',
+    'Please refer to the <a target="_blank" href="https://console.cloud.google.com/apis/credentials">Google Cloud Console</a> for instructions on how to create an API key, and visit the <a target="_blank" href="https://programmablesearchengine.google.com/controlpanel/create">Search Engine Creation page</a> to learn how to generate your Search Engine ID.':
+        'Пожалуйста, обратитесь к <a target="_blank" href="https://console.cloud.google.com/apis/credentials">Google Cloud Console</a> за инструкциями по созданию ключа API, и посетите <a target="_blank" href="https://programmablesearchengine.google.com/controlpanel/create">страницу создания поисковой системы</a>, чтобы узнать, как сгенерировать ваш ID поисковой системы.',
+    'Refer to <a target="_blank" href="https://llmonitor.com/docs">official guide</a> to get APP ID':
+        'Ссылка на <a target="_blank" href="https://llmonitor.com/docs">официальное руководство</a> для получения APP ID',
+    'Refer to <a target="_blank" href="https://langfuse.com/docs/flowise">integration guide</a> on how to get API keys on Langfuse':
+        'Ссылка на <a target="_blank" href="https://langfuse.com/docs/flowise">руководство по интеграции</a> о том, как получить ключи API на Langfuse',
+    'Refer to <a target="_blank" href="https://docs.smith.langchain.com/">official guide</a> on how to get API key on Langsmith':
+        'Ссылка на <a target="_blank" href="https://docs.smith.langchain.com/">официальное руководство</a> о том, как получить ключ API на Langsmith',
+    'You can find the Milvus Authentication from <a target="_blank" href="https://milvus.io/docs/authenticate.md#Authenticate-User-Access">here</a> page.':
+        'Вы можете найти аутентификацию Milvus на <a target="_blank" href="https://milvus.io/docs/authenticate.md#Authenticate-User-Access">этой</a> странице.',
+    'Refer to <a target="_blank" href="https://docs.momentohq.com/cache/develop/authentication/api-keys">official guide</a> on how to get API key on Momento':
+        'Ссылка на <a target="_blank" href="https://docs.momentohq.com/cache/develop/authentication/api-keys">официальное руководство</a> о том, как получить ключ API на Momento',
+    'Refer to <a target="_blank" href="https://docs.getmetal.io/misc-get-keys">official guide</a> on how to create API key and Client ID on Motorhead Memory':
+        'Ссылка на <a target="_blank" href="https://docs.getmetal.io/misc-get-keys">официальное руководство</a> о том, как создать ключ API и Client ID на Motorhead Memory',
+    'You can find integration token <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">here</a>':
+        'Вы можете найти токен интеграции <a target="_blank" href="https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration">здесь</a>',
+    'Sign in to <a target="_blank" href="https://www.searchapi.io/">SearchApi</a> to obtain a free API key from the dashboard.':
+        'Войдите на <a target="_blank" href="https://www.searchapi.io/">SearchApi</a>, чтобы получить бесплатный ключ API из панели управления.',
+    'Refer to <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">official guide</a> on how to create redis instance and get redis REST Token':
+        'Ссылка на <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">официальное руководство</a> о том, как создать экземпляр Redis и получить REST Token Redis',
+    'Refer to <a target="_blank" href="https://docs.getzep.com/deployment/auth/">official guide</a> on how to create API key on Zep':
+        'Ссылка на <a target="_blank" href="https://docs.getzep.com/deployment/auth/">официальное руководство</a> о том, как создать ключ API на Zep',
+    'Refer to <a target="_blank" href="https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens">official guide</a> on how to get accessToken on Airtable':
+        'Ссылка на <a target="_blank" href="https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens">официальное руководство</a> о том, как получить accessToken на Airtable',
+    'You can find the Apify API token on your <a target="_blank" href="https://console.apify.com/account#/integrations">Apify account</a> page.':
+        'Вы можете найти токен API Apify на странице <a target="_blank" href="https://console.apify.com/account#/integrations">вашего аккаунта Apify</a>.',
+    'Refer to <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">official guide</a> of how to use Azure OpenAI service':
+        'Ссылка на <a target="_blank" href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service">официальное руководство</a> по использованию сервиса Azure OpenAI',
+    'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get Access Token or <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">API Token</a> on Confluence':
+        'Ссылка на <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">официальное руководство</a> о том, как получить Access Token или <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">API Token</a> на Confluence',
+    'Refer to <a target="_blank" href="https://www.elastic.co/guide/en/kibana/current/api-keys.html">official guide</a> on how to get an API Key from ElasticSearch':
+        'Ссылка на <a target="_blank" href="https://www.elastic.co/guide/en/kibana/current/api-keys.html">официальное руководство</a> о том, как получить API ключ от ElasticSearch',
+    'Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance. Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.':
+        'Используйте поле Cloud ID, чтобы ввести ваш Elastic Cloud ID или URL экземпляра сервера Elastic. Ссылка на <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">официальное руководство</a> о том, как получить пароль пользователя от ElasticSearch.',
+    'Refer to <a target="_blank" href="https://www.figma.com/developers/api#access-tokens">official guide</a> on how to get accessToken on Figma':
+        'Ссылка на <a target="_blank" href="https://www.figma.com/developers/api#access-tokens">официальное руководство</a> о том, как получить accessToken на Figma',
+    'Refer to <a target="_blank" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens">official guide</a> on how to get accessToken on Github':
+        'Ссылка на <a target="_blank" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens">официальное руководство</a> о том, как получить accessToken на Github',
+    'Use the <a target="_blank" href="https://makersuite.google.com/app/apikey">Google MakerSuite API credential site</a> to get this key.':
+        'Используйте <a target="_blank" href="https://makersuite.google.com/app/apikey">сайт учетных данных Google MakerSuite API</a>, чтобы получить этот ключ.',
+    'Your <a target="_blank" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html">AWS security credentials</a>. When unspecified, credentials will be sourced from the runtime environment according to the default AWS SDK behavior.':
+        'Ваши <a target="_blank" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html">учетные данные безопасности AWS</a>. Если не указаны, учетные данные будут получены из среды выполнения в соответствии с поведением по умолчанию SDK AWS.'
 }

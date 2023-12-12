@@ -4,7 +4,7 @@ import { FormControl, OutlinedInput, Popover } from '@mui/material'
 import ExpandTextDialog from 'ui-component/dialog/ExpandTextDialog'
 import SelectVariable from 'ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from 'utils/genericHelper'
-
+import { translationObject } from 'translate'
 export const Input = ({
     inputParam,
     value,
@@ -69,7 +69,7 @@ export const Input = ({
                     size='small'
                     disabled={disabled}
                     type={getInputType(inputParam.type)}
-                    placeholder={inputParam.placeholder}
+                    placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                     multiline={!!inputParam.rows}
                     rows={inputParam.rows ?? 1}
                     value={myValue}

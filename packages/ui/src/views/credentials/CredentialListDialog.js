@@ -88,7 +88,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                         color: theme.palette.grey[900]
                                     }
                                 }}
-                                title='Clear Search'
+                                title='Очистить поиск'
                             >
                                 <IconX
                                     stroke={1.5}

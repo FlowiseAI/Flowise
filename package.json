@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.4.3",
+    "version": "1.4.5",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -56,6 +56,7 @@
     },
     "dependencies": {
         "node-cmd": "^5.0.0",
-        "npm": "^10.2.5"
+        "npm": "^10.2.5",
+        "sanitize-html": "^2.11.0"
     }
 }

@@ -385,7 +385,7 @@ const AddNodes = ({ nodesData, node }) => {
                 ref={anchorRef}
                 size='small'
                 aria-label='add'
-                title='Add Node'
+                title='Добавить Узел'
                 onClick={handleToggle}
                 color='secondary'
             >
@@ -440,7 +440,7 @@ const AddNodes = ({ nodesData, node }) => {
                                                             color: theme.palette.grey[900]
                                                         }
                                                     }}
-                                                    title='Clear Search'
+                                                    title='Очистить поиск'
                                                 >
                                                     <IconX
                                                         stroke={1.5}

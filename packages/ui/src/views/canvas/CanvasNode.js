@@ -114,7 +114,7 @@ const CanvasNode = ({ data }) => {
                             }}
                         >
                             <IconButton
-                                title='Duplicate'
+                                title='Дублировать'
                                 onClick={() => {
                                     duplicateNode(data.id)
                                 }}
@@ -124,7 +124,7 @@ const CanvasNode = ({ data }) => {
                                 <IconCopy />
                             </IconButton>
                             <IconButton
-                                title='Delete'
+                                title='Удалить'
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}
@@ -134,7 +134,7 @@ const CanvasNode = ({ data }) => {
                                 <IconTrash />
                             </IconButton>
                             <IconButton
-                                title='Info'
+                                title='Информация'
                                 onClick={() => {
                                     setInfoDialogProps({ data })
                                     setShowInfoDialog(true)

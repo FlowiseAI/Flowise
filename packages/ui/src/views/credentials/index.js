@@ -300,12 +300,12 @@ const Credentials = () => {
                                         <TableCell>{moment(credential.updatedDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>{moment(credential.createdDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
+                                            <IconButton title='Редактировать' color='primary' onClick={() => edit(credential)}>
                                                 <IconEdit />
                                             </IconButton>
                                         </TableCell>
                                         <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteCredential(credential)}>
+                                            <IconButton title='Удалить' color='error' onClick={() => deleteCredential(credential)}>
                                                 <IconTrash />
                                             </IconButton>
                                         </TableCell>
