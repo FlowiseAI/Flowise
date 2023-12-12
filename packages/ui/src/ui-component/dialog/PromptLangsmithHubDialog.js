@@ -42,12 +42,12 @@ import ClearIcon from '@mui/icons-material/Clear'
 import { styled } from '@mui/material/styles'
 
 //Project Import
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
 import promptEmptySVG from 'assets/images/prompt_empty.svg'
 
+import useApi from 'hooks/useApi'
 import promptApi from 'api/prompt'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 
@@ -89,6 +89,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
+    const getAvailablePromptsApi = useApi(promptApi.getAvailablePrompts)
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -97,6 +98,22 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show, dispatch])
+
+    useEffect(() => {
+        if (promptType) {
+            getAvailablePromptsApi.request({ tags: promptType === 'template' ? 'StringPromptTemplate&' : 'ChatPromptTemplate&' })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [promptType])
+
+    useEffect(() => {
+        if (getAvailablePromptsApi.data && getAvailablePromptsApi.data.repos) {
+            setAvailablePrompNameList(getAvailablePromptsApi.data.repos)
+            if (getAvailablePromptsApi.data.repos?.length) handleListItemClick(0, getAvailablePromptsApi.data.repos)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAvailablePromptsApi.data])
 
     const ITEM_HEIGHT = 48
     const ITEM_PADDING_TOP = 8
@@ -156,7 +173,6 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const [availablePrompNameList, setAvailablePrompNameList] = useState([])
     const [selectedPrompt, setSelectedPrompt] = useState({})
 
-    const [credentialId, setCredentialId] = useState('')
     const [accordionExpanded, setAccordionExpanded] = useState(['prompt'])
 
     const handleAccordionChange = (accordionName) => (event, isExpanded) => {
@@ -173,7 +189,6 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
 
         if (!prompt.detailed) {
             const createResp = await promptApi.getPrompt({
-                credential: credentialId,
                 promptName: prompt.full_name
             })
             if (createResp.data) {
@@ -194,14 +209,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         language.forEach((item) => {
             tags += `tags=${item.name}&`
         })
-        const createResp = await promptApi.getAvailablePrompts({
-            credential: credentialId,
-            tags: tags
-        })
-        if (createResp.data) {
-            setAvailablePrompNameList(createResp.data.repos)
-            if (createResp.data.repos?.length) await handleListItemClick(0, createResp.data.repos)
-        }
+        getAvailablePromptsApi.request({ tags: tags })
     }
 
     const removeDuplicates = (value) => {
@@ -238,176 +246,139 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
         setLanguage(removeDuplicates(value))
     }
 
-    const clear = () => {
-        setModelName([])
-        setUsecase([])
-        setLanguage([])
-        setSelectedPrompt({})
-        setAvailablePrompNameList([])
-        setAccordionExpanded(['prompt'])
-    }
-
     const component = show ? (
         <Dialog
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth={credentialId ? 'lg' : 'sm'}
+            maxWidth={'lg'}
             aria-labelledby='prompt-dialog-title'
             aria-describedby='prompt-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='prompt-dialog-title'>
-                Load Prompts from Langsmith Hub ({promptType === 'template' ? 'PromptTemplate' : 'ChatPromptTemplate'})
+                Langchain Hub ({promptType === 'template' ? 'PromptTemplate' : 'ChatPromptTemplate'})
             </DialogTitle>
             <DialogContent dividers sx={{ p: 1 }}>
-                <Box sx={{ width: credentialId ? '40%' : '100%', display: 'flex', flexDirection: 'row', p: 2, alignItems: 'center' }}>
-                    <Typography sx={{ mr: 2 }}>
-                        Langsmith Credential &nbsp;
-                        <span style={{ color: 'red' }}>*</span>
-                    </Typography>
-                    <FormControl sx={{ flex: 1 }}>
-                        <CredentialInputHandler
+                <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, pt: 1, alignItems: 'center' }}>
+                    <FormControl sx={{ mr: 1, width: '30%' }}>
+                        <InputLabel size='small' id='model-checkbox-label'>
+                            Model
+                        </InputLabel>
+                        <Select
+                            id='model-checkbox'
+                            labelId='model-checkbox-label'
+                            multiple
                             size='small'
-                            sx={{ flexGrow: 1 }}
-                            key={credentialId}
-                            data={credentialId ? { credential: credentialId } : {}}
-                            inputParam={{
-                                label: 'Connect Credential',
-                                name: 'credential',
-                                type: 'credential',
-                                credentialNames: ['langsmithApi']
+                            value={modelName}
+                            onChange={handleModelChange}
+                            input={<OutlinedInput label='Model' />}
+                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                            endAdornment={
+                                modelName.length ? (
+                                    <IconButton sx={{ mr: 2 }} onClick={() => setModelName([])}>
+                                        <ClearIcon style={{ width: 20, height: 20 }} />
+                                    </IconButton>
+                                ) : (
+                                    false
+                                )
+                            }
+                            sx={{
+                                '.MuiSvgIcon-root ': {
+                                    fill: customization.isDarkMode ? 'white !important' : ''
+                                }
                             }}
-                            onSelect={(newValue) => {
-                                setCredentialId(newValue)
-                                if (!newValue) clear()
+                            MenuProps={MenuProps}
+                        >
+                            {models.map((variant) => (
+                                <MenuItem key={variant.id} value={variant}>
+                                    <Checkbox id={variant.id} checked={modelName.findIndex((item) => item.id === variant.id) >= 0} />
+                                    <ListItemText primary={variant.name} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ mr: 1, width: '30%' }}>
+                        <InputLabel size='small' id='usecase-checkbox-label'>
+                            Usecase
+                        </InputLabel>
+                        <Select
+                            autoWidth={false}
+                            labelId='usecase-checkbox-label'
+                            id='usecase-checkbox'
+                            multiple
+                            size='small'
+                            value={usecase}
+                            onChange={handleUsecaseChange}
+                            input={<OutlinedInput label='Usecase' />}
+                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                            endAdornment={
+                                usecase.length ? (
+                                    <IconButton sx={{ mr: 2 }} onClick={() => setUsecase([])}>
+                                        <ClearIcon style={{ width: 20, height: 20 }} />
+                                    </IconButton>
+                                ) : (
+                                    false
+                                )
+                            }
+                            sx={{
+                                '.MuiSvgIcon-root ': {
+                                    fill: customization.isDarkMode ? 'white !important' : ''
+                                }
                             }}
-                        />
+                            MenuProps={MenuProps}
+                        >
+                            {usecases.map((variant) => (
+                                <MenuItem key={variant.id} value={variant}>
+                                    <Checkbox id={variant.id} checked={usecase.findIndex((item) => item.id === variant.id) >= 0} />
+                                    <ListItemText primary={variant.name} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ mr: 1, width: '30%' }}>
+                        <InputLabel size='small' id='language-checkbox-label'>
+                            Language
+                        </InputLabel>
+                        <Select
+                            labelId='language-checkbox-label'
+                            id='language-checkbox'
+                            multiple
+                            size='small'
+                            value={language}
+                            onChange={handleLanguageChange}
+                            input={<OutlinedInput label='language' />}
+                            renderValue={(selected) => selected.map((x) => x.name).join(', ')}
+                            endAdornment={
+                                language.length ? (
+                                    <IconButton sx={{ mr: 2 }} onClick={() => setLanguage([])}>
+                                        <ClearIcon style={{ width: 20, height: 20 }} />
+                                    </IconButton>
+                                ) : (
+                                    false
+                                )
+                            }
+                            sx={{
+                                '.MuiSvgIcon-root ': {
+                                    fill: customization.isDarkMode ? 'white !important' : ''
+                                }
+                            }}
+                            MenuProps={MenuProps}
+                        >
+                            {languages.map((variant) => (
+                                <MenuItem key={variant.id} value={variant}>
+                                    <Checkbox id={variant.id} checked={language.findIndex((item) => item.id === variant.id) >= 0} />
+                                    <ListItemText primary={variant.name} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ width: '10%' }}>
+                        <Button disableElevation variant='outlined' onClick={fetchPrompts}>
+                            Search
+                        </Button>
                     </FormControl>
                 </Box>
-                {credentialId && (
-                    <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, pt: 1, alignItems: 'center' }}>
-                        <FormControl sx={{ mr: 1, width: '30%' }}>
-                            <InputLabel size='small' id='model-checkbox-label'>
-                                Model
-                            </InputLabel>
-                            <Select
-                                disabled={!credentialId}
-                                id='model-checkbox'
-                                labelId='model-checkbox-label'
-                                multiple
-                                size='small'
-                                value={modelName}
-                                onChange={handleModelChange}
-                                input={<OutlinedInput label='Model' />}
-                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                                endAdornment={
-                                    modelName.length ? (
-                                        <IconButton sx={{ mr: 2 }} onClick={() => setModelName([])}>
-                                            <ClearIcon style={{ width: 20, height: 20 }} />
-                                        </IconButton>
-                                    ) : (
-                                        false
-                                    )
-                                }
-                                sx={{
-                                    '.MuiSvgIcon-root ': {
-                                        fill: customization.isDarkMode ? 'white !important' : ''
-                                    }
-                                }}
-                                MenuProps={MenuProps}
-                            >
-                                {models.map((variant) => (
-                                    <MenuItem key={variant.id} value={variant}>
-                                        <Checkbox id={variant.id} checked={modelName.findIndex((item) => item.id === variant.id) >= 0} />
-                                        <ListItemText primary={variant.name} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl sx={{ mr: 1, width: '30%' }}>
-                            <InputLabel size='small' id='usecase-checkbox-label'>
-                                Usecase
-                            </InputLabel>
-                            <Select
-                                autoWidth={false}
-                                disabled={!credentialId}
-                                labelId='usecase-checkbox-label'
-                                id='usecase-checkbox'
-                                multiple
-                                size='small'
-                                value={usecase}
-                                onChange={handleUsecaseChange}
-                                input={<OutlinedInput label='Usecase' />}
-                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                                endAdornment={
-                                    usecase.length ? (
-                                        <IconButton sx={{ mr: 2 }} onClick={() => setUsecase([])}>
-                                            <ClearIcon style={{ width: 20, height: 20 }} />
-                                        </IconButton>
-                                    ) : (
-                                        false
-                                    )
-                                }
-                                sx={{
-                                    '.MuiSvgIcon-root ': {
-                                        fill: customization.isDarkMode ? 'white !important' : ''
-                                    }
-                                }}
-                                MenuProps={MenuProps}
-                            >
-                                {usecases.map((variant) => (
-                                    <MenuItem key={variant.id} value={variant}>
-                                        <Checkbox id={variant.id} checked={usecase.findIndex((item) => item.id === variant.id) >= 0} />
-                                        <ListItemText primary={variant.name} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl sx={{ mr: 1, width: '30%' }}>
-                            <InputLabel size='small' id='language-checkbox-label'>
-                                Language
-                            </InputLabel>
-                            <Select
-                                labelId='language-checkbox-label'
-                                id='language-checkbox'
-                                disabled={!credentialId}
-                                multiple
-                                size='small'
-                                value={language}
-                                onChange={handleLanguageChange}
-                                input={<OutlinedInput label='language' />}
-                                renderValue={(selected) => selected.map((x) => x.name).join(', ')}
-                                endAdornment={
-                                    language.length ? (
-                                        <IconButton sx={{ mr: 2 }} onClick={() => setLanguage([])}>
-                                            <ClearIcon style={{ width: 20, height: 20 }} />
-                                        </IconButton>
-                                    ) : (
-                                        false
-                                    )
-                                }
-                                sx={{
-                                    '.MuiSvgIcon-root ': {
-                                        fill: customization.isDarkMode ? 'white !important' : ''
-                                    }
-                                }}
-                                MenuProps={MenuProps}
-                            >
-                                {languages.map((variant) => (
-                                    <MenuItem key={variant.id} value={variant}>
-                                        <Checkbox id={variant.id} checked={language.findIndex((item) => item.id === variant.id) >= 0} />
-                                        <ListItemText primary={variant.name} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl sx={{ width: '10%' }}>
-                            <Button disableElevation variant='outlined' onClick={fetchPrompts}>
-                                Search
-                            </Button>
-                        </FormControl>
-                    </Box>
-                )}
+
                 {availablePrompNameList && availablePrompNameList.length == 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%', pb: 3 }} flexDirection='column'>
                         <Box sx={{ p: 5, height: 'auto' }}>

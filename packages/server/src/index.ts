@@ -58,6 +58,7 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
+import { sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
@@ -118,8 +119,14 @@ export class App {
         // Allow access from *
         this.app.use(cors())
 
+        // Switch off the default 'X-Powered-By: Express' header
+        this.app.disable('x-powered-by')
+
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)
+
+        // Add the sanitizeMiddleware to guard against XSS
+        this.app.use(sanitizeMiddleware)
 
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -193,7 +200,7 @@ export class App {
 
         // Get component credential via name
         this.app.get('/api/v1/components-credentials/:name', (req: Request, res: Response) => {
-            if (!req.params.name.includes('&')) {
+            if (!req.params.name.includes('&amp;')) {
                 if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
                     return res.json(this.nodesPool.componentCredentials[req.params.name])
                 } else {
@@ -201,7 +208,7 @@ export class App {
                 }
             } else {
                 const returnResponse = []
-                for (const name of req.params.name.split('&')) {
+                for (const name of req.params.name.split('&amp;')) {
                     if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
                         returnResponse.push(this.nodesPool.componentCredentials[name])
                     } else {
@@ -967,6 +974,12 @@ export class App {
         // Download file from assistant
         this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
             const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
+            //raise error if file path is not absolute
+            if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
+            //raise error if file path contains '..'
+            if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
+            //only return from the .flowise openai-assistant folder
+            if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
             res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
             const fileStream = fs.createReadStream(filePath)
             fileStream.pipe(res)
@@ -1044,18 +1057,9 @@ export class App {
         // ----------------------------------------
         this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
             try {
-                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: req.body.credential
-                })
-
-                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
-
-                // Decrypt credentialData
-                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-                let hub = new Client({ apiKey: decryptedCredentialData.langsmithApiKey, apiUrl: decryptedCredentialData.langsmithEndpoint })
+                let hub = new Client()
                 const prompt = await hub.pull(req.body.promptName)
                 const templates = parsePrompt(prompt)
-
                 return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
             } catch (e: any) {
                 return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
@@ -1064,22 +1068,10 @@ export class App {
 
         this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
             try {
-                const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                    id: req.body.credential
-                })
-
-                if (!credential) return res.status(404).json({ error: `Credential ${req.body.credential} not found` })
-                // Decrypt credentialData
-                const decryptedCredentialData = await decryptCredentialData(credential.encryptedData, credential.credentialName, undefined)
-
-                const headers = {}
-                // @ts-ignore
-                headers['x-api-key'] = decryptedCredentialData.langsmithApiKey
-
                 const tags = req.body.tags ? `tags=${req.body.tags}` : ''
                 // Default to 100, TODO: add pagination and use offset & limit
-                const url = `https://web.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
-                axios.get(url, headers).then((response) => {
+                const url = `https://api.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
+                axios.get(url).then((response) => {
                     if (response.data.repos) {
                         return res.json({ status: 'OK', repos: response.data.repos })
                     }
