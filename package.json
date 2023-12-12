@@ -56,6 +56,7 @@
     },
     "dependencies": {
         "node-cmd": "^5.0.0",
-        "npm": "^10.2.5"
+        "npm": "^10.2.5",
+        "sanitize-html": "^2.11.0"
     }
 }

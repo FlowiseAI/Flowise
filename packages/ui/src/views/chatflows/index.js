@@ -152,7 +152,7 @@ const Chatflows = () => {
                                         sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                         variant='contained'
                                         value='card'
-                                        title='Card View'
+                                        title='Просмотр карты'
                                     >
                                         <IconLayoutGrid />
                                     </ToggleButton>
@@ -160,7 +160,7 @@ const Chatflows = () => {
                                         sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                         variant='contained'
                                         value='list'
-                                        title='List View'
+                                        title='Посмотреть список'
                                     >
                                         <IconList />
                                     </ToggleButton>

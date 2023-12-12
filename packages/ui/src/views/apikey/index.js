@@ -85,10 +85,10 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
+                    <IconButton title='Копировать' color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
-                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
+                    <IconButton title='Показать' color='inherit' onClick={props.onShowAPIClick}>
                         {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
                     </IconButton>
                     <Popover
@@ -105,7 +105,7 @@ function APIKeyRow(props) {
                         }}
                     >
                         <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
-                            Copied!
+                            Скопировано!
                         </Typography>
                     </Popover>
                 </TableCell>
@@ -119,12 +119,12 @@ function APIKeyRow(props) {
                 </TableCell>
                 <TableCell>{props.apiKey.createdAt}</TableCell>
                 <TableCell>
-                    <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
+                    <IconButton title='Изменить' color='primary' onClick={props.onEditClick}>
                         <IconEdit />
                     </IconButton>
                 </TableCell>
                 <TableCell>
-                    <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
+                    <IconButton title='Удалить' color='error' onClick={props.onDeleteClick}>
                         <IconTrash />
                     </IconButton>
                 </TableCell>
@@ -138,7 +138,7 @@ function APIKeyRow(props) {
                                     <TableHead>
                                         <TableRow>
                                             <StyledTableCell sx={{ width: '30%', borderTopLeftRadius: '15px' }}>
-                                                Chatflow Name
+                                                Имя Проекта
                                             </StyledTableCell>
                                             <StyledTableCell sx={{ width: '20%' }}>Modified On</StyledTableCell>
                                             <StyledTableCell sx={{ width: '50%', borderTopRightRadius: '15px' }}>Category</StyledTableCell>

@@ -132,6 +132,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const obj: BaseBedrockInput & BaseLLMParams = {
+            streaming: streaming,
             region: iRegion,
             model: iModel,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),

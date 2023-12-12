@@ -272,7 +272,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         height: 25,
                                         width: 25
                                     }}
-                                    title='Expand'
+                                    title='Расширить'
                                     color='primary'
                                     onClick={() =>
                                         onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
@@ -412,7 +412,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     />
                                     {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
                                         <IconButton
-                                            title='Edit'
+                                            title='Редактировать'
                                             color='primary'
                                             size='small'
                                             onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}

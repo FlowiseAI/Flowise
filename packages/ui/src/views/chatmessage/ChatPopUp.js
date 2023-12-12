@@ -139,7 +139,7 @@ export const ChatPopUp = ({ chatflowid }) => {
                 size='small'
                 color='secondary'
                 aria-label='chat'
-                title='Chat'
+                title='Чат'
                 onClick={handleToggle}
             >
                 {open ? <IconX /> : <IconMessage />}
@@ -151,7 +151,7 @@ export const ChatPopUp = ({ chatflowid }) => {
                     size='small'
                     color='error'
                     aria-label='clear'
-                    title='Clear Chat History'
+                    title='Удалить историю сообщений'
                 >
                     <IconEraser />
                 </StyledFab>
@@ -163,7 +163,7 @@ export const ChatPopUp = ({ chatflowid }) => {
                     size='small'
                     color='primary'
                     aria-label='expand'
-                    title='Expand Chat'
+                    title='Развернуть чат'
                 >
                     <IconArrowsMaximize />
                 </StyledFab>

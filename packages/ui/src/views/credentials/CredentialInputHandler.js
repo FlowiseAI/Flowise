@@ -12,7 +12,7 @@ import { Input } from 'ui-component/input/Input'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-
+import { translationObject } from 'translate'
 // ===========================|| NodeInputHandler ||=========================== //
 
 const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
@@ -46,9 +46,14 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                     <Box sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
-                                {inputParam.label}
+                                {translationObject[inputParam.label] || inputParam.label}
                                 {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
+                                {inputParam.description && (
+                                    <TooltipWithParser
+                                        style={{ marginLeft: 10 }}
+                                        title={translationObject[inputParam.description] || inputParam.description}
+                                    />
+                                )}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
                             {inputParam.type === 'string' && inputParam.rows && (
@@ -58,7 +63,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                                         height: 25,
                                         width: 25
                                     }}
-                                    title='Expand'
+                                    title='Расширить'
                                     color='primary'
                                     onClick={() => onExpandDialogClicked(data[inputParam.name] ?? inputParam.default ?? '', inputParam)}
                                 >

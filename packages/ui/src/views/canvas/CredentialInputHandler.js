@@ -110,7 +110,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                     onCreateNew={() => addAsyncOption(inputParam.name)}
                                 />
                                 {credentialId && (
-                                    <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
+                                    <IconButton title='Изменить' color='primary' size='small' onClick={() => editCredential(credentialId)}>
                                         <IconEdit />
                                     </IconButton>
                                 )}

@@ -1628,8 +1628,21 @@ export async function getAllChatFlow(): Promise<IChatFlow[]> {
 
 export async function start(): Promise<void> {
     serverApp = new App()
+    let port = parseInt(process.env.PORT || '', 10) || 3050
+    if (process.env.NODE_ENV === 'STARTAI_DEFAULT') {
+        port = parseInt(process.env.PORT || '', 10) || 3050
+    } else if (process.env.NODE_ENV === 'STARTAI_ONE') {
+        port = parseInt(process.env.PORT_ONE || '', 10) || 3051
+    } else if (process.env.NODE_ENV === 'STARTAI_TWO') {
+        port = parseInt(process.env.PORT_TWO || '', 10) || 3052
+    } else if (process.env.NODE_ENV === 'STARTAI_THREE') {
+        port = parseInt(process.env.PORT_THREE || '', 10) || 3053
+    } else if (process.env.NODE_ENV === 'STARTAI_FOUR') {
+        port = parseInt(process.env.PORT_FOUR || '', 10) || 3054
+    } else if (process.env.NODE_ENV === 'STARTAI_FIVE') {
+        port = parseInt(process.env.PORT_FIVE || '', 10) || 3055
+    }
 
-    const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
