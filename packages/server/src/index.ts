@@ -43,7 +43,8 @@ import {
     checkMemorySessionId,
     clearSessionMemoryFromViewMessageDialog,
     getUserHome,
-    replaceChatHistory
+    replaceChatHistory,
+    replaceEnvVariables
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -1380,6 +1381,10 @@ export class App {
         try {
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
+
+            if (incomingInput.question) {
+                incomingInput.question = await replaceEnvVariables(incomingInput.question, this.AppDataSource)
+            }
 
             let nodeToExecuteData: INodeData
 

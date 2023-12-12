@@ -954,3 +954,29 @@ export const getAllValuesFromJson = (obj: any): any[] => {
     extractValues(obj)
     return values
 }
+
+export const replaceEnvVariables = async (question: string, appDataSource: DataSource): Promise<string> => {
+    // the incoming question can have more than one env variable with the pattern  {{ env.VARIABLE_NAME }}
+    // extract all the env variables from the question and iterate through them
+    const envVariables = question.match(/{{[^}]*}}/g)
+    if (envVariables) {
+        for (const envVariable of envVariables) {
+            // this is needed as the user can have spaces between the curly braces and the env keyword
+            // extract the variable name from the env variable
+            const variableName = envVariable.replace(/{{\s*env.|\s*}}/g, '')
+            // get the value of the env variable from the database
+            const variable = await appDataSource.getRepository(Variable).findOneBy({
+                name: variableName
+            })
+            if (variable) {
+                let value = variable.value
+                if (variable.type === 'runtime') {
+                    value = process.env[variable.name] as string
+                }
+                // replace the env variable with the value from the database
+                question = question.replace(envVariable, value)
+            }
+        }
+    }
+    return question
+}
