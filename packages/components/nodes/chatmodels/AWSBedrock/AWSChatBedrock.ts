@@ -135,8 +135,7 @@ class AWSChatBedrock_ChatModels implements INode {
             region: iRegion,
             model: iModel,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
-            temperature: parseFloat(iTemperature),
-            streaming: streaming ?? true
+            temperature: parseFloat(iTemperature)
         }
 
         /**

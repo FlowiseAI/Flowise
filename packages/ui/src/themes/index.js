@@ -17,7 +17,7 @@ import themeTypography from './typography'
 export const theme = (customization) => {
     let color
 
-    window.location.hostname === 'osmiai.fvds.ru' ? (color = colorsStartAI) : (color = colors)
+    window.location.hostname === 'start-ai.ru' ? (color = colorsStartAI) : (color = colors)
 
     const themeOption = customization.isDarkMode
         ? {
