@@ -62,13 +62,13 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setName(dialogProps.data.name)
             setValue(dialogProps.data.value)
             setType(dialogProps.data.type)
-            //setVariable(dialogProps.data)
+            setVariable(dialogProps.data)
         } else if (dialogProps.type === 'ADD' && dialogProps.data) {
             // When variable dialog is to add a new variable
             setName('')
             setValue('')
             setType('static')
-            //setVariable({ name: '', value: '', type: 'static' })
+            setVariable({ name: '', value: '', type: 'static' })
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,9 +83,9 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const addNewVariable = async () => {
         try {
             const obj = {
-                name,
-                value,
-                type
+                name: name,
+                value: value,
+                type: type
             }
             const createResp = await variablesApi.createVariable(obj)
             if (createResp.data) {
@@ -125,9 +125,9 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const saveVariable = async () => {
         try {
             const saveObj = {
-                name,
-                value,
-                type
+                name: name,
+                value: value,
+                type: type
             }
 
             const saveResp = await variablesApi.updateVariable(variable.id, saveObj)

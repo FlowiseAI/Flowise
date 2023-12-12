@@ -73,6 +73,7 @@ export interface INodeParams {
     additionalParams?: boolean
     loadMethod?: string
     hidden?: boolean
+    variables?: ICommonObject[]
 }
 
 export interface INodeExecutionData {

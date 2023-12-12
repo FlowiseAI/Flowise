@@ -80,7 +80,32 @@ class CustomTool_Tools implements INode {
                 code: tool.func
             }
             if (customToolFunc) obj.code = customToolFunc
-            return new DynamicStructuredTool(obj)
+
+            const variables = await appDataSource.getRepository(databaseEntities['Variable']).find()
+
+            // override variables defined in overrideConfig
+            // nodeData.inputs.variables is an Object, check each property and override the variable
+            if (nodeData?.inputs?.variables) {
+                for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.variables)) {
+                    const foundVar = variables.find((v) => v.name === propertyName)
+                    if (foundVar) {
+                        // even if the variable was defined as runtime, we override it with static value
+                        foundVar.type = 'static'
+                        foundVar.value = nodeData.inputs.variables[propertyName]
+                    } else {
+                        // add it the variables, if not found locally in the db
+                        variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.variables[propertyName] })
+                    }
+                }
+            }
+            const flow = {
+                chatId: options.chatId, // id is uppercase (I)
+                chatflowId: options.chatflowid // id is lowercase (i)
+            }
+            let dynamicStructuredTool = new DynamicStructuredTool(obj)
+            dynamicStructuredTool.setVariables(variables)
+            dynamicStructuredTool.setFlowObject(flow)
+            return dynamicStructuredTool
         } catch (e) {
             throw new Error(e)
         }

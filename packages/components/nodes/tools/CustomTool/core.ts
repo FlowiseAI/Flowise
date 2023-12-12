@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { CallbackManagerForToolRun } from 'langchain/callbacks'
 import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
+import { logger } from "@zilliz/milvus2-sdk-node";
 
 /*
  * List of dependencies allowed to be import in vm2
@@ -62,6 +63,8 @@ export class DynamicStructuredTool<
     func: DynamicStructuredToolInput['func']
 
     schema: T
+    private variables: any[]
+    private flowObj: any
 
     constructor(fields: DynamicStructuredToolInput<T>) {
         super(fields)
@@ -80,8 +83,26 @@ export class DynamicStructuredTool<
                 sandbox[`$${item}`] = arg[item]
             }
         }
-        sandbox['$env'] = { USER: 'VINOD' }
-        console.log('sandbox === ' + JSON.stringify(sandbox))
+        //inject variables
+        let env = {}
+        if (this.variables) {
+            for (const item of this.variables) {
+                let value = item.value
+                if (item.type === 'runtime') {
+                    value = process.env[item.name]
+                }
+                Object.defineProperty(env, item.name, {
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                    value: value
+                })
+            }
+        }
+        sandbox['$env'] = env
+        if (this.flowObj) {
+            sandbox['$flow'] = this.flowObj
+        }
         const defaultAllowBuiltInDep = [
             'assert',
             'buffer',
@@ -117,5 +138,13 @@ export class DynamicStructuredTool<
         const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)
 
         return response
+    }
+
+    setVariables(variables: any[]) {
+        this.variables = variables
+    }
+
+    setFlowObject(flow: any) {
+        this.flowObj = flow
     }
 }
