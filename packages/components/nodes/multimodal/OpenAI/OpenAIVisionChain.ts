@@ -24,7 +24,7 @@ class OpenAIVisionChain_Chains implements INode {
         this.version = 1.0
         this.type = 'OpenAIMultiModalChain'
         this.icon = 'chain.svg'
-        this.category = 'Chains'
+        this.category = 'MultiModal'
         this.badge = 'BETA'
         this.description = 'Chain to query against Image and Audio Input.'
         this.baseClasses = [this.type, ...getBaseClasses(VLLMChain)]

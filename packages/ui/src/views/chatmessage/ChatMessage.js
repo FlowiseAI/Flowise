@@ -14,6 +14,7 @@ import {
     Box,
     Button,
     Card,
+    CardActions,
     CardMedia,
     Chip,
     CircularProgress,
@@ -47,6 +48,7 @@ import { baseURL, maxScroll } from 'store/constant'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -245,7 +247,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const previewStyle = {
         width: '128px',
         height: '64px',
-        objectFit: 'cover' // This makes the image cover the area, cropping it if necessary
+        objectFit: 'fit' // This makes the image cover the area, cropping it if necessary
     }
     const messageImageStyle = {
         width: '128px',
@@ -685,13 +687,50 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 </div>
             </div>
             <Divider />
+            <div>
+                {previews && previews.length > 0 && (
+                    <div className='flex-col flex'>
+                        <div className='flex justify-between items-center h-[80px] px-1 py-1'>
+                            <Grid container spacing={2} sx={{ mt: '2px' }}>
+                                {previews.map((item, index) => (
+                                    <>
+                                        {item.mime.startsWith('image/') ? (
+                                            <Grid item xs={6} sm={3} md={3} lg={3} key={index}>
+                                                <Card key={index} sx={{ maxWidth: 128 }} variant='outlined'>
+                                                    <CardMedia style={previewStyle} component='img' image={item.data} alt={'preview'} />
+                                                    <CardActions className='center'>
+                                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </CardActions>
+                                                </Card>
+                                            </Grid>
+                                        ) : (
+                                            <Grid item xs={12} sm={6} md={6} lg={6} key={index}>
+                                                <Card key={index} variant='outlined'>
+                                                    <CardMedia component='audio' sx={{ h: 68 }} controls src={item.data} />
+                                                    <CardActions className='center'>
+                                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </CardActions>
+                                                </Card>
+                                            </Grid>
+                                        )}
+                                    </>
+                                ))}
+                            </Grid>
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className='center'>
                 <div style={{ width: '100%' }}>
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                         <OutlinedInput
                             inputRef={inputRef}
                             // eslint-disable-next-line
-                            autoFocus
+                        autoFocus
                             sx={{ width: '100%' }}
                             disabled={loading || !chatflowid}
                             onKeyDown={handleEnter}
@@ -741,33 +780,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     </form>
                 </div>
             </div>
-            <div className='preview-container'>
-                {previews && previews.length > 0 && (
-                    <Grid container spacing={2} sx={{ p: 1, mt: '5px', ml: '1px' }}>
-                        {previews.map((item, index) => (
-                            <Grid item xs={12} sm={6} md={3} key={index}>
-                                {item.mime.startsWith('image/') ? (
-                                    <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
-                                        <CardMedia
-                                            component='img'
-                                            image={item.data}
-                                            sx={{ height: 64 }}
-                                            alt={'preview'}
-                                            style={previewStyle}
-                                        />
-                                    </Card>
-                                ) : (
-                                    // eslint-disable-next-line jsx-a11y/media-has-caption
-                                    <audio controls='controls'>
-                                        Your browser does not support the &lt;audio&gt; tag.
-                                        <source src={item.data} type={item.mime} />
-                                    </audio>
-                                )}
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
-            </div>
+
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </div>
     )

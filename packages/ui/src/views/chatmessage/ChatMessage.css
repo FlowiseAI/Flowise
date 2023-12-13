@@ -119,6 +119,7 @@
 .cloud {
     width: 400px;
     height: calc(100vh - 260px);
+    overflow-y: scroll;
     border-radius: 0.5rem;
     display: flex;
     justify-content: center;
@@ -168,6 +169,17 @@
 .preview-container {
 
 }
+
+.preview-card {
+    border: 2px solid #E7EDF3;
+    border-radius: 16%;
+    transition: 0.4s;
+}
+
+.preview-card&:hover {
+    border-color: #5B9FED;
+}
+
 
 .button {
     flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
