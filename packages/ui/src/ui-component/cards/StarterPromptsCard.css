@@ -1,0 +1,14 @@
+.button-container {
+    position: absolute;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For momentum scroll on mobile devices */
+    scrollbar-width: none; /* For Firefox */
+}
+
+.button {
+    flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
+    margin: 5px; /* Adjust as needed for spacing between buttons */
+}

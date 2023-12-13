@@ -138,6 +138,7 @@ export class App {
                 '/api/v1/verify/apikey/',
                 '/api/v1/chatflows/apikey/',
                 '/api/v1/public-chatflows',
+                '/api/v1/public-chatbotConfig',
                 '/api/v1/prediction/',
                 '/api/v1/vector/upsert/',
                 '/api/v1/node-icon/',
@@ -326,6 +327,23 @@ export class App {
             if (chatflow && chatflow.isPublic) return res.json(chatflow)
             else if (chatflow && !chatflow.isPublic) return res.status(401).send(`Unauthorized`)
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        })
+
+        // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
+        // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
+        this.app.get('/api/v1/public-chatbotConfig/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (chatflow && chatflow.chatbotConfig) {
+                try {
+                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    return res.json(parsedConfig)
+                } catch (e) {
+                    return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
+                }
+            }
+            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
         })
 
         // Save chatflow
