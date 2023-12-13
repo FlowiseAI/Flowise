@@ -1,8 +1,8 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage } from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -11,6 +11,13 @@ const settings = {
     title: '',
     type: 'group',
     children: [
+        {
+            id: 'conversationStarters',
+            title: 'Starter Prompts',
+            type: 'item',
+            url: '',
+            icon: icons.IconPictureInPictureOff
+        },
         {
             id: 'viewMessages',
             title: 'View Messages',
