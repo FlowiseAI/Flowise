@@ -42,7 +42,7 @@ class FaissUpsert_VectorStores implements INode {
             },
             {
                 label: 'Base Path to store',
-                name: 'basePath',
+                name: 'basePathL',
                 description: 'Path to store faiss.index file',
                 placeholder: `C:\\Users\\User\\Desktop`,
                 type: 'string'
@@ -75,7 +75,7 @@ class FaissUpsert_VectorStores implements INode {
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
-        const basePath = nodeData.inputs?.basePath as string
+        const basePathL = nodeData.inputs?.basePathL as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
@@ -88,7 +88,7 @@ class FaissUpsert_VectorStores implements INode {
         }
 
         const vectorStore = await FaissStore.fromDocuments(finalDocs, embeddings)
-        await vectorStore.save(basePath)
+        await vectorStore.save(basePathL)
 
         // Avoid illegal invocation error
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {

@@ -35,7 +35,7 @@ class Faiss_Existing_VectorStores implements INode {
             },
             {
                 label: 'Base Path to load',
-                name: 'basePath',
+                name: 'basePathL',
                 description: 'Path to load faiss.index file',
                 placeholder: `C:\\Users\\User\\Desktop`,
                 type: 'string'
@@ -66,12 +66,12 @@ class Faiss_Existing_VectorStores implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const basePath = nodeData.inputs?.basePath as string
+        const basePathL = nodeData.inputs?.basePathL as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
-        const vectorStore = await FaissStore.load(basePath, embeddings)
+        const vectorStore = await FaissStore.load(basePathL, embeddings)
 
         // Avoid illegal invocation error
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
