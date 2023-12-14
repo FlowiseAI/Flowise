@@ -1,67 +1,66 @@
-import express, { NextFunction, Request, Response } from 'express'
-import multer from 'multer'
-import path from 'path'
+import axios from 'axios'
 import cors from 'cors'
-import http from 'http'
-import * as fs from 'fs'
+import express, { NextFunction, Request, Response } from 'express'
 import basicAuth from 'express-basic-auth'
-import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
-import { v4 as uuidv4 } from 'uuid'
+import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
+import * as fs from 'fs'
+import http from 'http'
+import { Client } from 'langchainhub'
+import { cloneDeep, isEqual, omit, uniqWith } from 'lodash'
+import multer from 'multer'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import path from 'path'
+import { Server } from 'socket.io'
+import { Between, FindOptionsWhere, IsNull } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { CachePool } from './CachePool'
+import { ChatflowPool } from './ChatflowPool'
+import { getDataSource } from './DataSource'
 import {
     IChatFlow,
-    IncomingInput,
+    IChatMessage,
+    ICredentialReturnResponse,
+    INodeData,
+    IReactFlowEdge,
     IReactFlowNode,
     IReactFlowObject,
-    INodeData,
-    ICredentialReturnResponse,
-    chatType,
-    IChatMessage,
-    IReactFlowEdge
+    IncomingInput,
+    chatType
 } from './Interface'
-import {
-    getNodeModulesPackagePath,
-    getStartingNodes,
-    buildLangchain,
-    getEndingNode,
-    constructGraphs,
-    resolveVariables,
-    isStartNodeDependOnInput,
-    mapMimeTypeToInputField,
-    findAvailableConfigs,
-    isSameOverrideConfig,
-    isFlowValidForStream,
-    databaseEntities,
-    transformToCredentialEntity,
-    decryptCredentialData,
-    clearAllSessionMemory,
-    replaceInputsWithConfig,
-    getEncryptionKey,
-    checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog,
-    getUserHome,
-    replaceChatHistory
-} from './utils'
-import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
-import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
+import { Assistant } from './database/entities/Assistant'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
-import { Assistant } from './database/entities/Assistant'
-import { ChatflowPool } from './ChatflowPool'
-import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
-import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
-import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
+import {
+    buildLangchain,
+    checkMemorySessionId,
+    clearAllSessionMemory,
+    clearSessionMemoryFromViewMessageDialog,
+    constructGraphs,
+    databaseEntities,
+    decryptCredentialData,
+    findAvailableConfigs,
+    getEncryptionKey,
+    getEndingNode,
+    getNodeModulesPackagePath,
+    getStartingNodes,
+    getUserHome,
+    isFlowValidForStream,
+    isSameOverrideConfig,
+    isStartNodeDependOnInput,
+    mapMimeTypeToInputField,
+    replaceChatHistory,
+    replaceInputsWithConfig,
+    resolveVariables,
+    transformToCredentialEntity
+} from './utils'
 import { sanitizeMiddleware } from './utils/XSS'
-import axios from 'axios'
-import { Client } from 'langchainhub'
+import { addAPIKey, compareKeys, deleteAPIKey, getAPIKeys, getApiKey, updateAPIKey } from './utils/apiKey'
 import { parsePrompt } from './utils/hub'
+import logger, { expressRequestLogger } from './utils/logger'
+import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 
 export class App {
     app: express.Application
@@ -1647,7 +1646,7 @@ export async function getAllChatFlow(): Promise<IChatFlow[]> {
 export async function start(): Promise<void> {
     serverApp = new App()
 
-    const port = parseInt(process.env.PORT || '', 10) || 3000
+    const port = parseInt(process.env.PORT || '', 10) || 3333
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {

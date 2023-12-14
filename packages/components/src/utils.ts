@@ -1,14 +1,14 @@
 import axios from 'axios'
 import { load } from 'cheerio'
-import * as fs from 'fs'
-import * as path from 'path'
-import { JSDOM } from 'jsdom'
-import { z } from 'zod'
-import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
 import { AES, enc } from 'crypto-js'
+import * as fs from 'fs'
+import { JSDOM } from 'jsdom'
 import { ChatMessageHistory } from 'langchain/memory'
 import { AIMessage, HumanMessage } from 'langchain/schema'
+import * as path from 'path'
+import { DataSource } from 'typeorm'
+import { z } from 'zod'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -278,6 +278,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
+        console.info(`crawling ${currentURL}`)
         const resp = await fetch(currentURL)
 
         if (resp.status > 399) {
@@ -292,6 +293,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         }
 
         const htmlBody = await resp.text()
+        console.info(`crawled ${currentURL}`)
         const nextURLs = getURLsFromHTML(htmlBody, baseURL)
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
