@@ -47,4 +47,4 @@
 
 ## pm2 config
 
-.ecosystem.config.js
+.ecosystem.config.js.example
