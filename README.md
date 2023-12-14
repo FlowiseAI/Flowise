@@ -48,6 +48,8 @@ switch (process.env.NODE_ENV) {
 
 ## Первый вариант запуска
 
+### - переименовать ecosystem.config.js.example -> ecosystem.config.js.example
+
 ### - pm2 start + Редактируем файл для изменения порта и имени приложения ecosystem.config.js
 
 ## Второй вариант запуска
