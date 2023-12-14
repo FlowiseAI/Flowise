@@ -46,5 +46,4 @@
 **/*.tgz
 
 ## pm2 config
-
 .ecosystem.config.js
