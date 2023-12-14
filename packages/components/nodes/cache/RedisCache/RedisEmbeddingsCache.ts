@@ -73,7 +73,7 @@ class RedisEmbeddingsCache implements INode {
             const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
             const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
 
-            const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {};
+            const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
             client = new Redis({
                 port: portStr ? parseInt(portStr) : 6379,
