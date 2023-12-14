@@ -5,6 +5,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import robotPNG from 'assets/images/robot.png'
 import chatPNG from 'assets/images/chathistory.png'
 import { baseURL } from 'store/constant'
+import { translationObject } from 'translate'
 
 const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectAndReturnVal }) => {
     const customization = useSelector((state) => state.customization)
@@ -20,7 +21,7 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
             {!disabled && (
                 <div style={{ flex: 30 }}>
                     <Stack flexDirection='row' sx={{ mb: 1, ml: 2, mt: 2 }}>
-                        <Typography variant='h5'>Select Variable</Typography>
+                        <Typography variant='h5'>Выберите переменную</Typography>
                     </Stack>
                     <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 220px)', overflowX: 'hidden' }}>
                         <Box sx={{ pl: 2, pr: 2 }}>
@@ -57,7 +58,11 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                 />
                                             </div>
                                         </ListItemAvatar>
-                                        <ListItemText sx={{ ml: 1 }} primary='question' secondary={`User's question from chatbox`} />
+                                        <ListItemText
+                                            sx={{ ml: 1 }}
+                                            primary='question'
+                                            secondary={translationObject[`User's question from chatbox`] || `User's question from chatbox`}
+                                        />
                                     </ListItem>
                                 </ListItemButton>
                                 <ListItemButton
@@ -95,7 +100,10 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                         <ListItemText
                                             sx={{ ml: 1 }}
                                             primary='chat_history'
-                                            secondary={`Past conversation history between user and AI`}
+                                            secondary={
+                                                translationObject[`Past conversation history between user and AI`] ||
+                                                `Past conversation history between user and AI`
+                                            }
                                         />
                                     </ListItem>
                                 </ListItemButton>

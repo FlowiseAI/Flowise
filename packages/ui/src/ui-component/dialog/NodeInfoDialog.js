@@ -10,7 +10,7 @@ import { TableViewOnly } from 'ui-component/table/Table'
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import { baseURL } from 'store/constant'
-
+import { translationObject } from 'translate'
 // API
 import configApi from 'api/config'
 import useApi from 'hooks/useApi'
@@ -69,7 +69,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 10 }}>
-                            {dialogProps.data.label}
+                            {translationObject[dialogProps.data.label] || dialogProps.data.label}
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                 <div
                                     style={{
@@ -103,7 +103,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                             marginBottom: 5
                                         }}
                                     >
-                                        <span style={{ color: '#606c38', fontSize: '0.825rem' }}>version {dialogProps.data.version}</span>
+                                        <span style={{ color: '#606c38', fontSize: '0.825rem' }}>версия {dialogProps.data.version}</span>
                                     </div>
                                 )}
                                 {dialogProps.data.badge && (
@@ -145,7 +145,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                             marginBottom: 10
                         }}
                     >
-                        <span>{dialogProps.data.description}</span>
+                        <span>{translationObject[dialogProps.data.description] || dialogProps.data.description}</span>
                     </div>
                 )}
                 {getNodeConfigApi.data && getNodeConfigApi.data.length > 0 && (

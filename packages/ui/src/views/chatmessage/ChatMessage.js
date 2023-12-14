@@ -18,7 +18,7 @@ import { CodeBlock } from 'ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
 import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
 import './ChatMessage.css'
-
+import { translationObject } from 'translate'
 // api
 import chatmessageApi from 'api/chatmessage'
 import chatflowsApi from 'api/chatflows'
@@ -425,7 +425,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             onKeyDown={handleEnter}
                             id='userInput'
                             name='userInput'
-                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
+                            placeholder={
+                                loading
+                                    ? translationObject['Waiting for response...'] || 'Waiting for response...'
+                                    : translationObject['Type your question...'] || 'Type your question...'
+                            }
                             value={userInput}
                             onChange={onChange}
                             multiline={true}

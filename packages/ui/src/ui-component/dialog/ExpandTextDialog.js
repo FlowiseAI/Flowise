@@ -9,6 +9,7 @@ import { StyledButton } from 'ui-component/button/StyledButton'
 import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor'
 import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { translationObject } from 'translate'
 
 import './ExpandTextDialog.css'
 
@@ -46,7 +47,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {inputParam && inputParam.type === 'string' && (
                         <div style={{ flex: 70 }}>
                             <Typography sx={{ mb: 2, ml: 1 }} variant='h4'>
-                                {inputParam.label}
+                                {translationObject[inputParam.label] || inputParam.label}
                             </Typography>
                             <PerfectScrollbar
                                 style={{
@@ -64,7 +65,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                         disabled={dialogProps.disabled}
                                         value={inputValue}
                                         onValueChange={(code) => setInputValue(code)}
-                                        placeholder={inputParam.placeholder}
+                                        placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                                         type={languageType}
                                         style={{
                                             fontSize: '0.875rem',
@@ -77,7 +78,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                         disabled={dialogProps.disabled}
                                         value={inputValue}
                                         onValueChange={(code) => setInputValue(code)}
-                                        placeholder={inputParam.placeholder}
+                                        placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                                         type={languageType}
                                         style={{
                                             fontSize: '0.875rem',
@@ -92,9 +93,9 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </div>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
+                <Button onClick={onCancel}>{translationObject[dialogProps.cancelButtonName] || dialogProps.cancelButtonName}</Button>
                 <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={() => onConfirm(inputValue, inputParam.name)}>
-                    {dialogProps.confirmButtonName}
+                    {translationObject[dialogProps.confirmButtonName] || dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
         </Dialog>

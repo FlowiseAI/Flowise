@@ -17,8 +17,34 @@ import themeTypography from './typography'
 export const theme = (customization) => {
     let color
 
-    window.location.hostname === 'start-ai.ru' ? (color = colorsStartAI) : (color = colors)
-
+    switch (window.location.hostname) {
+        case 'start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u1.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u2.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u3.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u4.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u5.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'localhost':
+            color = colorsStartAI
+            break
+        default:
+            // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
+            color = colors
+            break
+    }
+    console.log(color, window.location.hostname)
     const themeOption = customization.isDarkMode
         ? {
               colors: color,

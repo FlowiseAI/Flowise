@@ -13,7 +13,7 @@ import NodeInputHandler from './NodeInputHandler'
 import NodeOutputHandler from './NodeOutputHandler'
 import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
 import NodeInfoDialog from 'ui-component/dialog/NodeInfoDialog'
-
+import { translationObject } from 'translate'
 // const
 import { baseURL } from 'store/constant'
 import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons'
@@ -86,7 +86,10 @@ const CanvasNode = ({ data }) => {
             } else if (data.version && componentNode.version > data.version) {
                 setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
             } else if (componentNode.badge === 'DEPRECATING') {
-                setWarningMessage('This node will be deprecated in the next release. Change to a new node tagged with NEW')
+                setWarningMessage(
+                    translationObject['This node will be deprecated in the next release. Change to a new node tagged with NEW'] ||
+                        'This node will be deprecated in the next release. Change to a new node tagged with NEW'
+                )
             }
         }
     }, [canvas.componentNodes, data.name, data.version])

@@ -7,7 +7,7 @@ module.exports = {
             watch: false,
             env: {
                 NODE_ENV: 'STARTAI_TWO',
-                PORT: 3052
+                PORT: 3022
             }
         }
     ]

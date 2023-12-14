@@ -243,7 +243,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         onClick={() => onShowPromptHubButtonClicked()}
                                         endIcon={<IconAutoFixHigh />}
                                     >
-                                        Langchain Hub
+                                        Лангчейн Хаб
                                     </Button>
                                     <PromptLangsmithHubDialog
                                         promptType={inputParam.name}

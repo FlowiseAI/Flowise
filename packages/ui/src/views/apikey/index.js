@@ -340,7 +340,7 @@ const APIKey = () => {
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
                                 variant='outlined'
-                                placeholder='Search key name'
+                                placeholder='Поиск по имени ключа'
                                 onChange={onSearchChange}
                                 InputProps={{
                                     startAdornment: (

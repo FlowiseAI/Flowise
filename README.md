@@ -46,14 +46,20 @@ switch (process.env.NODE_ENV) {
 
 ### - yarn build
 
-### - pm2 start
+## Первый вариант запуска
 
-### - pm2 start STARTAI_ONE_ecosystem.config.js
+### - pm2 start + Редактируем файл для изменения порта и имени приложения ecosystem.config.js
 
-### - pm2 start STARTAI_TWO_ecosystem.config.js
+## Второй вариант запуска
 
-### - pm2 start STARTAI_THREE_ecosystem.config.js
+### - `pm2 start` запуск приложения - port 3000 имя STARTAI_DEFAULT
 
-### - pm2 start STARTAI_FOUR_ecosystem.config.js
+### - `pm2 start STARTAI_ONE_ecosystem.config.js` - запуск приложения - port - 3021 имя STARTAI_ONE
 
-### - pm2 start STARTAI_FIVE_ecosystem.config.js
+### -` pm2 start STARTAI_TWO_ecosystem.config.js` - запуск приложения - port - 3022 имя STARTAI_TWO
+
+### - `pm2 start STARTAI_THREE_ecosystem.config.js` - запуск приложения - port - 3023 имя STARTAI_THREE
+
+### - `pm2 start STARTAI_FOUR_ecosystem.config.js` - запуск приложения - port - 3024 имя STARTAI_FOUR
+
+### - `pm2 start STARTAI_FIVE_ecosystem.config.js` - запуск приложения - port - 3025 имя STARTAI_FIVE
