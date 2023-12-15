@@ -711,6 +711,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
 
 /**
  * Check to see if flow valid for stream
+ * TODO: perform check from component level. i.e: set streaming on component, and check here
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {INodeData} endingNodeData
  * @returns {boolean}

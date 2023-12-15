@@ -11,7 +11,8 @@ class GoogleGenerativeAICredential implements INodeCredential {
         this.label = 'Google Generative AI'
         this.name = 'googleGenerativeAI'
         this.version = 1.0
-        this.description = 'Get your <a target="_blank" href="https://ai.google.dev/tutorials/setup">API Key</a> here.'
+        this.description =
+            'You can get your API key from official <a target="_blank" href="https://ai.google.dev/tutorials/setup">page</a> here.'
         this.inputs = [
             {
                 label: 'Google AI API Key',
