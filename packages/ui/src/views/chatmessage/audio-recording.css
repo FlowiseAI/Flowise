@@ -20,6 +20,7 @@
         justify-content: center;
         /*horizontal centering*/
         align-items: center;
+        background-color: white;
     }
     .start-recording-button {
         font-size: 70px;
@@ -40,6 +41,7 @@
         align-items: center;
         width: 334px;
         margin-bottom: 30px;
+        background-color: white;
     }
     .cancel-recording-button,
     .stop-recording-button {
@@ -61,6 +63,7 @@
         color: #27a527;
     }
     .recording-elapsed-time {
+        font-size: 32px;
         /*targeting Chrome & Safari*/
         display: -webkit-flex;
         /*targeting IE10*/

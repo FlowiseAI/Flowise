@@ -1,40 +1,20 @@
+/**
+ * @fileoverview This file contains the API to handle audio recording.
+ * Originally from 'https://ralzohairi.medium.com/audio-recording-in-javascript-96eed45b75ee'
+ */
+
 // audio-recording.js ---------------
-//View
-let microphoneButton = document.getElementsByClassName('start-recording-button')[0]
-let recordingControlButtonsContainer = document.getElementsByClassName('recording-control-buttons-container')[0]
-let stopRecordingButton = document.getElementsByClassName('stop-recording-button')[0]
-let cancelRecordingButton = document.getElementsByClassName('cancel-recording-button')[0]
-let elapsedTimeTag = document.getElementsByClassName('elapsed-time')[0]
-let closeBrowserNotSupportedBoxButton = document.getElementsByClassName('close-browser-not-supported-box')[0]
-let overlay = document.getElementsByClassName('overlay')[0]
-let audioElement = document.getElementsByClassName('audio-element')[0]
-let audioElementSource = document.getElementsByClassName('audio-element')[0].getElementsByTagName('source')[0]
-let textIndicatorOfAudiPlaying = document.getElementsByClassName('text-indication-of-audio-playing')[0]
+let microphoneButton, elapsedTimeTag
 
-//Listeners
-
-//Listen to start recording button
-microphoneButton.onclick = startAudioRecording
-
-//Listen to stop recording button
-stopRecordingButton.onclick = stopAudioRecording
-
-//Listen to cancel recording button
-cancelRecordingButton.onclick = cancelAudioRecording
-
-//Listen to when the ok button is clicked in the browser not supporting audio recording box
-closeBrowserNotSupportedBoxButton.onclick = hideBrowserNotSupportedOverlay
-
-//Listen to when the audio being played ends
-audioElement.onended = hideTextIndicatorOfAudioPlaying
+/** Initialize controls */
+function initializeControls() {
+    microphoneButton = document.getElementsByClassName('start-recording-button')[0]
+}
 
 /** Displays recording control buttons */
 function handleDisplayingRecordingControlButtons() {
     //Hide the microphone button that starts audio recording
     microphoneButton.style.display = 'none'
-
-    //Display the recording control buttons
-    recordingControlButtonsContainer.classList.remove('hide')
 
     //Handle the displaying of the elapsed recording time
     handleElapsedRecordingTime()
@@ -45,42 +25,9 @@ function handleHidingRecordingControlButtons() {
     //Display the microphone button that starts audio recording
     microphoneButton.style.display = 'block'
 
-    //Hide the recording control buttons
-    recordingControlButtonsContainer.classList.add('hide')
-
     //stop interval that handles both time elapsed and the red dot
     clearInterval(elapsedTimeTimer)
 }
-
-/** Displays browser not supported info box for the user*/
-function displayBrowserNotSupportedOverlay() {
-    overlay.classList.remove('hide')
-}
-
-/** Displays browser not supported info box for the user*/
-function hideBrowserNotSupportedOverlay() {
-    overlay.classList.add('hide')
-}
-
-/** Creates a source element for the audio element in the HTML document*/
-function createSourceForAudioElement() {
-    let sourceElement = document.createElement('source')
-    audioElement.appendChild(sourceElement)
-
-    audioElementSource = sourceElement
-}
-
-/** Display the text indicator of the audio being playing in the background */
-function displayTextIndicatorOfAudioPlaying() {
-    textIndicatorOfAudiPlaying.classList.remove('hide')
-}
-
-/** Hide the text indicator of the audio being playing in the background */
-function hideTextIndicatorOfAudioPlaying() {
-    textIndicatorOfAudiPlaying.classList.add('hide')
-}
-
-//Controller
 
 /** Stores the actual start time when an audio recording begins to take place to ensure elapsed time start time is accurate*/
 let audioRecordStartTime
@@ -92,24 +39,17 @@ let maximumRecordingTimeInHours = 1
 let elapsedTimeTimer
 
 /** Starts the audio recording*/
-function startAudioRecording() {
-    console.log('Recording Audio...')
-
-    //If a previous audio recording is playing, pause it
-    let recorderAudioIsPlaying = !audioElement.paused // the paused property tells whether the media element is paused or not
-    console.log('paused?', !recorderAudioIsPlaying)
-    if (recorderAudioIsPlaying) {
-        audioElement.pause()
-        //also hide the audio playing indicator displayed on the screen
-        hideTextIndicatorOfAudioPlaying()
-    }
+export function startAudioRecording(onRecordingStart, onUnsupportedBrowser) {
+    initializeControls()
 
     //start recording using the audio recording API
     audioRecorder
         .start()
         .then(() => {
-            //on success
-
+            //on success show the controls to stop and cancel the recording
+            if (onRecordingStart) {
+                onRecordingStart(true)
+            }
             //store the recording start time to display the elapsed time according to it
             audioRecordStartTime = new Date()
 
@@ -120,8 +60,9 @@ function startAudioRecording() {
             //on error
             //No Browser Support Error
             if (error.message.includes('mediaDevices API or getUserMedia method is not supported in this browser.')) {
-                console.log('To record audio, use browsers like Chrome and Firefox.')
-                displayBrowserNotSupportedOverlay()
+                if (onUnsupportedBrowser) {
+                    onUnsupportedBrowser(true)
+                }
             }
 
             //Error handling structure
@@ -157,18 +98,16 @@ function startAudioRecording() {
 }
 /** Stop the currently started audio recording & sends it
  */
-function stopAudioRecording() {
-    console.log('Stopping Audio Recording...')
-
+export function stopAudioRecording(addRecordingToPreviews) {
     //stop the recording using the audio recording API
     audioRecorder
         .stop()
-        .then((audioAsblob) => {
-            //Play recorder audio
-            playAudio(audioAsblob)
-
+        .then((audioBlob) => {
             //hide recording control button & return record icon
             handleHidingRecordingControlButtons()
+            if (addRecordingToPreviews) {
+                addRecordingToPreviews(audioBlob)
+            }
         })
         .catch((error) => {
             //Error handling structure
@@ -183,9 +122,7 @@ function stopAudioRecording() {
 }
 
 /** Cancel the currently started audio recording */
-function cancelAudioRecording() {
-    console.log('Canceling audio...')
-
+export function cancelAudioRecording() {
     //cancel the recording using the audio recording API
     audioRecorder.cancel()
 
@@ -193,50 +130,9 @@ function cancelAudioRecording() {
     handleHidingRecordingControlButtons()
 }
 
-/** Plays recorded audio using the audio element in the HTML document
- * @param {Blob} recorderAudioAsBlob - recorded audio as a Blob Object
- */
-function playAudio(recorderAudioAsBlob) {
-    //read content of files (Blobs) asynchronously
-    let reader = new FileReader()
-
-    //once content has been read
-    reader.onload = (e) => {
-        //store the base64 URL that represents the URL of the recording audio
-        let base64URL = e.target.result
-
-        //If this is the first audio playing, create a source element
-        //as pre-populating the HTML with a source of empty src causes error
-        if (!audioElementSource)
-            //if it is not defined create it (happens first time only)
-            createSourceForAudioElement()
-
-        //set the audio element's source using the base64 URL
-        audioElementSource.src = base64URL
-
-        //set the type of the audio element based on the recorded audio's Blob type
-        let BlobType = recorderAudioAsBlob.type.includes(';')
-            ? recorderAudioAsBlob.type.substr(0, recorderAudioAsBlob.type.indexOf(';'))
-            : recorderAudioAsBlob.type
-        audioElementSource.type = BlobType
-
-        //call the load method as it is used to update the audio element after changing the source or other settings
-        audioElement.load()
-
-        //play the audio after successfully setting new src and type that corresponds to the recorded audio
-        console.log('Playing audio...')
-        audioElement.play()
-
-        //Display text indicator of having the audio play in the background
-        displayTextIndicatorOfAudioPlaying()
-    }
-
-    //read content and convert it to a URL (base64)
-    reader.readAsDataURL(recorderAudioAsBlob)
-}
-
 /** Computes the elapsed recording time since the moment the function is called in the format h:m:s*/
 function handleElapsedRecordingTime() {
+    elapsedTimeTag = document.getElementById('elapsed-time')
     //display initial time when recording begins
     displayElapsedTimeDuringAudioRecording('00:00')
 
@@ -255,7 +151,6 @@ function handleElapsedRecordingTime() {
 function displayElapsedTimeDuringAudioRecording(elapsedTime) {
     //1. display the passed elapsed time as the elapsed time in the elapsedTime HTML element
     elapsedTimeTag.innerHTML = elapsedTime
-
     //2. Stop the recording when the max number of hours is reached
     if (elapsedTimeReachedMaximumNumberOfHours(elapsedTime)) {
         stopAudioRecording()
@@ -275,9 +170,7 @@ function elapsedTimeReachedMaximumNumberOfHours(elapsedTime) {
         maximumRecordingTimeInHours < 10 ? '0' + maximumRecordingTimeInHours : maximumRecordingTimeInHours.toString()
 
     //if the elapsed time reach hours and also reach the maximum recording time in hours return true
-    if (elapsedTimeSplit.length === 3 && elapsedTimeSplit[0] === maximumRecordingTimeInHoursAsString) return true
-    //otherwise, return false
-    else return false
+    return elapsedTimeSplit.length === 3 && elapsedTimeSplit[0] === maximumRecordingTimeInHoursAsString
 }
 
 /** Computes the elapsedTime since the moment the function is called in the format mm:ss or hh:mm:ss
@@ -331,7 +224,7 @@ function computeElapsedTime(startTime) {
 
 //API to handle audio recording
 
-const audioRecorder = {
+export const audioRecorder = {
     /** Stores the recorded audio as Blob objects of audio data as the recording continues*/
     audioBlobs: [] /*of type Blob[]*/,
     /** Stores the reference of the MediaRecorder instance that handles the MediaStream when recording starts*/
@@ -360,8 +253,8 @@ const audioRecorder = {
                         audioRecorder.streamBeingCaptured = stream
 
                         //create a media recorder instance by passing that stream into the MediaRecorder constructor
-                        audioRecorder.mediaRecorder = new MediaRecorder(stream) /*the MediaRecorder interface of the MediaStream Recording
-                    API provides functionality to easily record media*/
+                        audioRecorder.mediaRecorder = new MediaRecorder(stream)
+                        /*the MediaRecorder interface of the MediaStream Recording API provides functionality to easily record media*/
 
                         //clear previously saved audio Blobs, if any
                         audioRecorder.audioBlobs = []
