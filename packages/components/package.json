@@ -26,6 +26,7 @@
         "@gomomento/sdk-core": "^1.51.1",
         "@google-ai/generativelanguage": "^0.2.1",
         "@huggingface/inference": "^2.6.1",
+        "@langchain/google-genai": "^0.0.3",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
         "@pinecone-database/pinecone": "^1.1.1",
