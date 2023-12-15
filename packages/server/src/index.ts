@@ -281,6 +281,28 @@ export class App {
             }
         })
 
+        // execute custom function node
+        this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
+            const body = req.body
+            const nodeData = { inputs: body }
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
+                try {
+                    const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const newNodeInstance = new nodeModule.nodeClass()
+
+                    const returnOptions: INodeOptionsValue[] = await newNodeInstance.init(nodeData)
+
+                    return res.json(returnOptions)
+                } catch (error) {
+                    return res.status(500).send(`Error running custom function: ${error}`)
+                }
+            } else {
+                res.status(404).send(`Node customFunction not found`)
+                return
+            }
+        })
+
         // ----------------------------------------
         // Chatflows
         // ----------------------------------------

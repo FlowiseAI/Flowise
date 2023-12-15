@@ -12,9 +12,7 @@ import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor'
-import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
-import { useTheme } from '@mui/material/styles'
+import { CodeEditor } from 'ui-component/editor/CodeEditor'
 
 // Icons
 import { IconX, IconFileExport } from '@tabler/icons'
@@ -56,7 +54,6 @@ try {
 
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
-    const theme = useTheme()
 
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -490,32 +487,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             See Example
                         </Button>
                     )}
-                    {customization.isDarkMode ? (
-                        <DarkCodeEditor
-                            value={toolFunc}
-                            disabled={dialogProps.type === 'TEMPLATE'}
-                            onValueChange={(code) => setToolFunc(code)}
-                            style={{
-                                fontSize: '0.875rem',
-                                minHeight: 'calc(100vh - 220px)',
-                                width: '100%',
-                                borderRadius: 5
-                            }}
-                        />
-                    ) : (
-                        <LightCodeEditor
-                            value={toolFunc}
-                            disabled={dialogProps.type === 'TEMPLATE'}
-                            onValueChange={(code) => setToolFunc(code)}
-                            style={{
-                                fontSize: '0.875rem',
-                                minHeight: 'calc(100vh - 220px)',
-                                width: '100%',
-                                border: `1px solid ${theme.palette.grey[300]}`,
-                                borderRadius: 5
-                            }}
-                        />
-                    )}
+                    <CodeEditor
+                        disabled={dialogProps.type === 'TEMPLATE'}
+                        value={toolFunc}
+                        height='calc(100vh - 220px)'
+                        theme={customization.isDarkMode ? 'dark' : 'light'}
+                        lang={'js'}
+                        onValueChange={(code) => setToolFunc(code)}
+                    />
                 </Box>
             </DialogContent>
             <DialogActions>
