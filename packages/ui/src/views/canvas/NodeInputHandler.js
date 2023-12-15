@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
+import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
 
@@ -31,6 +32,7 @@ import { getInputVariables } from 'utils/genericHelper'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+import PromptLangsmithHubDialog from '../../ui-component/dialog/PromptLangsmithHubDialog'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -56,6 +58,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
     const [showFormatPromptValuesDialog, setShowFormatPromptValuesDialog] = useState(false)
     const [formatPromptValuesDialogProps, setFormatPromptValuesDialogProps] = useState({})
+    const [showPromptHubDialog, setShowPromptHubDialog] = useState(false)
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProp = {
@@ -69,6 +72,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         setShowExpandDialog(true)
     }
 
+    const onShowPromptHubButtonClicked = () => {
+        setShowPromptHubDialog(true)
+    }
+    const onShowPromptHubButtonSubmit = (templates) => {
+        setShowPromptHubDialog(false)
+        for (const t of templates) {
+            if (Object.prototype.hasOwnProperty.call(data.inputs, t.type)) {
+                data.inputs[t.type] = t.template
+            }
+        }
+    }
     const onFormatPromptValuesClicked = (value, inputParam) => {
         // Preset values if the field is format prompt values
         let inputValue = value
@@ -209,6 +223,31 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         </CustomWidthTooltip>
                     )}
                     <Box sx={{ p: 2 }}>
+                        {(data.name === 'promptTemplate' || data.name === 'chatPromptTemplate') &&
+                            (inputParam.name === 'template' || inputParam.name === 'systemMessagePrompt') && (
+                                <>
+                                    <Button
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            width: '100%'
+                                        }}
+                                        disabled={disabled}
+                                        sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
+                                        variant='outlined'
+                                        onClick={() => onShowPromptHubButtonClicked()}
+                                        endIcon={<IconAutoFixHigh />}
+                                    >
+                                        Langchain Hub
+                                    </Button>
+                                    <PromptLangsmithHubDialog
+                                        promptType={inputParam.name}
+                                        show={showPromptHubDialog}
+                                        onCancel={() => setShowPromptHubDialog(false)}
+                                        onSubmit={onShowPromptHubButtonSubmit}
+                                    ></PromptLangsmithHubDialog>
+                                </>
+                            )}
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
                                 {inputParam.label}
@@ -260,6 +299,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 }}
                             />
                         )}
+
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}

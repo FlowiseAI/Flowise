@@ -58,6 +58,10 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
+import { sanitizeMiddleware } from './utils/XSS'
+import axios from 'axios'
+import { Client } from 'langchainhub'
+import { parsePrompt } from './utils/hub'
 
 export class App {
     app: express.Application
@@ -115,8 +119,14 @@ export class App {
         // Allow access from *
         this.app.use(cors())
 
+        // Switch off the default 'X-Powered-By: Express' header
+        this.app.disable('x-powered-by')
+
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)
+
+        // Add the sanitizeMiddleware to guard against XSS
+        this.app.use(sanitizeMiddleware)
 
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -128,6 +138,7 @@ export class App {
                 '/api/v1/verify/apikey/',
                 '/api/v1/chatflows/apikey/',
                 '/api/v1/public-chatflows',
+                '/api/v1/public-chatbotConfig',
                 '/api/v1/prediction/',
                 '/api/v1/vector/upsert/',
                 '/api/v1/node-icon/',
@@ -190,7 +201,7 @@ export class App {
 
         // Get component credential via name
         this.app.get('/api/v1/components-credentials/:name', (req: Request, res: Response) => {
-            if (!req.params.name.includes('&')) {
+            if (!req.params.name.includes('&amp;')) {
                 if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
                     return res.json(this.nodesPool.componentCredentials[req.params.name])
                 } else {
@@ -198,7 +209,7 @@ export class App {
                 }
             } else {
                 const returnResponse = []
-                for (const name of req.params.name.split('&')) {
+                for (const name of req.params.name.split('&amp;')) {
                     if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
                         returnResponse.push(this.nodesPool.componentCredentials[name])
                     } else {
@@ -316,6 +327,23 @@ export class App {
             if (chatflow && chatflow.isPublic) return res.json(chatflow)
             else if (chatflow && !chatflow.isPublic) return res.status(401).send(`Unauthorized`)
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        })
+
+        // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
+        // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
+        this.app.get('/api/v1/public-chatbotConfig/:id', async (req: Request, res: Response) => {
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+            if (chatflow && chatflow.chatbotConfig) {
+                try {
+                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    return res.json(parsedConfig)
+                } catch (e) {
+                    return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
+                }
+            }
+            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
         })
 
         // Save chatflow
@@ -980,6 +1008,12 @@ export class App {
         // Download file from assistant
         this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
             const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
+            //raise error if file path is not absolute
+            if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
+            //raise error if file path contains '..'
+            if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
+            //only return from the .flowise openai-assistant folder
+            if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
             res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
             streamFileToUser(res, filePath)
         })
@@ -1062,6 +1096,35 @@ export class App {
 
         this.app.post('/api/v1/vector/internal-upsert/:id', async (req: Request, res: Response) => {
             await this.buildChatflow(req, res, undefined, true, true)
+        })
+
+        // ----------------------------------------
+        // Prompt from Hub
+        // ----------------------------------------
+        this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
+            try {
+                let hub = new Client()
+                const prompt = await hub.pull(req.body.promptName)
+                const templates = parsePrompt(prompt)
+                return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
+            } catch (e: any) {
+                return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
+            }
+        })
+
+        this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
+            try {
+                const tags = req.body.tags ? `tags=${req.body.tags}` : ''
+                // Default to 100, TODO: add pagination and use offset & limit
+                const url = `https://api.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
+                axios.get(url).then((response) => {
+                    if (response.data.repos) {
+                        return res.json({ status: 'OK', repos: response.data.repos })
+                    }
+                })
+            } catch (e: any) {
+                return res.json({ status: 'ERROR', repos: [] })
+            }
         })
 
         // ----------------------------------------
@@ -1419,16 +1482,19 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
 
-            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation) when all these conditions met:
+            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
+             * - Its not an Upsert request
+             * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
                 return (
                     Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
                     this.chatflowPool.activeChatflows[chatflowid].inSync &&
+                    this.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
                     isSameOverrideConfig(
                         isInternal,
                         this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
@@ -1440,7 +1506,7 @@ export class App {
             }
 
             if (isFlowReusable()) {
-                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData
+                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
                 isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
                 logger.debug(
                     `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
@@ -1493,6 +1559,7 @@ export class App {
                 const constructedObj = constructGraphs(nodes, edges, true)
                 const nonDirectedGraph = constructedObj.graph
                 const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                 /*** BFS to traverse from Starting Nodes to Ending Node ***/
@@ -1512,13 +1579,18 @@ export class App {
                     isUpsert,
                     incomingInput.stopNodeId
                 )
-                if (isUpsert) return res.status(201).send('Successfully Upserted')
+                if (isUpsert) {
+                    this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+                    return res.status(201).send('Successfully Upserted')
+                }
 
                 const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
                 if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
 
-                if (incomingInput.overrideConfig)
+                if (incomingInput.overrideConfig) {
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+                }
+
                 const reactFlowNodeData: INodeData = resolveVariables(
                     nodeToExecute.data,
                     reactFlowNodes,
@@ -1527,7 +1599,6 @@ export class App {
                 )
                 nodeToExecuteData = reactFlowNodeData
 
-                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
@@ -1551,6 +1622,7 @@ export class App {
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       uploads: incomingInput.uploads,
+                      chatflowid,
                       chatHistory,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId,
@@ -1561,6 +1633,7 @@ export class App {
                       chatId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatflowid,
                       uploads: incomingInput.uploads,
                       chatHistory,
                       logger,
