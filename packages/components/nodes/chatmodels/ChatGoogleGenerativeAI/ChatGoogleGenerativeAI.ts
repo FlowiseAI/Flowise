@@ -18,7 +18,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'gemini.png'
         this.category = 'Chat Models'
@@ -29,7 +29,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleGenerativeAI'],
-            optional: true,
+            optional: false,
             description: 'Google Generative AI credential.'
         }
         this.inputs = [
@@ -100,7 +100,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const model = new ChatGoogleGenerativeAI(obj)
         if (topP) model.topP = parseFloat(topP)
         if (cache) model.cache = cache
-        if (temperature) model.temperature = parseInt(temperature)
+        if (temperature) model.temperature = parseFloat(temperature)
         return model
     }
 }

@@ -24,13 +24,13 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
         this.icon = 'gemini.png'
         this.category = 'Embeddings'
         this.description = 'Google Generative API to generate embeddings for a given text'
-        this.baseClasses = [this.type, ...getBaseClasses(GoogleVertexAIEmbeddings)]
+        this.baseClasses = [this.type, ...getBaseClasses(GoogleGenerativeAIEmbeddings)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['googleGenerativeAI'],
-            optional: true,
+            optional: false,
             description: 'Google Generative AI credential.'
         }
         this.inputs = [
