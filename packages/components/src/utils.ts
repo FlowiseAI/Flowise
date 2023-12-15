@@ -252,6 +252,7 @@ function normalizeURL(urlString: string): string {
     }
     return hostPath
 }
+const LARGE_FILE_EXTENSIONS = ['zip', 'tar', 'rar', 'jar', 'arj', 'gz'] //todo: add full listing
 
 /**
  * Recursive crawl using normalizeURL and getURLsFromHTML
@@ -270,6 +271,14 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
     if (baseURLObj.hostname !== currentURLObj.hostname) return pages
 
     const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+
+    const lastSec = normalizeCurrentURL.substring(normalizeCurrentURL.lastIndexOf('/') + 1)
+    const dotPos = lastSec.lastIndexOf('.')
+    const urlExt = dotPos > -1 && dotPos < lastSec.length - 1 ? lastSec.substring(dotPos + 1) : ''
+
+    //fix issue with interable error when crawing a zip file, most likely timed out
+    if (!!urlExt && LARGE_FILE_EXTENSIONS.includes(urlExt)) return pages
+
     if (pages.includes(normalizeCurrentURL)) {
         return pages
     }
