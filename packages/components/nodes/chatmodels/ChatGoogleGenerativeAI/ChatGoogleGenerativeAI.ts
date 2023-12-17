@@ -49,8 +49,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                         name: 'gemini-pro'
                     }
                 ],
-                default: 'gemini-pro',
-                optional: true
+                default: 'gemini-pro'
             },
             {
                 label: 'Temperature',
