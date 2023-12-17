@@ -231,6 +231,7 @@ export const buildLangchain = async (
     // Create a Queue and add our initial node in it
     const nodeQueue = [] as INodeQueue[]
     const exploredNode = {} as IExploredNode
+    const dynamicVariables = {} as Record<string, unknown>
 
     // In the case of infinite loop, only max 3 loops will be executed
     const maxLoop = 3
@@ -267,20 +268,36 @@ export const buildLangchain = async (
                     appDataSource,
                     databaseEntities,
                     logger,
-                    cachePool
+                    cachePool,
+                    dynamicVariables
                 })
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
+                let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
                     chatflowid,
                     appDataSource,
                     databaseEntities,
                     logger,
-                    cachePool
+                    cachePool,
+                    dynamicVariables
                 })
+
+                // Save dynamic variables
+                if (reactFlowNode.data.name === 'setVariable') {
+                    const dynamicVars = outputResult?.dynamicVariables ?? {}
+
+                    for (const variableKey in dynamicVars) {
+                        dynamicVariables[variableKey] = dynamicVars[variableKey]
+                    }
+
+                    outputResult = outputResult?.output
+                }
+
+                flowNodes[nodeIndex].data.instance = outputResult
+
                 logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             }
         } catch (e: any) {

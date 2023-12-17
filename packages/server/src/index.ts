@@ -55,7 +55,7 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware } from './utils/XSS'
@@ -277,6 +277,29 @@ export class App {
                 }
             } else {
                 res.status(404).send(`Node ${req.params.name} not found`)
+                return
+            }
+        })
+
+        // execute custom function node
+        this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
+            const body = req.body
+            const nodeData = { inputs: body }
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
+                try {
+                    const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const newNodeInstance = new nodeModule.nodeClass()
+
+                    const returnData = await newNodeInstance.init(nodeData)
+                    const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
+
+                    return res.json(result)
+                } catch (error) {
+                    return res.status(500).send(`Error running custom function: ${error}`)
+                }
+            } else {
+                res.status(404).send(`Node customFunction not found`)
                 return
             }
         })
