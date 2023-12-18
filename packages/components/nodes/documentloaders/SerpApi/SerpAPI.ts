@@ -20,7 +20,7 @@ class SerpAPI_DocumentLoaders implements INode {
         this.name = 'serpApi'
         this.version = 1.0
         this.type = 'Document'
-        this.icon = 'serp.png'
+        this.icon = 'serp.svg'
         this.category = 'Document Loaders'
         this.description = 'Load and process data from web search results'
         this.baseClasses = [this.type]
