@@ -29,7 +29,7 @@ class AWSChatBedrock_ChatModels implements INode {
         this.name = 'awsChatBedrock'
         this.version = 3.0
         this.type = 'AWSChatBedrock'
-        this.icon = 'awsBedrock.png'
+        this.icon = 'aws.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around AWS Bedrock large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(BedrockChat)]
