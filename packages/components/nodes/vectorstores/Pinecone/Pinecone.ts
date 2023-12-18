@@ -1,8 +1,8 @@
-import { flatten } from 'lodash'
 import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
-import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
+import { Embeddings } from 'langchain/embeddings/base'
+import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
+import { flatten } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -113,12 +113,7 @@ class Pinecone_VectorStores implements INode {
             const pineconeIndex = client.Index(index)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
-            for (let i = 0; i < flattenDocs.length; i += 1) {
-                if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
-                }
-            }
+            const finalDocs = flattenDocs.filter((doc) => !!doc?.pageContent).map((doc) => new Document(doc))
 
             const obj: PineconeLibArgs = {
                 pineconeIndex

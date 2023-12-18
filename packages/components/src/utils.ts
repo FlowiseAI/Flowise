@@ -313,6 +313,9 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
     } catch (err) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
+
+    console.info(`crawled ${pages.length} pages so far, limit: ${limit}}`)
+
     return pages
 }
 

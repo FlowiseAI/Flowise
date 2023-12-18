@@ -119,7 +119,7 @@ class Cheerio_DocumentLoaders implements INode {
                 console.info(`scraping - loaded ${docs.length} docs from ${url}`)
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
@@ -130,18 +130,29 @@ class Cheerio_DocumentLoaders implements INode {
             else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
             console.info(`scrape limit: ${limit}`)
             console.info(`scraping url: ${url}`)
-            const pages: string[] =
+            let pages: string[] =
                 relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
 
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || !Array.isArray(pages) || pages.length === 0) {
-                console.error(`No relative links found for ${url}`)
+                console.warn(`No relative links found for ${url}`)
                 return
             }
-            console.info(`scraping found ${pages.length} pages: ${pages.join(', ')}`)
-            for (const page of pages) {
-                docs.push(...(await cheerioLoader(page)))
+
+            if (!!limit && parseInt(limit) > 0) {
+                console.info(`scraping limit to ${limit}`)
+                pages = pages.slice(0, parseInt(limit)) // limit docs to be returned
             }
+
+            try {
+                console.info(`scraping found ${pages.length} pages: ${pages.join(', ')}`)
+                for (const page of pages) {
+                    docs.push(...(await cheerioLoader(page)))
+                }
+            } catch (err) {
+                console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+            }
+
             if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
         } else {
             docs = await cheerioLoader(url)
@@ -165,6 +176,10 @@ class Cheerio_DocumentLoaders implements INode {
         }
 
         console.info(`scraped ${docs.length} docs from ${url}`)
+        if (!!limit && parseInt(limit) > 0 && docs.length > parseInt(limit)) {
+            console.info(`scraped docs limiting to ${limit}`)
+            docs = docs.slice(0, parseInt(limit)) // limit docs to be returned
+        }
 
         return docs
     }
