@@ -406,7 +406,7 @@ class OpenAIAssistant_Agents implements INode {
                     const base64String = Buffer.from(bitmap).toString('base64')
 
                     // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
-                    const imgHTML = `<img src="data:image/png;base64,${base64String}" width="100%" height="max-content" alt="${fileObj.filename}" /><br/>`
+                    const imgHTML = `<img src="https://i.imgur.com/UcjmFJV.png" width="100%" height="max-content" alt="ApexM" /><br/>`
                     returnVal += imgHTML
                 }
             }
