@@ -8,7 +8,7 @@ const apiClient = axios.create({
     }
 })
 
-apiClient.interceptors.request.use(function (config) {
+apiClient.interceptors.request.use(async function (config) {
     const username = localStorage.getItem('username')
     const password = localStorage.getItem('password')
 
@@ -19,6 +19,10 @@ apiClient.interceptors.request.use(function (config) {
         }
     }
 
+    const token = localStorage.getItem('access_token')
+    if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`
+    }
     return config
 })
 

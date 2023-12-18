@@ -13,6 +13,7 @@
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",
         "dev": "turbo run dev --parallel",
+        "sst:dev": "sst bind turbo run dev --parallel",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
@@ -22,11 +23,15 @@
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
+        "preinstall": "yarn config set ignore-engines true",
         "postinstall": "husky install",
         "migration:create": "pnpm typeorm migration:create"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
+    },
+    "dependencies": {
+        "run-script-os": "^1.1.6"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.19.4",
@@ -50,7 +55,10 @@
         "rimraf": "^3.0.2",
         "run-script-os": "^1.1.6",
         "turbo": "1.10.16",
-        "typescript": "^4.8.4"
+        "typescript": "^4.8.4",
+        "sst": "2.40.7",
+        "aws-cdk-lib": "2.124.0",
+        "constructs": "10.3.0"
     },
     "packageManager": "pnpm@8.14.0",
     "pnpm": {

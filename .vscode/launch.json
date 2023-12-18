@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Entire App with Yarn Dev",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": ["dev"],
+            "timeout": 30000,
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "restart": true,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**"],
+            "smartStep": true
+        }
+    ]
+}

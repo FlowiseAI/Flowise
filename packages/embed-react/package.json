@@ -1,0 +1,40 @@
+{
+  "name": "flowise-embed-react",
+  "version": "1.0.2",
+  "description": "React library to display flowise chatbot on your website",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "rollup --watch --config rollup.config.js",
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint --fix \"src/**/*.ts*\""
+  },
+  "keywords": [],
+  "license": "MIT",
+  "dependencies": {
+    "@ladle/react": "2.5.1"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "7.18.6",
+    "@babel/preset-typescript": "7.21.4",
+    "@rollup/plugin-babel": "6.0.3",
+    "@rollup/plugin-node-resolve": "15.0.1",
+    "@rollup/plugin-terser": "0.4.0",
+    "@rollup/plugin-typescript": "11.0.0",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.32",
+    "eslint": "8.37.0",
+    "flowise-embed": "*",
+    "react": "18.2.0",
+    "rollup": "3.20.2",
+    "rollup-plugin-typescript-paths": "1.4.0",
+    "tslib": "2.5.0",
+    "tsx": "3.12.6",
+    "typescript": "5.0.3"
+  },
+  "peerDependencies": {
+    "flowise-embed": "*",
+    "react": "18.x"
+  }
+}

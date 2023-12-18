@@ -84,6 +84,7 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { auth } from 'express-oauth2-jwt-bearer'
 
 export class App {
     app: express.Application
@@ -167,35 +168,102 @@ export class App {
 
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
-
+            const whitelistURLs = [
+                // '/api/v1/verify/apikey/',
+                // '/api/v1/chatflows/apikey/',
+                // '/api/v1/public-chatflows',
+                // '/api/v1/public-chatbotConfig',
+                '/api/v1/prediction/',
+                // '/api/v1/vector/upsert/',
+                '/api/v1/node-icon/',
+                // '/api/v1/components-credentials-icon/',
+                // '/api/v1/chatflows-streaming',
+                // '/api/v1/chatflows-uploads',
+                // '/api/v1/openai-assistants-file',
+                // '/api/v1/feedback',
+                // '/api/v1/get-upload-file',
+                // '/api/v1/ip'
+            ]
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = [
-                '/api/v1/verify/apikey/',
-                '/api/v1/chatflows/apikey/',
-                '/api/v1/public-chatflows',
-                '/api/v1/public-chatbotConfig',
-                '/api/v1/prediction/',
-                '/api/v1/vector/upsert/',
-                '/api/v1/node-icon/',
-                '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming',
-                '/api/v1/chatflows-uploads',
-                '/api/v1/openai-assistants-file',
-                '/api/v1/feedback',
-                '/api/v1/get-upload-file',
-                '/api/v1/ip'
-            ]
+ 
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
                     whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
                 } else next()
             })
         }
+        // ----------------------------------------
+        // Configure Auth0
+        // ----------------------------------------
+
+        const jwtCheck = auth({
+            secret: process.env.AUTH0_SECRET,
+            audience: process.env.AUTH0_AUDIENCE,
+            issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+            tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
+        })
+
+        // // enforce on all endpoints
+        this.app.use((req, res, next) => {
+            const {
+                headers: { cookie }
+            } = req
+            if (cookie) {
+                const values = cookie.split(';').reduce((res, item) => {
+                    const data = item.trim().split('=')
+                    return { ...res, [data[0]]: data[1] }
+                }, {})
+                res.locals.cookie = values
+            } else res.locals.cookie = {}
+            next()
+        })
+        this.app.use((req, res, next) => {
+            /// ADD Authorization cookie
+            if (req.url.includes('/api/v1/') && !whitelistURLs.some((url) => req.url.includes(url))) {
+                if (res.locals?.cookie?.Authorization && !req.headers.authorization) {
+                    req.headers.authorization = `Bearer ${res.locals.cookie.Authorization}`
+                }
+                return jwtCheck(req, res, next)
+            } else next()
+        })
+
+        this.app.use((req, res, next) => {
+            if (req.url.includes('/api/v1/')) {
+                if (!whitelistURLs.some((url) => req.url.includes(url))) {
+                    if (req.auth?.token) {
+                        res.cookie('Authorization', req.auth?.token, {
+                            // name:
+                            //   process.env.NODE_ENV === 'production'
+                            //     ? `__Secure-next-auth.session-token`
+                            //     : `next-auth.session-token`,
+                            httpOnly: true,
+                            sameSite: 'none',
+                            // path: '/',
+                            secure: true
+                        })
+                    }
+
+                    const isInvalidOrg =
+                        (!!process.env.AUTH0_ORGANIZATION_ID || !!req?.auth?.payload?.org_id) &&
+                        process.env.AUTH0_ORGANIZATION_ID !== req?.auth?.payload?.org_id
+                    if (isInvalidOrg) {
+                        console.log('Invalid org', process.env.AUTH0_ORGANIZATION_ID, '!==', req?.auth?.payload?.org_id)
+                        res.status(401).send("Unauthorized: Organization doesn't match")
+                    } else {
+                        next()
+                    }
+                } else {
+                    next()
+                }
+            } else {
+                next()
+            }
+        })
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
@@ -428,11 +496,31 @@ export class App {
         // Save chatflow
         this.app.post('/api/v1/chatflows', async (req: Request, res: Response) => {
             const body = req.body
+
+            // Create the chatflow
             const newChatFlow = new ChatFlow()
             Object.assign(newChatFlow, body)
-
             const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+            const ANSWERAI_DOMAIN = req.auth?.payload.answersDomain ?? process.env.ANSWERAI_DOMAIN ?? 'https://beta.theanswer.ai'
+            try {
+                await fetch(ANSWERAI_DOMAIN + '/api/sidekicks/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + req.auth?.token!,
+                        cookie: req.headers.cookie!
+                    },
+                    body: JSON.stringify({
+                        chatflow: {
+                            ...results
+                        },
+                        chatflowDomain: req.auth?.payload?.chatflowDomain
+                    })
+                })
+            } catch (err) {
+                return res.status(500).send('Error saving to Answers')
+            }
 
             await this.telemetry.sendTelemetry('chatflow_created', {
                 version: await getAppVersion(),
@@ -470,7 +558,22 @@ export class App {
                 // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
                 this.chatflowPool.updateInSync(chatflow.id, false)
             }
-
+            try {
+                const ANSWERAI_DOMAIN = req.auth?.payload.answersDomain ?? process.env.ANSWERAI_DOMAIN ?? 'https://beta.theanswer.ai'
+                await fetch(ANSWERAI_DOMAIN + '/api/sidekicks/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + req.auth?.token!
+                    },
+                    body: JSON.stringify({
+                        chatflow: result,
+                        chatflowDomain: req.auth?.payload?.chatflowDomain
+                    })
+                })
+            } catch (err) {
+                return res.status(500).send('Error saving to Answers')
+            }
             return res.json(result)
         })
 
@@ -551,8 +654,9 @@ export class App {
         // ----------------------------------------
 
         // Get all chatmessages from chatflowid
-        this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
+        this.app.get('/api/v1/chatmessage', async (req: Request, res: Response) => {
             const sortOrder = req.query?.order as string | undefined
+            const chatflowId = (req.query?.chatflowId ?? req.query?.id) as string
             const chatId = req.query?.chatId as string | undefined
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
@@ -578,7 +682,7 @@ export class App {
             }
 
             const chatmessages = await this.getChatMessage(
-                req.params.id,
+                chatflowId,
                 chatTypeFilter,
                 sortOrder,
                 chatId,

@@ -1,0 +1,156 @@
+const path = require("path");
+
+/** @typedef {DaisyConfig} Config  */
+const config = (CODE_BASE_PATH) => {
+  const PINECONE_INDEX_NAME = process.env.DAISY_PINECONE_INDEX_NAME || "daisy";
+  const PINECONE_NAMESPACE = process.env.DAISY_PINECONE_NAMESPACE || "default";
+  const DAISY_DIRECTORY_NAME = process.env.DAISY_DIRECTORY_NAME || "daisy";
+  const DAISY_DIRECTORY = path.join(CODE_BASE_PATH, DAISY_DIRECTORY_NAME);
+  const MARKDOWN_DIRECTORY =
+    process.env.MARKDOWN_DIRECTORY || path.join(DAISY_DIRECTORY, "markdown");
+  const PROMPTS_FILE_PATH =
+    process.env.PROMPTS_FILE_PATH || path.join(DAISY_DIRECTORY, "prompts");
+
+  const TEMPLATE_FILE_PATH =
+    process.env.TEMPLATE_FILE_PATH || path.join(DAISY_DIRECTORY, "templates");
+  const ANSWERAI_API_KEY = process.env.ANSWERAI_API_KEY;
+  const ANSWERAI_EMBEDDINGS_URL =
+    process.env.DAISY_ANSWERAI_EMBEDDINGS_URL ||
+    "https://app.theanswer.ai/api/codebase/embeddings";
+  const ANSWERAI_CHAT_COMPLETION_URL =
+    process.env.DAISY_ANSWERAI_CHAT_COMPLETION_URL ||
+    "https://app.theanswer.ai/api/ai/chat-completion";
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
+  const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT;
+  return {
+    codeBasePath: CODE_BASE_PATH,
+    pineconeIndexName: PINECONE_INDEX_NAME,
+    pineconeNamespace: PINECONE_NAMESPACE,
+    daisyDirectoryName: DAISY_DIRECTORY_NAME,
+    markdownDirectory: MARKDOWN_DIRECTORY,
+    promptsFilePath: PROMPTS_FILE_PATH,
+    templateFilePath: TEMPLATE_FILE_PATH,
+    openAiApiKey: OPENAI_API_KEY,
+    pineconeApiKey: PINECONE_API_KEY,
+    pineconeEnvironment: PINECONE_ENVIRONMENT,
+    answerAI: {
+      apiKey: ANSWERAI_API_KEY,
+      embeddingsUrl: ANSWERAI_EMBEDDINGS_URL,
+      chatCompletionUrl: ANSWERAI_CHAT_COMPLETION_URL,
+    },
+    invalidPaths: [
+      "node_modules",
+      "dist",
+      "build",
+      "coverage",
+      "public",
+      "static",
+      "assets",
+      "images",
+      "img",
+      ".nextjs",
+      ".next",
+      ".git",
+      "generated",
+      ".yarn",
+      "patches",
+      DAISY_DIRECTORY,
+    ],
+    invalidFileTypes: [
+      ".prompt",
+      ".csv",
+      ".tsv",
+      ".log",
+      ".docx",
+      ".xls",
+      ".xlsx",
+      ".ppt",
+      ".pptx",
+      ".svg",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".bmp",
+      ".tiff",
+      ".tif",
+      ".ico",
+      ".mp3",
+      ".mp4",
+      ".wav",
+      ".wma",
+      ".avi",
+      ".mov",
+      ".mpg",
+      ".mpeg",
+      ".zip",
+      ".rar",
+      ".7z",
+      ".tar",
+      ".gz",
+      ".dmg",
+      ".iso",
+      ".exe",
+      ".bin",
+      ".pkg",
+      ".deb",
+      ".rpm",
+      ".lock",
+    ],
+    invalidFileNames: [
+      "pnpm-lock.yaml",
+      "package-lock.json",
+      "app_pairs.yml",
+      ".env",
+      ".DS_Store",
+      ".gitignore",
+    ],
+    fileTypes: {
+      docs: {
+        fileTypes: [".md", ".mdx", ".txt", "LICENSE.md", "LICENSE"],
+        skipCompletion: true,
+      },
+      react: {
+        fileTypes: [".jsx", ".tsx"],
+        prompt: "react.prompt",
+        template: "react.md",
+      },
+      api: {
+        pathIncludes: ["/api/", "/routes/", "/controllers/", "/services/"],
+        prompt: "api.prompt",
+        template: "api.md",
+      },
+      config: {
+        fileTypes: [
+          ".json",
+          ".yaml",
+          ".yml",
+          ".toml",
+          ".ini",
+          ".env",
+          ".env.example",
+          ".daisyrc",
+        ],
+        prompt: "config.prompt",
+        template: "config.md",
+      },
+      script: {
+        fileTypes: [".js", ".ts"],
+        prompt: "script.prompt",
+        template: "script.md",
+      },
+      contentModel: {
+        pathIncludes: ["content_types"],
+        prompt: "contentModel.prompt",
+        template: "contentModel.md",
+      },
+      default: {
+        prompt: "default.prompt",
+        template: "default.md",
+      },
+    },
+  };
+};
+
+module.exports = config;

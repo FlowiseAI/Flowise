@@ -1,12 +1,15 @@
 {
     "$schema": "https://turbo.build/schema.json",
+
     "pipeline": {
         "build": {
+            "outputMode": "new-only",
             "dependsOn": ["^build"],
-            "outputs": ["dist/**"]
+            "outputs": ["dist/**", "build/**"]
         },
         "test": {},
         "dev": {
+            "dependsOn": ["^build"],
             "cache": false
         }
     }

@@ -165,8 +165,9 @@ class Pinecone_VectorStores implements INode {
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
+        let metadatafilter = {}
         if (pineconeMetadataFilter) {
-            const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
             obj.filter = metadatafilter
         }
 
