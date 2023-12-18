@@ -35,6 +35,11 @@ class RedisCacheApi implements INodeCredential {
                 name: 'redisCachePwd',
                 type: 'password',
                 placeholder: '<REDIS_PASSWORD>'
+            },
+            {
+                label: 'Use SSL',
+                name: 'redisCacheSslEnabled',
+                type: 'boolean'
             }
         ]
     }

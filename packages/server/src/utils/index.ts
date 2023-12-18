@@ -231,6 +231,7 @@ export const buildLangchain = async (
     // Create a Queue and add our initial node in it
     const nodeQueue = [] as INodeQueue[]
     const exploredNode = {} as IExploredNode
+    const dynamicVariables = {} as Record<string, unknown>
 
     // In the case of infinite loop, only max 3 loops will be executed
     const maxLoop = 3
@@ -267,20 +268,36 @@ export const buildLangchain = async (
                     appDataSource,
                     databaseEntities,
                     logger,
-                    cachePool
+                    cachePool,
+                    dynamicVariables
                 })
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                flowNodes[nodeIndex].data.instance = await newNodeInstance.init(reactFlowNodeData, question, {
+                let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
                     chatflowid,
                     appDataSource,
                     databaseEntities,
                     logger,
-                    cachePool
+                    cachePool,
+                    dynamicVariables
                 })
+
+                // Save dynamic variables
+                if (reactFlowNode.data.name === 'setVariable') {
+                    const dynamicVars = outputResult?.dynamicVariables ?? {}
+
+                    for (const variableKey in dynamicVars) {
+                        dynamicVariables[variableKey] = dynamicVars[variableKey]
+                    }
+
+                    outputResult = outputResult?.output
+                }
+
+                flowNodes[nodeIndex].data.instance = outputResult
+
                 logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
             }
         } catch (e: any) {
@@ -558,9 +575,20 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
             if (inputVariables.length > 0) return true
         }
     }
-    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT']
+    const whitelistNodeNames = ['vectorStoreToDocument', 'autoGPT', 'chatPromptTemplate', 'promptTemplate'] //If these nodes are found, chatflow cannot be reused
     for (const node of nodes) {
-        if (whitelistNodeNames.includes(node.data.name)) return true
+        if (node.data.name === 'chatPromptTemplate' || node.data.name === 'promptTemplate') {
+            let promptValues: ICommonObject = {}
+            const promptValuesRaw = node.data.inputs?.promptValues
+            if (promptValuesRaw) {
+                try {
+                    promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw)
+                } catch (exception) {
+                    console.error(exception)
+                }
+            }
+            if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true
+        } else if (whitelistNodeNames.includes(node.data.name)) return true
     }
     return false
 }
@@ -700,6 +728,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
 
 /**
  * Check to see if flow valid for stream
+ * TODO: perform check from component level. i.e: set streaming on component, and check here
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {INodeData} endingNodeData
  * @returns {boolean}
@@ -912,4 +941,32 @@ export const replaceChatHistory = async (
     }
 
     return ''
+}
+
+/**
+ * Get all values from a JSON object
+ * @param {any} obj
+ * @returns {any[]}
+ */
+export const getAllValuesFromJson = (obj: any): any[] => {
+    const values: any[] = []
+
+    function extractValues(data: any) {
+        if (typeof data === 'object' && data !== null) {
+            if (Array.isArray(data)) {
+                for (const item of data) {
+                    extractValues(item)
+                }
+            } else {
+                for (const key in data) {
+                    extractValues(data[key])
+                }
+            }
+        } else {
+            values.push(data)
+        }
+    }
+
+    extractValues(obj)
+    return values
 }

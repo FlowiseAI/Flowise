@@ -11,6 +11,7 @@ import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FileDownloadIcon from '@mui/icons-material/Downloading'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileCategoryIcon from '@mui/icons-material/Category'
+import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons'
@@ -22,12 +23,12 @@ import useConfirm from 'hooks/useConfirm'
 import { uiBaseURL } from '../../store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '../../store/actions'
 
-import ConfirmDialog from '../dialog/ConfirmDialog'
 import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
 import TagDialog from '../dialog/TagDialog'
 
 import { generateExportFlowData } from '../../utils/genericHelper'
 import useNotifier from '../../utils/useNotifier'
+import StarterPromptsDialog from '../dialog/StarterPromptsDialog'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -79,6 +80,8 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const [categoryDialogProps, setCategoryDialogProps] = useState({})
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
+    const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
+    const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -91,6 +94,20 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const handleFlowRename = () => {
         setAnchorEl(null)
         setFlowDialogOpen(true)
+    }
+
+    const handleFlowStarterPrompts = () => {
+        setAnchorEl(null)
+        setConversationStartersDialogProps({
+            title: 'Starter Prompts - ' + chatflow.name,
+            chatflow: chatflow
+        })
+        setConversationStartersDialogOpen(true)
+    }
+
+    const saveFlowStarterPrompts = async () => {
+        setConversationStartersDialogOpen(false)
+        await updateFlowsApi.request()
     }
 
     const saveFlowRename = async (chatflowName) => {
@@ -254,6 +271,10 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     Export
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
+                <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
+                    <PictureInPictureAltIcon />
+                    Starter Prompts
+                </MenuItem>
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
                     Update Category
@@ -264,7 +285,6 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     Delete
                 </MenuItem>
             </StyledMenu>
-            <ConfirmDialog />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
@@ -280,6 +300,12 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 dialogProps={categoryDialogProps}
                 onClose={() => setCategoryDialogOpen(false)}
                 onSubmit={saveFlowCategory}
+            />
+            <StarterPromptsDialog
+                show={conversationStartersDialogOpen}
+                dialogProps={conversationStartersDialogProps}
+                onConfirm={saveFlowStarterPrompts}
+                onCancel={() => setConversationStartersDialogOpen(false)}
             />
         </div>
     )

@@ -1,23 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FormControl, OutlinedInput, Popover } from '@mui/material'
-import ExpandTextDialog from 'ui-component/dialog/ExpandTextDialog'
 import SelectVariable from 'ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from 'utils/genericHelper'
 
-export const Input = ({
-    inputParam,
-    value,
-    nodes,
-    edges,
-    nodeId,
-    onChange,
-    disabled = false,
-    showDialog,
-    dialogProps,
-    onDialogCancel,
-    onDialogConfirm
-}) => {
+export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
@@ -86,17 +73,6 @@ export const Input = ({
                     }}
                 />
             </FormControl>
-            {showDialog && (
-                <ExpandTextDialog
-                    show={showDialog}
-                    dialogProps={dialogProps}
-                    onCancel={onDialogCancel}
-                    onConfirm={(newValue, inputParamName) => {
-                        setMyValue(newValue)
-                        onDialogConfirm(newValue, inputParamName)
-                    }}
-                ></ExpandTextDialog>
-            )}
             <div ref={ref}></div>
             {inputParam?.acceptVariable && (
                 <Popover
@@ -131,11 +107,7 @@ Input.propTypes = {
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
-    showDialog: PropTypes.bool,
-    dialogProps: PropTypes.object,
     nodes: PropTypes.array,
     edges: PropTypes.array,
-    nodeId: PropTypes.string,
-    onDialogCancel: PropTypes.func,
-    onDialogConfirm: PropTypes.func
+    nodeId: PropTypes.string
 }

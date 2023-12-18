@@ -172,7 +172,7 @@ export interface IncomingInput {
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }
