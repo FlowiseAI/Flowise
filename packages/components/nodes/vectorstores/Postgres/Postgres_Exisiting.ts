@@ -5,6 +5,7 @@ import { DataSourceOptions } from 'typeorm'
 import { TypeORMVectorStore, TypeORMVectorStoreDocument } from 'langchain/vectorstores/typeorm'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Pool } from 'pg'
+import { ConsoleCallbackHandler } from '../../../src/handler'
 
 class Postgres_Existing_VectorStores implements INode {
     label: string
@@ -75,6 +76,13 @@ class Postgres_Existing_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'WHERE Clause',
+                name: 'filter',
+                type: 'string',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -109,6 +117,7 @@ class Postgres_Existing_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const input_filter = nodeData.inputs?.filter as string
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -118,6 +127,16 @@ class Postgres_Existing_VectorStores implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
+        // Parse filter field to json to use it for metadata filtering
+       /* let filter = {}
+        if (filter_field) {
+            try {
+                filter = typeof filter_field === 'object' ? filter_field : JSON.parse(filter_field)
+            } catch (exception) {
+                throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
+            }
+        }*/
+
 
         const postgresConnectionOptions = {
             ...additionalConfiguration,
@@ -126,7 +145,12 @@ class Postgres_Existing_VectorStores implements INode {
             port: nodeData.inputs?.port as number,
             username: user,
             password: password,
-            database: nodeData.inputs?.database as string
+            database: nodeData.inputs?.database as string,
+            ssl: {
+                // Set sslmode to require for a secure connection
+                rejectUnauthorized: false,
+                sslmode: 'no-verify',
+                },
         }
 
         const args = {
@@ -142,14 +166,19 @@ class Postgres_Existing_VectorStores implements INode {
             [retriever/start] [1:chain:ConversationalRetrievalQAChain > 2:retriever:VectorStoreRetriever] Entering Retriever run with input: { "query": "what the document is about" }
             [ERROR]: uncaughtException:  Illegal invocation TypeError: Illegal invocation at Socket.ref (node:net:1524:18) at Connection.ref (.../node_modules/pg/lib/connection.js:183:17) at Client.ref (.../node_modules/pg/lib/client.js:591:21) at BoundPool._pulseQueue (/node_modules/pg-pool/index.js:148:28) at .../node_modules/pg-pool/index.js:184:37 at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
         */
-        vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
+        // Original definition: vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => { 
+            // Original where clause: WHERE metadata @> $2
+            // Overriding function definition to allow passing were clause as filter.
+            vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
             const embeddingString = `[${query.join(',')}]`
             const _filter = filter ?? '{}'
-
+            const query_filter = input_filter ? ('AND ' + input_filter) : ''
+            
             const queryString = `
                     SELECT *, embedding <=> $1 as "_distance"
                     FROM ${tableName}
                     WHERE metadata @> $2
+                    ${query_filter}
                     ORDER BY "_distance" ASC
                     LIMIT $3;`
 
@@ -158,11 +187,16 @@ class Postgres_Existing_VectorStores implements INode {
                 port: postgresConnectionOptions.port,
                 user: postgresConnectionOptions.username,
                 password: postgresConnectionOptions.password,
-                database: postgresConnectionOptions.database
+                database: postgresConnectionOptions.database,
+                ssl: {
+                    // Set sslmode to require for a secure connection
+                    rejectUnauthorized: false,
+                    sslmode: 'no-verify',
+                    },
             }
             const pool = new Pool(poolOptions)
             const conn = await pool.connect()
-
+            
             const documents = await conn.query(queryString, [embeddingString, _filter, k])
 
             conn.release()
@@ -180,10 +214,12 @@ class Postgres_Existing_VectorStores implements INode {
         }
 
         if (output === 'retriever') {
+            // Add filter to the retriever for metadata filtering: const retriever = vectorStore.asRetriever(k,filter)
             const retriever = vectorStore.asRetriever(k)
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            // Add ;(vectorStore as any).filter = filter for metadata filtering
             return vectorStore
         }
         return vectorStore
