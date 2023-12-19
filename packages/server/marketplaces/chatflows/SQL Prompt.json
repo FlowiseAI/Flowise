@@ -7,8 +7,8 @@
             "height": 511,
             "id": "promptTemplate_0",
             "position": {
-                "x": 638.5481508577102,
-                "y": 84.0454315632386
+                "x": 384.84394025989127,
+                "y": 61.21205260943492
             },
             "type": "customNode",
             "data": {
@@ -57,8 +57,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 638.5481508577102,
-                "y": 84.0454315632386
+                "x": 384.84394025989127,
+                "y": 61.21205260943492
             },
             "dragging": false
         },
@@ -67,8 +67,8 @@
             "height": 507,
             "id": "llmChain_0",
             "position": {
-                "x": 1095.1973126620626,
-                "y": -83.98379829183628
+                "x": 770.4559230968546,
+                "y": -127.11351409346554
             },
             "type": "customNode",
             "data": {
@@ -156,8 +156,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1095.1973126620626,
-                "y": -83.98379829183628
+                "x": 770.4559230968546,
+                "y": -127.11351409346554
             },
             "dragging": false
         },
@@ -166,8 +166,8 @@
             "height": 574,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 636.5762708317321,
-                "y": -543.3151550847003
+                "x": 372.72389181000057,
+                "y": -561.0744498265477
             },
             "type": "customNode",
             "data": {
@@ -346,8 +346,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 636.5762708317321,
-                "y": -543.3151550847003
+                "x": 372.72389181000057,
+                "y": -561.0744498265477
             },
             "dragging": false
         },
@@ -645,8 +645,8 @@
             "height": 669,
             "id": "customFunction_2",
             "position": {
-                "x": -152.63957160907668,
-                "y": -212.74538890862547
+                "x": -395.18079694059173,
+                "y": -222.8935573325382
             },
             "type": "customNode",
             "data": {
@@ -687,7 +687,7 @@
                 "inputs": {
                     "functionInputVariables": "",
                     "functionName": "Get SQL Schema Prompt",
-                    "javascriptFunction": "const HOST = 'singlestore-host';\nconst USER = 'admin';\nconst PASSWORD = 'mypassword';\nconst DATABASE = 'mydb';\nconst TABLE = 'samples';\nconst mysql = require('mysql2/promise');\n\nlet sqlSchemaPrompt;\n\n/**\n * Ideal prompt contains schema info and examples\n * Follows best practices as specified form https://arxiv.org/abs/2204.00498\n * =========================================\n * CREATE TABLE samples (firstName varchar NOT NULL, lastName varchar)\n * SELECT * FROM samples LIMIT 3\n * firstName lastName\n * Stephen Tyler\n * Jack McGinnis\n * Steven Repici\n * =========================================\n*/\nfunction getSQLPrompt() {\n  return new Promise(async (resolve, reject) => {\n    \n    const singleStoreConnection = mysql.createPool({\n      host: HOST,\n      user: USER,\n      password: PASSWORD,\n      database: DATABASE,\n    });\n\n    // Get schema info\n    const [schemaInfo] = await singleStoreConnection.execute(\n      `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = \"${TABLE}\"`\n    );\n\n    const createColumns = [];\n    const columnNames = [];\n\n    for (const schemaData of schemaInfo) {\n      columnNames.push(`${schemaData['COLUMN_NAME']}`);\n      createColumns.push(`${schemaData['COLUMN_NAME']} ${schemaData['COLUMN_TYPE']} ${schemaData['IS_NULLABLE'] === 'NO' ? 'NOT NULL' : ''}`);\n    }\n\n    const sqlCreateTableQuery = `CREATE TABLE samples (${createColumns.join(', ')})`;\n    const sqlSelectTableQuery = `SELECT * FROM samples LIMIT 3`;\n\n    // Get first 3 rows\n    const [rows] = await singleStoreConnection.execute(\n        sqlSelectTableQuery,\n    );\n    \n    const allValues = [];\n    for (const row of rows) {\n        const rowValues = [];\n        for (const colName in row) {\n            rowValues.push(row[colName]);\n        }\n        allValues.push(rowValues.join(' '));\n    }\n\n    sqlSchemaPrompt = sqlCreateTableQuery + '\\n' + sqlSelectTableQuery + '\\n' + columnNames.join(' ') + '\\n' + allValues.join('\\n');\n    \n    resolve();\n  });\n}\n\nasync function main() {\n    await getSQLPrompt();\n}\n\nawait main();\n\nreturn sqlSchemaPrompt;"
+                    "javascriptFunction": "const HOST = 'singlestore-host.com';\nconst USER = 'admin';\nconst PASSWORD = 'mypassword';\nconst DATABASE = 'mydb';\nconst TABLE = 'samples';\nconst mysql = require('mysql2/promise');\n\nlet sqlSchemaPrompt;\n\n/**\n * Ideal prompt contains schema info and examples\n * Follows best practices as specified form https://arxiv.org/abs/2204.00498\n * =========================================\n * CREATE TABLE samples (firstName varchar NOT NULL, lastName varchar)\n * SELECT * FROM samples LIMIT 3\n * firstName lastName\n * Stephen Tyler\n * Jack McGinnis\n * Steven Repici\n * =========================================\n*/\nfunction getSQLPrompt() {\n  return new Promise(async (resolve, reject) => {\n    try {\n      const singleStoreConnection = mysql.createPool({\n        host: HOST,\n        user: USER,\n        password: PASSWORD,\n        database: DATABASE,\n      });\n  \n      // Get schema info\n      const [schemaInfo] = await singleStoreConnection.execute(\n        `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = \"${TABLE}\"`\n      );\n  \n      const createColumns = [];\n      const columnNames = [];\n  \n      for (const schemaData of schemaInfo) {\n        columnNames.push(`${schemaData['COLUMN_NAME']}`);\n        createColumns.push(`${schemaData['COLUMN_NAME']} ${schemaData['COLUMN_TYPE']} ${schemaData['IS_NULLABLE'] === 'NO' ? 'NOT NULL' : ''}`);\n      }\n  \n      const sqlCreateTableQuery = `CREATE TABLE samples (${createColumns.join(', ')})`;\n      const sqlSelectTableQuery = `SELECT * FROM samples LIMIT 3`;\n  \n      // Get first 3 rows\n      const [rows] = await singleStoreConnection.execute(\n          sqlSelectTableQuery,\n      );\n      \n      const allValues = [];\n      for (const row of rows) {\n          const rowValues = [];\n          for (const colName in row) {\n              rowValues.push(row[colName]);\n          }\n          allValues.push(rowValues.join(' '));\n      }\n  \n      sqlSchemaPrompt = sqlCreateTableQuery + '\\n' + sqlSelectTableQuery + '\\n' + columnNames.join(' ') + '\\n' + allValues.join('\\n');\n      \n      resolve();\n    } catch (e) {\n      console.error(e);\n      return reject(e);\n    }\n  });\n}\n\nasync function main() {\n    await getSQLPrompt();\n}\n\nawait main();\n\nreturn sqlSchemaPrompt;"
                 },
                 "outputAnchors": [
                     {
@@ -712,8 +712,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": -152.63957160907668,
-                "y": -212.74538890862547
+                "x": -395.18079694059173,
+                "y": -222.8935573325382
             },
             "dragging": false
         },
@@ -764,7 +764,7 @@
                 "inputs": {
                     "functionInputVariables": "{\"sqlQuery\":\"{{setVariable_1.data.instance}}\"}",
                     "functionName": "Run SQL Query",
-                    "javascriptFunction": "const HOST = 'singlestore-host';\nconst USER = 'admin';\nconst PASSWORD = 'mypassword';\nconst DATABASE = 'mydb';\nconst TABLE = 'samples';\nconst mysql = require('mysql2/promise');\n\nlet result;\n\nfunction getSQLResult() {\n  return new Promise(async (resolve, reject) => {\n    \n    const singleStoreConnection = mysql.createPool({\n      host: HOST,\n      user: USER,\n      password: PASSWORD,\n      database: DATABASE,\n    });\n   \n    const [rows] = await singleStoreConnection.execute(\n      $sqlQuery\n    );\n\n    result = JSON.stringify(rows)\n    \n    resolve();\n  });\n}\n\nasync function main() {\n    await getSQLResult();\n}\n\nawait main();\n\nreturn result;"
+                    "javascriptFunction": "const HOST = 'singlestore-host.com';\nconst USER = 'admin';\nconst PASSWORD = 'mypassword';\nconst DATABASE = 'mydb';\nconst TABLE = 'samples';\nconst mysql = require('mysql2/promise');\n\nlet result;\n\nfunction getSQLResult() {\n  return new Promise(async (resolve, reject) => {\n    try {\n      const singleStoreConnection = mysql.createPool({\n        host: HOST,\n        user: USER,\n        password: PASSWORD,\n        database: DATABASE,\n      });\n     \n      const [rows] = await singleStoreConnection.execute(\n        $sqlQuery\n      );\n  \n      result = JSON.stringify(rows)\n      \n      resolve();\n    } catch (e) {\n      console.error(e);\n      return reject(e);\n    }\n  });\n}\n\nasync function main() {\n    await getSQLResult();\n}\n\nawait main();\n\nreturn result;"
                 },
                 "outputAnchors": [
                     {
@@ -859,8 +859,8 @@
             "height": 355,
             "id": "setVariable_0",
             "position": {
-                "x": 247.02296459986826,
-                "y": -60.27462140472403
+                "x": 18.689175061831122,
+                "y": -62.81166351070223
             },
             "type": "customNode",
             "data": {
@@ -918,8 +918,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 247.02296459986826,
-                "y": -60.27462140472403
+                "x": 18.689175061831122,
+                "y": -62.81166351070223
             },
             "dragging": false
         },
@@ -1046,8 +1046,8 @@
             "height": 355,
             "id": "setVariable_1",
             "position": {
-                "x": 1482.8091395089693,
-                "y": -33.943355212355016
+                "x": 1516.338224315744,
+                "y": -133.6986023683283
             },
             "type": "customNode",
             "data": {
@@ -1079,7 +1079,7 @@
                     }
                 ],
                 "inputs": {
-                    "input": ["{{llmChain_0.data.instance}}"],
+                    "input": ["{{ifElseFunction_0.data.instance}}"],
                     "variableName": "sqlQuery"
                 },
                 "outputAnchors": [
@@ -1105,8 +1105,454 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1482.8091395089693,
-                "y": -33.943355212355016
+                "x": 1516.338224315744,
+                "y": -133.6986023683283
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 755,
+            "id": "ifElseFunction_0",
+            "position": {
+                "x": 1147.8020838770517,
+                "y": -237.39478763322148
+            },
+            "type": "customNode",
+            "data": {
+                "id": "ifElseFunction_0",
+                "label": "IfElse Function",
+                "version": 1,
+                "name": "ifElseFunction",
+                "type": "IfElseFunction",
+                "baseClasses": ["IfElseFunction", "Utilities"],
+                "category": "Utilities",
+                "description": "Split flows based on If Else javascript functions",
+                "inputParams": [
+                    {
+                        "label": "Input Variables",
+                        "name": "functionInputVariables",
+                        "description": "Input variables can be used in the function with prefix $. For example: $var",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "ifElseFunction_0-input-functionInputVariables-json"
+                    },
+                    {
+                        "label": "IfElse Name",
+                        "name": "functionName",
+                        "type": "string",
+                        "optional": true,
+                        "placeholder": "If Condition Match",
+                        "id": "ifElseFunction_0-input-functionName-string"
+                    },
+                    {
+                        "label": "If Function",
+                        "name": "ifFunction",
+                        "description": "Function must return a value",
+                        "type": "code",
+                        "rows": 2,
+                        "default": "if (\"hello\" == \"hello\") {\n    return true;\n}",
+                        "id": "ifElseFunction_0-input-ifFunction-code"
+                    },
+                    {
+                        "label": "Else Function",
+                        "name": "elseFunction",
+                        "description": "Function must return a value",
+                        "type": "code",
+                        "rows": 2,
+                        "default": "return false;",
+                        "id": "ifElseFunction_0-input-elseFunction-code"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "functionInputVariables": "{\"sqlQuery\":\"{{llmChain_0.data.instance}}\"}",
+                    "functionName": "IF SQL Query contains SELECT and WHERE",
+                    "ifFunction": "const sqlQuery = $sqlQuery.trim();\n\nif (sqlQuery.includes(\"SELECT\") && sqlQuery.includes(\"WHERE\")) {\n    return sqlQuery;\n}",
+                    "elseFunction": "return $sqlQuery;"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "ifElseFunction_0-output-returnTrue-string|number|boolean|json|array",
+                                "name": "returnTrue",
+                                "label": "True",
+                                "type": "string | number | boolean | json | array"
+                            },
+                            {
+                                "id": "ifElseFunction_0-output-returnFalse-string|number|boolean|json|array",
+                                "name": "returnFalse",
+                                "label": "False",
+                                "type": "string | number | boolean | json | array"
+                            }
+                        ],
+                        "default": "returnTrue"
+                    }
+                ],
+                "outputs": {
+                    "output": "returnTrue"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1147.8020838770517,
+                "y": -237.39478763322148
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 511,
+            "id": "promptTemplate_2",
+            "position": {
+                "x": 1530.0647779039386,
+                "y": 944.9904482583751
+            },
+            "type": "customNode",
+            "data": {
+                "id": "promptTemplate_2",
+                "label": "Prompt Template",
+                "version": 1,
+                "name": "promptTemplate",
+                "type": "PromptTemplate",
+                "baseClasses": ["PromptTemplate", "BaseStringPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a basic prompt for an LLM",
+                "inputParams": [
+                    {
+                        "label": "Template",
+                        "name": "template",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "What is a good name for a company that makes {product}?",
+                        "id": "promptTemplate_2-input-template-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "promptTemplate_2-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "template": "Politely say \"I'm not able to answer query\"",
+                    "promptValues": "{\"schema\":\"{{setVariable_0.data.instance}}\",\"question\":\"{{question}}\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "promptTemplate_2-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "promptTemplate",
+                        "label": "PromptTemplate",
+                        "type": "PromptTemplate | BaseStringPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1530.0647779039386,
+                "y": 944.9904482583751
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 574,
+            "id": "chatOpenAI_2",
+            "position": {
+                "x": 1537.0307928738125,
+                "y": 330.7727229610632
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_2",
+                "label": "ChatOpenAI",
+                "version": 2,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_2-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_2-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_2-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-baseOptions-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_2-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": "0.7",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1537.0307928738125,
+                "y": 330.7727229610632
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 507,
+            "id": "llmChain_2",
+            "position": {
+                "x": 2077.2866807477812,
+                "y": 958.6594167386253
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_2",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_2-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_2-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_2-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_2-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_2-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_2.data.instance}}",
+                    "prompt": "{{promptTemplate_2.data.instance}}",
+                    "outputParser": "",
+                    "inputModeration": "",
+                    "chainName": "Fallback Chain"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "llmChain_2-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_2-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2077.2866807477812,
+                "y": 958.6594167386253
             },
             "dragging": false
         }
@@ -1212,17 +1658,6 @@
             }
         },
         {
-            "source": "llmChain_0",
-            "sourceHandle": "llmChain_0-output-outputPrediction-string|json",
-            "target": "setVariable_1",
-            "targetHandle": "setVariable_1-input-input-string | number | boolean | json | array",
-            "type": "buttonedge",
-            "id": "llmChain_0-llmChain_0-output-outputPrediction-string|json-setVariable_1-setVariable_1-input-input-string | number | boolean | json | array",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "setVariable_1",
             "sourceHandle": "setVariable_1-output-output-string|number|boolean|json|array",
             "target": "customFunction_1",
@@ -1232,6 +1667,46 @@
             "data": {
                 "label": ""
             }
+        },
+        {
+            "source": "llmChain_0",
+            "sourceHandle": "llmChain_0-output-outputPrediction-string|json",
+            "target": "ifElseFunction_0",
+            "targetHandle": "ifElseFunction_0-input-functionInputVariables-json",
+            "type": "buttonedge",
+            "id": "llmChain_0-llmChain_0-output-outputPrediction-string|json-ifElseFunction_0-ifElseFunction_0-input-functionInputVariables-json"
+        },
+        {
+            "source": "ifElseFunction_0",
+            "sourceHandle": "ifElseFunction_0-output-returnTrue-string|number|boolean|json|array",
+            "target": "setVariable_1",
+            "targetHandle": "setVariable_1-input-input-string | number | boolean | json | array",
+            "type": "buttonedge",
+            "id": "ifElseFunction_0-ifElseFunction_0-output-returnTrue-string|number|boolean|json|array-setVariable_1-setVariable_1-input-input-string | number | boolean | json | array"
+        },
+        {
+            "source": "ifElseFunction_0",
+            "sourceHandle": "ifElseFunction_0-output-returnFalse-string|number|boolean|json|array",
+            "target": "promptTemplate_2",
+            "targetHandle": "promptTemplate_2-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "ifElseFunction_0-ifElseFunction_0-output-returnFalse-string|number|boolean|json|array-promptTemplate_2-promptTemplate_2-input-promptValues-json"
+        },
+        {
+            "source": "chatOpenAI_2",
+            "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_2-llmChain_2-input-model-BaseLanguageModel"
+        },
+        {
+            "source": "promptTemplate_2",
+            "sourceHandle": "promptTemplate_2-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "llmChain_2",
+            "targetHandle": "llmChain_2-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "promptTemplate_2-promptTemplate_2-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_2-llmChain_2-input-prompt-BasePromptTemplate"
         }
     ]
 }
