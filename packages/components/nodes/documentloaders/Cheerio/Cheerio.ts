@@ -77,6 +77,23 @@ class Cheerio_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
+                label: 'Base URL Prefixes',
+                name: 'urlFilter',
+                type: 'string',
+                description: 'Delimited by comma. If specified, only links that start with this URL will be retrieved. (Web Crawl only)',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Excluded URL Prefixes',
+                name: 'exUrlFilter',
+                type: 'string',
+                description:
+                    "Delimited by comma. If specified, only links that don't start with this URL will be retrieved. (Web Crawl only)",
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -106,9 +123,25 @@ class Cheerio_DocumentLoaders implements INode {
             params['selector'] = selector
         }
 
-        async function cheerioLoader(url: string): Promise<any> {
+        const baseUrlFilters = ((nodeData.inputs?.urlFilter as string)?.trim()?.toLowerCase() || '').split(',').filter((x) => !!x)
+        const exBaseUrlFilter = ((nodeData.inputs?.exUrlFilter as string)?.trim()?.toLowerCase() || '').split(',').filter((x) => !!x)
+
+        console.info(`Prefix urls: ${baseUrlFilters.join(',')}`)
+        console.info(`Excluded urls: ${exBaseUrlFilter.join(',')}`)
+
+        async function cheerioLoader(url: string): Promise<any[]> {
             try {
-                let docs = []
+                let docs = [] as any[]
+                if (!!baseUrlFilters && !baseUrlFilters.some((baseUrl) => url.toLowerCase().startsWith(baseUrl))) {
+                    console.info(`scraping - skipping url ${url} because it does not start with ${baseUrlFilters}`)
+                    return docs
+                }
+
+                if (!!exBaseUrlFilter && exBaseUrlFilter.some((exBaseUrl) => url.toLowerCase().startsWith(exBaseUrl))) {
+                    console.info(`scraping - skipping url ${url} because it starts with ${exBaseUrlFilter}`)
+                    return docs
+                }
+
                 const loader = new CheerioWebBaseLoader(url, params)
                 console.info(`scraping - loading url ${url}`)
                 if (textSplitter) {
@@ -120,6 +153,7 @@ class Cheerio_DocumentLoaders implements INode {
                 return docs
             } catch (err) {
                 console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                return []
             }
         }
 
@@ -131,7 +165,9 @@ class Cheerio_DocumentLoaders implements INode {
             console.info(`scrape limit: ${limit}`)
             console.info(`scraping url: ${url}`)
             let pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
+                relativeLinksMethod === 'webCrawl'
+                    ? await webCrawl(url, parseInt(limit), baseUrlFilters, exBaseUrlFilter)
+                    : await xmlScrape(url, parseInt(limit))
 
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || !Array.isArray(pages) || pages.length === 0) {

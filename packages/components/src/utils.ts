@@ -243,13 +243,18 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  * @param {string} urlString
  * @returns {string}
  */
-function normalizeURL(urlString: string): string {
+function normalizeURL(urlString: string, removeBookmark?: boolean): string {
     const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname
+    let hostPath = urlObj.hostname + urlObj.pathname
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
     }
+    if (removeBookmark && urlString.includes('#')) {
+        // handling bookmark
+        hostPath = hostPath.substring(0, hostPath.indexOf('#'))
+    }
+
     return hostPath
 }
 const LARGE_FILE_EXTENSIONS = ['zip', 'tar', 'rar', 'jar', 'arj', 'gz'] //todo: add full listing
@@ -262,7 +267,14 @@ const LARGE_FILE_EXTENSIONS = ['zip', 'tar', 'rar', 'jar', 'arj', 'gz'] //todo: 
  * @param {number} limit
  * @returns {Promise<string[]>}
  */
-async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
+async function crawl(
+    baseURL: string,
+    currentURL: string,
+    pages: string[],
+    limit: number,
+    prefixUrls?: string[],
+    exPrefixUrls?: string[]
+): Promise<string[]> {
     const baseURLObj = new URL(baseURL)
     const currentURLObj = new URL(currentURL)
 
@@ -273,7 +285,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     if (baseURLObj.hostname !== currentURLObj.hostname) return pages
 
-    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL, true)
 
     const lastSec = normalizeCurrentURL.substring(normalizeCurrentURL.lastIndexOf('/') + 1)
     const dotPos = lastSec.lastIndexOf('.')
@@ -282,13 +294,22 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
     //fix issue with interable error when crawing a zip file, most likely timed out
     if (!!urlExt && LARGE_FILE_EXTENSIONS.includes(urlExt)) return pages
 
+    if (!!prefixUrls && !prefixUrls.some((prefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(prefixUrl))) {
+        console.info(`skipping url ${normalizeCurrentURL} because it does not start with any required prefix urls.`)
+        return pages
+    }
+
+    if (!!exPrefixUrls && exPrefixUrls.some((exPrefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(exPrefixUrl))) {
+        console.info(`skipping url ${normalizeCurrentURL} because it starts with one or more excluded prefix urls.`)
+        return pages
+    }
+
     if (pages.includes(normalizeCurrentURL)) {
         return pages
     }
 
     pages.push(normalizeCurrentURL)
 
-    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
         console.info(`crawling ${currentURL}`)
         const resp = await fetch(currentURL)
@@ -311,7 +332,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
 
     console.info(`crawled ${pages.length} pages so far, limit: ${limit}}`)
@@ -325,10 +346,10 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
  * @param {number} limit
  * @returns {Promise<string[]>}
  */
-export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+export async function webCrawl(stringURL: string, limit: number, baseUrls?: string[], exBaseUrls?: string[]): Promise<string[]> {
     const URLObj = new URL(stringURL)
     const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
-    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
+    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit, baseUrls, exBaseUrls)
 }
 
 export function getURLsFromXML(xmlBody: string, limit: number): string[] {
