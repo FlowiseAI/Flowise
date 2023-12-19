@@ -330,11 +330,11 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         {inputParam.type === 'code' && (
                             <>
                                 <div style={{ height: '5px' }}></div>
-                                <div style={{ height: '200px' }}>
+                                <div style={{ height: inputParam.rows ? '100px' : '200px' }}>
                                     <CodeEditor
                                         disabled={disabled}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                        height='200px'
+                                        height={inputParam.rows ? '100px' : '200px'}
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
                                         lang={'js'}
                                         placeholder={inputParam.placeholder}
