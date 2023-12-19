@@ -29,7 +29,7 @@ class AWSBedrock_LLMs implements INode {
         this.name = 'awsBedrock'
         this.version = 3.0
         this.type = 'AWSBedrock'
-        this.icon = 'awsBedrock.png'
+        this.icon = 'aws.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around AWS Bedrock large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Bedrock)]

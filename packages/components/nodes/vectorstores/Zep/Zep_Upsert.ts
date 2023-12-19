@@ -24,7 +24,7 @@ class Zep_Upsert_VectorStores implements INode {
         this.name = 'zepUpsert'
         this.version = 1.0
         this.type = 'Zep'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Zep'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
