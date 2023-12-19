@@ -18,7 +18,7 @@ export const theme = (customization) => {
     let color
 
     switch (window.location.hostname) {
-        case 'start-ai.ru':
+        case 'app.start-ai.ru':
             color = colorsStartAI
             break
         case 'u1.start-ai.ru':
