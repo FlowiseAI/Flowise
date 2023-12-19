@@ -143,7 +143,7 @@ class AWSBedrock_LLMs implements INode {
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
         const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
-            model: customModel ?? iModel,
+            model: customModel ? customModel : iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
             maxTokens: parseInt(iMax_tokens_to_sample, 10)

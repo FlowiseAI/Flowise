@@ -103,7 +103,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
         const customModel = nodeData.inputs?.customModel as string
 
         const obj: BedrockEmbeddingsParams = {
-            model: customModel ?? iModel,
+            model: customModel ? customModel : iModel,
             region: iRegion
         }
 
