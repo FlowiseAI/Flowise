@@ -1,5 +1,6 @@
 import { SelectorType } from 'cheerio'
 import { parse } from 'css-what'
+import { Document } from 'langchain/document'
 import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
 import { TextSplitter } from 'langchain/text_splitter'
 import { test } from 'linkifyjs'
@@ -129,9 +130,11 @@ class Cheerio_DocumentLoaders implements INode {
         console.info(`Prefix urls: ${baseUrlFilters.join(',')}`)
         console.info(`Excluded urls: ${exBaseUrlFilter.join(',')}`)
 
-        async function cheerioLoader(url: string): Promise<any[]> {
+        const loadedDocUrls = new Set<string>()
+
+        async function cheerioLoader(url: string): Promise<Document[]> {
             try {
-                let docs = [] as any[]
+                let docs = [] as Document[]
                 if (!!baseUrlFilters && !baseUrlFilters.some((baseUrl) => url.toLowerCase().startsWith(baseUrl))) {
                     console.info(`scraping - skipping url ${url} because it does not start with ${baseUrlFilters}`)
                     return docs
@@ -149,8 +152,22 @@ class Cheerio_DocumentLoaders implements INode {
                 } else {
                     docs = await loader.load()
                 }
-                console.info(`scraping - loaded ${docs.length} docs from ${url}`)
-                return docs
+
+                const newDocs = docs.filter(
+                    (doc) =>
+                        !loadedDocUrls.has(doc.metadata.source) &&
+                        (!baseUrlFilters || baseUrlFilters.some((baseUrl) => doc.metadata.source.toLowerCase().startsWith(baseUrl))) &&
+                        (!exBaseUrlFilter || !exBaseUrlFilter.some((exBaseUrl) => doc.metadata.source.toLowerCase().startsWith(exBaseUrl)))
+                )
+
+                newDocs
+                    .map((doc) => doc.metadata.source)
+                    .forEach((docUrl) => {
+                        if (!loadedDocUrls.has(docUrl)) loadedDocUrls.add(docUrl)
+                    })
+
+                console.info(`scraping - loaded ${docs.length} new docs from ${url}`)
+                return newDocs
             } catch (err) {
                 console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
                 return []
