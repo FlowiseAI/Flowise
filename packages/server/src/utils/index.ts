@@ -308,10 +308,8 @@ export const buildLangchain = async (
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
-            if (
-                isUpsert &&
-                ((stopNodeId && reactFlowNodeData.id === stopNodeId) || (!stopNodeId && reactFlowNodeData.category === 'Vector Stores'))
-            ) {
+            // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
+            if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
