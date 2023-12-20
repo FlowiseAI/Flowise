@@ -1434,6 +1434,8 @@ export class App {
                 return res.status(500).send('There are multiple vector nodes, please provide stopNodeId in body request')
             } else if (vsNodes.length === 1 && !stopNodeId) {
                 stopNodeId = vsNodes[0].data.id
+            } else if (!vsNodes.length && !stopNodeId) {
+                return res.status(500).send('No vector node found')
             }
 
             const { graph } = constructGraphs(nodes, edges, { isReversed: true })
