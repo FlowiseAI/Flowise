@@ -1,8 +1,18 @@
 import { z } from 'zod'
-import { CallbackManagerForToolRun } from 'langchain/callbacks'
-import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
 import { availableDependencies } from '../../../src/utils'
+import { RunnableConfig } from '@langchain/core/runnables'
+import { StructuredTool, ToolParams } from '@langchain/core/tools'
+import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
+
+class ToolInputParsingException extends Error {
+    output?: string
+
+    constructor(message: string, output?: string) {
+        super(message)
+        this.output = output
+    }
+}
 
 export interface BaseDynamicToolInput extends ToolParams {
     name: string
@@ -45,7 +55,47 @@ export class DynamicStructuredTool<
         this.schema = fields.schema
     }
 
-    protected async _call(arg: z.output<T>): Promise<string> {
+    async call(arg: z.output<T>, configArg?: RunnableConfig | Callbacks, tags?: string[], overrideSessionId?: string): Promise<string> {
+        const config = parseCallbackConfigArg(configArg)
+        if (config.runName === undefined) {
+            config.runName = this.name
+        }
+        let parsed
+        try {
+            parsed = await this.schema.parseAsync(arg)
+        } catch (e) {
+            throw new ToolInputParsingException(`Received tool input did not match expected schema`, JSON.stringify(arg))
+        }
+        const callbackManager_ = await CallbackManager.configure(
+            config.callbacks,
+            this.callbacks,
+            config.tags || tags,
+            this.tags,
+            config.metadata,
+            this.metadata,
+            { verbose: this.verbose }
+        )
+        const runManager = await callbackManager_?.handleToolStart(
+            this.toJSON(),
+            typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            config.runName
+        )
+        let result
+        try {
+            result = await this._call(parsed, runManager, overrideSessionId)
+        } catch (e) {
+            await runManager?.handleToolError(e)
+            throw e
+        }
+        await runManager?.handleToolEnd(result)
+        return result
+    }
+
+    protected async _call(arg: z.output<T>, _?: CallbackManagerForToolRun, overrideSessionId?: string): Promise<string> {
         let sandbox: any = {}
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
@@ -70,7 +120,7 @@ export class DynamicStructuredTool<
         }
         sandbox['$env'] = env
         if (this.flowObj) {
-            sandbox['$flow'] = this.flowObj
+            sandbox['$flow'] = { ...this.flowObj, sessionId: overrideSessionId }
         }
         const defaultAllowBuiltInDep = [
             'assert',

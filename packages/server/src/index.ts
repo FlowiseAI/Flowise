@@ -44,8 +44,7 @@ import {
     checkMemorySessionId,
     clearSessionMemoryFromViewMessageDialog,
     getUserHome,
-    replaceChatHistory,
-    replaceEnvVariables
+    replaceChatHistory
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -1617,10 +1616,6 @@ export class App {
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
-            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
-            const nodeModule = await import(nodeInstanceFilePath)
-            const nodeInstance = new nodeModule.nodeClass()
-
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             let sessionId = undefined
@@ -1633,6 +1628,10 @@ export class App {
             if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
                 chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
             }
+
+            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
