@@ -20,13 +20,14 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
-    IReactFlowEdge
+    IReactFlowEdge,
+    IDepthQueue
 } from './Interface'
 import {
     getNodeModulesPackagePath,
     getStartingNodes,
     buildLangchain,
-    getEndingNode,
+    getEndingNodes,
     constructGraphs,
     resolveVariables,
     isStartNodeDependOnInput,
@@ -56,7 +57,7 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware } from './utils/XSS'
@@ -283,6 +284,29 @@ export class App {
             }
         })
 
+        // execute custom function node
+        this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
+            const body = req.body
+            const nodeData = { inputs: body }
+            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
+                try {
+                    const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const newNodeInstance = new nodeModule.nodeClass()
+
+                    const returnData = await newNodeInstance.init(nodeData)
+                    const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
+
+                    return res.json(result)
+                } catch (error) {
+                    return res.status(500).send(`Error running custom function: ${error}`)
+                }
+            } else {
+                res.status(404).send(`Node customFunction not found`)
+                return
+            }
+        })
+
         // ----------------------------------------
         // Chatflows
         // ----------------------------------------
@@ -411,19 +435,24 @@ export class App {
             const edges = parsedFlowData.edges
             const { graph, nodeDependencies } = constructGraphs(nodes, edges)
 
-            const endingNodeId = getEndingNode(nodeDependencies, graph)
-            if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
+            const endingNodeIds = getEndingNodes(nodeDependencies, graph)
+            if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
-            const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-            if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+            const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
-            if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                return res.status(500).send(`Ending node must be either a Chain or Agent`)
+            let isStreaming = false
+            for (const endingNode of endingNodes) {
+                const endingNodeData = endingNode.data
+                if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
+
+                if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                    return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                }
+
+                isStreaming = isFlowValidForStream(nodes, endingNodeData)
             }
 
-            const obj = {
-                isStreaming: isFlowValidForStream(nodes, endingNodeData)
-            }
+            const obj = { isStreaming }
             return res.json(obj)
         })
 
@@ -1480,48 +1509,65 @@ export class App {
                 /*** Get Ending Node with Directed Graph  ***/
                 const { graph, nodeDependencies } = constructGraphs(nodes, edges)
                 const directedGraph = graph
-                const endingNodeId = getEndingNode(nodeDependencies, directedGraph)
-                if (!endingNodeId) return res.status(500).send(`Ending node ${endingNodeId} not found`)
+                const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
+                if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
-                const endingNodeData = nodes.find((nd) => nd.id === endingNodeId)?.data
-                if (!endingNodeData) return res.status(500).send(`Ending node ${endingNodeId} data not found`)
+                const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+                for (const endingNode of endingNodes) {
+                    const endingNodeData = endingNode.data
+                    if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
-                if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents' && !isUpsert) {
-                    return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    }
+
+                    if (
+                        endingNodeData.outputs &&
+                        Object.keys(endingNodeData.outputs).length &&
+                        !Object.values(endingNodeData.outputs).includes(endingNodeData.name) &&
+                        !isUpsert
+                    ) {
+                        return res
+                            .status(500)
+                            .send(
+                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                            )
+                    }
+
+                    isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
-
-                if (
-                    endingNodeData.outputs &&
-                    Object.keys(endingNodeData.outputs).length &&
-                    !Object.values(endingNodeData.outputs).includes(endingNodeData.name) &&
-                    !isUpsert
-                ) {
-                    return res
-                        .status(500)
-                        .send(
-                            `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                        )
-                }
-
-                isStreamValid = isFlowValidForStream(nodes, endingNodeData)
 
                 let chatHistory: IMessage[] | string = incomingInput.history
-                if (
-                    endingNodeData.inputs?.memory &&
-                    !incomingInput.history &&
-                    (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
-                ) {
-                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
-                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
-                    if (memoryNode) {
-                        chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
+
+                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory
+                for (const endingNode of endingNodes) {
+                    const endingNodeData = endingNode.data
+                    if (!endingNodeData.inputs?.memory) continue
+                    if (
+                        endingNodeData.inputs?.memory &&
+                        !incomingInput.history &&
+                        (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
+                    ) {
+                        const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
+                        const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+                        if (memoryNode) {
+                            chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
+                        }
                     }
                 }
 
-                /*** Get Starting Nodes with Non-Directed Graph ***/
-                const constructedObj = constructGraphs(nodes, edges, true)
+                /*** Get Starting Nodes with Reversed Graph ***/
+                const constructedObj = constructGraphs(nodes, edges, { isReversed: true })
                 const nonDirectedGraph = constructedObj.graph
-                const { startingNodeIds, depthQueue } = getStartingNodes(nonDirectedGraph, endingNodeId)
+                let startingNodeIds: string[] = []
+                let depthQueue: IDepthQueue = {}
+                for (const endingNodeId of endingNodeIds) {
+                    const res = getStartingNodes(nonDirectedGraph, endingNodeId)
+                    startingNodeIds.push(...res.startingNodeIds)
+                    depthQueue = Object.assign(depthQueue, res.depthQueue)
+                }
+                startingNodeIds = [...new Set(startingNodeIds)]
+
                 const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
@@ -1529,6 +1575,7 @@ export class App {
                 const reactFlowNodes = await buildLangchain(
                     startingNodeIds,
                     nodes,
+                    edges,
                     graph,
                     depthQueue,
                     this.nodesPool.componentNodes,
@@ -1542,13 +1589,18 @@ export class App {
                     isUpsert,
                     incomingInput.stopNodeId
                 )
+
+                // If request is upsert, stop here
                 if (isUpsert) {
                     this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
                     return res.status(201).send('Successfully Upserted')
                 }
 
-                const nodeToExecute = reactFlowNodes.find((node: IReactFlowNode) => node.id === endingNodeId)
-                if (!nodeToExecute) return res.status(404).send(`Node ${endingNodeId} not found`)
+                const nodeToExecute =
+                    endingNodeIds.length === 1
+                        ? reactFlowNodes.find((node: IReactFlowNode) => endingNodeIds[0] === node.id)
+                        : reactFlowNodes[reactFlowNodes.length - 1]
+                if (!nodeToExecute) return res.status(404).send(`Node not found`)
 
                 if (incomingInput.overrideConfig) {
                     nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)

@@ -20,7 +20,7 @@ class MultiPromptChain_Chains implements INode {
         this.name = 'multiPromptChain'
         this.version = 1.0
         this.type = 'MultiPromptChain'
-        this.icon = 'chain.svg'
+        this.icon = 'prompt.svg'
         this.category = 'Chains'
         this.description = 'Chain automatically picks an appropriate prompt from multiple prompt templates'
         this.baseClasses = [this.type, ...getBaseClasses(MultiPromptChain)]
