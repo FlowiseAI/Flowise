@@ -859,7 +859,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH
         ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-        : path.join(__dirname, '..', '..', 'encryption.key')
+        : path.join(getUserHome(), '.flowise', 'encryption.key')
 }
 
 /**
