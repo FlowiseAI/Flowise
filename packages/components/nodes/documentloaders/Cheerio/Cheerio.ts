@@ -135,12 +135,12 @@ class Cheerio_DocumentLoaders implements INode {
         async function cheerioLoader(url: string): Promise<Document[]> {
             try {
                 let docs = [] as Document[]
-                if (!!baseUrlFilters && !baseUrlFilters.some((baseUrl) => url.toLowerCase().startsWith(baseUrl))) {
+                if (!!baseUrlFilters?.length && !baseUrlFilters.some((baseUrl) => url.toLowerCase().startsWith(baseUrl))) {
                     console.info(`scraping - skipping url ${url} because it does not start with ${baseUrlFilters}`)
                     return docs
                 }
 
-                if (!!exBaseUrlFilter && exBaseUrlFilter.some((exBaseUrl) => url.toLowerCase().startsWith(exBaseUrl))) {
+                if (!!exBaseUrlFilter?.length && exBaseUrlFilter.some((exBaseUrl) => url.toLowerCase().startsWith(exBaseUrl))) {
                     console.info(`scraping - skipping url ${url} because it starts with ${exBaseUrlFilter}`)
                     return docs
                 }

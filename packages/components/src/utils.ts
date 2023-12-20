@@ -294,12 +294,12 @@ async function crawl(
     //fix issue with interable error when crawing a zip file, most likely timed out
     if (!!urlExt && LARGE_FILE_EXTENSIONS.includes(urlExt)) return pages
 
-    if (!!prefixUrls && !prefixUrls.some((prefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(prefixUrl))) {
+    if (!!prefixUrls?.length && !prefixUrls.some((prefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(prefixUrl))) {
         console.info(`skipping url ${normalizeCurrentURL} because it does not start with any required prefix urls.`)
         return pages
     }
 
-    if (!!exPrefixUrls && exPrefixUrls.some((exPrefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(exPrefixUrl))) {
+    if (!!exPrefixUrls?.length && exPrefixUrls.some((exPrefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(exPrefixUrl))) {
         console.info(`skipping url ${normalizeCurrentURL} because it starts with one or more excluded prefix urls.`)
         return pages
     }
