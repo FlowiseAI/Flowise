@@ -27,7 +27,7 @@ class OpenAIAssistant_Agents implements INode {
         this.version = 2.0
         this.type = 'OpenAIAssistant'
         this.category = 'Agents'
-        this.icon = 'openai.png'
+        this.icon = 'assistant.svg'
         this.description = `An agent that uses OpenAI Assistant API to pick the tool and args to call`
         this.baseClasses = [this.type]
         this.inputs = [
