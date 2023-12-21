@@ -22,8 +22,11 @@ import { flowContext } from 'store/context/ReactFlowContext'
 import { isValidConnection } from 'utils/genericHelper'
 import { JsonEditorInput } from 'ui-component/json/JsonEditor'
 import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
+import { CodeEditor } from 'ui-component/editor/CodeEditor'
+
 import ToolDialog from 'views/tools/ToolDialog'
 import AssistantDialog from 'views/assistants/AssistantDialog'
+import ExpandTextDialog from 'ui-component/dialog/ExpandTextDialog'
 import FormatPromptValuesDialog from 'ui-component/dialog/FormatPromptValuesDialog'
 import CredentialInputHandler from './CredentialInputHandler'
 
@@ -83,7 +86,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
             }
         }
     }
-    const onFormatPromptValuesClicked = (value, inputParam) => {
+    const onEditJSONClicked = (value, inputParam) => {
         // Preset values if the field is format prompt values
         let inputValue = value
         if (inputParam.name === 'promptValues' && !value) {
@@ -255,7 +258,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
-                            {inputParam.type === 'string' && inputParam.rows && (
+                            {((inputParam.type === 'string' && inputParam.rows) || inputParam.type === 'code') && (
                                 <IconButton
                                     size='small'
                                     sx={{
@@ -324,6 +327,23 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                             />
                         )}
+                        {inputParam.type === 'code' && (
+                            <>
+                                <div style={{ height: '5px' }}></div>
+                                <div style={{ height: inputParam.rows ? '100px' : '200px' }}>
+                                    <CodeEditor
+                                        disabled={disabled}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                        height={inputParam.rows ? '100px' : '200px'}
+                                        theme={customization.isDarkMode ? 'dark' : 'light'}
+                                        lang={'js'}
+                                        placeholder={inputParam.placeholder}
+                                        onValueChange={(code) => (data.inputs[inputParam.name] = code)}
+                                        basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
+                                    />
+                                </div>
+                            </>
+                        )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 key={data.inputs[inputParam.name]}
@@ -334,10 +354,6 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
                                 edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
                                 nodeId={data.id}
-                                showDialog={showExpandDialog}
-                                dialogProps={expandDialogProps}
-                                onDialogCancel={() => setShowExpandDialog(false)}
-                                onDialogConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
                             />
                         )}
                         {inputParam.type === 'json' && (
@@ -353,11 +369,12 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 {inputParam?.acceptVariable && (
                                     <>
                                         <Button
-                                            sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 2 }}
+                                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
                                             variant='outlined'
-                                            onClick={() => onFormatPromptValuesClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                            disabled={disabled}
+                                            onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
                                         >
-                                            Format Prompt Values
+                                            {inputParam.label}
                                         </Button>
                                         <FormatPromptValuesDialog
                                             show={showFormatPromptValuesDialog}
@@ -428,6 +445,12 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 onCancel={() => setAsyncOptionEditDialog('')}
                 onConfirm={onConfirmAsyncOption}
             ></AssistantDialog>
+            <ExpandTextDialog
+                show={showExpandDialog}
+                dialogProps={expandDialogProps}
+                onCancel={() => setShowExpandDialog(false)}
+                onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
+            ></ExpandTextDialog>
         </div>
     )
 }
