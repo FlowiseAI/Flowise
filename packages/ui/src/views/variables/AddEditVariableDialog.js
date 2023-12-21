@@ -24,17 +24,18 @@ import useNotifier from 'utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import { TooltipWithParser } from '../../ui-component/tooltip/TooltipWithParser'
 import { Dropdown } from '../../ui-component/dropdown/Dropdown'
 
 const variableTypes = [
     {
-        label: 'Static Variable',
-        name: 'static'
+        label: 'Static',
+        name: 'static',
+        description: 'Variable value will be read from the value entered below'
     },
     {
-        label: 'Runtime Variable',
-        name: 'runtime'
+        label: 'Runtime',
+        name: 'runtime',
+        description: 'Variable value will be read from .env file'
     }
 ]
 
@@ -208,29 +209,14 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
                     <OutlinedInput
+                        size='small'
+                        sx={{ mt: 1 }}
                         type='string'
                         fullWidth
                         key='variableName'
                         onChange={(e) => setVariableName(e.target.value)}
                         value={variableName ?? ''}
                     />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>
-                            Value
-                            <TooltipWithParser style={{ marginLeft: 10 }} title='Value is mandatory for static variables.' />
-                        </Typography>
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <OutlinedInput
-                        type='string'
-                        fullWidth
-                        key='variableValue'
-                        onChange={(e) => setVariableValue(e.target.value)}
-                        value={variableValue ?? ''}
-                    />
-                    <Typography variant='subtitle2'>Leave the value empty for runtime variables. Will be populated at runtime.</Typography>
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -245,14 +231,30 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         onSelect={(newValue) => setVariableType(newValue)}
                         value={variableType}
                     />
-                    <Typography variant='subtitle2'>
-                        Runtime: Value would be populated from env. Static: Value would be used as is.
-                    </Typography>
                 </Box>
+                {variableType === 'static' && (
+                    <Box sx={{ p: 2 }}>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                            <Typography>
+                                Value<span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                            <div style={{ flexGrow: 1 }}></div>
+                        </div>
+                        <OutlinedInput
+                            size='small'
+                            sx={{ mt: 1 }}
+                            type='string'
+                            fullWidth
+                            key='variableValue'
+                            onChange={(e) => setVariableValue(e.target.value)}
+                            value={variableValue ?? ''}
+                        />
+                    </Box>
+                )}
             </DialogContent>
             <DialogActions>
                 <StyledButton
-                    disabled={!variableName || (variableType === 'static' && !variableValue)}
+                    disabled={!variableName || !variableType || (variableType === 'static' && !variableValue)}
                     variant='contained'
                     onClick={() => (dialogType === 'ADD' ? addNewVariable() : saveVariable())}
                 >

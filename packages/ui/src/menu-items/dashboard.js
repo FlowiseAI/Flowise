@@ -53,7 +53,7 @@ const dashboard = {
         },
         {
             id: 'variables',
-            title: 'Environment Variables',
+            title: 'Variables',
             type: 'item',
             url: '/variables',
             icon: icons.IconVariable,

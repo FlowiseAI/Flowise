@@ -19,7 +19,8 @@ import {
     Toolbar,
     TextField,
     InputAdornment,
-    ButtonGroup
+    ButtonGroup,
+    Chip
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -40,10 +41,11 @@ import useNotifier from 'utils/useNotifier'
 
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconSearch, IconVariable } from '@tabler/icons'
-import CredentialEmptySVG from 'assets/images/credential_empty.svg'
+import VariablesEmptySVG from 'assets/images/variables_empty.svg'
 
 // const
 import AddEditVariableDialog from './AddEditVariableDialog'
+import HowToUseVariablesDialog from './HowToUseVariablesDialog'
 
 // ==============================|| Credentials ||============================== //
 
@@ -60,6 +62,7 @@ const Variables = () => {
     const [showVariableDialog, setShowVariableDialog] = useState(false)
     const [variableDialogProps, setVariableDialogProps] = useState({})
     const [variables, setVariables] = useState([])
+    const [showHowToDialog, setShowHowToDialog] = useState(false)
 
     const { confirm } = useConfirm()
 
@@ -173,7 +176,7 @@ const Variables = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>Environment Variables&nbsp;</h1>
+                            <h1>Variables&nbsp;</h1>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -189,6 +192,9 @@ const Variables = () => {
                                 }}
                             />
                             <Box sx={{ flexGrow: 1 }} />
+                            <Button variant='outlined' sx={{ mr: 2 }} onClick={() => setShowHowToDialog(true)}>
+                                How To Use
+                            </Button>
                             <ButtonGroup
                                 sx={{ maxHeight: 40 }}
                                 disableElevation
@@ -214,8 +220,8 @@ const Variables = () => {
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img
                                 style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={CredentialEmptySVG}
-                                alt='CredentialEmptySVG'
+                                src={VariablesEmptySVG}
+                                alt='VariablesEmptySVG'
                             />
                         </Box>
                         <div>No Variables Yet</div>
@@ -267,7 +273,13 @@ const Variables = () => {
                                             </div>
                                         </TableCell>
                                         <TableCell>{variable.value}</TableCell>
-                                        <TableCell>{variable.type === 'static' ? 'Static Variable' : 'Runtime Variable'}</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                color={variable.type === 'static' ? 'info' : 'secondary'}
+                                                size='small'
+                                                label={variable.type}
+                                            />
+                                        </TableCell>
                                         <TableCell>{moment(variable.updatedDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>{moment(variable.createdDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>
@@ -293,6 +305,7 @@ const Variables = () => {
                 onCancel={() => setShowVariableDialog(false)}
                 onConfirm={onConfirm}
             ></AddEditVariableDialog>
+            <HowToUseVariablesDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)}></HowToUseVariablesDialog>
             <ConfirmDialog />
         </>
     )

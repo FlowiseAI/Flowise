@@ -102,15 +102,19 @@ export class DynamicStructuredTool<
                 sandbox[`$${item}`] = arg[item]
             }
         }
-        //inject variables
-        let env = {}
+
+        // inject variables
+        let vars = {}
         if (this.variables) {
             for (const item of this.variables) {
                 let value = item.value
+
+                // read from .env file
                 if (item.type === 'runtime') {
                     value = process.env[item.name]
                 }
-                Object.defineProperty(env, item.name, {
+
+                Object.defineProperty(vars, item.name, {
                     enumerable: true,
                     configurable: true,
                     writable: true,
@@ -118,10 +122,13 @@ export class DynamicStructuredTool<
                 })
             }
         }
-        sandbox['$env'] = env
+        sandbox['$vars'] = vars
+
+        // inject flow properties
         if (this.flowObj) {
             sandbox['$flow'] = { ...this.flowObj, sessionId: overrideSessionId }
         }
+
         const defaultAllowBuiltInDep = [
             'assert',
             'buffer',
