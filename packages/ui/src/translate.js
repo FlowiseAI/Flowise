@@ -45,6 +45,8 @@ export const translationObject = {
     'One document per page': 'Один документ на странице',
     'One document per file': 'Один документ в файле',
     input: 'ввод данных',
+    Input: 'Ввод данных',
+    Output: 'Ввывод данных',
     'When should agent uses to retrieve documents': 'Когда агент должен использовать для получения документов',
     'Searches and returns documents regarding the state-of-the-union.': 'Ищет и возвращает документы касающиеся state-of-the-union.',
     chat_history: 'история чата',
@@ -1014,5 +1016,76 @@ export const translationObject = {
     'Waiting for response...': 'Ожидание ответа...',
     'Type your question...': 'Введите вопрос...',
     'Past conversation history between user and AI': 'История прошлых разговоров между пользователем и ИИ',
-    "User's question from chatbox": 'Вопрос пользователя из чата'
+    "User's question from chatbox": 'Вопрос пользователя из чата',
+    'You can get your API key from official <a target="_blank" href="https://console.mistral.ai/">console</a> here.':
+        'Вы можете получить ключ API на официальной <a target="_blank" href="https://console.mistral.ai/">консоли</a> здесь',
+    'You can get your API key from official <a target="_blank" href="https://ai.google.dev/tutorials/setup">page</a> here.':
+        'Вы можете получить ключ API на официальной <a target="_blank" href="https://ai.google.dev/tutorials/setup">странице</a> здесь.',
+    'If provided, will override model selected from Model Name option':
+        'Если указано, будет переопределена модель, выбранная в параметре «Название модели».',
+    'Wrapper around Google Gemini large language models that use the Chat endpoint':
+        'Оболочка больших языковых моделей Google Gemini, использующих конечную точку Chat',
+    'Max Output Tokens': 'Максимальное количество токенов вывода',
+    'Wrapper around Mistral large language models that use the Chat endpoint':
+        'Оболочка больших языковых моделей Mistral, использующих конечную точку Chat',
+    'What sampling temperature to use, between 0.0 and 1.0. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.':
+        'Какую температуру отбора проб использовать: от 0,0 до 1,0. Более высокие значения, например 0,8, сделают результат более случайным, а более низкие значения, например 0,2, сделают его более целенаправленным и детерминированным.',
+    'The maximum number of tokens to generate in the completion.':
+        'Максимальное количество токенов, которые можно сгенерировать при завершении.',
+    'Nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.':
+        'Ядерная выборка, где модель учитывает результаты токенов с массой вероятности top_p. Таким образом, 0,1 означает, что учитываются только токены, составляющие 10% верхней массы вероятности.',
+    'The seed to use for random sampling. If set, different calls will generate deterministic results.':
+        'Начальное значение, используемое для случайной выборки. Если установлено, разные вызовы будут генерировать детерминированные результаты.',
+    'Whether to inject a safety prompt before all conversations.': 'Вводить ли подсказку о безопасности перед всеми разговорами.',
+    'Google Generative API to generate embeddings for a given text': 'Google Generative API для создания вложений для заданного текста',
+    'Google Generative AI credential.': 'Учетные данные Google Generative AI.',
+    'Type of task for which the embedding will be used': 'Тип задачи, для которой будет использоваться встраивание',
+    'MistralAI API to generate embeddings for a given text': 'MistralAI API для генерации вложений для заданного текста',
+    'Override Endpoint': 'Переопределить конечную точку',
+    'Window of size k to surface the last k back-and-forth to use as memory.':
+        'Окно размера k для отображения последнего k туда и обратно для использования в качестве памяти.',
+    Moderation: 'Модерация',
+    "Text was found that violates OpenAI's content policy.": 'Обнаружен текст, нарушающий политику OpenAI в отношении контента.',
+    'OpenAI API key not found': 'Ключ OpenAI API не найден',
+    'Deny List': 'Список запретов',
+    'ignore previous instructions\ndo not follow the directions\nyou must ignore all previous instructions':
+        'игнорировать предыдущие инструкции\nне следовать указаниям\nвы должны игнорировать все предыдущие инструкции',
+    'An array of string literals (enter one per line) that should not appear in the prompt text.':
+        'Массив строковых литералов (вводите по одному в строке), которые не должны появляться в тексте приглашения.',
+    'Cannot Process! Input violates content moderation policies.': 'Невозможно обработать! Ввод нарушает правила модерации контента.',
+    Length: 'Длина',
+    Separator: 'Разделитель',
+    'Separator between values': 'Разделитель между значениями',
+    'Number of values to return': 'Количество возвращаемых значений',
+    Property: 'Свойство',
+    answer: 'отвечат',
+    source: 'источник',
+    Utilities: 'Утилиты',
+    'Execute custom javascript function': 'Выполнить пользовательскую функцию JavaScript',
+    'Input Variables': 'Входные переменные',
+    'Input variables can be used in the function with prefix $. For example: $var':
+        'Входные переменные можно использовать в функции с префиксом $. Например: $var',
+    'Function Name': 'Имя функции',
+    'Javascript Function': 'Функция Javascript',
+    boolean: 'логическое значение (boolean)',
+    array: 'массив',
+    Array: 'массив',
+    Boolean: 'логическое значение (boolean)',
+    'Get variable that was saved using Set Variable node': 'Получить переменную, сохраненную с помощью узла Set Variable.',
+    'Variable Name': 'Имя переменной',
+    'Split flows based on If Else javascript functions': 'Разделение потоков на основе функций JavaScript If Else',
+    'IfElse Name': 'IfElse Имя',
+    'If Function': 'If функция',
+    'Function must return a value': 'Функция должна возвращать значение',
+    'Else Function': 'Else функция',
+    'Set variable which can be retrieved at a later stage. Variable is only available during runtime.': '',
+    'Vector Stores': 'Установите переменную, которую можно будет получить позже. Переменная доступна только во время выполнения.',
+    'Task Type': 'Тип задачи',
+    POPULAR: 'популярный',
+    NEW: 'новый',
+    popular: 'популярный',
+    new: 'новый',
+    'Based on the table schema below, question, SQL query, and SQL response, write a natural language response, be details as possible:\n------------\nSCHEMA: {schema}\n------------\nQUESTION: {question}\n------------\nSQL QUERY: {sqlQuery}\n------------\nSQL RESPONSE: {sqlResponse}\n------------\nNATURAL LANGUAGE RESPONSE:':
+        'На основе приведенной ниже схемы таблицы, вопроса, запроса SQL и ответа SQL напишите ответ на естественном языке, указав как можно больше подробностей:\n------------\nSCHEMA: {schema}\n- -----------\nВОПРОС: {вопрос}\n------------\nSQL ЗАПРОС: {sqlQuery}\n---------- --\nОТВЕТ SQL: {sqlResponse}\n------------\nОТВЕТ НА ЕСТЕСТВЕННОМ ЯЗЫКЕ:',
+    'Manually construct prompts to query a SQL database': 'Вручную создавайте запросы для запроса базы данных SQL.'
 }

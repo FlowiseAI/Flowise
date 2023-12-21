@@ -15,6 +15,62 @@ import NavigationScroll from 'layout/NavigationScroll'
 // ==============================|| APP ||============================== //
 
 const App = () => {
+    const useYandexMetrika = () => {
+        let ymID
+        switch (window.location.hostname) {
+            case 'u1.start-ai.ru':
+                ymID = 95948128
+                break
+            case 'u2.start-ai.ru':
+                ymID = 95948132
+                break
+            case 'u3.start-ai.ru':
+                ymID = 95948136
+                break
+            case 'u4.start-ai.ru':
+                ymID = 95948139
+                break
+            case 'u5.start-ai.ru':
+                ymID = 95948140
+                break
+            default:
+                // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
+                ymID = 0
+                break
+        }
+        useEffect(() => {
+            // Функция инициализации метрики
+            ;(function (m, e, t, r, i, k, a) {
+                m[i] =
+                    m[i] ||
+                    function () {
+                        ;(m[i].a = m[i].a || []).push(arguments)
+                    }
+                m[i].l = 1 * new Date()
+
+                // Проверка, загружен ли уже скрипт
+                for (let j = 0; j < document.scripts.length; j++) {
+                    if (document.scripts[j].src === r) return
+                }
+
+                // Создание и добавление скрипта
+                k = e.createElement(t)
+                a = e.getElementsByTagName(t)[0]
+                k.async = 1
+                k.src = r
+                a.parentNode.insertBefore(k, a)
+            })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym')
+
+            // Инициализация с конкретным ID метрики
+            ym(ymID, 'init', {
+                clickmap: true,
+                trackLinks: true,
+                accurateTrackBounce: true,
+                webvisor: true
+            })
+        }, [])
+    }
+    useYandexMetrika()
     const [targetElement, setTargetElement] = useState()
 
     const target = document.querySelector('#root')
