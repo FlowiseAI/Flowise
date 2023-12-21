@@ -428,16 +428,7 @@ export const getEnvironmentVariable = (name: string): string | undefined => {
  * @returns {string}
  */
 const getEncryptionKeyFilePath = (): string => {
-    const checkPaths = [
-        path.join(__dirname, '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', 'server', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', 'server', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
-    ]
+    const checkPaths = [path.join(getUserHome(), '.flowise', 'encryption.key')]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
             return checkPath
