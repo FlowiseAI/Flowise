@@ -54,7 +54,7 @@
                 "inputs": {
                     "name": "ai-paper-qa",
                     "description": "AI Paper QA - useful for when you need to ask questions about the AI-Generated Content paper.",
-                    "returnDirect": "",
+                    "returnDirect": true,
                     "baseChain": "{{retrievalQAChain_0.data.instance}}"
                 },
                 "outputAnchors": [
@@ -128,7 +128,7 @@
                 "inputs": {
                     "name": "state-of-union-qa",
                     "description": "State of the Union QA - useful for when you need to ask questions about the president speech and most recent state of the union address.",
-                    "returnDirect": "",
+                    "returnDirect": true,
                     "baseChain": "{{retrievalQAChain_1.data.instance}}"
                 },
                 "outputAnchors": [
