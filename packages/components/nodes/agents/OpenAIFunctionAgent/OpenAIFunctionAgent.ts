@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { AgentExecutor, AgentExecutorInput } from 'langchain/agents'
+import { AgentExecutor as LCAgentExecutor, AgentExecutorInput } from 'langchain/agents'
 import { ChainValues, AgentStep, AgentFinish, AgentAction, BaseMessage, FunctionMessage, AIMessage } from 'langchain/schema'
 import { OutputParserException } from 'langchain/schema/output_parser'
 import { CallbackManagerForChainRun } from 'langchain/callbacks'
@@ -34,7 +34,7 @@ class OpenAIFunctionAgent_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'function.svg'
         this.description = `An agent that uses Function Calling to pick the tool and args to call`
-        this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.baseClasses = [this.type, ...getBaseClasses(LCAgentExecutor)]
         this.inputs = [
             {
                 label: 'Allowed Tools',
@@ -124,12 +124,13 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
-    const memoryKey = memory.memoryKey ?? 'chat_history'
+    const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
+    const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['ai', systemMessage ?? `You are a helpful AI assistant.`],
+        ['ai', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
         new MessagesPlaceholder(memoryKey),
-        ['human', '{input}'],
+        ['human', `{${inputKey}}`],
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
@@ -139,7 +140,7 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
 
     const runnableAgent = RunnableSequence.from([
         {
-            input: (i: { input: string; steps: AgentStep[] }) => i.input,
+            [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
             agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
             [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
                 const messages: BaseMessage[] = await memory.getChatMessages(sessionId, true)
@@ -151,7 +152,7 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
         new OpenAIFunctionsAgentOutputParser()
     ])
 
-    const executor = AgentExecutorExtended.fromAgentAndTools({
+    const executor = AgentExecutor.fromAgentAndTools({
         agent: runnableAgent,
         tools,
         sessionId
@@ -162,11 +163,11 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
 
 type AgentExecutorOutput = ChainValues
 
-class AgentExecutorExtended extends AgentExecutor {
+class AgentExecutor extends LCAgentExecutor {
     sessionId?: string
 
-    static fromAgentAndTools(fields: AgentExecutorInput & { sessionId?: string }): AgentExecutorExtended {
-        const newInstance = new AgentExecutorExtended(fields)
+    static fromAgentAndTools(fields: AgentExecutorInput & { sessionId?: string }): AgentExecutor {
+        const newInstance = new AgentExecutor(fields)
         if (fields.sessionId) newInstance.sessionId = fields.sessionId
         return newInstance
     }
