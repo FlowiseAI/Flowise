@@ -428,7 +428,17 @@ export const getEnvironmentVariable = (name: string): string | undefined => {
  * @returns {string}
  */
 const getEncryptionKeyFilePath = (): string => {
-    const checkPaths = [path.join(getUserHome(), '.flowise', 'encryption.key')]
+    const checkPaths = [
+        path.join(__dirname, '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(getUserHome(), '.flowise', 'encryption.key')
+    ]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
             return checkPath
@@ -437,7 +447,7 @@ const getEncryptionKeyFilePath = (): string => {
     return ''
 }
 
-const getEncryptionKeyPath = (): string => {
+export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
 }
 
