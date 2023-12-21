@@ -22,7 +22,7 @@ class Ollama_LLMs implements INode {
         this.name = 'ollama'
         this.version = 2.0
         this.type = 'Ollama'
-        this.icon = 'ollama.png'
+        this.icon = 'Ollama.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around open source large language models on Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(Ollama)]
