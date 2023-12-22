@@ -5,6 +5,7 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -23,11 +24,11 @@ class Pinecone_VectorStores implements INode {
     constructor() {
         this.label = 'Pinecone'
         this.name = 'pinecone'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
-        this.description = `Upsert embedded data and perform search upon query using Pinecone, a leading fully managed hosted vector database`
+        this.description = `Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -77,45 +78,9 @@ class Pinecone_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
-            },
-            {
-                label: 'Search Type',
-                name: 'searchType',
-                type: 'options',
-                default: 'similarity',
-                options: [
-                    {
-                        label: 'Similarity',
-                        name: 'similarity'
-                    },
-                    {
-                        label: 'Max Marginal Relevance',
-                        name: 'mmr'
-                    }
-                ],
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Fetch K (for MMR Search)',
-                name: 'fetchK',
-                description: 'Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR',
-                placeholder: '20',
-                type: 'number',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Lambda (for MMR Search)',
-                name: 'lambda',
-                description:
-                    'Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR',
-                placeholder: '0.5',
-                type: 'number',
-                additionalParams: true,
-                optional: true
             }
         ]
+        addMMRInputParams(this.inputs)
         this.outputs = [
             {
                 label: 'Pinecone Retriever',
@@ -177,10 +142,6 @@ class Pinecone_VectorStores implements INode {
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
-        const searchType = nodeData.outputs?.searchType as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
@@ -213,31 +174,7 @@ class Pinecone_VectorStores implements INode {
 
         const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
 
-        if (output === 'retriever') {
-            if ('mmr' === searchType) {
-                const fetchK = nodeData.inputs?.fetchK as string
-                const lambda = nodeData.inputs?.lambda as string
-                const f = fetchK ? parseInt(fetchK) : 20
-                const l = lambda ? parseFloat(lambda) : 0.5
-                const retriever = vectorStore.asRetriever({
-                    searchType: 'mmr',
-                    k: 5,
-                    searchKwargs: {
-                        fetchK: f,
-                        lambda: l
-                    }
-                })
-                return retriever
-            } else {
-                // "searchType" is "similarity"
-                const retriever = vectorStore.asRetriever(k)
-                return retriever
-            }
-        } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
-        }
-        return vectorStore
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }
 }
 
