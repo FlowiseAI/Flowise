@@ -1,4 +1,4 @@
-import { INodeData } from "../../src";
+import { INodeData } from '../../src'
 
 export const resolveVectorStoreOrRetriever = (nodeData: INodeData, vectorStore: any) => {
     const output = nodeData.outputs?.output as string
