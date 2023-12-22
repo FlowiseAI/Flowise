@@ -38,6 +38,9 @@ switch (process.env.NODE_ENV) {
         case 'STARTAI_FIVE':
             port = parseInt(process.env.PORT_FIVE || '', 10) || 3025
             break
+        case 'STARTAI_TEST':
+            port = parseInt(process.env.PORT_FIVE || '', 10) || 3026
+            break
         default:
 }
 ```
@@ -65,3 +68,5 @@ switch (process.env.NODE_ENV) {
 ### - `pm2 start STARTAI_FOUR_ecosystem.config.js` - запуск приложения - port - 3024 имя STARTAI_FOUR
 
 ### - `pm2 start STARTAI_FIVE_ecosystem.config.js` - запуск приложения - port - 3025 имя STARTAI_FIVE
+
+### - `pm2 start STARTAI_TEST_ecosystem.config.js` - запуск приложения - port - 3026 имя STARTAI_TEST
