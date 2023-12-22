@@ -55,25 +55,31 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [variableValue, setVariableValue] = useState('')
     const [variableType, setVariableType] = useState('static')
     const [dialogType, setDialogType] = useState('ADD')
-
     const [variable, setVariable] = useState({})
 
     useEffect(() => {
-        if (dialogProps.type === 'EDIT') {
-            // When variable dialog is opened from Variables dashboard
+        if (dialogProps.type === 'EDIT' && dialogProps.data) {
             setVariableName(dialogProps.data.name)
             setVariableValue(dialogProps.data.value)
             setVariableType(dialogProps.data.type)
-            setVariable(dialogProps.data)
             setDialogType('EDIT')
+            setVariable(dialogProps.data)
         } else if (dialogProps.type === 'ADD') {
-            // When variable dialog is to add a new variable
             setVariableName('')
             setVariableValue('')
             setVariableType('static')
             setDialogType('ADD')
+            setVariable({})
         }
-    }, [dialogProps.data, dialogProps.type])
+
+        return () => {
+            setVariableName('')
+            setVariableValue('')
+            setVariableType('static')
+            setDialogType('ADD')
+            setVariable({})
+        }
+    }, [dialogProps])
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -226,10 +232,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
                     <Dropdown
+                        key={variableType}
                         name='variableType'
                         options={variableTypes}
                         onSelect={(newValue) => setVariableType(newValue)}
-                        value={variableType}
+                        value={variableType ?? 'choose an option'}
                     />
                 </Box>
                 {variableType === 'static' && (
