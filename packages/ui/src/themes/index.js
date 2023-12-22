@@ -36,6 +36,9 @@ export const theme = (customization) => {
         case 'u5.start-ai.ru':
             color = colorsStartAI
             break
+        case 'test.start-ai.ru':
+            color = colorsStartAI
+            break
         case 'localhost':
             color = colorsStartAI
             break
@@ -44,7 +47,6 @@ export const theme = (customization) => {
             color = colors
             break
     }
-    console.log(color, window.location.hostname)
     const themeOption = customization.isDarkMode
         ? {
               colors: color,
