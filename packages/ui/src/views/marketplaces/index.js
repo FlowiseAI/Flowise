@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 // material-ui
 import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { translationObject } from 'translate'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
@@ -160,7 +161,7 @@ const Marketplace = () => {
                                                                     right: 20
                                                                 }
                                                             }}
-                                                            badgeContent={data.badge}
+                                                            badgeContent={translationObject[data.badge] || data.badge}
                                                             color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                         >
                                                             <ItemCard
@@ -191,7 +192,7 @@ const Marketplace = () => {
                                                             right: 20
                                                         }
                                                     }}
-                                                    badgeContent={data.badge}
+                                                    badgeContent={translationObject[data.badge] || data.badge}
                                                     color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                 >
                                                     <ItemCard data={data} onClick={() => goToTool(data)} />

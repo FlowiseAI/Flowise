@@ -49,15 +49,17 @@ const translationsNodes = {
     Chains: 'Цепочки',
     'Chat Models': 'Языковая модель для чатов',
     'Document Loaders': 'Работа с документами',
-    Embeddings: 'Embeddings',
+    Embeddings: 'Вложения',
     LLMs: 'Языковая модель для агентов',
     Memory: 'Типы памяти',
-    'Output Parsers': 'Output Parsers',
+    'Output Parsers': 'Выходные парсеры',
     Prompts: 'Подсказки для модели',
     Retrievers: 'Ретриверы',
     'Text Splitters': 'Обработчики текста',
     Tools: 'Дополнительные инструменты',
-    'Vector Stores': 'Векторные хранилища'
+    'Vector Stores': 'Векторные хранилища',
+    Utilities: 'Утилиты',
+    Moderation: 'Модерация'
 }
 const excludedNodesByLable = [
     'Airtable',
@@ -120,11 +122,11 @@ const AddNodes = ({ nodesData, node }) => {
         }
         delete obj['Vector Stores']
         if (deprecatingNodes.length) {
-            obj['Vector Stores;DEPRECATING'] = deprecatingNodes
+            obj['Векторные хранилища;DEPRECATING'] = deprecatingNodes
             accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
         }
         if (newNodes.length) {
-            obj['Vector Stores;NEW'] = newNodes
+            obj['Векторные хранилища;NEW'] = newNodes
             accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
         }
         setNodes(obj)
