@@ -70,7 +70,6 @@ const App = () => {
             })
         }, [])
     }
-
     useYandexMetrika()
     const [targetElement, setTargetElement] = useState()
 

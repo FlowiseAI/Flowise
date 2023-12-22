@@ -45,6 +45,8 @@ export const translationObject = {
     'One document per page': 'Один документ на странице',
     'One document per file': 'Один документ в файле',
     input: 'ввод данных',
+    Input: 'Ввод данных',
+    Output: 'Ввывод данных',
     'When should agent uses to retrieve documents': 'Когда агент должен использовать для получения документов',
     'Searches and returns documents regarding the state-of-the-union.': 'Ищет и возвращает документы касающиеся state-of-the-union.',
     chat_history: 'история чата',
