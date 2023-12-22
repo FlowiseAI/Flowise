@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 // material-ui
 import { Grid, Box, Stack, Tabs, Tab, Badge } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { translationObject } from 'translate'
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
