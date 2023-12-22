@@ -13,7 +13,7 @@ import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/404_startai.svg'
 import ToolDialog from 'views/tools/ToolDialog'
-
+import { translationObject } from 'translate'
 // API
 import marketplacesApi from 'api/marketplaces'
 
@@ -160,7 +160,7 @@ const Marketplace = () => {
                                                                     right: 20
                                                                 }
                                                             }}
-                                                            badgeContent={data.badge}
+                                                            badgeContent={translationObject[data.badge] || data.badge}
                                                             color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                         >
                                                             <ItemCard
@@ -191,7 +191,7 @@ const Marketplace = () => {
                                                             right: 20
                                                         }
                                                     }}
-                                                    badgeContent={data.badge}
+                                                    badgeContent={translationObject[data.badge] || data.badge}
                                                     color={data.badge === 'POPULAR' ? 'success' : 'warning'}
                                                 >
                                                     <ItemCard data={data} onClick={() => goToTool(data)} />
