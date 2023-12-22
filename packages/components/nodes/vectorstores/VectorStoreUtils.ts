@@ -1,4 +1,4 @@
-import { INodeData } from '../../src'
+import { INodeData } from "../../src";
 
 export const resolveVectorStoreOrRetriever = (nodeData: INodeData, vectorStore: any) => {
     const output = nodeData.outputs?.output as string
@@ -12,7 +12,7 @@ export const resolveVectorStoreOrRetriever = (nodeData: INodeData, vectorStore: 
             const lambda = nodeData.inputs?.lambda as string
             const f = fetchK ? parseInt(fetchK) : 20
             const l = lambda ? parseFloat(lambda) : 0.5
-            const retriever = vectorStore.asRetriever({
+            return vectorStore.asRetriever({
                 searchType: 'mmr',
                 k: k,
                 searchKwargs: {
@@ -20,7 +20,6 @@ export const resolveVectorStoreOrRetriever = (nodeData: INodeData, vectorStore: 
                     lambda: l
                 }
             })
-            return retriever
         } else {
             // "searchType" is "similarity"
             return vectorStore.asRetriever(k)

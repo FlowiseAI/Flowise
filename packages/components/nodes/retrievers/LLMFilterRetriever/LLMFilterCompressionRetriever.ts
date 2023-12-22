@@ -39,7 +39,7 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
                 name: 'model',
                 type: 'BaseLanguageModel',
                 optional: true
-            },
+            }
         ]
     }
 
