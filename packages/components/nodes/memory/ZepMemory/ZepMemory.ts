@@ -21,7 +21,7 @@ class ZepMemory_Memory implements INode {
         this.name = 'ZepMemory'
         this.version = 2.0
         this.type = 'ZepMemory'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in zep server'
         this.baseClasses = [this.type, ...getBaseClasses(ZepMemory)]
@@ -178,21 +178,21 @@ class ZepMemoryExtended extends ZepMemory {
 
     async loadMemoryVariables(values: InputValues, overrideSessionId = ''): Promise<MemoryVariables> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.loadMemoryVariables({ ...values, lastN: this.lastN })
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideSessionId = ''): Promise<void> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.saveContext(inputValues, outputValues)
     }
 
     async clear(overrideSessionId = ''): Promise<void> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.clear()
     }

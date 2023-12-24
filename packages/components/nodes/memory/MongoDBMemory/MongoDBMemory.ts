@@ -30,7 +30,7 @@ class MongoDB_Memory implements INode {
         this.name = 'MongoDBAtlasChatMemory'
         this.version = 1.0
         this.type = 'MongoDBAtlasChatMemory'
-        this.icon = 'mongodb.png'
+        this.icon = 'mongodb.svg'
         this.category = 'Memory'
         this.description = 'Stores the conversation in MongoDB Atlas'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]

@@ -2,37 +2,7 @@ import { z } from 'zod'
 import { CallbackManagerForToolRun } from 'langchain/callbacks'
 import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
-
-/*
- * List of dependencies allowed to be import in vm2
- */
-const availableDependencies = [
-    '@dqbd/tiktoken',
-    '@getzep/zep-js',
-    '@huggingface/inference',
-    '@pinecone-database/pinecone',
-    '@supabase/supabase-js',
-    'axios',
-    'cheerio',
-    'chromadb',
-    'cohere-ai',
-    'd3-dsv',
-    'form-data',
-    'graphql',
-    'html-to-text',
-    'langchain',
-    'linkifyjs',
-    'mammoth',
-    'moment',
-    'node-fetch',
-    'pdf-parse',
-    'pdfjs-dist',
-    'playwright',
-    'puppeteer',
-    'srt-parser-2',
-    'typeorm',
-    'weaviate-ts-client'
-]
+import { availableDependencies } from '../../../src/utils'
 
 export interface BaseDynamicToolInput extends ToolParams {
     name: string

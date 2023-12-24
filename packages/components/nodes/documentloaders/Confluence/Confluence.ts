@@ -20,7 +20,7 @@ class Confluence_DocumentLoaders implements INode {
         this.name = 'confluence'
         this.version = 1.0
         this.type = 'Document'
-        this.icon = 'confluence.png'
+        this.icon = 'confluence.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from a Confluence Document`
         this.baseClasses = [this.type]

@@ -148,10 +148,10 @@ class Redis_VectorStores implements INode {
                 }
             }
 
-            const redisClient = createClient({ url: redisUrl })
-            await redisClient.connect()
-
             try {
+                const redisClient = createClient({ url: redisUrl })
+                await redisClient.connect()
+
                 const storeConfig: RedisVectorStoreConfig = {
                     redisClient: redisClient,
                     indexName: indexName

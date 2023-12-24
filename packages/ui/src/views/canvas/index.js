@@ -40,7 +40,7 @@ import useConfirm from 'hooks/useConfirm'
 import { IconX } from '@tabler/icons'
 
 // utils
-import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper'
+import { getUniqueNodeId, initNode, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 
 // const
@@ -100,8 +100,7 @@ const Canvas = () => {
         const newEdge = {
             ...params,
             type: 'buttonedge',
-            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`,
-            data: { label: getEdgeLabelName(params.sourceHandle) }
+            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
         }
 
         const targetNodeId = params.targetHandle.split('-')[0]

@@ -21,7 +21,7 @@ class RetrievalQAChain_Chains implements INode {
         this.name = 'retrievalQAChain'
         this.version = 1.0
         this.type = 'RetrievalQAChain'
-        this.icon = 'chain.svg'
+        this.icon = 'qa.svg'
         this.category = 'Chains'
         this.description = 'QA chain to answer a question based on the retrieved documents'
         this.baseClasses = [this.type, ...getBaseClasses(RetrievalQAChain)]

@@ -141,8 +141,17 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                     </ListItemAvatar>
                                                     <ListItemText
                                                         sx={{ ml: 1 }}
-                                                        primary={node.data.inputs.chainName ? node.data.inputs.chainName : node.data.id}
-                                                        secondary={`${selectedOutputAnchor?.label ?? 'output'} from ${node.data.label}`}
+                                                        primary={
+                                                            node.data.inputs.chainName ??
+                                                            node.data.inputs.functionName ??
+                                                            node.data.inputs.variableName ??
+                                                            node.data.id
+                                                        }
+                                                        secondary={
+                                                            node.data.name === 'ifElseFunction'
+                                                                ? `${node.data.description}`
+                                                                : `${selectedOutputAnchor?.label ?? 'output'} from ${node.data.label}`
+                                                        }
                                                     />
                                                 </ListItem>
                                             </ListItemButton>

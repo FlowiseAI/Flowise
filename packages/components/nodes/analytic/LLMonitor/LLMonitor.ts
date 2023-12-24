@@ -17,7 +17,7 @@ class LLMonitor_Analytic implements INode {
         this.name = 'llmonitor'
         this.version = 1.0
         this.type = 'LLMonitor'
-        this.icon = 'llmonitor.png'
+        this.icon = 'Lunary.svg'
         this.category = 'Analytic'
         this.baseClasses = [this.type]
         this.inputs = []

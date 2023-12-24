@@ -27,7 +27,7 @@ class LLMChain_Chains implements INode {
         this.name = 'llmChain'
         this.version = 3.0
         this.type = 'LLMChain'
-        this.icon = 'chain.svg'
+        this.icon = 'LLM_Chain.svg'
         this.category = 'Chains'
         this.description = 'Chain to run queries against LLMs'
         this.baseClasses = [this.type, ...getBaseClasses(LLMChain)]
