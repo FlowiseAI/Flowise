@@ -165,7 +165,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own.'
+                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
             })
         })
 
@@ -1763,7 +1763,7 @@ export class App {
             const removePromises: any[] = []
             await Promise.all(removePromises)
         } catch (e) {
-            logger.error(`❌[server]: StartAI Server shut down error: ${e}`)
+            logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
 }
@@ -1793,6 +1793,7 @@ export async function getAllChatFlow(): Promise<IChatFlow[]> {
 
 export async function start(): Promise<void> {
     serverApp = new App()
+
     let port = parseInt(process.env.PORT || '', 10) || 3000
 
     switch (process.env.NODE_ENV) {
@@ -1800,28 +1801,27 @@ export async function start(): Promise<void> {
             port = parseInt(process.env.PORT || '', 10) || 3000
             break
         case 'STARTAI_ONE':
-            port = parseInt(process.env.PORT_ONE || '', 10) || 3021
+            port = parseInt(process.env.PORT || '', 10) || 3021
             break
         case 'STARTAI_TWO':
-            port = parseInt(process.env.PORT_TWO || '', 10) || 3022
+            port = parseInt(process.env.PORT || '', 10) || 3022
             break
         case 'STARTAI_THREE':
-            port = parseInt(process.env.PORT_THREE || '', 10) || 3023
+            port = parseInt(process.env.PORT || '', 10) || 3023
             break
         case 'STARTAI_FOUR':
-            port = parseInt(process.env.PORT_FOUR || '', 10) || 3024
+            port = parseInt(process.env.PORT || '', 10) || 3024
             break
         case 'STARTAI_FIVE':
-            port = parseInt(process.env.PORT_FIVE || '', 10) || 3025
+            port = parseInt(process.env.PORT || '', 10) || 3025
             break
         case 'STARTAI_TEST':
-            port = parseInt(process.env.PORT_TEST || '', 10) || 3026
+            port = parseInt(process.env.PORT || '', 10) || 3026
             break
         default:
             // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
             break
     }
-
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
@@ -1834,7 +1834,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, () => {
-        logger.info(`⚡️ [server]: StartAI Server is listening at ${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
     })
 }
 

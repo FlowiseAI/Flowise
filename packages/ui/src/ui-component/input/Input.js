@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { FormControl, OutlinedInput, Popover } from '@mui/material'
 import SelectVariable from 'ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from 'utils/genericHelper'
-
+import { translationObject } from 'translate'
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
