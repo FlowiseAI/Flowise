@@ -12,6 +12,63 @@ import { AIMessage, HumanMessage } from 'langchain/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+/*
+ * List of dependencies allowed to be import in vm2
+ */
+export const availableDependencies = [
+    '@aws-sdk/client-bedrock-runtime',
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/client-s3',
+    '@elastic/elasticsearch',
+    '@dqbd/tiktoken',
+    '@getzep/zep-js',
+    '@gomomento/sdk',
+    '@gomomento/sdk-core',
+    '@google-ai/generativelanguage',
+    '@huggingface/inference',
+    '@notionhq/client',
+    '@opensearch-project/opensearch',
+    '@pinecone-database/pinecone',
+    '@qdrant/js-client-rest',
+    '@supabase/supabase-js',
+    '@upstash/redis',
+    '@zilliz/milvus2-sdk-node',
+    'apify-client',
+    'axios',
+    'cheerio',
+    'chromadb',
+    'cohere-ai',
+    'd3-dsv',
+    'faiss-node',
+    'form-data',
+    'google-auth-library',
+    'graphql',
+    'html-to-text',
+    'ioredis',
+    'langchain',
+    'langfuse',
+    'langsmith',
+    'linkifyjs',
+    'llmonitor',
+    'mammoth',
+    'moment',
+    'mongodb',
+    'mysql2',
+    'node-fetch',
+    'node-html-markdown',
+    'notion-to-md',
+    'openai',
+    'pdf-parse',
+    'pdfjs-dist',
+    'pg',
+    'playwright',
+    'puppeteer',
+    'redis',
+    'replicate',
+    'srt-parser-2',
+    'typeorm',
+    'weaviate-ts-client'
+]
 
 /**
  * Get base classes of components
@@ -379,7 +436,8 @@ const getEncryptionKeyFilePath = (): string => {
         path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(getUserHome(), '.flowise', 'encryption.key')
     ]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
@@ -389,7 +447,7 @@ const getEncryptionKeyFilePath = (): string => {
     return ''
 }
 
-const getEncryptionKeyPath = (): string => {
+export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
 }
 

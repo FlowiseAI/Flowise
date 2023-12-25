@@ -57,6 +57,14 @@ class RedisBackedChatMemory_Memory implements INode {
                 type: 'string',
                 default: 'chat_history',
                 additionalParams: true
+            },
+            {
+                label: 'Window Size',
+                name: 'windowSize',
+                type: 'number',
+                description: 'Window of size k to surface the last k back-and-forth to use as memory.',
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -89,6 +97,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const sessionId = nodeData.inputs?.sessionId as string
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
+    const windowSize = nodeData.inputs?.windowSize as number
     const chatId = options?.chatId as string
 
     let isSessionIdUsingChatMessageId = false
@@ -103,12 +112,16 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
         const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
         const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
         const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+        const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
+
+        const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
         client = new Redis({
             port: portStr ? parseInt(portStr) : 6379,
             host,
             username,
-            password
+            password,
+            ...tlsOptions
         })
     } else {
         client = new Redis(redisUrl)
@@ -129,7 +142,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
 
     redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, 0, -1)
+        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, windowSize ? -windowSize : 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         return orderedMessages.map(mapStoredMessageToChatMessage)
     }

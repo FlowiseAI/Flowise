@@ -135,6 +135,8 @@ const ShareChatbot = ({ isSessionMemory }) => {
 
         if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
 
+        if (chatbotConfig?.starterPrompts) obj.starterPrompts = chatbotConfig.starterPrompts
+
         return obj
     }
 
