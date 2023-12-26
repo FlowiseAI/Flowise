@@ -1,4 +1,4 @@
-import { IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
 import { ICommonObject } from '../../../src'
@@ -167,7 +167,7 @@ interface ZepMemoryExtendedInput {
     k?: number
 }
 
-class ZepMemoryExtended extends ZepMemory {
+class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     isSessionIdUsingChatMessageId? = false
     lastN?: number
 

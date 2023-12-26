@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor as LCAgentExecutor, AgentExecutorInput } from 'langchain/agents'
 import { ChainValues, AgentStep, AgentFinish, AgentAction, BaseMessage, FunctionMessage, AIMessage } from 'langchain/schema'
 import { OutputParserException } from 'langchain/schema/output_parser'
@@ -7,7 +7,6 @@ import { formatToOpenAIFunction } from 'langchain/tools'
 import { ToolInputParsingException, Tool } from '@langchain/core/tools'
 import { getBaseClasses } from '../../../src/utils'
 import { flatten } from 'lodash'
-import { BaseChatMemory } from 'langchain/memory'
 import { RunnableSequence } from 'langchain/schema/runnable'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ChatPromptTemplate, MessagesPlaceholder } from 'langchain/prompts'
@@ -65,7 +64,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const memory = nodeData.inputs?.memory as BaseChatMemory
+        const memory = nodeData.inputs?.memory as FlowiseMemory
 
         const executor = prepareAgent(nodeData, this.sessionId)
         if (memory) executor.memory = memory
@@ -74,7 +73,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const memory = nodeData.inputs?.memory
+        const memory = nodeData.inputs?.memory as FlowiseMemory
 
         const executor = prepareAgent(nodeData, this.sessionId)
 
@@ -120,7 +119,7 @@ const formatAgentSteps = (steps: AgentStep[]): BaseMessage[] =>
 
 const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
     const model = nodeData.inputs?.model as ChatOpenAI
-    const memory = nodeData.inputs?.memory
+    const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
@@ -143,7 +142,7 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
             [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
             agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
             [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
-                const messages: BaseMessage[] = await memory.getChatMessages(sessionId, true)
+                const messages = (await memory.getChatMessages(sessionId, true)) as BaseMessage[]
                 return messages ?? []
             }
         },

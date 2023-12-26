@@ -1,4 +1,4 @@
-import { IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput, InputValues, MemoryVariables, OutputValues, getBufferString } from 'langchain/memory'
@@ -136,7 +136,7 @@ interface MotorheadMemoryExtendedInput {
     isSessionIdUsingChatMessageId: boolean
 }
 
-class MotorheadMemoryExtended extends MotorheadMemory {
+class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     isSessionIdUsingChatMessageId? = false
 
     constructor(fields: MotorheadMemoryInput & MotorheadMemoryExtendedInput) {

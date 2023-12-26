@@ -214,16 +214,19 @@ export abstract class FlowiseMemory extends BufferMemory implements MemoryMethod
     abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+    abstract resumeMessages(messages: IMessage[]): Promise<void>
 }
 
 export abstract class FlowiseWindowMemory extends BufferWindowMemory implements MemoryMethods {
     abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+    abstract resumeMessages(messages: IMessage[]): Promise<void>
 }
 
 export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory implements MemoryMethods {
     abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+    abstract resumeMessages(messages: IMessage[]): Promise<void>
 }

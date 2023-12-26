@@ -215,7 +215,7 @@ const Variables = () => {
                         </Toolbar>
                     </Box>
                 </Stack>
-                {variables.length <= 0 && (
+                {variables.length === 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img
