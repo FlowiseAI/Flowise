@@ -60,7 +60,7 @@ class CustomTool_Tools implements INode {
         }
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const selectedToolId = nodeData.inputs?.selectedTool as string
         const customToolFunc = nodeData.inputs?.customToolFunc as string
 
@@ -101,7 +101,8 @@ class CustomTool_Tools implements INode {
 
             const flow = {
                 chatId: options.chatId, // id is uppercase (I)
-                chatflowId: options.chatflowid // id is lowercase (i)
+                chatflowId: options.chatflowid, // id is lowercase (i)
+                input
             }
 
             let dynamicStructuredTool = new DynamicStructuredTool(obj)

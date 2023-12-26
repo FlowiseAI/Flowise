@@ -33,7 +33,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
 * You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid
-* You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId
+* You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input
 * You can get custom variables: $vars.<variable-name>
 * Must return a string value at the end of function
 */
