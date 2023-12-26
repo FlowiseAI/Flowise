@@ -306,6 +306,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         await this.dynamodbClient.send(new DeleteItemCommand(params))
         await this.clear()
     }
+
+    async resumeMessages(): Promise<void> {
+        return
+    }
 }
 
 module.exports = { nodeClass: DynamoDb_Memory }

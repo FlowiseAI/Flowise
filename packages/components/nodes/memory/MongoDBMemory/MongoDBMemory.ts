@@ -221,6 +221,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         await this.collection.deleteOne({ sessionId: id })
         await this.clear()
     }
+
+    async resumeMessages(): Promise<void> {
+        return
+    }
 }
 
 module.exports = { nodeClass: MongoDB_Memory }

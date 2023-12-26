@@ -1,4 +1,4 @@
-import { INode, INodeData, INodeParams, ICommonObject, IMessage, MessageType } from '../../../src/Interface'
+import { INode, INodeData, INodeParams, ICommonObject, IMessage, MessageType, FlowiseMemory, MemoryMethods } from '../../../src/Interface'
 import {
     convertBaseMessagetoIMessage,
     getBaseClasses,
@@ -187,7 +187,7 @@ interface BufferMemoryExtendedInput {
     sessionId: string
 }
 
-class BufferMemoryExtended extends BufferMemory {
+class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     isSessionIdUsingChatMessageId? = false
     sessionId = ''
     redisClient: Redis
@@ -235,6 +235,10 @@ class BufferMemoryExtended extends BufferMemory {
         const id = overrideSessionId ?? this.sessionId
         await this.redisClient.del(id)
         await this.clear()
+    }
+
+    async resumeMessages(): Promise<void> {
+        return
     }
 }
 

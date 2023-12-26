@@ -186,6 +186,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         await this.redisClient.del(id)
         await this.clear()
     }
+
+    async resumeMessages(): Promise<void> {
+        return
+    }
 }
 
 module.exports = { nodeClass: UpstashRedisBackedChatMemory_Memory }
