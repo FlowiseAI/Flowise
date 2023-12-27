@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 // material-ui
 import { IconButton } from '@mui/material'
 import { IconEdit } from '@tabler/icons'
-
+import { translationObject } from '../../translate'
 // project import
 import { AsyncDropdown } from 'ui-component/dropdown/AsyncDropdown'
 import AddEditCredentialDialog from 'views/credentials/AddEditCredentialDialog'
