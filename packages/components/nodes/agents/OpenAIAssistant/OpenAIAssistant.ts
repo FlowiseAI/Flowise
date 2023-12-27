@@ -265,7 +265,7 @@ class OpenAIAssistant_Agents implements INode {
                                     // Start tool analytics
                                     const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
 
-                                    const toolOutput = await tool.call(actions[i].toolInput)
+                                    const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, threadId)
 
                                     // End tool analytics
                                     await analyticHandlers.onToolEnd(toolIds, toolOutput)

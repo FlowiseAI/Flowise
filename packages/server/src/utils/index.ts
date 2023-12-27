@@ -38,6 +38,7 @@ import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
+import { Variable } from '../database/entities/Variable'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -48,7 +49,8 @@ export const databaseEntities: IDatabaseEntity = {
     ChatMessage: ChatMessage,
     Tool: Tool,
     Credential: Credential,
-    Assistant: Assistant
+    Assistant: Assistant,
+    Variable: Variable
 }
 
 /**
