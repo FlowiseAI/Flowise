@@ -178,7 +178,7 @@ const CanvasNode = ({ data }) => {
                                         mr: 2
                                     }}
                                 >
-                                    {data.label}
+                                    {translationObject[data.label] || data.label}
                                 </Typography>
                             </Box>
                             {warningMessage && (

@@ -25,7 +25,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 import SaveChatflowDialog from '../dialog/SaveChatflowDialog'
 import TagDialog from '../dialog/TagDialog'
-
+import { translationObject } from 'translate'
 import { generateExportFlowData } from '../../utils/genericHelper'
 import useNotifier from '../../utils/useNotifier'
 import StarterPromptsDialog from '../dialog/StarterPromptsDialog'
@@ -99,7 +99,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const handleFlowStarterPrompts = () => {
         setAnchorEl(null)
         setConversationStartersDialogProps({
-            title: 'Starter Prompts - ' + chatflow.name,
+            title: translationObject['Starter Prompts'] + ' - ' + chatflow.name,
             chatflow: chatflow
         })
         setConversationStartersDialogOpen(true)
@@ -274,7 +274,7 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
                     <PictureInPictureAltIcon />
-                    Starter Prompts
+                    {translationObject['Starter Prompts'] || ''}
                 </MenuItem>
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />

@@ -28,6 +28,7 @@ import useApi from 'hooks/useApi'
 import { generateExportFlowData } from 'utils/genericHelper'
 import { uiBaseURL } from 'store/constant'
 import { SET_CHATFLOW } from 'store/actions'
+import { translationObject } from 'translate'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -61,7 +62,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             handleDeleteFlow()
         } else if (setting === 'conversationStarters') {
             setConversationStartersDialogProps({
-                title: 'Starter Prompts - ' + chatflow.name,
+                title: translationObject['Starter Prompts'] + ' - ' + chatflow.name,
                 chatflow: chatflow
             })
             setConversationStartersDialogOpen(true)

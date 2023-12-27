@@ -98,11 +98,11 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                             <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
                                 <AsyncDropdown
                                     disabled={disabled}
-                                    name={inputParam.name}
+                                    name={translationObject[inputParam.name] || inputParam.name}
                                     nodeData={data}
                                     value={credentialId ?? 'choose an option'}
                                     isCreateNewOption={true}
-                                    credentialNames={inputParam.credentialNames}
+                                    credentialNames={translationObject[inputParam.credentialNames] || inputParam.credentialNames}
                                     onSelect={(newValue) => {
                                         setCredentialId(newValue)
                                         onSelect(newValue)

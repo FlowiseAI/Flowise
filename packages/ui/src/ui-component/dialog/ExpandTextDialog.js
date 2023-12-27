@@ -8,7 +8,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Button, Dialog, DialogActions, DialogContent, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { LoadingButton } from '@mui/lab'
-
+import { translationObject } from 'translate'
 // Project Import
 import { StyledButton } from 'ui-component/button/StyledButton'
 import { CodeEditor } from 'ui-component/editor/CodeEditor'
@@ -107,7 +107,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     height={languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)'}
                                     theme={customization.isDarkMode ? 'dark' : 'light'}
                                     lang={languageType}
-                                    placeholder={inputParam.placeholder}
+                                    placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                                     basicSetup={
                                         languageType === 'json'
                                             ? { lineNumbers: false, foldGutter: false, autocompletion: false, highlightActiveLine: false }

@@ -298,7 +298,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 }}
                             >
                                 <IconAlertTriangle size={36} color='orange' />
-                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
+                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>
+                                    {translationObject[inputParam.warning] || inputParam.warning}
+                                </span>
                             </div>
                         )}
                         {inputParam.type === 'credential' && (
@@ -384,7 +386,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                             disabled={disabled}
                                             onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
                                         >
-                                            {inputParam.label}
+                                            {translationObject[inputParam.label] || inputParam.label}
                                         </Button>
                                         <FormatPromptValuesDialog
                                             show={showFormatPromptValuesDialog}

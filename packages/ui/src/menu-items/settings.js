@@ -1,5 +1,6 @@
 // assets
 import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
+import { translationObject } from 'translate'
 
 // constant
 const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
@@ -12,7 +13,7 @@ const settings = {
     children: [
         {
             id: 'conversationStarters',
-            title: 'Starter Prompts',
+            title: translationObject['Starter Prompts'] || 'Starter Prompts',
             type: 'item',
             url: '',
             icon: icons.IconPictureInPictureOff

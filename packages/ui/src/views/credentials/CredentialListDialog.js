@@ -21,6 +21,7 @@ import { IconSearch, IconX } from '@tabler/icons'
 // const
 import { baseURL } from 'store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { translationObject } from 'translate'
 
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
     const portalElement = document.getElementById('portal')
@@ -72,7 +73,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         id='input-search-credential'
                         value={searchValue}
                         onChange={(e) => filterSearch(e.target.value)}
-                        placeholder='Search credential'
+                        placeholder={translationObject['Search credential'] || 'Search credential'}
                         startAdornment={
                             <InputAdornment position='start'>
                                 <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />

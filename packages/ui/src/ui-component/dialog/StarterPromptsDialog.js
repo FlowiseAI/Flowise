@@ -28,6 +28,7 @@ import useNotifier from 'utils/useNotifier'
 
 // API
 import chatflowsApi from 'api/chatflows'
+import { translationObject } from 'translate'
 
 const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -80,7 +81,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Conversation Starter Prompts Saved',
+                    message: translationObject['Conversation Starter Prompts Saved'] || 'Conversation Starter Prompts Saved',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -97,7 +98,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Conversation Starter Prompts: ${errorData}`,
+                message: translationObject['Failed to save Conversation Starter Prompts:'] + ` ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -160,7 +161,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || 'Conversation Starter Prompts'}
+                {dialogProps.title || translationObject['Conversation Starter Prompts'] || 'Conversation Starter Prompts'}
             </DialogTitle>
             <DialogContent>
                 <div
@@ -181,7 +182,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     >
                         <IconBulb size={30} color='#2d6a4f' />
                         <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                            Starter prompts will only be shown when there is no messages on the chat
+                            {translationObject['Starter prompts will only be shown when there is no messages on the chat']}
                         </span>
                     </div>
                 </div>

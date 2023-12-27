@@ -468,7 +468,7 @@ export const translationObject = {
         'Цепочка, которая автоматически выбирает подходящего ретривера из нескольких различных баз данных векторов.',
     'An agent that uses ReAct logic to decide what action to take':
         'Агент, который использует логику ReAct, чтобы решить, какое действие предпринять.',
-    'Upstash Redis REST URL': 'Upstash Redis REST URL',
+    'Upstash Redis REST URL': 'URL-адрес REST Upstash Redis',
     Token: 'Токен',
     'Upstash Redis REST Token': 'Токен REST Upstash Redis',
     'Vectara Customer ID': 'ID клиента Vectara',
@@ -1087,5 +1087,169 @@ export const translationObject = {
     new: 'новый',
     'Based on the table schema below, question, SQL query, and SQL response, write a natural language response, be details as possible:\n------------\nSCHEMA: {schema}\n------------\nQUESTION: {question}\n------------\nSQL QUERY: {sqlQuery}\n------------\nSQL RESPONSE: {sqlResponse}\n------------\nNATURAL LANGUAGE RESPONSE:':
         'На основе приведенной ниже схемы таблицы, вопроса, запроса SQL и ответа SQL напишите ответ на естественном языке, указав как можно больше подробностей:\n------------\nSCHEMA: {schema}\n- -----------\nВОПРОС: {вопрос}\n------------\nSQL ЗАПРОС: {sqlQuery}\n---------- --\nОТВЕТ SQL: {sqlResponse}\n------------\nОТВЕТ НА ЕСТЕСТВЕННОМ ЯЗЫКЕ:',
-    'Manually construct prompts to query a SQL database': 'Вручную создавайте запросы для запроса базы данных SQL.'
+    'Manually construct prompts to query a SQL database': 'Вручную создавайте запросы для запроса базы данных SQL.',
+    'Description of what the tool does. This is for ChatGPT to determine when to use this tool.':
+        'Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.',
+    'Tool name must be small capital letter with underscore. Ex: my_tool':
+        'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент',
+    'Search credential': 'Поиск учетных данных',
+    'Starter Prompts': 'Стартовые подсказки',
+    'Starter prompts will only be shown when there is no messages on the chat':
+        'Стартовые подсказки будут отображаться только в том случае, если в чате нет сообщений.',
+    'Conversation Starter Prompts Saved': 'Подсказки для начала беседы сохранены.',
+    'Failed to save Conversation Starter Prompts:': 'Не удалось сохранить подсказки для начала беседы:',
+    'Conversation Starter Prompts': 'Подсказки для начала разговора',
+    'Number of results to return': 'Количество результатов для возврата',
+    'Return All': 'Вернуть все',
+    'If all results should be returned or only up to a given limit':
+        'Должны ли быть возвращены все результаты или только до заданного предела',
+    Limit: 'Лимит',
+    'If your table URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, tblJdmvbrgizbYICO is the table id':
+        'Если URL-адрес вашей таблицы выглядит так: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, tblJdmvbrgizbYICO — это идентификатор таблицы.',
+    'If your table URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, app11RovdGoX0YNsC is the base id':
+        'Если URL-адрес вашей таблицы выглядит так: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, app11RovdGoX0YNsC — это базовый идентификатор.',
+    'Do your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary.':
+        'Сделайте все возможное, чтобы ответить на вопросы. Не стесняйтесь использовать любые доступные инструменты для поиска соответствующей информации, только если это необходимо.',
+    'Single Column Extraction': 'Одноколоночная экстракция',
+    'Include whole document into the context window, if you get maximum context length error, please use model with higher context window like Claude 100k, or gpt4 32k':
+        'Включите весь документ в окно контекста. Если вы получаете ошибку максимальной длины контекста, используйте модель с окном с более высоким контекстом, например Claude 100k или gpt4 32k.',
+    'Disable File Download': 'Отключить загрузку файлов',
+    'Refer to <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">official guide</a> on how to create redis instance and get redis REST URL and Token':
+        'Обратитесь к <a target="_blank" href="https://upstash.com/docs/redis/overall/getstarted">официальному руководству</a> о том, как создать экземпляр Redis и получить URL-адрес REST Redis и токен.',
+    Namespace: 'Пространство имен',
+    'Time to Live (ms)': 'Время жизни (мс)',
+    'Use SSL': 'Использовать SSL',
+    'Prompt must include 3 input variables: {input}, {dialect}, {table_info}. You can refer to official guide from description above':
+        'Приглашение должно включать три входные переменные: {input}, {dialect}, {table_info}. Вы можете обратиться к официальному руководству из описания выше.',
+    'You can provide custom prompt to the chain. This will override the existing default prompt used. See <a target="_blank" href="https://python.langchain.com/docs/integrations/tools/sqlite#customize-prompt">guide</a>':
+        'Вы можете предоставить цепочке индивидуальные запросы. Это переопределит существующее приглашение по умолчанию. См. <a target="_blank" href="https://python.langchain.com/docs/integrations/tools/sqlite#customize-prompt">руководство</a>.',
+    'If you are querying for several rows of a table you can select the maximum number of results you want to get by using the "top_k" parameter (default is 10). This is useful for avoiding query results that exceed the prompt max length or consume tokens unnecessarily.':
+        'Если вы запрашиваете несколько строк таблицы, вы можете выбрать максимальное количество результатов, которые хотите получить, используя параметр «top_k» (по умолчанию — 10). Это полезно, чтобы избежать результатов запроса, которые превышают максимальную длину приглашения или ненужно потребляют токены.',
+    'Number of sample row for tables to load for info.': 'Количество образцов строк для таблиц, загружаемых для информации.',
+    'Tables to ignore for queries, seperated by comma. Can only use Ignore Tables or Include Tables':
+        'Таблицы, которые следует игнорировать для запросов, разделенные запятой. Можно использовать только «Игнорировать таблицы» или «Включить таблицы».',
+    'Tables to include for queries, seperated by comma. Can only use Include Tables or Ignore Tables':
+        'Таблицы, включаемые в запросы, разделенные запятой. Можно использовать только «Включить таблицы» или «Игнорировать таблицы».',
+    'Vectara Store': 'Хринилище Vectara',
+    'Summarize the results fetched from Vectara. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer">more</a>':
+        'Обобщите результаты, полученные от Vectara. Прочтите <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer">подробнее</a>',
+    'Summarizer Prompt Name': 'Имя подсказки сумматора',
+    'Response Language': 'Язык ответа',
+    'Max Summarized Results': 'Максимальные суммарные результаты',
+    'Maximum results used to build the summarized response': 'Максимальные результаты, используемые для построения обобщенного ответа',
+    'Return the response in specific language. If not selected, Vectara will automatically detects the language. Read <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages">more</a>':
+        'Верните ответ на определенном языке. Если этот параметр не выбран, Vectara автоматически определит язык. Прочтите <a target="_blank" href="https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages">подробнее</a>',
+    'In beta, available to both Growth and Scale Vectara users': 'В бета-версии доступно как пользователям Growth, так и Scale Vectara.',
+    'Only available to paying Scale Vectara users': 'Доступно только платным пользователям Scale Vectara.',
+    'In beta, only available to paying Scale Vectara users': 'В бета-версии доступно только платным пользователям Scale Vectara.',
+    Region: 'Регион',
+    'AWS Credential': 'Учетные данные AWS',
+    'Custom Model Name': 'Пользовательское название модели',
+    'Max Tokens to Sample': 'Максимальное количество токенов для выборки',
+    'MistralAI API Key': 'API-ключ MistralAI',
+    'Random Seed': 'Случайное зерно',
+    'Safe Mode': 'Безопасный режим',
+    'The number of GQA groups in the transformer layer. Required for some models, for example it is 8 for llama2:70b. Refer to <a target="_blank" href="https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values">docs</a> for more details':
+        'Количество групп GQA на уровне трансформатора. Требуется для некоторых моделей, например для llama2:70b это 8. Дополнительные сведения см. в <a target="_blank" href="https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values">документах</a>. подробности',
+    'Folder Path': 'Путь к папке',
+    'Unstructured API URL': 'Неструктурированный URL-адрес API',
+    'Unstructured API URL. Read <a target="_blank" href="https://unstructured-io.github.io/unstructured/introduction.html#getting-started">more</a> on how to get started':
+        'Неструктурированный URL-адрес API. Прочтите <a target="_blank" href="https://unstructured-io.github.io/unstructured/introduction.html#getting-started">подробнее</a> о том, как начать работу.',
+    'Element Type': 'Тип элемента',
+    'Unstructured partition document into different types, select the types to return. If not selected, all types will be returned':
+        'Неструктурированный документ разбиения на разные типы, выберите типы для возврата. Если не выбрано, будут возвращены все типы.',
+    'Refer to <a target="_blank" href="https://unstructured.io/#get-api-key">official guide</a> on how to get api key on Unstructured':
+        'Обратитесь к <a target="_blank" href="https://unstructured.io/#get-api-key">официальному руководству</a> о том, как получить ключ API в Unstructured.',
+    'Wait for selector to load': 'Подождите, пока селектор загрузится',
+    'Wait Until': 'Подожди до',
+    "Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)":
+        'Получение всех ссылок может занять много времени, и все ссылки будут добавлены снова, если состояние потока изменится (например: другой URL-адрес, размер фрагмента и т. д.).',
+    'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.':
+        'Используется только в том случае, если выбран «Метод получения относительных ссылок». Установите 0, чтобы получить все относительные ссылки, ограничение по умолчанию — 10.',
+    'Select a go to wait until option': 'Выберите вариант «Подождать, пока»',
+    'CSS selectors like .div or #div': 'Селекторы CSS, такие как .div или #div',
+    "When the initial HTML document's DOM has been loaded and parsed": 'Когда DOM исходного HTML-документа загружен и проанализирован.',
+    "When the complete HTML document's DOM has been loaded and parsed": 'Когда полный DOM HTML-документа загружен и проанализирован.',
+    'Navigation is finished when there are no more than 0 network connections for at least 500 ms':
+        'Навигация завершается, когда в течение не менее 500 мс имеется не более 0 сетевых подключений.',
+    'Navigation is finished when there are no more than 2 network connections for at least 500 ms':
+        'Навигация завершается, когда имеется не более 2 сетевых подключений в течение не менее 500 мс.',
+    'A list of Node IDs, seperated by comma. Refer to <a target="_blank" href="https://www.figma.com/community/plugin/758276196886757462/Node-Inspector">official guide</a> on how to get Node IDs':
+        'Список идентификаторов узлов, разделенных запятой. Обратитесь к <a target="_blank" href="https://www.figma.com/community/plugin/758276196886757462/Node-Inspector">официальному руководству</a> о том, как получить идентификаторы узлов.',
+    'Your Unstructured.io URL. Read <a target="_blank" href="https://unstructured-io.github.io/unstructured/introduction.html#getting-started">more</a> on how to get started':
+        'Ваш URL-адрес Unstructured.io. Прочтите <a target="_blank" href="https://unstructured-io.github.io/unstructured/introduction.html#getting-started">подробнее</a> о том, как начать работу.',
+    'The object key (or key name) that uniquely identifies object in an Amazon S3 bucket':
+        'Ключ объекта (или имя ключа), который однозначно идентифицирует объект в корзине Amazon S3.',
+    'Object Key': 'Ключ объекта',
+    'Unstructured API KEY': 'Неструктурированный API-КЛЮЧ',
+    'NarrativeText Only': 'Повествование Только текст',
+    'File Path': 'Путь к файлу',
+    'Consider operation to be finished when the load event is fired.':
+        'Считайте, что операция завершена при возникновении события загрузки.',
+    'Consider operation to be finished when the DOMContentLoaded event is fired.':
+        'Считайте, что операция завершена при возникновении события DOMContentLoaded.',
+    'Navigation is finished when there are no more connections for at least 500 ms.':
+        'Навигация завершается, когда в течение как минимум 500 мс больше нет соединений.',
+    'Consider operation to be finished when network response is received and the document started loading.':
+        'Считайте, что операция завершена, когда получен ответ сети и документ начал загружаться.',
+    'The last The 32 char hex in the url path. For example: https://www.notion.so/skarard/LangChain-Notion-API-b34ca03f219c4420a6046fc4bdfdf7b4, b34ca03f219c4420a6046fc4bdfdf7b4 is the Page ID':
+        'Последний шестнадцатеричный код длиной 32 символа в URL-пути. Например: https://www.notion.so/skarard/LangChain-Notion-API-b34ca03f219c4420a6046fc4bdfdf7b4, b34ca03f219c4420a6046fc4bdfdf7b4 — это идентификатор страницы.',
+    'Notion Page Id': 'Id страницы Notion',
+    'Web Path': 'Веб-путь',
+    'Should Load All Paths': 'Должны загрузить все пути',
+    'If want to load all paths from the GitBook provide only root path e.g.https://docs.gitbook.com/ ':
+        'Если вы хотите загрузить все пути из GitBook, укажите только корневой путь, например https://docs.gitbook.com/',
+    'Load from all paths in a given GitBook': 'Загрузка со всех путей в данном GitBook.',
+    Method: 'Метод',
+    'Pointer Extraction': 'Извлечение указателя',
+    'Jsonlines File': 'Файл Jsonlines',
+    'Extracting multiple pointers': 'Извлечение нескольких указателей',
+    'Pointers Extraction (separated by commas)': 'Извлечение указателей (через запятую)',
+    'Extracting a single column': 'Извлечение одного столбца',
+    'Get folder path': 'Получить путь к папке',
+    'If your URL looks like - https://www.notion.so/abcdefh?v=long_hash_2, then abcdefh is the database ID':
+        'Если ваш URL-адрес выглядит так: https://www.notion.so/abcdefh?v=long_hash_2, то abcdefh — это идентификатор базы данных.',
+    'Notion Database Id': 'Id базы данных Notion',
+    'Specify a CSS selector to select the content to be extracted': 'Укажите селектор CSS, чтобы выбрать содержимое для извлечения.',
+    'Use MMap': 'Используйте MMap',
+    'Google Vertex AI credential. If you are using a GCP service like Cloud Run, or if you have installed default credentials on your local machine, you do not need to set this credential.':
+        'Учетные данные Google Vertex AI. Если вы используете службу GCP, например Cloud Run, или если вы установили учетные данные по умолчанию на своем локальном компьютере, вам не нужно устанавливать эти учетные данные.',
+    'Repetition Penalty': 'Штраф за повторение',
+    'System prompt': 'Системная подсказка',
+    'Top Responses': 'Лучшие ответы',
+    'Window Size': 'Размер окна',
+    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>':
+        'Если не указано, будет использоваться случайный идентификатор. Узнайте <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">подробнее</a>',
+    'To use the online version, leave the URL blank. More details at https://getmetal.io.':
+        'Чтобы использовать онлайн-версию, оставьте URL-адрес пустым. Подробности на https://getmetal.io.',
+    'Partition Key': 'Ключ раздела',
+    'The aws region in which table is located': 'Регион aws, в котором находится таблица',
+    'Session ID': 'Идентификатор сессии',
+    "How much to increase K by each time. It'll fetch N results, then N + kIncrement, then N + kIncrement * 2, etc.":
+        'На сколько каждый раз увеличивать К. Он получит N результатов, затем N + kIncrement, затем N + kIncrement * 2 и т. д.',
+    'Minimum Similarity Score (%)': 'Минимальный показатель сходства (%)',
+    'The maximum number of results to fetch': 'Максимальное количество результатов для получения',
+    'Similarity Threshold Retriever': 'Ретривер порога сходства',
+    'Finds results with at least this similarity score': 'Находит результаты хотя бы с этим показателем сходства',
+    'Select a pre-defined prompt': 'Выберите заранее заданную подсказку',
+    'Select Defined Prompt': 'Выберите определенное приглашение',
+    'If custom prompt is used, this will override Defined Prompt':
+        'Если используется пользовательское приглашение, оно переопределит заданное приглашение.',
+    'Encoding Name': 'Имя кодировки',
+    Language: 'Язык',
+    'Separator to determine when to split the text, will override the default separator':
+        'Разделитель, определяющий, когда разбивать текст, переопределяет разделитель по умолчанию.',
+    'Custom Separator': 'Пользовательский разделитель',
+    'Only needed if the YAML OpenAPI Spec requires authentication':
+        'Требуется только в том случае, если спецификация YAML OpenAPI требует аутентификации.',
+    'Zep Collection': 'Коллекция Zep',
+    'Zep Metadata Filter': 'Фильтр метаданных Zep',
+    'Only return points which satisfy the conditions': 'Возвращайте только те точки, которые удовлетворяют условиям',
+    'Refer to <a target="_blank" href="https://qdrant.tech/documentation/concepts/collections">collection docs</a> for more reference':
+        'Дополнительные сведения см. в <a target="_blank" href="https://qdrant.tech/documentation/concepts/collections">документации по коллекциям</a>.',
+    'Similarity measure used in Qdrant.': 'Мера сходства, используемая в Qdrant.',
+    'Additional Configuration': 'Дополнительная конфигурация',
+    'Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance.\n        Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.':
+        'Используйте поле Cloud ID, чтобы ввести свой Elastic Cloud ID или URL-адрес экземпляра сервера Elastic.\n См. <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference /current/setting-up-authentication.html">официальное руководство</a> о том, как получить пароль пользователя от ElasticSearch.',
+    'Similarity measure used in Elasticsearch.': 'Мера сходства, используемая в Elasticsearch.'
 }

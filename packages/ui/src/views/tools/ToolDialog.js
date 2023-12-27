@@ -28,6 +28,7 @@ import useApi from 'hooks/useApi'
 import useNotifier from 'utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from 'utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { translationObject } from 'translate'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in StartAI
@@ -403,7 +404,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title={'Tool name must be small capital letter with underscore. Ex: my_tool'}
+                                title={translationObject['Tool name must be small capital letter with underscore. Ex: my_tool'] || ''}
                             />
                         </Typography>
                     </Stack>
@@ -425,7 +426,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title={'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'}
+                                title={
+                                    translationObject[
+                                        'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
+                                    ] || ''
+                                }
                             />
                         </Typography>
                     </Stack>

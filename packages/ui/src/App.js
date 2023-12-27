@@ -34,8 +34,7 @@ const App = () => {
                 ymID = 95948140
                 break
             default:
-                // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
-                ymID = 0
+                ymID = 95948128
                 break
         }
         useEffect(() => {
