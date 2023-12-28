@@ -19,6 +19,7 @@ export class SimplePromptModerationRunner implements Moderation {
         if (this.model) {
             const denyArray = this.denyList.split('\n')
             for (const denyStr of denyArray) {
+                if (!denyStr || denyStr === '') continue
                 const res = await this.model.invoke(
                     `Are these two sentences similar to each other? Only return Yes or No.\nFirst sentence: ${input}\nSecond sentence: ${denyStr}`
                 )
