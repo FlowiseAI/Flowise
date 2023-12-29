@@ -321,7 +321,10 @@ class OpenAIAssistant_Agents implements INode {
                                     }
                                 }
 
-                                if (submitToolOutputs.length) {
+                                const newRun = await openai.beta.threads.runs.retrieve(threadId, runId)
+                                const newStatus = newRun?.status
+
+                                if (submitToolOutputs.length && newStatus !== 'in_progress') {
                                     await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
                                         tool_outputs: submitToolOutputs
                                     })
