@@ -324,14 +324,19 @@ class OpenAIAssistant_Agents implements INode {
                                 const newRun = await openai.beta.threads.runs.retrieve(threadId, runId)
                                 const newStatus = newRun?.status
 
-                                if (submitToolOutputs.length && newStatus !== 'in_progress') {
-                                    await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
-                                        tool_outputs: submitToolOutputs
-                                    })
-                                    resolve(state)
-                                } else {
-                                    await openai.beta.threads.runs.cancel(threadId, runId)
-                                    resolve('requires_action_retry')
+                                try {
+                                    if (submitToolOutputs.length && newStatus === 'requires_action') {
+                                        await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
+                                            tool_outputs: submitToolOutputs
+                                        })
+                                        resolve(state)
+                                    } else {
+                                        await openai.beta.threads.runs.cancel(threadId, runId)
+                                        resolve('requires_action_retry')
+                                    }
+                                } catch (e) {
+                                    clearInterval(timeout)
+                                    reject(new Error(`Error submitting tool outputs: ${state}, Thread ID: ${threadId}, Run ID: ${runId}`))
                                 }
                             }
                         } else if (state === 'cancelled' || state === 'expired' || state === 'failed') {
