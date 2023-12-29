@@ -44,3 +44,9 @@
 
 ## compressed
 **/*.tgz
+
+.gitcommands
+.gitconfig
+.bash-helpers
+.gitcommands
+.gitconfig

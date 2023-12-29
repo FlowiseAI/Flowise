@@ -1,35 +1,38 @@
-# Flowise Docker Hub Image
+# Docker User Guide
 
-Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/flowiseai/flowise/general)
+## 📦 Prerequisites
+- NPM or CLI console that supports bash
 
-## Usage
+## 🌱 Env Variables
+The Autosetup will copy the ENV file automatically, but if you want to customize the configuration, you can copy the `.env.example` file to `.env` and change the values. Otherwise, just skip this step.
 
-1. Create `.env` file and specify the `PORT` (refer to `.env.example`)
-2. `docker-compose up -d`
-3. Open [http://localhost:3000](http://localhost:3000)
-4. You can bring the containers down by `docker-compose stop`
+Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/environment-variables)
+
+## 🚀 Quick Start  
+
+#### Method A: 
+From the root dir, run the following command:  
+`npm run docker:start`  
+
+#### Method B: 
+From the root dir, run the following command: 
+`sh ./docker/start`  
+
+Open [http://localhost:3000](http://localhost:3000)  
+
+**Note**: Yarn install, yarn build and start, are automatically executed when you run the start script. If they are not or you need to add other packages or execute them manually, enter the container and run them from there. Do not run these commands outside of the container because they will not work or bring issues with docker performance. 
+Use: `npm run docker:cli` it will get you inside the docker container bash.
 
 ## 🔒 Authentication
 
-1. Create `.env` file and specify the `PORT`, `FLOWISE_USERNAME`, and `FLOWISE_PASSWORD` (refer to `.env.example`)
-2. Pass `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `docker-compose.yml` file:
+1. Pass `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `docker-compose.yml` file:
     ```
     environment:
         - PORT=${PORT}
         - FLOWISE_USERNAME=${FLOWISE_USERNAME}
         - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
     ```
-3. `docker-compose up -d`
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
+2. Run `npm run docker:start`
+3. Open [http://localhost:3000](http://localhost:3000)
+5. You can bring the containers down by `npm run docker:stop`
 
-## 🌱 Env Variables
-
-If you like to persist your data (flows, logs, apikeys, credentials), set these variables in the `.env` file inside `docker` folder:
-
--   DATABASE_PATH=/root/.flowise
--   APIKEY_PATH=/root/.flowise
--   LOG_PATH=/root/.flowise/logs
--   SECRETKEY_PATH=/root/.flowise
-
-Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/environment-variables)

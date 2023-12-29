@@ -1,21 +1,42 @@
-FROM node:18-alpine
+# @knighttower - https://knighttower.io
 
-USER root
+# Use Node.js official base image
+FROM node:20.2.0-slim
 
-RUN apk add --no-cache git
-RUN apk add --no-cache python3 py3-pip make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
+ARG DOCKER_WORKSPACE_DIR
 
-# Install Chromium
-RUN apk add --no-cache chromium
+# Set environment variables
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Set working directory
+WORKDIR $DOCKER_WORKSPACE_DIR
 
-# You can install a specific version like: flowise@1.0.0
-RUN npm install -g flowise
+# Install necessary packages to extend the dev environment and allow other integrations or manipulations
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    python3 \
+    python3-pip \
+    make \
+    g++ \
+    git \
+    libcairo2-dev \
+    libpango1.0-dev \
+    chromium \
+    bash \
+    wget \
+    nano \
+    gcc \
+    zip \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /data
+# Ensure .bashrc exists for root and is executable
+RUN touch ~/.bashrc && chmod +x ~/.bashrc
+SHELL ["/bin/bash", "--login", "-c"]
 
-CMD "flowise"
+# Expose port 3000
+EXPOSE 3000

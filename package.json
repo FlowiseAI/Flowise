@@ -23,7 +23,10 @@
         "lint-fix": "yarn lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "yarn typeorm migration:create"
+        "migration:create": "yarn typeorm migration:create",
+        "docker:start": "sh ./docker/start",
+        "docker:stop": "sh ./docker/stop",
+        "docker:cli": "sh ./docker/cli"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
