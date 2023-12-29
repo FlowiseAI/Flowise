@@ -3,6 +3,7 @@ import { BaseRetriever } from 'langchain/schema/retriever'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
 import { getCredentialData, getCredentialParam } from '../../../src'
 import { CohereRerank } from './CohereRerank'
+import { VectorStoreRetriever } from 'langchain/vectorstores/base'
 
 class CohereRerankRetriever_Retrievers implements INode {
     label: string
@@ -56,6 +57,16 @@ class CohereRerankRetriever_Retrievers implements INode {
                 ],
                 default: 'rerank-english-v2.0',
                 optional: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to the TopK of the Base Retriever',
+                placeholder: '0',
+                type: 'number',
+                default: 0,
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -65,8 +76,14 @@ class CohereRerankRetriever_Retrievers implements INode {
         const model = nodeData.inputs?.model as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
+        const topK = nodeData.inputs?.topK as string
+        let k = topK ? parseFloat(topK) : 4
 
-        const cohereCompressor = new CohereRerank(cohereApiKey, model)
+        if (k <= 0) {
+            k = (baseRetriever as VectorStoreRetriever).k
+        }
+
+        const cohereCompressor = new CohereRerank(cohereApiKey, model, k)
         return new ContextualCompressionRetriever({
             baseCompressor: cohereCompressor,
             baseRetriever: baseRetriever

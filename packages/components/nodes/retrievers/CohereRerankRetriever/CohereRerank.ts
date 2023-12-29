@@ -5,12 +5,13 @@ import axios from 'axios'
 export class CohereRerank extends BaseDocumentCompressor {
     private cohereAPIKey: any
     private COHERE_API_URL = 'https://api.cohere.ai/v1/rerank'
-    private model: string
-
-    constructor(cohereAPIKey: string, model: string) {
+    private readonly model: string
+    private readonly k: number
+    constructor(cohereAPIKey: string, model: string, k: number) {
         super()
         this.cohereAPIKey = cohereAPIKey
         this.model = model
+        this.k = k
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
@@ -30,6 +31,7 @@ export class CohereRerank extends BaseDocumentCompressor {
         }
         const data = {
             model: this.model,
+            topN: this.k,
             max_chunks_per_doc: 10,
             query: query,
             return_documents: false,
