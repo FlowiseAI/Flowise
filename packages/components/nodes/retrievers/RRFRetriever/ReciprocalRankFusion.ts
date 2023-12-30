@@ -48,7 +48,6 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
         multipleQueries.text.split('\n').map((q: string) => {
             queries.push(q)
         })
-        console.log(JSON.stringify(queries))
         const docList: Document<Record<string, any>>[][] = []
         for (let i = 0; i < queries.length; i++) {
             const resultOne = await this.baseRetriever.vectorStore.similaritySearch(queries[i], 5)
