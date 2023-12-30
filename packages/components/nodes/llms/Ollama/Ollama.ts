@@ -1,8 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { Ollama } from 'langchain/llms/ollama'
+import { Ollama, OllamaInput } from 'langchain/llms/ollama'
 import { BaseCache } from 'langchain/schema'
-import { OllamaInput } from 'langchain/dist/util/ollama'
 import { BaseLLMParams } from 'langchain/llms/base'
 
 class Ollama_LLMs implements INode {
