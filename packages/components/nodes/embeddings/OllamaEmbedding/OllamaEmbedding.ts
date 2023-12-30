@@ -20,7 +20,7 @@ class OllamaEmbedding_Embeddings implements INode {
         this.name = 'ollamaEmbedding'
         this.version = 1.0
         this.type = 'OllamaEmbeddings'
-        this.icon = 'ollama.png'
+        this.icon = 'Ollama.svg'
         this.category = 'Embeddings'
         this.description = 'Generate embeddings for a given text using open source model on Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(OllamaEmbeddings)]
