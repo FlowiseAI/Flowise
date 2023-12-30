@@ -147,7 +147,11 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                                             node.data.inputs.variableName ??
                                                             node.data.id
                                                         }
-                                                        secondary={`${selectedOutputAnchor?.label ?? 'output'} from ${node.data.label}`}
+                                                        secondary={
+                                                            node.data.name === 'ifElseFunction'
+                                                                ? `${node.data.description}`
+                                                                : `${selectedOutputAnchor?.label ?? 'output'} from ${node.data.label}`
+                                                        }
                                                     />
                                                 </ListItem>
                                             </ListItemButton>

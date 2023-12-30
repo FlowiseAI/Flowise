@@ -20,7 +20,7 @@ class HuggingFaceInference_LLMs implements INode {
         this.name = 'huggingFaceInference_LLMs'
         this.version = 2.0
         this.type = 'HuggingFaceInference'
-        this.icon = 'huggingface.png'
+        this.icon = 'HuggingFace.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around HuggingFace large language models'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]
