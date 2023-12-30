@@ -65,14 +65,14 @@ class Airtable_DocumentLoaders implements INode {
                 optional: true  
             },
             {
-                label: 'Exclude Field Ids', 
-                name: 'excludeFieldIds', 
+                label: 'Exclude Field Names', 
+                name: 'excludeFieldNames', 
                 type: 'string', 
-                placeholder: 'fld1u0qUz0SoOQ9Gg, fldAMOvPfwxr12VrK',  
+                placeholder: 'Name, Assignee',  
                 optional: true, 
                 additionalParams: true,
                 description: 
-                    'Comma-separated list of field ids to exclude'
+                    'Comma-separated list of field names to exclude'
             },
             {
                 label: 'Return All',
@@ -103,7 +103,7 @@ class Airtable_DocumentLoaders implements INode {
         const baseId = nodeData.inputs?.baseId as string
         const tableId = nodeData.inputs?.tableId as string
         const viewId = nodeData.inputs?.viewId as string
-        const excludeFieldIds = nodeData.inputs?.excludeFieldIds as string
+        const excludeFieldNames = nodeData.inputs?.excludeFieldNames as string
         const returnAll = nodeData.inputs?.returnAll as boolean
         const limit = nodeData.inputs?.limit as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
@@ -116,7 +116,7 @@ class Airtable_DocumentLoaders implements INode {
             baseId,
             tableId,
             viewId,
-            excludeFieldIds: excludeFieldIds ? excludeFieldIds.split(',').map(id => id.trim()) : [],
+            excludeFieldNames: excludeFieldNames ? excludeFieldNames.split(',').map(id => id.trim()) : [],
             returnAll,
             accessToken,
             limit: limit ? parseInt(limit, 10) : 100
@@ -157,7 +157,7 @@ interface AirtableLoaderParams {
     tableId: string
     accessToken: string
     viewId?: string
-    excludeFieldIds?: string[]
+    excludeFieldNames?: string[]
     limit?: number
     returnAll?: boolean
 }
@@ -180,7 +180,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly viewId?: string
 
-    public readonly excludeFieldIds: string[]
+    public readonly excludeFieldNames: string[]
 
     public readonly accessToken: string
 
@@ -188,12 +188,12 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly returnAll: boolean
 
-    constructor({ baseId, tableId, viewId, excludeFieldIds = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
+    constructor({ baseId, tableId, viewId, excludeFieldNames = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
         super()
         this.baseId = baseId
         this.tableId = tableId
         this.viewId = viewId
-        this.excludeFieldIds = excludeFieldIds
+        this.excludeFieldNames = excludeFieldNames
         this.accessToken = accessToken
         this.limit = limit
         this.returnAll = returnAll
@@ -226,7 +226,7 @@ class AirtableLoader extends BaseDocumentLoader {
         const fields = { ...page.fields };
 
         // Exclude any specified fields
-        this.excludeFieldIds.forEach(id => {  
+        this.excludeFieldNames.forEach(id => {  
             delete fields[id];  
         });
 
