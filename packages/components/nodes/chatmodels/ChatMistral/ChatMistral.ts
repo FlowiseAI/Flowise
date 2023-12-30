@@ -125,8 +125,6 @@ class ChatMistral_ChatModels implements INode {
         const randomSeed = nodeData.inputs?.safeMode as string
         const overrideEndpoint = nodeData.inputs?.overrideEndpoint as string
         const streaming = nodeData.inputs?.streaming as boolean
-        // Waiting fix from langchain + mistral to enable streaming - https://github.com/mistralai/client-js/issues/18
-
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatMistralAIInput = {
