@@ -10,13 +10,15 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
     private readonly llm: BaseLanguageModel
     private readonly queryCount: number
     private readonly topK: number
+    private readonly c: number
     private baseRetriever: VectorStoreRetriever
-    constructor(llm: BaseLanguageModel, baseRetriever: VectorStoreRetriever, queryCount: number, topK: number) {
+    constructor(llm: BaseLanguageModel, baseRetriever: VectorStoreRetriever, queryCount: number, topK: number, c: number) {
         super()
         this.queryCount = queryCount
         this.llm = llm
         this.baseRetriever = baseRetriever
         this.topK = topK
+        this.c = c
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
@@ -57,7 +59,7 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
             docList.push(docs)
         }
 
-        return this.reciprocalRankFunction(docList, 60)
+        return this.reciprocalRankFunction(docList, this.c)
     }
 
     reciprocalRankFunction(docList: Document<Record<string, any>>[][], k: number): Document<Record<string, any>>[] {

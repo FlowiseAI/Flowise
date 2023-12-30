@@ -57,6 +57,18 @@ class RRFRetriever_Retrievers implements INode {
                 default: 0,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Constant',
+                name: 'c',
+                description:
+                    'A constant added to the rank, controlling the balance between the importance of high-ranked items and the consideration given to lower-ranked items.\n' +
+                    'Default is 60',
+                placeholder: '60',
+                type: 'number',
+                default: 60,
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -68,12 +80,14 @@ class RRFRetriever_Retrievers implements INode {
         const q = queryCount ? parseFloat(queryCount) : 4
         const topK = nodeData.inputs?.topK as string
         let k = topK ? parseFloat(topK) : 4
+        const constantC = nodeData.inputs?.c as string
+        let c = topK ? parseFloat(constantC) : 60
 
         if (k <= 0) {
             k = (baseRetriever as VectorStoreRetriever).k
         }
 
-        const ragFusion = new ReciprocalRankFusion(llm, baseRetriever as VectorStoreRetriever, q, k)
+        const ragFusion = new ReciprocalRankFusion(llm, baseRetriever as VectorStoreRetriever, q, k, c)
         return new ContextualCompressionRetriever({
             baseCompressor: ragFusion,
             baseRetriever: baseRetriever
