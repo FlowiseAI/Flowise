@@ -46,6 +46,7 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
+                ssl: process.env.DATABASE_SSL === 'true',
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
