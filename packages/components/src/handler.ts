@@ -536,7 +536,6 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             const trace: LangfuseTraceClient | undefined = this.handlers['langFuse'].trace[parentIds['langFuse'].trace]
             if (trace) {
-                trace.id
                 const generation = trace.generation({
                     name,
                     input: input
