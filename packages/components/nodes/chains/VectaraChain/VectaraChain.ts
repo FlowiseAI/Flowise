@@ -249,14 +249,14 @@ class VectaraChain_Chains implements INode {
         }))
 
         const mmrRerankerId = 272725718 // Vectara reranker ID for MMR
-        const mmrEnabled = vectaraFilter?.mmrConfig?.mmrDiversityBias > 0
+        const mmrEnabled = vectaraFilter?.mmrConfig?.enabled
 
         const data = {
             query: [
                 {
                     query: input,
                     start: 0,
-                    numResults: mmrEnabled ? vectaraFilter?.mmrK : topK,
+                    numResults: mmrEnabled ? vectaraFilter?.mmrTopK : topK,
                     corpusKey: corpusKeys,
                     contextConfig: {
                         sentencesAfter: vectaraFilter?.contextConfig?.sentencesAfter ?? 2,
