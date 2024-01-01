@@ -110,8 +110,8 @@ class Vectara_VectorStores implements INode {
             {
                 label: 'MMR diversity bias',
                 name: 'mmrDiversityBias',
-                description: 'The diversity bias to use for MMR. Defaults to 0.3',
-                placeholder: '0.3',
+                description: 'The diversity bias to use for MMR. Defaults to 0 (MMR disabled)',
+                placeholder: '0.0',
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -230,7 +230,7 @@ class Vectara_VectorStores implements INode {
         if (sentencesBefore) vectaraContextConfig.sentencesBefore = sentencesBefore
         if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
         vectaraFilter.contextConfig = vectaraContextConfig
-        if (mmrK) vectaraFilter.mmrConfig = { mmrK: mmrK, diversityBias: mmrDiversityBias }
+        vectaraFilter.mmrConfig = { mmrK: mmrK, diversityBias: mmrDiversityBias }
 
         const vectorStore = new VectaraStore(vectaraArgs)
 

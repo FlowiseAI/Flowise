@@ -249,18 +249,20 @@ class VectaraChain_Chains implements INode {
         }))
 
         const mmrRerankerId = 272725718 // Vectara reranker ID for MMR
+        const mmrEnabled = vectaraFilter?.mmrConfig?.mmrDiversityBias > 0
+
         const data = {
             query: [
                 {
                     query: input,
                     start: 0,
-                    numResults: vectaraFilter?.mmrConfig?.mmrK > 0 ? vectaraFilter?.mmrK : topK,
+                    numResults: mmrEnabled ? vectaraFilter?.mmrK : topK,
                     corpusKey: corpusKeys,
                     contextConfig: {
                         sentencesAfter: vectaraFilter?.contextConfig?.sentencesAfter ?? 2,
                         sentencesBefore: vectaraFilter?.contextConfig?.sentencesBefore ?? 2
                     },
-                    ...(vectaraFilter?.mmrConfig?.mmrK > 0
+                    ...(mmrEnabled
                         ? {
                               rerankingConfig: {
                                   rerankerId: mmrRerankerId,
@@ -299,7 +301,7 @@ class VectaraChain_Chains implements INode {
 
             // remove responses that are not in the topK (in case of MMR)
             // Note that this does not really matter functionally due to the reorder citations, but it is more efficient
-            const maxResponses = vectaraFilter?.mmrConfig?.mmrK > 0 ? Math.min(responses.length, topK) : responses.length
+            const maxResponses = mmrEnabled ? Math.min(responses.length, topK) : responses.length
             if (responses.length > maxResponses) {
                 responses.splice(0, maxResponses)
             }
