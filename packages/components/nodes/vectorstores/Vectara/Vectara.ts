@@ -1,5 +1,12 @@
 import { flatten } from 'lodash'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from 'langchain/vectorstores/vectara'
+import {
+    VectaraStore,
+    VectaraLibArgs,
+    VectaraFilter,
+    VectaraContextConfig,
+    VectaraFile,
+    VectaraMMRConfig
+} from 'langchain/vectorstores/vectara'
 import { Document } from 'langchain/document'
 import { Embeddings } from 'langchain/embeddings/base'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
@@ -230,7 +237,10 @@ class Vectara_VectorStores implements INode {
         if (sentencesBefore) vectaraContextConfig.sentencesBefore = sentencesBefore
         if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
         vectaraFilter.contextConfig = vectaraContextConfig
-        vectaraFilter.mmrConfig = { mmrK: mmrK, diversityBias: mmrDiversityBias }
+        const mmrConfig: VectaraMMRConfig = {}
+        mmrConfig.mmrK = mmrK
+        mmrConfig.diversityBias = mmrDiversityBias
+        vectaraFilter.mmrConfig = mmrConfig
 
         const vectorStore = new VectaraStore(vectaraArgs)
 
