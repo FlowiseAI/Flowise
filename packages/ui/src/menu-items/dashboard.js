@@ -1,5 +1,16 @@
 // assets
-import { IconHome, IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconMenu2, IconSettings } from '@tabler/icons'
+import {
+    IconHome,
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconVariable,
+    IconMenu2,
+    IconSettings
+} from '@tabler/icons'
 
 // constant
 const icons = { IconHome, IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconMenu2, IconSettings }
