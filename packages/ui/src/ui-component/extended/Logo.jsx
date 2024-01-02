@@ -1,5 +1,4 @@
-import logo from '@/assets/images/flowise_logo.png'
-import logoDark from '@/assets/images/flowise_logo_dark.png'
+import logo from 'assets/images/productminds-black-400w.png'
 
 import { useSelector } from 'react-redux'
 
@@ -11,8 +10,8 @@ const Logo = () => {
     return (
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
             <img
-                style={{ objectFit: 'contain', height: 'auto', width: 150 }}
-                src={customization.isDarkMode ? logoDark : logo}
+                style={{ objectFit: 'contain', height: 'auto', width: 150, filter: customization.isDarkMode ? 'invert(1)' : 'invert(0)' }}
+                src={logo}
                 alt='Productminds'
             />
         </div>
