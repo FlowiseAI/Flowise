@@ -1282,13 +1282,13 @@ export class App {
         // ----------------------------------------
         // Variables
         // ----------------------------------------
-        this.app.get('/api/v1/variables', async (req: Request, res: Response) => {
+        indexRouter.get('/api/v1/variables', async (req: Request, res: Response) => {
             const variables = await getDataSource().getRepository(Variable).find()
             return res.json(variables)
         })
 
         // Create new variable
-        this.app.post('/api/v1/variables', async (req: Request, res: Response) => {
+        indexRouter.post('/api/v1/variables', async (req: Request, res: Response) => {
             const body = req.body
             const newVariable = new Variable()
             Object.assign(newVariable, body)
@@ -1298,7 +1298,7 @@ export class App {
         })
 
         // Update variable
-        this.app.put('/api/v1/variables/:id', async (req: Request, res: Response) => {
+        indexRouter.put('/api/v1/variables/:id', async (req: Request, res: Response) => {
             const variable = await this.AppDataSource.getRepository(Variable).findOneBy({
                 id: req.params.id
             })
@@ -1315,7 +1315,7 @@ export class App {
         })
 
         // Delete variable via id
-        this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
+        indexRouter.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })
             return res.json(results)
         })
