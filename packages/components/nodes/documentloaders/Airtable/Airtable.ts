@@ -55,14 +55,14 @@ class Airtable_DocumentLoaders implements INode {
                 description:
                     'If your table URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, tblJdmvbrgizbYICO is the table id'
             },
-            {  
-                label: 'View Id',  
-                name: 'viewId',  
-                type: 'string',  
-                placeholder: 'viw9UrP77Id0CE4ee',  
-                description:  
-                    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id',  
-                optional: true  
+            {
+                label: 'View Id',
+                name: 'viewId',
+                type: 'string',
+                placeholder: 'viw9UrP77Id0CE4ee',
+                description:
+                    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id',
+                optional: true
             },
             {
                 label: 'Return All',
