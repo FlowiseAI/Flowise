@@ -875,7 +875,9 @@ export const getEncryptionKey = async (): Promise<string> => {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
         const encryptKey = generateEncryptKey()
-        const defaultLocation = path.join(getUserHome(), '.flowise', 'encryption.key')
+        const defaultLocation = process.env.SECRETKEY_PATH
+            ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
+            : path.join(getUserHome(), '.flowise', 'encryption.key')
         await fs.promises.writeFile(defaultLocation, encryptKey)
         return encryptKey
     }
