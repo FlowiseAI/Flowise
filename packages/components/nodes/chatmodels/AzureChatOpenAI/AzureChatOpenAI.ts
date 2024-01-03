@@ -19,7 +19,7 @@ class AzureChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'Azure ChatOpenAI'
         this.name = 'azureChatOpenAI'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
@@ -100,6 +100,14 @@ class AzureChatOpenAI_ChatModels implements INode {
                 name: 'timeout',
                 type: 'number',
                 step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true,
                 additionalParams: true
             }
