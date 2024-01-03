@@ -55,24 +55,23 @@ class Airtable_DocumentLoaders implements INode {
                 description:
                     'If your table URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, tblJdmvbrgizbYICO is the table id'
             },
-            {  
-                label: 'View Id',  
-                name: 'viewId',  
-                type: 'string',  
-                placeholder: 'viw9UrP77Id0CE4ee',  
-                description:  
-                    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id',  
-                optional: true  
+            {
+                label: 'View Id',
+                name: 'viewId',
+                type: 'string',
+                placeholder: 'viw9UrP77Id0CE4ee',
+                description:
+                    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id',
+                optional: true
             },
             {
-                label: 'Exclude Field Names', 
-                name: 'excludeFieldNames', 
-                type: 'string', 
-                placeholder: 'Name, Assignee',  
-                optional: true, 
+                label: 'Exclude Field Names',
+                name: 'excludeFieldNames',
+                type: 'string',
+                placeholder: 'Name, Assignee',
+                optional: true,
                 additionalParams: true,
-                description: 
-                    'Comma-separated list of field names to exclude'
+                description: 'Comma-separated list of field names to exclude'
             },
             {
                 label: 'Return All',
@@ -116,7 +115,7 @@ class Airtable_DocumentLoaders implements INode {
             baseId,
             tableId,
             viewId,
-            excludeFieldNames: excludeFieldNames ? excludeFieldNames.split(',').map(id => id.trim()) : [],
+            excludeFieldNames: excludeFieldNames ? excludeFieldNames.split(',').map((id) => id.trim()) : [],
             returnAll,
             accessToken,
             limit: limit ? parseInt(limit, 10) : 100
@@ -223,12 +222,12 @@ class AirtableLoader extends BaseDocumentLoader {
     private createDocumentFromPage(page: AirtableLoaderPage): Document {
         // Generate the URL
         const pageUrl = `https://api.airtable.com/v0/${this.baseId}/${this.tableId}/${page.id}`
-        const fields = { ...page.fields };
+        const fields = { ...page.fields }
 
         // Exclude any specified fields
-        this.excludeFieldNames.forEach(id => {  
-            delete fields[id];  
-        });
+        this.excludeFieldNames.forEach((id) => {
+            delete fields[id]
+        })
 
         // Return a langchain document
         return new Document({
