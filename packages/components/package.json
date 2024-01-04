@@ -52,7 +52,7 @@
         "html-to-text": "^9.0.5",
         "husky": "^8.0.3",
         "ioredis": "^5.3.2",
-        "langchain": "^0.0.213",
+        "langchain": "^0.0.214",
         "langfuse": "2.0.2",
         "langfuse-langchain": "2.0.2",
         "langsmith": "0.0.53",
