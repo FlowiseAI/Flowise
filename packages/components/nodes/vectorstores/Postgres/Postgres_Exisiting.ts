@@ -53,6 +53,13 @@ class Postgres_Existing_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'SSL Connection',
+                name: 'sslConnection',
+                type: 'boolean',
+                default: false,
+                optional: false
+            },
+            {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
@@ -109,6 +116,7 @@ class Postgres_Existing_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const sslConnection = nodeData.inputs?.sslConnection as boolean
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -126,7 +134,8 @@ class Postgres_Existing_VectorStores implements INode {
             port: nodeData.inputs?.port as number,
             username: user,
             password: password,
-            database: nodeData.inputs?.database as string
+            database: nodeData.inputs?.database as string,
+            ssl: sslConnection
         }
 
         const args = {
