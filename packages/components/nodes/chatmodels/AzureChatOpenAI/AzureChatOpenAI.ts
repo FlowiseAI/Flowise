@@ -102,14 +102,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
-                optional: true,
-                additionalParams: true
             }
         ]
     }
