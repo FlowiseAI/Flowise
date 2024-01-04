@@ -257,14 +257,18 @@ class Qdrant_VectorStores implements INode {
      * @param qdrantServerUrl the url to get the port from
      */
     static determinePortByUrl(qdrantServerUrl: string) :number {
-        let port = 6333;
         const parsedUrl = new URL(qdrantServerUrl);
+
+        let port = parsedUrl.port ? parseInt(parsedUrl.port) : 6663
+
         if (parsedUrl.protocol === 'https:' && parsedUrl.port === '') {
             port = 443;
         }
         if (parsedUrl.protocol === 'http:' && parsedUrl.port === '') {
             port = 80;
         }
+
+
         return port;
     }
 }
