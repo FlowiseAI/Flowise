@@ -538,7 +538,7 @@ export class AnalyticHandler {
             if (trace) {
                 const generation = trace.generation({
                     name,
-                    prompt: input
+                    input: input
                 })
                 this.handlers['langFuse'].generation = { [generation.id]: generation }
                 returnIds['langFuse'].generation = generation.id
@@ -583,7 +583,7 @@ export class AnalyticHandler {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
                 generation.end({
-                    completion: output
+                    output: output
                 })
             }
         }
@@ -618,7 +618,7 @@ export class AnalyticHandler {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
                 generation.end({
-                    completion: error
+                    output: error
                 })
             }
         }
