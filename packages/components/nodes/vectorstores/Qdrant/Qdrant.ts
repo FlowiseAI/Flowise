@@ -268,7 +268,6 @@ class Qdrant_VectorStores implements INode {
             port = 80
         }
 
-
         return port
     }
 }
