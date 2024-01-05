@@ -161,6 +161,10 @@ Flowise support different environment variables to configure your instance. You 
 
 <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 
+### Sealos
+
+[![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+
 ### [AWS](https://docs.flowiseai.com/deployment/aws)
 
 ### [Azure](https://docs.flowiseai.com/deployment/azure)
