@@ -23,7 +23,7 @@ class Postgres_Existing_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres Load Existing Index'
         this.name = 'postgresExistingIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'

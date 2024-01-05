@@ -24,7 +24,7 @@ class PostgresUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres Upsert Document'
         this.name = 'postgresUpsert'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
