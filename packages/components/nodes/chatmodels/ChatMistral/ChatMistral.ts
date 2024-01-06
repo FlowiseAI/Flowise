@@ -20,7 +20,7 @@ class ChatMistral_ChatModels implements INode {
         this.name = 'chatMistralAI'
         this.version = 1.0
         this.type = 'ChatMistralAI'
-        this.icon = 'mistralai.png'
+        this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Mistral large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(ChatMistralAI)]
@@ -124,13 +124,13 @@ class ChatMistral_ChatModels implements INode {
         const safeMode = nodeData.inputs?.safeMode as boolean
         const randomSeed = nodeData.inputs?.safeMode as string
         const overrideEndpoint = nodeData.inputs?.overrideEndpoint as string
-        // Waiting fix from langchain + mistral to enable streaming - https://github.com/mistralai/client-js/issues/18
-
+        const streaming = nodeData.inputs?.streaming as boolean
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatMistralAIInput = {
             apiKey: apiKey,
-            modelName: modelName
+            modelName: modelName,
+            streaming: streaming ?? true
         }
 
         if (maxOutputTokens) obj.maxTokens = parseInt(maxOutputTokens, 10)

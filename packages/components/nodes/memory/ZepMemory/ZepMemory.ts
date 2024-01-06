@@ -1,8 +1,9 @@
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
+import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
-import { getBufferString, InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject } from '../../../src'
+import { InputValues, MemoryVariables, OutputValues, getBufferString } from 'langchain/memory'
+import { BaseMessage } from 'langchain/schema'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -147,7 +148,7 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
 
     const obj: ZepMemoryInput & ZepMemoryExtendedInput = {
         baseURL,
-        sessionId: sessionId ? sessionId : chatId,
+        sessionId,
         aiPrefix,
         humanPrefix,
         returnMessages: true,
@@ -166,7 +167,7 @@ interface ZepMemoryExtendedInput {
     k?: number
 }
 
-class ZepMemoryExtended extends ZepMemory {
+class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     isSessionIdUsingChatMessageId? = false
     lastN?: number
 
@@ -195,6 +196,28 @@ class ZepMemoryExtended extends ZepMemory {
             this.sessionId = overrideSessionId
         }
         return super.clear()
+    }
+
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+        const id = overrideSessionId ?? this.sessionId
+        const memoryVariables = await this.loadMemoryVariables({}, id)
+        const baseMessages = memoryVariables[this.memoryKey]
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+    }
+
+    async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
+        const id = overrideSessionId ?? this.sessionId
+        const input = msgArray.find((msg) => msg.type === 'userMessage')
+        const output = msgArray.find((msg) => msg.type === 'apiMessage')
+        const inputValues = { [this.inputKey ?? 'input']: input?.text }
+        const outputValues = { output: output?.text }
+
+        await this.saveContext(inputValues, outputValues, id)
+    }
+
+    async clearChatMessages(overrideSessionId = ''): Promise<void> {
+        const id = overrideSessionId ?? this.sessionId
+        await this.clear(id)
     }
 }
 

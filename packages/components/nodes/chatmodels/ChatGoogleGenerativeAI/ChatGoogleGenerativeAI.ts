@@ -20,7 +20,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         this.name = 'chatGoogleGenerativeAI'
         this.version = 1.0
         this.type = 'ChatGoogleGenerativeAI'
-        this.icon = 'gemini.png'
+        this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Google Gemini large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(ChatGoogleGenerativeAI)]
