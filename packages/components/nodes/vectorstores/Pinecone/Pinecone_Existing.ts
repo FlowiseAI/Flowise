@@ -42,12 +42,12 @@ class Pinecone_Existing_VectorStores implements INode {
             },
             {
                 label: 'Pinecone Index',
-                name: 'pineconeIndex',
+                name: 'devinDirectory',
                 type: 'string'
             },
             {
                 label: 'Pinecone Namespace',
-                name: 'pineconeNamespace',
+                name: 'devinBucket',
                 type: 'string',
                 placeholder: 'my-first-namespace',
                 additionalParams: true,
