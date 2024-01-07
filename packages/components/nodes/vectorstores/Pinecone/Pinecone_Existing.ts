@@ -85,8 +85,8 @@ class Pinecone_Existing_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const index = nodeData.inputs?.pineconeIndex as string
-        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
+        const index = nodeData.inputs?.devinDirectory as string
+        const devinBucket = nodeData.inputs?.devinBucket as string
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
@@ -108,7 +108,7 @@ class Pinecone_Existing_VectorStores implements INode {
             pineconeIndex
         }
 
-        if (pineconeNamespace) obj.namespace = pineconeNamespace
+        if (devinBucket) obj.namespace = devinBucket
         if (pineconeMetadataFilter) {
             const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
             obj.filter = metadatafilter
