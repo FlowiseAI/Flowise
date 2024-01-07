@@ -1,5 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAIChat } from 'langchain/llms/openai'
 import { OpenAIChatInput } from 'langchain/chat_models/openai'
 import { BaseCache } from 'langchain/schema'
@@ -14,6 +14,7 @@ class ChatLocalAI_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -25,6 +26,16 @@ class ChatLocalAI_ChatModels implements INode {
         this.category = 'Chat Models'
         this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI'
         this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['LocalAIApi'],
+            optional: true
+        }
+
+        const modelOptions = JSON.parse(process.env.LOCALAI_CHAT_MODELS || '[]');
+        
         this.inputs = [
             {
                 label: 'Cache',
@@ -41,8 +52,10 @@ class ChatLocalAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                placeholder: 'gpt4all-lora-quantized.bin'
+                type: 'options',
+                options: modelOptions,
+                default: modelOptions.length > 0 ? modelOptions[0].name : '',
+                optional: true
             },
             {
                 label: 'Temperature',
@@ -79,19 +92,23 @@ class ChatLocalAI_ChatModels implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
+        
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('LocalAIApiKey', credentialData, nodeData)
+
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey: 'sk-'
+            openAIApiKey
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
