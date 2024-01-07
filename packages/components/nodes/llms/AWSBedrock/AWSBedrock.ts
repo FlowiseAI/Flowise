@@ -29,7 +29,7 @@ class AWSBedrock_LLMs implements INode {
         this.name = 'awsBedrock'
         this.version = 3.0
         this.type = 'AWSBedrock'
-        this.icon = 'awsBedrock.png'
+        this.icon = 'aws.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around AWS Bedrock large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Bedrock)]
@@ -143,7 +143,7 @@ class AWSBedrock_LLMs implements INode {
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
         const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
-            model: customModel ?? iModel,
+            model: customModel ? customModel : iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
             maxTokens: parseInt(iMax_tokens_to_sample, 10)

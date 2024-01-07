@@ -19,7 +19,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         this.name = 'unstructuredFileLoader'
         this.version = 1.0
         this.type = 'Document'
-        this.icon = 'unstructured.png'
+        this.icon = 'unstructured-file.svg'
         this.category = 'Document Loaders'
         this.description = 'Use Unstructured.io to load data from a file path'
         this.baseClasses = [this.type]

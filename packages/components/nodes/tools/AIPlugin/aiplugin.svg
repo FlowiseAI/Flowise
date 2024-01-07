@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plug" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-   <path d="M9.785 6l8.215 8.215l-2.054 2.054a5.81 5.81 0 1 1 -8.215 -8.215l2.054 -2.054z"></path>
-   <path d="M4 20l3.5 -3.5"></path>
-   <path d="M15 4l-3.5 3.5"></path>
-   <path d="M20 9l-3.5 3.5"></path>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.57535 17.5607C7.7943 16.7796 7.7943 15.5133 8.57535 14.7323L14.2322 9.07542C15.0132 8.29437 16.2796 8.29437 17.0606 9.07542L19.1819 11.1967C20.744 12.7588 20.744 15.2915 19.1819 16.8536L16.3535 19.682C14.7914 21.2441 12.2588 21.2441 10.6967 19.682L8.57535 17.5607Z" stroke="black" stroke-width="2"/>
+<path d="M11.404 7.66112L9.28271 5.53979" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M7.16136 11.9038L5.04004 9.78247" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M17.7676 18.2678L24.8386 25.3389" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
