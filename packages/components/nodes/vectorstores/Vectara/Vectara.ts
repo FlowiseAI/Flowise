@@ -110,7 +110,10 @@ class Vectara_VectorStores implements INode {
             {
                 label: 'MMR diversity bias',
                 name: 'mmrDiversityBias',
-                description: 'The diversity bias to use for MMR. Defaults to 0 (MMR disabled)',
+                description:
+                    'The diversity bias to use for MMR. This is a value between 0.0 and 1.0' +
+                    'Values closer to 1.0 optimize for the most diverse results.' +
+                    'Defaults to 0 (MMR disabled)',
                 placeholder: '0.0',
                 type: 'number',
                 additionalParams: true,
