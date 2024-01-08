@@ -248,7 +248,8 @@ class VectaraChain_Chains implements INode {
             lexicalInterpolationConfig: { lambda: vectaraFilter?.lambda ?? 0.025 }
         }))
 
-        const mmrRerankerId = 272725718 // Vectara reranker ID for MMR
+        // Vectara reranker ID for MMR (https://docs.vectara.com/docs/api-reference/search-apis/reranking#maximal-marginal-relevance-mmr-reranker)
+        const mmrRerankerId = 272725718
         const mmrEnabled = vectaraFilter?.mmrConfig?.enabled
 
         const data = {
