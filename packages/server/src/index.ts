@@ -362,7 +362,8 @@ export class App {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
-            if (chatflow && chatflow.chatbotConfig) {
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            if (chatflow.chatbotConfig) {
                 try {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     return res.json(parsedConfig)
@@ -370,7 +371,7 @@ export class App {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
             }
-            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
+            return res.status(200).send('OK')
         })
 
         // Save chatflow
