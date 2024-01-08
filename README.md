@@ -145,37 +145,40 @@ Flowise support different environment variables to configure your instance. You 
 
 ## 🌐 Self Host
 
-### [Railway](https://docs.flowiseai.com/deployment/railway)
+Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
+-   [AWS](https://docs.flowiseai.com/deployment/aws)
+-   [Azure](https://docs.flowiseai.com/deployment/azure)
+-   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
+-   [GCP](https://docs.flowiseai.com/deployment/gcp)
+-   <details>
+      <summary>Others</summary>
 
-### [Render](https://docs.flowiseai.com/deployment/render)
+    -   [Railway](https://docs.flowiseai.com/deployment/railway)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+        [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-### [Elestio](https://elest.io/open-source/flowiseai)
+    -   [Render](https://docs.flowiseai.com/deployment/render)
 
-[![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
-### [RepoCloud](https://repocloud.io/details/?app_id=29)
+    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
-[![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
+        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 
-### [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+    -   [Elestio](https://elest.io/open-source/flowiseai)
 
-<a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
+        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
 
-### Sealos
+    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-[![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-### [AWS](https://docs.flowiseai.com/deployment/aws)
+    -   [RepoCloud](https://repocloud.io/details/?app_id=29)
 
-### [Azure](https://docs.flowiseai.com/deployment/azure)
+        [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
 
-### [DigitalOcean](https://docs.flowiseai.com/deployment/digital-ocean)
-
-### [GCP](https://docs.flowiseai.com/deployment/gcp)
+      </details>
 
 ## 💻 Cloud Hosted
 
