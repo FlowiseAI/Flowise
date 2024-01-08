@@ -157,6 +157,10 @@ Flowise support different environment variables to configure your instance. You 
 
 [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
 
+### [RepoCloud](https://repocloud.io/details/?app_id=29)
+
+[![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
+
 ### [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
 <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
