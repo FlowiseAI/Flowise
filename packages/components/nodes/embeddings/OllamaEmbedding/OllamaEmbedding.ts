@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { OllamaInput } from 'langchain/llms/ollama'
 import { OllamaEmbeddings } from 'langchain/embeddings/ollama'
-import { OllamaInput } from 'langchain/dist/util/ollama'
 
 class OllamaEmbedding_Embeddings implements INode {
     label: string
@@ -20,7 +20,7 @@ class OllamaEmbedding_Embeddings implements INode {
         this.name = 'ollamaEmbedding'
         this.version = 1.0
         this.type = 'OllamaEmbeddings'
-        this.icon = 'ollama.png'
+        this.icon = 'Ollama.svg'
         this.category = 'Embeddings'
         this.description = 'Generate embeddings for a given text using open source model on Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(OllamaEmbeddings)]

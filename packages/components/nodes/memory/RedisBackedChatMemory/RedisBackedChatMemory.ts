@@ -1,8 +1,14 @@
-import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam, serializeChatHistory } from '../../../src/utils'
+import { INode, INodeData, INodeParams, ICommonObject, IMessage, MessageType, FlowiseMemory, MemoryMethods } from '../../../src/Interface'
+import {
+    convertBaseMessagetoIMessage,
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    serializeChatHistory
+} from '../../../src/utils'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/ioredis'
-import { mapStoredMessageToChatMessage, BaseMessage } from 'langchain/schema'
+import { mapStoredMessageToChatMessage, BaseMessage, AIMessage, HumanMessage } from 'langchain/schema'
 import { Redis } from 'ioredis'
 
 class RedisBackedChatMemory_Memory implements INode {
@@ -94,14 +100,20 @@ class RedisBackedChatMemory_Memory implements INode {
 }
 
 const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
-    const sessionId = nodeData.inputs?.sessionId as string
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
     const windowSize = nodeData.inputs?.windowSize as number
     const chatId = options?.chatId as string
 
     let isSessionIdUsingChatMessageId = false
-    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
+    let sessionId = ''
+
+    if (!nodeData.inputs?.sessionId && chatId) {
+        isSessionIdUsingChatMessageId = true
+        sessionId = chatId
+    } else {
+        sessionId = nodeData.inputs?.sessionId
+    }
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
@@ -128,7 +140,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     }
 
     let obj: RedisChatMessageHistoryInput = {
-        sessionId: sessionId ? sessionId : chatId,
+        sessionId,
         client
     }
 
@@ -162,21 +174,71 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
-        isSessionIdUsingChatMessageId
+        isSessionIdUsingChatMessageId,
+        sessionId,
+        redisClient: client
     })
     return memory
 }
 
 interface BufferMemoryExtendedInput {
     isSessionIdUsingChatMessageId: boolean
+    redisClient: Redis
+    sessionId: string
 }
 
-class BufferMemoryExtended extends BufferMemory {
+class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     isSessionIdUsingChatMessageId? = false
+    sessionId = ''
+    redisClient: Redis
 
-    constructor(fields: BufferMemoryInput & Partial<BufferMemoryExtendedInput>) {
+    constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+        this.sessionId = fields.sessionId
+        this.redisClient = fields.redisClient
+    }
+
+    async getChatMessages(overrideSessionId = '', returnBaseMessage = false): Promise<IMessage[] | BaseMessage[]> {
+        if (!this.redisClient) return []
+
+        const id = overrideSessionId ?? this.sessionId
+        const rawStoredMessages = await this.redisClient.lrange(id, 0, -1)
+        const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
+        const baseMessages = orderedMessages.map(mapStoredMessageToChatMessage)
+        return returnBaseMessage ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+    }
+
+    async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
+        if (!this.redisClient) return
+
+        const id = overrideSessionId ?? this.sessionId
+        const input = msgArray.find((msg) => msg.type === 'userMessage')
+        const output = msgArray.find((msg) => msg.type === 'apiMessage')
+
+        if (input) {
+            const newInputMessage = new HumanMessage(input.text)
+            const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
+            await this.redisClient.lpush(id, JSON.stringify(messageToAdd[0]))
+        }
+
+        if (output) {
+            const newOutputMessage = new AIMessage(output.text)
+            const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
+            await this.redisClient.lpush(id, JSON.stringify(messageToAdd[0]))
+        }
+    }
+
+    async clearChatMessages(overrideSessionId = ''): Promise<void> {
+        if (!this.redisClient) return
+
+        const id = overrideSessionId ?? this.sessionId
+        await this.redisClient.del(id)
+        await this.clear()
+    }
+
+    async resumeMessages(): Promise<void> {
+        return
     }
 }
 

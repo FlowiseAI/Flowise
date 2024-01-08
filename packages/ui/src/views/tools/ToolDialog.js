@@ -13,6 +13,7 @@ import { GridActionsCellItem } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from 'ui-component/editor/CodeEditor'
+import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
 import { IconX, IconFileExport } from '@tabler/icons'
@@ -32,6 +33,8 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
 * You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid
+* You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input
+* You can get custom variables: $vars.<variable-name>
 * Must return a string value at the end of function
 */
 
@@ -74,6 +77,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
     const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
+    const [showHowToDialog, setShowHowToDialog] = useState(false)
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -482,6 +486,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             />
                         </Typography>
                     </Stack>
+                    <Button
+                        style={{ marginBottom: 10, marginRight: 10 }}
+                        color='secondary'
+                        variant='outlined'
+                        onClick={() => setShowHowToDialog(true)}
+                    >
+                        How to use Function
+                    </Button>
                     {dialogProps.type !== 'TEMPLATE' && (
                         <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
                             See Example
@@ -519,6 +531,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 )}
             </DialogActions>
             <ConfirmDialog />
+            <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
         </Dialog>
     ) : null
 

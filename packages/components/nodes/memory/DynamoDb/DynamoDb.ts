@@ -1,15 +1,25 @@
 import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
+    DynamoDBClient,
+    DynamoDBClientConfig,
+    GetItemCommand,
+    GetItemCommandInput,
+    UpdateItemCommand,
+    UpdateItemCommandInput,
+    DeleteItemCommand,
+    DeleteItemCommandInput,
+    AttributeValue
+} from '@aws-sdk/client-dynamodb'
+import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
+import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from 'langchain/schema'
+import {
+    convertBaseMessagetoIMessage,
     getBaseClasses,
     getCredentialData,
     getCredentialParam,
     serializeChatHistory
-} from '../../../src'
-import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+} from '../../../src/utils'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
 class DynamoDb_Memory implements INode {
     label: string
@@ -102,49 +112,203 @@ class DynamoDb_Memory implements INode {
 const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const tableName = nodeData.inputs?.tableName as string
     const partitionKey = nodeData.inputs?.partitionKey as string
-    const sessionId = nodeData.inputs?.sessionId as string
     const region = nodeData.inputs?.region as string
     const memoryKey = nodeData.inputs?.memoryKey as string
     const chatId = options.chatId
 
     let isSessionIdUsingChatMessageId = false
-    if (!sessionId && chatId) isSessionIdUsingChatMessageId = true
+    let sessionId = ''
+
+    if (!nodeData.inputs?.sessionId && chatId) {
+        isSessionIdUsingChatMessageId = true
+        sessionId = chatId
+    } else {
+        sessionId = nodeData.inputs?.sessionId
+    }
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
     const secretAccessKey = getCredentialParam('secretAccessKey', credentialData, nodeData)
 
+    const config: DynamoDBClientConfig = {
+        region,
+        credentials: {
+            accessKeyId,
+            secretAccessKey
+        }
+    }
+
+    const client = new DynamoDBClient(config ?? {})
+
     const dynamoDb = new DynamoDBChatMessageHistory({
         tableName,
         partitionKey,
-        sessionId: sessionId ? sessionId : chatId,
-        config: {
-            region,
-            credentials: {
-                accessKeyId,
-                secretAccessKey
-            }
-        }
+        sessionId,
+        config
     })
 
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: dynamoDb,
-        isSessionIdUsingChatMessageId
+        isSessionIdUsingChatMessageId,
+        sessionId,
+        dynamodbClient: client
     })
     return memory
 }
 
 interface BufferMemoryExtendedInput {
     isSessionIdUsingChatMessageId: boolean
+    dynamodbClient: DynamoDBClient
+    sessionId: string
 }
 
-class BufferMemoryExtended extends BufferMemory {
-    isSessionIdUsingChatMessageId? = false
+interface DynamoDBSerializedChatMessage {
+    M: {
+        type: {
+            S: string
+        }
+        text: {
+            S: string
+        }
+        role?: {
+            S: string
+        }
+    }
+}
 
-    constructor(fields: BufferMemoryInput & Partial<BufferMemoryExtendedInput>) {
+class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
+    isSessionIdUsingChatMessageId = false
+    sessionId = ''
+    dynamodbClient: DynamoDBClient
+
+    constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
-        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
+        this.sessionId = fields.sessionId
+        this.dynamodbClient = fields.dynamodbClient
+    }
+
+    overrideDynamoKey(overrideSessionId = '') {
+        const existingDynamoKey = (this as any).dynamoKey
+        const partitionKey = (this as any).partitionKey
+
+        let newDynamoKey: Record<string, AttributeValue> = {}
+
+        if (Object.keys(existingDynamoKey).includes(partitionKey)) {
+            newDynamoKey[partitionKey] = { S: overrideSessionId }
+        }
+
+        return Object.keys(newDynamoKey).length ? newDynamoKey : existingDynamoKey
+    }
+
+    async addNewMessage(
+        messages: StoredMessage[],
+        client: DynamoDBClient,
+        tableName = '',
+        dynamoKey: Record<string, AttributeValue> = {},
+        messageAttributeName = 'messages'
+    ) {
+        const params: UpdateItemCommandInput = {
+            TableName: tableName,
+            Key: dynamoKey,
+            ExpressionAttributeNames: {
+                '#m': messageAttributeName
+            },
+            ExpressionAttributeValues: {
+                ':empty_list': {
+                    L: []
+                },
+                ':m': {
+                    L: messages.map((message) => {
+                        const dynamoSerializedMessage: DynamoDBSerializedChatMessage = {
+                            M: {
+                                type: {
+                                    S: message.type
+                                },
+                                text: {
+                                    S: message.data.content
+                                }
+                            }
+                        }
+                        if (message.data.role) {
+                            dynamoSerializedMessage.M.role = { S: message.data.role }
+                        }
+                        return dynamoSerializedMessage
+                    })
+                }
+            },
+            UpdateExpression: 'SET #m = list_append(if_not_exists(#m, :empty_list), :m)'
+        }
+
+        await client.send(new UpdateItemCommand(params))
+    }
+
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+        if (!this.dynamodbClient) return []
+
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
+        const tableName = (this as any).tableName
+        const messageAttributeName = (this as any).messageAttributeName
+
+        const params: GetItemCommandInput = {
+            TableName: tableName,
+            Key: dynamoKey
+        }
+
+        const response = await this.dynamodbClient.send(new GetItemCommand(params))
+        const items = response.Item ? response.Item[messageAttributeName]?.L ?? [] : []
+        const messages = items
+            .map((item) => ({
+                type: item.M?.type.S,
+                data: {
+                    role: item.M?.role?.S,
+                    content: item.M?.text.S
+                }
+            }))
+            .filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
+        const baseMessages = messages.map(mapStoredMessageToChatMessage)
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+    }
+
+    async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
+        if (!this.dynamodbClient) return
+
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
+        const tableName = (this as any).tableName
+        const messageAttributeName = (this as any).messageAttributeName
+
+        const input = msgArray.find((msg) => msg.type === 'userMessage')
+        const output = msgArray.find((msg) => msg.type === 'apiMessage')
+
+        if (input) {
+            const newInputMessage = new HumanMessage(input.text)
+            const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
+            await this.addNewMessage(messageToAdd, this.dynamodbClient, tableName, dynamoKey, messageAttributeName)
+        }
+
+        if (output) {
+            const newOutputMessage = new AIMessage(output.text)
+            const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
+            await this.addNewMessage(messageToAdd, this.dynamodbClient, tableName, dynamoKey, messageAttributeName)
+        }
+    }
+
+    async clearChatMessages(overrideSessionId = ''): Promise<void> {
+        if (!this.dynamodbClient) return
+
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
+        const tableName = (this as any).tableName
+
+        const params: DeleteItemCommandInput = {
+            TableName: tableName,
+            Key: dynamoKey
+        }
+        await this.dynamodbClient.send(new DeleteItemCommand(params))
+        await this.clear()
+    }
+
+    async resumeMessages(): Promise<void> {
+        return
     }
 }
 

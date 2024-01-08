@@ -23,6 +23,7 @@ import {
     convertChatHistoryToText,
     getInputVariables,
     handleEscapeCharacters,
+    getEncryptionKeyPath,
     ICommonObject,
     IDatabaseEntity,
     IMessage
@@ -37,6 +38,7 @@ import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
+import { Variable } from '../database/entities/Variable'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -47,7 +49,8 @@ export const databaseEntities: IDatabaseEntity = {
     ChatMessage: ChatMessage,
     Tool: Tool,
     Credential: Credential,
-    Assistant: Assistant
+    Assistant: Assistant,
+    Variable: Variable
 }
 
 /**
@@ -558,7 +561,11 @@ export const getVariableValue = (
         variablePaths.forEach((path) => {
             const variableValue = variableDict[path]
             // Replace all occurrence
-            returnVal = returnVal.split(path).join(variableValue)
+            if (typeof variableValue === 'object') {
+                returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replace(/"/g, '\\"'))
+            } else {
+                returnVal = returnVal.split(path).join(variableValue)
+            }
         })
         return returnVal
     }
@@ -815,7 +822,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama', 'awsChatBedrock'],
+        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama', 'awsChatBedrock', 'chatMistralAI'],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
@@ -853,16 +860,6 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 }
 
 /**
- * Returns the path of encryption key
- * @returns {string}
- */
-export const getEncryptionKeyPath = (): string => {
-    return process.env.SECRETKEY_PATH
-        ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-        : path.join(__dirname, '..', '..', 'encryption.key')
-}
-
-/**
  * Generate an encryption key
  * @returns {string}
  */
@@ -882,7 +879,10 @@ export const getEncryptionKey = async (): Promise<string> => {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
         const encryptKey = generateEncryptKey()
-        await fs.promises.writeFile(getEncryptionKeyPath(), encryptKey)
+        const defaultLocation = process.env.SECRETKEY_PATH
+            ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
+            : path.join(getUserHome(), '.flowise', 'encryption.key')
+        await fs.promises.writeFile(defaultLocation, encryptKey)
         return encryptKey
     }
 }
