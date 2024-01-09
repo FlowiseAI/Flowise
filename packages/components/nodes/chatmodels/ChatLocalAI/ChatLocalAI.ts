@@ -33,9 +33,6 @@ class ChatLocalAI_ChatModels implements INode {
             credentialNames: ['LocalAIApi'],
             optional: true
         }
-
-        const modelOptions = JSON.parse(process.env.LOCALAI_CHAT_MODELS || '[]');
-        
         this.inputs = [
             {
                 label: 'Cache',
@@ -52,10 +49,8 @@ class ChatLocalAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: modelOptions,
-                default: modelOptions.length > 0 ? modelOptions[0].name : '',
-                optional: true
+                type: 'string',
+                placeholder: 'gpt4all-lora-quantized.bin'
             },
             {
                 label: 'Temperature',
@@ -99,22 +94,22 @@ class ChatLocalAI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
-        
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('LocalAIApiKey', credentialData, nodeData)
+        const localAIApiKey = getCredentialParam('LocalAIApiKey', credentialData, nodeData)
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { localAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey
+            openAIApiKey: 'sk-'
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (localAIApiKey) obj.openAIApiKey = localAIApiKey
 
         const model = new OpenAIChat(obj, { basePath })
 
