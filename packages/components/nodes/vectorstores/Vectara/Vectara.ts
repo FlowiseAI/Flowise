@@ -22,7 +22,7 @@ class Vectara_VectorStores implements INode {
     constructor() {
         this.label = 'Vectara'
         this.name = 'vectara'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Vectara'
         this.icon = 'vectara.png'
         this.category = 'Vector Stores'
