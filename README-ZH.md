@@ -153,6 +153,10 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
 [![部署到 Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
+### [Sealos](https://docs.flowiseai.com/configuration/deployment/sealos)
+
+[![部署到 Sealos](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://template.cloud.sealos.io/deploy?templateName=flowise)
+
 ### [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
 <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
