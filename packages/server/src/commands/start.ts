@@ -35,6 +35,7 @@ export default class Start extends Command {
         DATABASE_NAME: Flags.string(),
         DATABASE_USER: Flags.string(),
         DATABASE_PASSWORD: Flags.string(),
+        DATABASE_SSL: Flags.string(),
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
@@ -104,6 +105,7 @@ export default class Start extends Command {
         if (flags.DATABASE_NAME) process.env.DATABASE_NAME = flags.DATABASE_NAME
         if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
+        if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2

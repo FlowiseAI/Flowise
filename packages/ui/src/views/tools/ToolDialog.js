@@ -13,6 +13,7 @@ import { GridActionsCellItem } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from 'ui-component/editor/CodeEditor'
+import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
 import { IconX, IconFileExport } from '@tabler/icons'
@@ -31,9 +32,11 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import { translationObject } from 'translate'
 
 const exampleAPIFunc = `/*
-* You can use any libraries imported in StartAI
-* You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid
-* Must return a string value at the end of function
+* Вы можете использовать любые библиотеки, импортированные в StartAI.
+* Вы можете использовать свойства, указанные в схеме вывода, в качестве переменных. Пример: Свойство = идентификатор пользователя, переменная = $userid.
+* Вы можете получить конфигурацию потока по умолчанию: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input.
+* Вы можете получить пользовательские переменные: $vars.<имя-переменной>
+* Должно возвращать строковое значение в конце функции.
 */
 
 const fetch = require('node-fetch');
@@ -75,6 +78,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
     const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
+    const [showHowToDialog, setShowHowToDialog] = useState(false)
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -404,7 +408,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                             <TooltipWithParser
                                 style={{ marginLeft: 10 }}
-                                title={translationObject['Tool name must be small capital letter with underscore. Ex: my_tool'] || ''}
+                                title={
+                                    translationObject[
+                                        'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент'
+                                    ] || ''
+                                }
                             />
                         </Typography>
                     </Stack>
@@ -428,7 +436,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                                 style={{ marginLeft: 10 }}
                                 title={
                                     translationObject[
-                                        'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
+                                        'Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'
                                     ] || ''
                                 }
                             />
@@ -487,6 +495,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             />
                         </Typography>
                     </Stack>
+                    <Button
+                        style={{ marginBottom: 10, marginRight: 10 }}
+                        color='secondary'
+                        variant='outlined'
+                        onClick={() => setShowHowToDialog(true)}
+                    >
+                        Как использовать функцию
+                    </Button>
                     {dialogProps.type !== 'TEMPLATE' && (
                         <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
                             Показать пример
@@ -524,6 +540,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 )}
             </DialogActions>
             <ConfirmDialog />
+            <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
         </Dialog>
     ) : null
 

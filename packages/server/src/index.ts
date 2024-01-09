@@ -65,6 +65,7 @@ import { sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
+import { Variable } from './database/entities/Variable'
 
 export class App {
     app: express.Application
@@ -361,7 +362,8 @@ export class App {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
-            if (chatflow && chatflow.chatbotConfig) {
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            if (chatflow.chatbotConfig) {
                 try {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     return res.json(parsedConfig)
@@ -369,7 +371,7 @@ export class App {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
             }
-            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
+            return res.status(200).send('OK')
         })
 
         // Save chatflow
@@ -1200,6 +1202,47 @@ export class App {
         })
 
         // ----------------------------------------
+        // Variables
+        // ----------------------------------------
+        this.app.get('/api/v1/variables', async (req: Request, res: Response) => {
+            const variables = await getDataSource().getRepository(Variable).find()
+            return res.json(variables)
+        })
+
+        // Create new variable
+        this.app.post('/api/v1/variables', async (req: Request, res: Response) => {
+            const body = req.body
+            const newVariable = new Variable()
+            Object.assign(newVariable, body)
+            const variable = this.AppDataSource.getRepository(Variable).create(newVariable)
+            const results = await this.AppDataSource.getRepository(Variable).save(variable)
+            return res.json(results)
+        })
+
+        // Update variable
+        this.app.put('/api/v1/variables/:id', async (req: Request, res: Response) => {
+            const variable = await this.AppDataSource.getRepository(Variable).findOneBy({
+                id: req.params.id
+            })
+
+            if (!variable) return res.status(404).send(`Variable ${req.params.id} not found`)
+
+            const body = req.body
+            const updateVariable = new Variable()
+            Object.assign(updateVariable, body)
+            this.AppDataSource.getRepository(Variable).merge(variable, updateVariable)
+            const result = await this.AppDataSource.getRepository(Variable).save(variable)
+
+            return res.json(result)
+        })
+
+        // Delete variable via id
+        this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
+            const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })
+            return res.json(results)
+        })
+
+        // ----------------------------------------
         // API Keys
         // ----------------------------------------
 
@@ -1669,10 +1712,6 @@ export class App {
                 this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
             }
 
-            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
-            const nodeModule = await import(nodeInstanceFilePath)
-            const nodeInstance = new nodeModule.nodeClass()
-
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
             let sessionId = undefined
@@ -1685,6 +1724,10 @@ export class App {
             if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
                 chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
             }
+
+            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {

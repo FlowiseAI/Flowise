@@ -381,7 +381,12 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 {inputParam?.acceptVariable && (
                                     <>
                                         <Button
-                                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
+                                            sx={{
+                                                borderRadius: 25,
+                                                width: '100%',
+                                                mb: 0,
+                                                mt: 2
+                                            }}
                                             variant='outlined'
                                             disabled={disabled}
                                             onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}

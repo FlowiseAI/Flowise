@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -644,4 +644,32 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
     } catch (e) {
         throw new Error(e)
     }
+}
+
+/**
+ * Convert BaseMessage to IMessage
+ * @param {BaseMessage[]} messages
+ * @returns {IMessage[]}
+ */
+export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[] => {
+    const formatmessages: IMessage[] = []
+    for (const m of messages) {
+        if (m._getType() === 'human') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'userMessage'
+            })
+        } else if (m._getType() === 'ai') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'apiMessage'
+            })
+        } else if (m._getType() === 'system') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'apiMessage'
+            })
+        }
+    }
+    return formatmessages
 }

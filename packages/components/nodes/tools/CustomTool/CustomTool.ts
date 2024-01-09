@@ -60,7 +60,7 @@ class CustomTool_Tools implements INode {
         }
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const selectedToolId = nodeData.inputs?.selectedTool as string
         const customToolFunc = nodeData.inputs?.customToolFunc as string
 
@@ -80,7 +80,36 @@ class CustomTool_Tools implements INode {
                 code: tool.func
             }
             if (customToolFunc) obj.code = customToolFunc
-            return new DynamicStructuredTool(obj)
+
+            const variables = await appDataSource.getRepository(databaseEntities['Variable']).find()
+
+            // override variables defined in overrideConfig
+            // nodeData.inputs.variables is an Object, check each property and override the variable
+            if (nodeData?.inputs?.vars) {
+                for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.vars)) {
+                    const foundVar = variables.find((v) => v.name === propertyName)
+                    if (foundVar) {
+                        // even if the variable was defined as runtime, we override it with static value
+                        foundVar.type = 'static'
+                        foundVar.value = nodeData.inputs.vars[propertyName]
+                    } else {
+                        // add it the variables, if not found locally in the db
+                        variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.vars[propertyName] })
+                    }
+                }
+            }
+
+            const flow = {
+                chatId: options.chatId, // id is uppercase (I)
+                chatflowId: options.chatflowid, // id is lowercase (i)
+                input
+            }
+
+            let dynamicStructuredTool = new DynamicStructuredTool(obj)
+            dynamicStructuredTool.setVariables(variables)
+            dynamicStructuredTool.setFlowObject(flow)
+
+            return dynamicStructuredTool
         } catch (e) {
             throw new Error(e)
         }
