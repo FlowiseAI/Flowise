@@ -377,7 +377,7 @@
                         "additionalParams": true,
                         "optional": true,
                         "id": "vectara_0-input-mmrK-number"
-                    },                    
+                    },
                     {
                         "label": "MMR Diversity Bias",
                         "name": "mmrDiversityBias",
@@ -389,8 +389,6 @@
                         "optional": true,
                         "id": "vectara_0-input-mmrDiversityBias-number"
                     }
-
-
                 ],
                 "inputAnchors": [
                     {
