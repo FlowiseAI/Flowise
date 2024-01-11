@@ -45,7 +45,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
-        "@oclif/core": "^1.13.10",
+        "@oclif/core": "^1.26.2",
         "async-mutex": "^0.4.0",
         "axios": "1.6.2",
         "cors": "^2.8.5",
