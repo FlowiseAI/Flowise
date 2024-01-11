@@ -1,4 +1,4 @@
-import { INode, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { INode, INodeParams } from '../../../src/Interface'
 
 class StickyNote implements INode {
     label: string
@@ -18,7 +18,7 @@ class StickyNote implements INode {
         this.version = 1.0
         this.type = 'StickyNote'
         this.icon = 'stickyNote.svg'
-        this.category = 'Tools'
+        this.category = 'Utilities'
         this.description = 'Add a note about a node'
         this.inputs = [
             {
