@@ -33,7 +33,7 @@ class Astra_VectorStores implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['AstraApi']
+            credentialNames: ['AstraDBApi']
         }
         this.inputs = [
             {

@@ -1,6 +1,6 @@
 import { INodeParams, INodeCredential } from '../src/Interface'
 
-class AstraApi implements INodeCredential {
+class AstraDBApi implements INodeCredential {
     label: string
     name: string
     version: number
@@ -8,12 +8,12 @@ class AstraApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Astra API'
-        this.name = 'AstraApi'
+        this.label = 'Astra DB API'
+        this.name = 'AstraDBApi'
         this.version = 1.0
         this.inputs = [
             {
-                label: 'Colection Name',
+                label: 'Collection Name',
                 name: 'collectionName',
                 type: 'string'
             },
@@ -31,4 +31,4 @@ class AstraApi implements INodeCredential {
     }
 }
 
-module.exports = { credClass: AstraApi }
+module.exports = { credClass: AstraDBApi }
