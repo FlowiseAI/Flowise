@@ -13,7 +13,7 @@ class AstraDBApi implements INodeCredential {
         this.version = 1.0
         this.inputs = [
             {
-                label: 'Collection Name',
+                label: 'Astra DB Collection Name',
                 name: 'collectionName',
                 type: 'string'
             },
