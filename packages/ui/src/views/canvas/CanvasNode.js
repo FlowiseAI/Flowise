@@ -54,6 +54,7 @@ const CanvasNode = ({ data }) => {
     const [infoDialogProps, setInfoDialogProps] = useState({})
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
+    const isNote = data.type === 'StickyNote'
 
     const handleClose = () => {
         setOpen(false)
@@ -150,47 +151,49 @@ const CanvasNode = ({ data }) => {
                     placement='right-start'
                 >
                     <Box>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Box style={{ width: 50, marginRight: 10, padding: 5 }}>
-                                <div
-                                    style={{
-                                        ...theme.typography.commonAvatar,
-                                        ...theme.typography.largeAvatar,
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white',
-                                        cursor: 'grab'
-                                    }}
-                                >
-                                    <img
-                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${baseURL}/api/v1/node-icon/${data.name}`}
-                                        alt='Notification'
-                                    />
-                                </div>
-                            </Box>
-                            <Box>
-                                <Typography
-                                    sx={{
-                                        fontSize: '1rem',
-                                        fontWeight: 500,
-                                        mr: 2
-                                    }}
-                                >
-                                    {data.label}
-                                </Typography>
-                            </Box>
-                            {warningMessage && (
-                                <>
-                                    <div style={{ flexGrow: 1 }}></div>
-                                    <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>} placement='top'>
-                                        <IconButton sx={{ height: 35, width: 35 }}>
-                                            <IconAlertTriangle size={35} color='orange' />
-                                        </IconButton>
-                                    </Tooltip>
-                                </>
-                            )}
-                        </div>
-                        {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
+                        {!isNote && (
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <Box style={{ width: 50, marginRight: 10, padding: 5 }}>
+                                    <div
+                                        style={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.largeAvatar,
+                                            borderRadius: '50%',
+                                            backgroundColor: 'white',
+                                            cursor: 'grab'
+                                        }}
+                                    >
+                                        <img
+                                            style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                            src={`${baseURL}/api/v1/node-icon/${data.name}`}
+                                            alt='Notification'
+                                        />
+                                    </div>
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '1rem',
+                                            fontWeight: 500,
+                                            mr: 2
+                                        }}
+                                    >
+                                        {data.label}
+                                    </Typography>
+                                </Box>
+                                {warningMessage && (
+                                    <>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                        <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>} placement='top'>
+                                            <IconButton sx={{ height: 35, width: 35 }}>
+                                                <IconAlertTriangle size={35} color='orange' />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                        {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && !isNote && (
                             <>
                                 <Divider />
                                 <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
@@ -230,22 +233,25 @@ const CanvasNode = ({ data }) => {
                                 </Button>
                             </div>
                         )}
-                        <Divider />
-                        <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 500,
-                                    textAlign: 'center'
-                                }}
-                            >
-                                Output
-                            </Typography>
-                        </Box>
-                        <Divider />
-
-                        {data.outputAnchors.map((outputAnchor, index) => (
-                            <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
-                        ))}
+                        {!isNote && (
+                            <>
+                                <Divider />
+                                <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 500,
+                                            textAlign: 'center'
+                                        }}
+                                    >
+                                        Output
+                                    </Typography>
+                                </Box>
+                                <Divider />
+                                {data.outputAnchors.map((outputAnchor, index) => (
+                                    <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
+                                ))}
+                            </>
+                        )}
                     </Box>
                 </LightTooltip>
             </CardWrapper>
