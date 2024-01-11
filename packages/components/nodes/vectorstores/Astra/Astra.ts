@@ -103,8 +103,8 @@ class Astra_VectorStores implements INode {
             }
 
             const clientConfig = {
-                token: credentialData?.applicationToken ?? 'dummy',
-                endpoint: credentialData?.dbEndPoint ?? 'dummy'
+                token: credentialData?.applicationToken,
+                endpoint: credentialData?.dbEndPoint
             }
 
             const astraConfig: AstraLibArgs = {
@@ -151,8 +151,8 @@ class Astra_VectorStores implements INode {
         }
 
         const clientConfig = {
-            token: credentialData?.applicationToken ?? 'dummy',
-            endpoint: credentialData?.dbEndPoint ?? 'dummy'
+            token: credentialData?.applicationToken,
+            endpoint: credentialData?.dbEndPoint
         }
 
         const astraConfig: AstraLibArgs = {
