@@ -66,6 +66,14 @@ class Milvus_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'Milvus Text Field',
+                name: 'milvusTextField',
+                type: 'string',
+                placeholder: 'langchain_text',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Milvus Filter',
                 name: 'milvusFilter',
                 type: 'string',
@@ -150,6 +158,7 @@ class Milvus_VectorStores implements INode {
         const address = nodeData.inputs?.milvusServerUrl as string
         const collectionName = nodeData.inputs?.milvusCollection as string
         const milvusFilter = nodeData.inputs?.milvusFilter as string
+        const textField = nodeData.inputs?.milvusTextField as string
 
         // embeddings
         const embeddings = nodeData.inputs?.embeddings as Embeddings
@@ -169,7 +178,8 @@ class Milvus_VectorStores implements INode {
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
-            collectionName: collectionName
+            collectionName: collectionName,
+            textField: textField
         }
 
         if (milvusUser) milVusArgs.username = milvusUser

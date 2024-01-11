@@ -25,7 +25,7 @@ class Zep_VectorStores implements INode {
         this.name = 'zep'
         this.version = 1.0
         this.type = 'Zep'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Vector Stores'
         this.description =
             'Upsert embedded data and perform similarity search upon query using Zep, a fast and scalable building block for LLM apps'

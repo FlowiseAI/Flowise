@@ -12,9 +12,8 @@ import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
-import { DarkCodeEditor } from 'ui-component/editor/DarkCodeEditor'
-import { LightCodeEditor } from 'ui-component/editor/LightCodeEditor'
-import { useTheme } from '@mui/material/styles'
+import { CodeEditor } from 'ui-component/editor/CodeEditor'
+import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
 import { IconX, IconFileExport } from '@tabler/icons'
@@ -34,6 +33,8 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
 * You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid
+* You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input
+* You can get custom variables: $vars.<variable-name>
 * Must return a string value at the end of function
 */
 
@@ -56,7 +57,6 @@ try {
 
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
-    const theme = useTheme()
 
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -77,6 +77,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
     const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
+    const [showHowToDialog, setShowHowToDialog] = useState(false)
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -485,37 +486,27 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                             />
                         </Typography>
                     </Stack>
+                    <Button
+                        style={{ marginBottom: 10, marginRight: 10 }}
+                        color='secondary'
+                        variant='outlined'
+                        onClick={() => setShowHowToDialog(true)}
+                    >
+                        How to use Function
+                    </Button>
                     {dialogProps.type !== 'TEMPLATE' && (
                         <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
                             See Example
                         </Button>
                     )}
-                    {customization.isDarkMode ? (
-                        <DarkCodeEditor
-                            value={toolFunc}
-                            disabled={dialogProps.type === 'TEMPLATE'}
-                            onValueChange={(code) => setToolFunc(code)}
-                            style={{
-                                fontSize: '0.875rem',
-                                minHeight: 'calc(100vh - 220px)',
-                                width: '100%',
-                                borderRadius: 5
-                            }}
-                        />
-                    ) : (
-                        <LightCodeEditor
-                            value={toolFunc}
-                            disabled={dialogProps.type === 'TEMPLATE'}
-                            onValueChange={(code) => setToolFunc(code)}
-                            style={{
-                                fontSize: '0.875rem',
-                                minHeight: 'calc(100vh - 220px)',
-                                width: '100%',
-                                border: `1px solid ${theme.palette.grey[300]}`,
-                                borderRadius: 5
-                            }}
-                        />
-                    )}
+                    <CodeEditor
+                        disabled={dialogProps.type === 'TEMPLATE'}
+                        value={toolFunc}
+                        height='calc(100vh - 220px)'
+                        theme={customization.isDarkMode ? 'dark' : 'light'}
+                        lang={'js'}
+                        onValueChange={(code) => setToolFunc(code)}
+                    />
                 </Box>
             </DialogContent>
             <DialogActions>
@@ -540,6 +531,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 )}
             </DialogActions>
             <ConfirmDialog />
+            <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
         </Dialog>
     ) : null
 
