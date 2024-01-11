@@ -93,6 +93,7 @@ const CanvasNode = ({ data }) => {
             }
         }
     }, [canvas.componentNodes, data.name, data.version])
+    console.log(data)
     return (
         <>
             <CardWrapper
