@@ -90,7 +90,7 @@ export interface INodeProperties {
     type: string
     icon: string
     version: number
-    category: string
+    category: string // TODO: use enum instead of string
     baseClasses: string[]
     description?: string
     filePath?: string
