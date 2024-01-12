@@ -10,7 +10,6 @@ class StickyNote implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    disableOutput: boolean
 
     constructor() {
         this.label = 'Sticky Note'
@@ -19,18 +18,17 @@ class StickyNote implements INode {
         this.type = 'StickyNote'
         this.icon = 'stickyNote.svg'
         this.category = 'Utilities'
-        this.description = 'Add a note about a node'
+        this.description = 'Add a sticky note'
         this.inputs = [
             {
-                label: 'Note',
+                label: '',
                 name: 'note',
                 type: 'string',
-                rows: 4,
-                placeholder: 'Input your notes',
+                rows: 1,
+                placeholder: 'Type something here',
                 optional: true
             }
         ]
-        this.disableOutput = true
         this.baseClasses = [this.type]
     }
 
