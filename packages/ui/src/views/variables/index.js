@@ -78,7 +78,7 @@ const Variables = () => {
 
     const addNew = () => {
         const dialogProp = {
-            type: 'ADD',
+            type: 'Добавить',
             cancelButtonName: 'Отмена',
             confirmButtonName: 'Добавить',
             data: {}
@@ -89,7 +89,7 @@ const Variables = () => {
 
     const edit = (variable) => {
         const dialogProp = {
-            type: 'EDIT',
+            type: 'Редактировать',
             cancelButtonName: 'Отмена',
             confirmButtonName: 'Сохранить',
             data: variable
@@ -100,7 +100,7 @@ const Variables = () => {
 
     const deleteVariable = async (variable) => {
         const confirmPayload = {
-            title: `Delete`,
+            title: `Удалить`,
             description: `Удалить переменную ${variable.name}?`,
             confirmButtonName: 'Удалить',
             cancelButtonName: 'Отмена'

@@ -1251,5 +1251,18 @@ export const translationObject = {
     'Additional Configuration': 'Дополнительная конфигурация',
     'Use Cloud ID field to enter your Elastic Cloud ID or the URL of the Elastic server instance.\n        Refer to <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html">official guide</a> on how to get User Password from ElasticSearch.':
         'Используйте поле Cloud ID, чтобы ввести свой Elastic Cloud ID или URL-адрес экземпляра сервера Elastic.\n См. <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference /current/setting-up-authentication.html">официальное руководство</a> о том, как получить пароль пользователя от ElasticSearch.',
-    'Similarity measure used in Elasticsearch.': 'Мера сходства, используемая в Elasticsearch.'
+    'Similarity measure used in Elasticsearch.': 'Мера сходства, используемая в Elasticsearch.',
+    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id':
+        'Если URL-адрес вашего представления выглядит так: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee — это идентификатор представления.',
+    'Use LLM to detect if the input is similar to those specified in Deny List':
+        'Используйте LLM, чтобы определить, аналогичны ли входные данные тем, которые указаны в списке запретов.',
+    'Are these two sentences similar to each other? Only return Yes or No.\nFirst sentence: ${input}\nSecond sentence: ${denyStr}':
+        'Похожи ли эти два предложения друг на друга? Возвращайте только Да или Нет.\nПервое предложение: ${input}\nВторое предложение: ${denyStr}',
+    'Received tool input did not match expected schema': 'Полученные входные данные инструмента не соответствуют ожидаемой схеме',
+    'SSL Connection': 'SSL-соединение',
+    variables: 'переменные',
+    Variables: 'Переменные',
+    variable: 'переменная',
+    Variable: 'Переменная',
+    'Please wait....loading Prompts': 'Пожалуйста, подождите....загрузка подсказок'
 }
