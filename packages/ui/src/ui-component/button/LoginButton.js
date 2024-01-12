@@ -1,20 +1,18 @@
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { SignedOut, SignInButton, useUser, UserButton } from '@clerk/clerk-react'
 
 export default function Component() {
-    const { data: session } = useSession()
-
-    if (session) {
-        return (
-            <>
-                Signed in as {session.user.email} <br />
-                <button onClick={() => signOut()}>Sign out</button>
-            </>
-        )
-    }
+    const { user, isLoaded } = useUser()
     return (
-        <>
-            Not signed in <br />
-            <button onClick={() => signIn()}>Sign in</button>
-        </>
+        <div>
+            <SignedOut>
+                <SignInButton />
+            </SignedOut>
+
+            {isLoaded && user && (
+                <>
+                    <UserButton afterSignOutUrl='/' />
+                </>
+            )}
+        </div>
     )
 }

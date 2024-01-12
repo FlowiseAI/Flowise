@@ -8,6 +8,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "dependencies": {
+        "@clerk/clerk-react": "^4.30.3",
         "@codemirror/lang-javascript": "^6.2.1",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/view": "^6.22.3",
