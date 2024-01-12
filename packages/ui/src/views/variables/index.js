@@ -176,7 +176,7 @@ const Variables = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>Variables&nbsp;</h1>
+                            <h1>Переменные&nbsp;</h1>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -283,12 +283,12 @@ const Variables = () => {
                                         <TableCell>{moment(variable.updatedDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>{moment(variable.createdDate).format('DD-MMM-YY')}</TableCell>
                                         <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                            <IconButton title='Редактировать' color='primary' onClick={() => edit(variable)}>
                                                 <IconEdit />
                                             </IconButton>
                                         </TableCell>
                                         <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
+                                            <IconButton title='Удалить' color='error' onClick={() => deleteVariable(variable)}>
                                                 <IconTrash />
                                             </IconButton>
                                         </TableCell>
