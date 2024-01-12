@@ -54,7 +54,7 @@ export const getAPIKeys = async (): Promise<ICommonObject[]> => {
         const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
         return JSON.parse(content)
     } catch (error) {
-        const keyName = 'DefaultKey'
+        const keyName = 'Мой ключ'
         const apiKey = generateAPIKey()
         const apiSecret = generateSecretHash(apiKey)
         const content = [
