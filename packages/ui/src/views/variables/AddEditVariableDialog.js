@@ -202,7 +202,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             }}
                         />
                     </div>
-                    {dialogProps.type === 'ADD' ? 'Add Variable' : 'Edit Variable'}
+                    {dialogProps.type === 'ADD' ? 'Добавить переменную' : 'Редактировать переменную'}
                 </div>
             </DialogTitle>
             <DialogContent>

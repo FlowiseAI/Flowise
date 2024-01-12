@@ -68,7 +68,7 @@ const dashboard = {
         },
         {
             id: 'variables',
-            title: 'Variables',
+            title: 'Переменные',
             type: 'item',
             url: '/variables',
             icon: icons.IconVariable,
