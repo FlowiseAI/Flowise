@@ -11,7 +11,6 @@ import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import LoginDialog from 'ui-component/dialog/LoginDialog'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 // API
@@ -137,7 +136,7 @@ const Chatflows = () => {
                             width: '100%'
                         }}
                     >
-                        <h1>Chatflows_d</h1>
+                        <h1>Chatflows</h1>
                         <TextField
                             size='small'
                             sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -211,7 +210,7 @@ const Chatflows = () => {
                     <div>No Chatflows Yet</div>
                 </Stack>
             )}
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+            {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} /> */}
             <ConfirmDialog />
         </MainCard>
     )

@@ -11,7 +11,6 @@ import themes from 'themes'
 
 // project imports
 import NavigationScroll from 'layout/NavigationScroll'
-import { SessionProvider } from 'next-auth/react'
 
 const App = (Component, pageProps) => {
     const customization = useSelector((state) => state.customization)
@@ -22,9 +21,7 @@ const App = (Component, pageProps) => {
             <ThemeProvider theme={themes(customization)}>
                 <CssBaseline />
                 <NavigationScroll>
-                    <SessionProvider session={session}>
-                        <Routes />
-                    </SessionProvider>
+                    <Routes />
                 </NavigationScroll>
             </ThemeProvider>
         </StyledEngineProvider>

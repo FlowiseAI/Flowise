@@ -7,10 +7,12 @@ import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
+import { readFileContents } from './utils/fileReader'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
 import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+
 import {
     IChatFlow,
     IncomingInput,
@@ -66,6 +68,8 @@ import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Variable } from './database/entities/Variable'
+import Cookies from 'cookies'
+import jwt from 'jsonwebtoken'
 
 export class App {
     app: express.Application
@@ -73,9 +77,18 @@ export class App {
     chatflowPool: ChatflowPool
     cachePool: CachePool
     AppDataSource = getDataSource()
+    clerkKey: string
 
     constructor() {
         this.app = express()
+        readFileContents('clerk.txt')
+            .then((data) => {
+                this.clerkKey = data as string
+                console.log('clerk key', this.clerkKey)
+            })
+            .catch((err) => {
+                logger.error('❌ [server]: Error during pem key read:', err)
+            })
     }
 
     async initDatabase() {
@@ -110,6 +123,25 @@ export class App {
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
             })
+    }
+
+    getUserId(req: Request, res: Response) {
+        const publicKey = this.clerkKey
+        const cookies = new Cookies(req, res)
+
+        const sessToken = cookies.get('__session') as string
+        const token = req.headers.authorization
+
+        try {
+            if (token) {
+                return jwt.verify(token, publicKey, { algorithms: ['RS256'] })
+            } else {
+                return jwt.verify(sessToken, publicKey)
+            }
+        } catch (error) {
+            console.log(error)
+            return null
+        }
     }
 
     async config(socketIO?: Server) {
@@ -314,6 +346,9 @@ export class App {
 
         // Get all chatflows
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
+            const userId = this.getUserId(req, res)
+            console.log('userId', userId)
+
             const chatflows: IChatFlow[] = await getAllChatFlow()
             return res.json(chatflows)
         })
