@@ -18,6 +18,7 @@ class ChatYandexGPTCredential implements INodeCredential {
                 name: 'chatYandexGptIamToken',
                 type: 'string',
                 placeholder: 'Мои данные YandexGPT',
+                optional: true,
                 description:
                     '<a target="_blank" href="https://cloud.yandex.ru/ru/docs/iam/operations/iam-token/create">Документация</a> получения iam токена.'
             },
@@ -32,6 +33,12 @@ class ChatYandexGPTCredential implements INodeCredential {
                 name: 'chatYandexGptModelURI',
                 type: 'string',
                 placeholder: 'modelURI'
+            },
+            {
+                label: 'YandexGPT API key',
+                name: 'chatYandexGptApiKey',
+                type: 'string',
+                placeholder: 'API key'
             },
             {
                 label: 'YandexGPT Версия модели',

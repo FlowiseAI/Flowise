@@ -72,7 +72,7 @@ class ChatYandexGPT_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('chatYandexGPTAPIKey', credentialData, nodeData)
+        const apiKey = getCredentialParam('chatYandexGptApiKey', credentialData, nodeData)
         const iamToken = getCredentialParam('chatYandexGptIamToken', credentialData, nodeData)
         const modelURI = getCredentialParam('chatYandexGptModelURI', credentialData, nodeData)
         const folderID = getCredentialParam('chatYandexGptFolderID', credentialData, nodeData)
