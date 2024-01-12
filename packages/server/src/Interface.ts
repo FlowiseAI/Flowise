@@ -23,6 +23,17 @@ export interface IChatFlow {
     apiConfig?: any
 }
 
+export interface IUser {
+    id: string
+    username: string
+    firstName: string
+    password: string
+    email: string
+    lastName?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IChatMessage {
     id: string
     role: MessageType
