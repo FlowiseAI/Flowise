@@ -77,7 +77,12 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                         sx={{
                             border: 'none',
                             background: 'none',
-                            padding: '10px 14px'
+                            padding: '10px 14px',
+                            textarea: {
+                                '&::placeholder': {
+                                    color: '#616161'
+                                }
+                            }
                         }}
                     />
                 </FormControl>
