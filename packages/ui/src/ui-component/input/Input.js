@@ -70,7 +70,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                             step: inputParam.step ?? 1,
                             style: {
                                 border: 'none',
-                                background: 'none'
+                                background: 'none',
+                                color: '#212121'
                             }
                         }}
                         sx={{
