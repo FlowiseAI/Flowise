@@ -53,7 +53,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
             {inputParam.name === 'note' ? (
                 <FormControl sx={{ width: '100%', height: 'auto' }} size='small'>
                     <InputBase
-                        id={inputParam.name}
+                        id={nodeId}
                         size='small'
                         disabled={disabled}
                         type={getInputType(inputParam.type)}

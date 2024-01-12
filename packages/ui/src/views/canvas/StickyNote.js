@@ -31,8 +31,6 @@ const StickyNote = ({ data }) => {
         setOpen(true)
     }
 
-    console.log(data.id)
-
     return (
         <>
             <CardWrapper
