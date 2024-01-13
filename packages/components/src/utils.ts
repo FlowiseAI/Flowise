@@ -673,3 +673,20 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
     }
     return formatmessages
 }
+
+/**
+ * Convert String to Array String
+ * @param {string} inputString
+ * @returns {string[]}
+ */
+export const convertStringToArrayString = (inputString: string): string[] => {
+    let ArrayString: string[] = []
+    if (inputString) {
+        try {
+            ArrayString = JSON.parse(inputString)
+        } catch (e) {
+            ArrayString = []
+        }
+    }
+    return ArrayString
+}
