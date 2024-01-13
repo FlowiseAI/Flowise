@@ -76,7 +76,9 @@ const Chatflows = () => {
     }
 
     useEffect(() => {
-        getAllChatflowsApi.request()
+        setTimeout(() => {
+            getAllChatflowsApi.request()
+        }, 400)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

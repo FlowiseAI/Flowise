@@ -10,7 +10,7 @@ export default function Component() {
 
             {isLoaded && user && (
                 <>
-                    <UserButton afterSignOutUrl='/' />
+                    <UserButton afterSignOutUrl='/reload' afterSignUpUrl='/reload' />
                 </>
             )}
         </div>

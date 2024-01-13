@@ -125,7 +125,7 @@ export class App {
             })
     }
 
-    getUserId(req: Request, res: Response) {
+    getUserSessionInfo(req: Request, res: Response) {
         const publicKey = this.clerkKey
         const cookies = new Cookies(req, res)
 
@@ -139,12 +139,12 @@ export class App {
                 return jwt.verify(sessToken, publicKey)
             }
         } catch (error) {
-            console.log(error)
             return null
         }
     }
 
     async config(socketIO?: Server) {
+
         // Limit is needed to allow sending/receiving base64 encoded string
         this.app.use(express.json({ limit: '50mb' }))
         this.app.use(express.urlencoded({ limit: '50mb', extended: true }))
@@ -153,7 +153,10 @@ export class App {
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
         // Allow access from *
-        this.app.use(cors())
+        this.app.use(cors({
+            origin: 'http://localhost:8080',
+            credentials: true
+          }))
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -346,11 +349,17 @@ export class App {
 
         // Get all chatflows
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const userId = this.getUserId(req, res)
-            console.log('userId', userId)
+            try {
+                const sessionInfo = this.getUserSessionInfo(req, res)
+                if (!sessionInfo) return res.status(401).send('Unauthorized')
+                const userId = sessionInfo?.sub as string
 
-            const chatflows: IChatFlow[] = await getAllChatFlow()
-            return res.json(chatflows)
+                const chatflows: IChatFlow[] = await getAllChatFlowByUserId(userId)
+                return res.json(chatflows)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+
         })
 
         // Get specific chatflow via api key
@@ -411,14 +420,24 @@ export class App {
 
         // Save chatflow
         this.app.post('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const body = req.body
-            const newChatFlow = new ChatFlow()
-            Object.assign(newChatFlow, body)
+            try {
+                const sessionInfo = this.getUserSessionInfo(req, res)
+                const userId = sessionInfo?.sub as string
+                const body = req.body
+                const newChatFlow = new ChatFlow()
+                Object.assign(newChatFlow, body)
+                newChatFlow.userId = userId
+                console.log('newChatFlow', newChatFlow)
 
-            const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-            const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+    
+                const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+                const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+    
+                return res.json(results)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
 
-            return res.json(results)
         })
 
         // Update chatflow
@@ -1868,6 +1887,12 @@ let serverApp: App | undefined
 export async function getAllChatFlow(): Promise<IChatFlow[]> {
     return await getDataSource().getRepository(ChatFlow).find()
 }
+
+
+export async function getAllChatFlowByUserId(userId: string): Promise<IChatFlow[]> {
+    return await getDataSource().getRepository(ChatFlow).find({ where: { userId: userId }  });
+}
+
 
 export async function start(): Promise<void> {
     serverApp = new App()
