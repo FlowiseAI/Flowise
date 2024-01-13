@@ -675,11 +675,11 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
 }
 
 /**
- * Convert String to Array String
+ * Convert MultiOptions String to String Array
  * @param {string} inputString
  * @returns {string[]}
  */
-export const convertStringToArrayString = (inputString: string): string[] => {
+export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
     let ArrayString: string[] = []
     if (inputString) {
         try {
