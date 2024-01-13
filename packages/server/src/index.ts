@@ -7,10 +7,12 @@ import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
+import { readFileContents } from './utils/fileReader'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
 import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+
 import {
     IChatFlow,
     IncomingInput,
@@ -66,6 +68,8 @@ import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Variable } from './database/entities/Variable'
+import Cookies from 'cookies'
+import jwt from 'jsonwebtoken'
 
 export class App {
     app: express.Application
@@ -73,9 +77,18 @@ export class App {
     chatflowPool: ChatflowPool
     cachePool: CachePool
     AppDataSource = getDataSource()
+    clerkKey: string
 
     constructor() {
         this.app = express()
+        readFileContents('clerk.txt')
+            .then((data) => {
+                this.clerkKey = data as string
+                console.log('clerk key', this.clerkKey)
+            })
+            .catch((err) => {
+                logger.error('❌ [server]: Error during pem key read:', err)
+            })
     }
 
     async initDatabase() {
@@ -112,6 +125,24 @@ export class App {
             })
     }
 
+    getUserSessionInfo(req: Request, res: Response) {
+        const publicKey = this.clerkKey
+        const cookies = new Cookies(req, res)
+
+        const sessToken = cookies.get('__session') as string
+        const token = req.headers.authorization
+
+        try {
+            if (token) {
+                return jwt.verify(token, publicKey, { algorithms: ['RS256'] })
+            } else {
+                return jwt.verify(sessToken, publicKey)
+            }
+        } catch (error) {
+            return null
+        }
+    }
+
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
         this.app.use(express.json({ limit: '50mb' }))
@@ -121,7 +152,12 @@ export class App {
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
         // Allow access from *
-        this.app.use(cors())
+        this.app.use(
+            cors({
+                origin: 'http://localhost:8080',
+                credentials: true
+            })
+        )
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -314,8 +350,16 @@ export class App {
 
         // Get all chatflows
         this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const chatflows: IChatFlow[] = await getAllChatFlow()
-            return res.json(chatflows)
+            try {
+                const sessionInfo = this.getUserSessionInfo(req, res)
+                if (!sessionInfo) return res.status(401).send('Unauthorized')
+                const userId = sessionInfo?.sub as string
+
+                const chatflows: IChatFlow[] = await getAllChatFlowByUserId(userId)
+                return res.json(chatflows)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
         })
 
         // Get specific chatflow via api key
@@ -376,14 +420,22 @@ export class App {
 
         // Save chatflow
         this.app.post('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const body = req.body
-            const newChatFlow = new ChatFlow()
-            Object.assign(newChatFlow, body)
+            try {
+                const sessionInfo = this.getUserSessionInfo(req, res)
+                const userId = sessionInfo?.sub as string
+                const body = req.body
+                const newChatFlow = new ChatFlow()
+                Object.assign(newChatFlow, body)
+                newChatFlow.userId = userId
+                console.log('newChatFlow', newChatFlow)
 
-            const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-            const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+                const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+                const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
-            return res.json(results)
+                return res.json(results)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
         })
 
         // Update chatflow
@@ -1156,7 +1208,17 @@ export class App {
         // ----------------------------------------
 
         // Get all chatflows for marketplaces
+
         this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
+            try {
+                const chatflows: IChatFlow[] = await getAllPublicChatFlow()
+                return res.json(chatflows)
+            } catch (err: any) {
+                return res.status(500).send(err?.message)
+            }
+        })
+
+        this.app.get('/api/v1/marketplaces/templates', async (req: Request, res: Response) => {
             const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
             const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
             const templates: any[] = []
@@ -1237,6 +1299,64 @@ export class App {
         })
 
         // Delete variable via id
+        this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
+            const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })
+            return res.json(results)
+        })
+
+        // ----------------------------------------
+        // Stripe Checkout
+        // ----------------------------------------
+
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2020-08-27',
+            appInfo: {
+                // For sample support and debugging, not required for production:
+                name: 'stripe-samples/checkout-single-subscription',
+                version: '0.0.1',
+                url: 'https://github.com/stripe-samples/checkout-single-subscription'
+            }
+        })
+
+        this.app.post('/create-checkout-session', async (req, res) => {
+            const domainURL = process.env.DOMAIN
+            const { priceId } = req.body
+            console.log(priceId)
+            // Create new Checkout Session for the order
+            // Other optional params include:
+            // [billing_address_collection] - to display billing address details on the page
+            // [customer] - if you have an existing Stripe Customer ID
+            // [customer_email] - lets you prefill the email input in the form
+            // [automatic_tax] - to automatically calculate sales tax, VAT and GST in the checkout page
+            // For full details see https://stripe.com/docs/api/checkout/sessions/create
+            try {
+                const session = await stripe.checkout.sessions.create({
+                    mode: 'subscription',
+                    line_items: [
+                        {
+                            price: priceId,
+                            quantity: 1
+                        }
+                    ],
+                    // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+                    success_url: `${domainURL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+                    cancel_url: `${domainURL}/canceled.html`
+                    // automatic_tax: { enabled: true }
+                })
+
+                const sessionURL = session.url
+                console.log(sessionURL)
+                return res.redirect(303, sessionURL)
+            } catch (e) {
+                res.status(400)
+                return res.send({
+                    error: {
+                        message: e.message
+                    }
+                })
+            }
+        })
+
         this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })
             return res.json(results)
@@ -1832,6 +1952,18 @@ let serverApp: App | undefined
 
 export async function getAllChatFlow(): Promise<IChatFlow[]> {
     return await getDataSource().getRepository(ChatFlow).find()
+}
+
+export async function getAllPublicChatFlow(): Promise<IChatFlow[]> {
+    return await getDataSource()
+        .getRepository(ChatFlow)
+        .find({ where: { isPublic: true } })
+}
+
+export async function getAllChatFlowByUserId(userId: string): Promise<IChatFlow[]> {
+    return await getDataSource()
+        .getRepository(ChatFlow)
+        .find({ where: { userId: userId } })
 }
 
 export async function start(): Promise<void> {

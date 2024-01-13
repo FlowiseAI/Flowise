@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LoginButton from 'ui-component/button/LoginButton'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -10,7 +11,6 @@ import { styled } from '@mui/material/styles'
 
 // project imports
 import LogoSection from '../LogoSection'
-import ProfileSection from './ProfileSection'
 
 // assets
 import { IconMenu2 } from '@tabler/icons'
@@ -128,7 +128,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
             <Box sx={{ flexGrow: 1 }} />
             <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
             <Box sx={{ ml: 2 }}></Box>
-            <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} />
+            <LoginButton />
+            {/* <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} /> */}
         </>
     )
 }

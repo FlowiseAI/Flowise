@@ -11,7 +11,6 @@ import MainCard from 'ui-component/cards/MainCard'
 import ItemCard from 'ui-component/cards/ItemCard'
 import { gridSpacing } from 'store/constant'
 import WorkflowEmptySVG from 'assets/images/workflow_empty.svg'
-import LoginDialog from 'ui-component/dialog/LoginDialog'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
 
 // API
@@ -77,7 +76,9 @@ const Chatflows = () => {
     }
 
     useEffect(() => {
-        getAllChatflowsApi.request()
+        setTimeout(() => {
+            getAllChatflowsApi.request()
+        }, 400)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -211,7 +212,7 @@ const Chatflows = () => {
                     <div>No Chatflows Yet</div>
                 </Stack>
             )}
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+            {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} /> */}
             <ConfirmDialog />
         </MainCard>
     )

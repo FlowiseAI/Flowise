@@ -7,6 +7,8 @@ import Loadable from 'ui-component/loading/Loadable'
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('views/chatflows')))
 
+const SignIn = Loadable(lazy(() => import('views/signin')))
+
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('views/marketplaces')))
 
@@ -62,6 +64,10 @@ const MainRoutes = {
         {
             path: '/variables',
             element: <Variables />
+        },
+        {
+            path: '/signin',
+            element: <SignIn />
         }
     ]
 }

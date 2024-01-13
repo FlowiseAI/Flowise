@@ -12,22 +12,30 @@ import { Provider } from 'react-redux'
 import { SnackbarProvider } from 'notistack'
 import ConfirmContextProvider from 'store/context/ConfirmContextProvider'
 import { ReactFlowContext } from 'store/context/ReactFlowContext'
+import { ClerkProvider } from '@clerk/clerk-react'
 
 const container = document.getElementById('root')
 const root = createRoot(container)
+// Import your publishable key
+const PUBLISHABLE_KEY = 'pk_test_bm9ibGUtbW91c2UtNzUuY2xlcmsuYWNjb3VudHMuZGV2JA'
+if (!PUBLISHABLE_KEY) {
+    throw new Error('Missing Publishable Key')
+}
 
 root.render(
     <React.StrictMode>
-        <Provider store={store}>
-            <BrowserRouter>
-                <SnackbarProvider>
-                    <ConfirmContextProvider>
-                        <ReactFlowContext>
-                            <App />
-                        </ReactFlowContext>
-                    </ConfirmContextProvider>
-                </SnackbarProvider>
-            </BrowserRouter>
-        </Provider>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <SnackbarProvider>
+                        <ConfirmContextProvider>
+                            <ReactFlowContext>
+                                <App />
+                            </ReactFlowContext>
+                        </ConfirmContextProvider>
+                    </SnackbarProvider>
+                </BrowserRouter>
+            </Provider>
+        </ClerkProvider>
     </React.StrictMode>
 )

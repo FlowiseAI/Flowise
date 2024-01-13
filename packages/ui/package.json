@@ -8,6 +8,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "dependencies": {
+        "@clerk/clerk-react": "^4.30.3",
         "@codemirror/lang-javascript": "^6.2.1",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/view": "^6.22.3",
@@ -18,11 +19,14 @@
         "@mui/lab": "^5.0.0-alpha.156",
         "@mui/material": "^5.15.0",
         "@mui/x-data-grid": "^6.8.0",
+        "@stripe/react-stripe-js": "^2.4.0",
+        "@stripe/stripe-js": "^2.3.0",
         "@tabler/icons": "^1.39.1",
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
         "clsx": "^1.1.1",
+        "fastify": "^4.25.2",
         "flowise-embed": "*",
         "flowise-embed-react": "*",
         "flowise-react-json-view": "*",

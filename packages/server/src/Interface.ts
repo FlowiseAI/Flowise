@@ -11,6 +11,7 @@ export enum chatType {
  */
 export interface IChatFlow {
     id: string
+    userId?: string
     name: string
     flowData: string
     updatedDate: Date
@@ -21,6 +22,17 @@ export interface IChatFlow {
     analytic?: string
     chatbotConfig?: string
     apiConfig?: any
+}
+
+export interface IUser {
+    id: string
+    username: string
+    firstName: string
+    password: string
+    email: string
+    lastName?: string
+    createdDate: Date
+    updatedDate: Date
 }
 
 export interface IChatMessage {

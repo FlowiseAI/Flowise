@@ -26,6 +26,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import MainCard from 'ui-component/cards/MainCard'
 import Transitions from 'ui-component/extended/Transitions'
 import AboutDialog from 'ui-component/dialog/AboutDialog'
+import LoginButton from 'ui-component/button/LoginButton'
 
 // assets
 import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons'
@@ -66,6 +67,10 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     return (
         <>
+            <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+                <LoginButton>Teste</LoginButton>
+            </ButtonBase>
+
             <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                 <Avatar
                     variant='rounded'

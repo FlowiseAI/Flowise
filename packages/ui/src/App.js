@@ -12,10 +12,9 @@ import themes from 'themes'
 // project imports
 import NavigationScroll from 'layout/NavigationScroll'
 
-// ==============================|| APP ||============================== //
-
-const App = () => {
+const App = (Component, pageProps) => {
     const customization = useSelector((state) => state.customization)
+    const session = pageProps.session
 
     return (
         <StyledEngineProvider injectFirst>
