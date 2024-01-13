@@ -177,13 +177,13 @@ class GoogleGenerativeAI_ChatModels implements INode {
         let harmBlockThresholds: string[] = convertStringToArrayString(harmBlockThreshold)
         if (harmCategories.length != harmBlockThresholds.length)
             throw new Error(`Harm Category & Harm Block Threshold are not the same length`)
-        const safetySettings = harmCategories.map((value, index) => {
+        const safetySettings: typeof model.safetySettings = harmCategories.map((value, index) => {
             return {
                 category: value,
                 threshold: harmBlockThresholds[index]
             }
         })
-        if (safetySettings) model.safetySettings = safetySettings
+        if (safetySettings.length > 0) model.safetySettings = safetySettings
 
         return model
     }
