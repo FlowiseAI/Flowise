@@ -2,7 +2,6 @@ import Link from '@mui/material/Link'
 import Typography from '@mui/material/Typography'
 import { createTheme } from '@mui/material/styles'
 import { Toolbar, Box, AppBar } from '@mui/material'
-import StripePricingTable from 'ui-component/dialog/StripePricingTable'
 import { useTheme } from '@mui/material/styles'
 import { useNavigate } from 'react-router-dom'
 import Container from '@mui/material/Container'
@@ -54,7 +53,10 @@ export default function SubscribeFull() {
                         Unlock Endless Possibilities with Our Tailored Subscription Plans
                     </Typography>
                 </Container>
-                <StripePricingTable />
+                <stripe-pricing-table
+                    pricing-table-id='prctbl_1OY8r2CXAyRqT2HGB2ZKxcHs'
+                    publishable-key='pk_test_51OY7bDCXAyRqT2HGc95qen8SDelmPliy5iSmHcHzqMWNPftkOGSaZCKyIXkcBZMRjczPZ2OqM6NkCfGWEdFHYDEg00NEmDQivg'
+                ></stripe-pricing-table>
             </Box>
         </>
     )
