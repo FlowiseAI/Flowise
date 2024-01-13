@@ -1,8 +1,17 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
+import {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconSearch,
+    IconMessage,
+    IconPictureInPictureOff,
+    IconRobot
+} from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff, IconRobot }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -11,6 +20,13 @@ const settings = {
     title: '',
     type: 'group',
     children: [
+        {
+            id: 'chatSummary',
+            title: 'Summary',
+            type: 'item',
+            url: '',
+            icon: icons.IconRobot
+        },
         {
             id: 'conversationStarters',
             title: 'Starter Prompts',

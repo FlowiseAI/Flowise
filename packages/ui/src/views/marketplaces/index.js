@@ -53,14 +53,16 @@ const Marketplace = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
-    const [isChatflowsLoading, setChatflowsLoading] = useState(true)
+    const [isTemplatesLoading, setTemplatesLoading] = useState(true)
+    const [isChatFlowsLoading, setChatflowsLoading] = useState(true)
     const [isToolsLoading, setToolsLoading] = useState(true)
     const [images, setImages] = useState({})
-    const tabItems = ['Chatflows', 'Tools']
+    const tabItems = ['Chatflows', 'Tools', 'Templates']
     const [value, setValue] = useState(0)
     const [showToolDialog, setShowToolDialog] = useState(false)
     const [toolDialogProps, setToolDialogProps] = useState({})
 
+    const getAllChatflowsTemplateMarketplacesApi = useApi(marketplacesApi.getAllTemplateMarketplaces)
     const getAllChatflowsMarketplacesApi = useApi(marketplacesApi.getAllChatflowsMarketplaces)
     const getAllToolsMarketplacesApi = useApi(marketplacesApi.getAllToolsMarketplaces)
 
@@ -95,24 +97,25 @@ const Marketplace = () => {
     }
 
     useEffect(() => {
-        getAllChatflowsMarketplacesApi.request()
+        getAllChatflowsTemplateMarketplacesApi.request()
         getAllToolsMarketplacesApi.request()
+        getAllChatflowsMarketplacesApi.request()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        setChatflowsLoading(getAllChatflowsMarketplacesApi.loading)
-    }, [getAllChatflowsMarketplacesApi.loading])
+        setTemplatesLoading(getAllChatflowsTemplateMarketplacesApi.loading)
+    }, [getAllChatflowsTemplateMarketplacesApi.loading])
 
     useEffect(() => {
         setToolsLoading(getAllToolsMarketplacesApi.loading)
     }, [getAllToolsMarketplacesApi.loading])
 
     useEffect(() => {
-        if (getAllChatflowsMarketplacesApi.data) {
+        if (getAllChatflowsTemplateMarketplacesApi.data) {
             try {
-                const chatflows = getAllChatflowsMarketplacesApi.data
+                const chatflows = getAllChatflowsTemplateMarketplacesApi.data
                 const images = {}
                 for (let i = 0; i < chatflows.length; i += 1) {
                     const flowDataStr = chatflows[i].flowData
@@ -131,7 +134,7 @@ const Marketplace = () => {
                 console.error(e)
             }
         }
-    }, [getAllChatflowsMarketplacesApi.data])
+    }, [getAllChatflowsTemplateMarketplacesApi.data])
 
     return (
         <>
@@ -153,9 +156,35 @@ const Marketplace = () => {
                     <TabPanel key={index} value={value} index={index}>
                         {item === 'Chatflows' && (
                             <Grid container spacing={gridSpacing}>
-                                {!isChatflowsLoading &&
+                                {!isTemplatesLoading &&
                                     getAllChatflowsMarketplacesApi.data &&
                                     getAllChatflowsMarketplacesApi.data.map((data, index) => (
+                                        <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
+                                            {data.badge && (
+                                                <Badge
+                                                    sx={{
+                                                        '& .MuiBadge-badge': {
+                                                            right: 20
+                                                        }
+                                                    }}
+                                                    badgeContent={data.badge}
+                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                >
+                                                    <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                </Badge>
+                                            )}
+                                            {!data.badge && (
+                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                            )}
+                                        </Grid>
+                                    ))}
+                            </Grid>
+                        )}
+                        {item === 'Templates' && (
+                            <Grid container spacing={gridSpacing}>
+                                {!isTemplatesLoading &&
+                                    getAllChatflowsTemplateMarketplacesApi.data &&
+                                    getAllChatflowsTemplateMarketplacesApi.data.map((data, index) => (
                                         <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
                                             {data.badge && (
                                                 <Badge
@@ -203,7 +232,8 @@ const Marketplace = () => {
                         )}
                     </TabPanel>
                 ))}
-                {((!isChatflowsLoading && (!getAllChatflowsMarketplacesApi.data || getAllChatflowsMarketplacesApi.data.length === 0)) ||
+                {((!isTemplatesLoading &&
+                    (!getAllChatflowsTemplateMarketplacesApi.data || getAllChatflowsTemplateMarketplacesApi.data.length === 0)) ||
                     (!isToolsLoading && (!getAllToolsMarketplacesApi.data || getAllToolsMarketplacesApi.data.length === 0))) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>

@@ -5,18 +5,12 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, FormControlLabel, FormGroup, Switch } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
+import { IconChevronLeft, IconPencil, IconCheck, IconX } from '@tabler/icons'
 
 // project imports
-import Settings from 'views/settings'
-import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
-import APICodeDialog from 'views/chatflows/APICodeDialog'
-import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
-import ViewMessagesDialog from 'ui-component/dialog/ViewMessagesDialog'
-import StarterPromptsDialog from 'ui-component/dialog/StarterPromptsDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -28,11 +22,10 @@ import useApi from 'hooks/useApi'
 import { generateExportFlowData } from 'utils/genericHelper'
 import { uiBaseURL } from 'store/constant'
 import { SET_CHATFLOW } from 'store/actions'
-import ChatSummaryDialog from 'ui-component/dialog/ChatSummaryDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const SubscribeHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -323,124 +316,15 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                     </Stack>
                 )}
             </Box>
-            <Box sx={{ flexWrap: 'wrap-reverse', paddingRight: 2 }}>
-                <FormGroup>
-                    <FormControlLabel
-                        labelPlacement='start'
-                        control={<Switch checked={isPublic} onChange={onChangePublicStatus} />}
-                        label='Public  '
-                    />
-                </FormGroup>
-            </Box>
-            <Box>
-                {chatflow?.id && (
-                    <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
-                        <Avatar
-                            variant='rounded'
-                            sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.deployLight,
-                                color: theme.palette.canvasHeader.deployDark,
-                                '&:hover': {
-                                    background: theme.palette.canvasHeader.deployDark,
-                                    color: theme.palette.canvasHeader.deployLight
-                                }
-                            }}
-                            color='inherit'
-                            onClick={onAPIDialogClick}
-                        >
-                            <IconCode stroke={1.5} size='1.3rem' />
-                        </Avatar>
-                    </ButtonBase>
-                )}
-                <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.saveLight,
-                            color: theme.palette.canvasHeader.saveDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.saveDark,
-                                color: theme.palette.canvasHeader.saveLight
-                            }
-                        }}
-                        color='inherit'
-                        onClick={onSaveChatflowClick}
-                    >
-                        <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
-                <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.settingsLight,
-                            color: theme.palette.canvasHeader.settingsDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.settingsDark,
-                                color: theme.palette.canvasHeader.settingsLight
-                            }
-                        }}
-                        onClick={() => setSettingsOpen(!isSettingsOpen)}
-                    >
-                        <IconSettings stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
-            </Box>
-            <Settings
-                chatflow={chatflow}
-                isSettingsOpen={isSettingsOpen}
-                anchorEl={settingsRef.current}
-                onClose={() => setSettingsOpen(false)}
-                onSettingsItemClick={onSettingsItemClick}
-                onUploadFile={onUploadFile}
-            />
-            <SaveChatflowDialog
-                show={flowDialogOpen}
-                dialogProps={{
-                    title: `Save New Chatflow`,
-                    confirmButtonName: 'Save',
-                    cancelButtonName: 'Cancel'
-                }}
-                onCancel={() => setFlowDialogOpen(false)}
-                onConfirm={onConfirmSaveName}
-            />
-            <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
-            <AnalyseFlowDialog show={analyseDialogOpen} dialogProps={analyseDialogProps} onCancel={() => setAnalyseDialogOpen(false)} />
-            <StarterPromptsDialog
-                show={conversationStartersDialogOpen}
-                dialogProps={conversationStartersDialogProps}
-                onConfirm={() => setConversationStartersDialogOpen(false)}
-                onCancel={() => setConversationStartersDialogOpen(false)}
-            />
-            <ChatSummaryDialog
-                show={chatSummaryOpen}
-                dialogProps={conversationStartersDialogProps}
-                onConfirm={() => setChatSummaryOpen(false)}
-                onCancel={() => setChatSummaryOpen(false)}
-            />
-            <ViewMessagesDialog
-                show={viewMessagesDialogOpen}
-                dialogProps={viewMessagesDialogProps}
-                onCancel={() => setViewMessagesDialogOpen(false)}
-            />
         </>
     )
 }
 
-CanvasHeader.propTypes = {
+SubscribeHeader.propTypes = {
     chatflow: PropTypes.object,
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func
 }
 
-export default CanvasHeader
+export default SubscribeHeader

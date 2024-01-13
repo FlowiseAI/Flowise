@@ -6,6 +6,8 @@ const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
 
+const getAllPublicChatFlows = (id) => client.get(`/public-chatflows`)
+
 const createNewChatflow = (body) => client.post(`/chatflows`, body)
 
 const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
