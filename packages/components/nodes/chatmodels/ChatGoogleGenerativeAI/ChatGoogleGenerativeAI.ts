@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { convertStringToArrayString, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { BaseCache } from 'langchain/schema'
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 
 class GoogleGenerativeAI_ChatModels implements INode {
@@ -158,10 +158,23 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const harmBlockThreshold = nodeData.inputs?.harmBlockThreshold as string
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj = {
+        // safetySettings
+        let harmCategories: string[] = convertStringToArrayString(harmCategory)
+        let harmBlockThresholds: string[] = convertStringToArrayString(harmBlockThreshold)
+        if (harmCategories.length != harmBlockThresholds.length)
+            throw new Error(`Harm Category & Harm Block Threshold are not the same length`)
+        const safetySettings = harmCategories.map((value, index) => {
+            return {
+                category: value,
+                threshold: harmBlockThresholds[index]
+            }
+        })
+
+        const obj: Partial<GoogleGenerativeAIChatInput> = {
             apiKey: apiKey,
             modelName: modelName,
-            maxOutputTokens: 2048
+            maxOutputTokens: 2048,
+            safetySettings: safetySettings.length > 0 ? safetySettings : undefined
         }
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
@@ -171,19 +184,6 @@ class GoogleGenerativeAI_ChatModels implements INode {
         if (topK) model.topP = parseFloat(topK)
         if (cache) model.cache = cache
         if (temperature) model.temperature = parseFloat(temperature)
-
-        // safetySettings
-        let harmCategories: string[] = convertStringToArrayString(harmCategory)
-        let harmBlockThresholds: string[] = convertStringToArrayString(harmBlockThreshold)
-        if (harmCategories.length != harmBlockThresholds.length)
-            throw new Error(`Harm Category & Harm Block Threshold are not the same length`)
-        const safetySettings: typeof model.safetySettings = harmCategories.map((value, index) => {
-            return {
-                category: value,
-                threshold: harmBlockThresholds[index]
-            }
-        })
-        if (safetySettings.length > 0) model.safetySettings = safetySettings
 
         return model
     }
