@@ -14,6 +14,7 @@ export const init = async (): Promise<void> => {
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            console.log('datasource', 'sqlite')
             console.log('homePath', homePath)
             appDataSource = new DataSource({
                 type: 'sqlite',
@@ -25,6 +26,7 @@ export const init = async (): Promise<void> => {
             })
             break
         case 'mysql':
+            console.log('datasource', 'mysql')
             appDataSource = new DataSource({
                 type: 'mysql',
                 host: process.env.DATABASE_HOST,
@@ -34,12 +36,13 @@ export const init = async (): Promise<void> => {
                 database: process.env.DATABASE_NAME,
                 charset: 'utf8mb4',
                 synchronize: false,
-                migrationsRun: false,
+                migrationsRun: true,
                 entities: Object.values(entities),
                 migrations: mysqlMigrations
             })
             break
         case 'postgres':
+            console.log('datasource', 'postgres')
             appDataSource = new DataSource({
                 type: 'postgres',
                 host: process.env.DATABASE_HOST,
@@ -56,6 +59,7 @@ export const init = async (): Promise<void> => {
             break
         default:
             homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            console.log('datasource', 'sqlite')
             console.log('homePath', homePath)
             appDataSource = new DataSource({
                 type: 'sqlite',
@@ -73,6 +77,7 @@ export function getDataSource(): DataSource {
     if (appDataSource === undefined) {
         init()
     }
+    
     return appDataSource
 }
 

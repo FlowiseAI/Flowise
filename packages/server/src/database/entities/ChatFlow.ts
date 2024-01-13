@@ -42,4 +42,7 @@ export class ChatFlow implements IChatFlow {
 
     @Column({ nullable: true, type: 'text' })
     category?: string
+
+    @Column({ default: false })
+    public: boolean
 }

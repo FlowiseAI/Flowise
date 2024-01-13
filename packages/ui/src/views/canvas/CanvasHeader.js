@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, FormControlLabel, FormGroup, Switch } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
@@ -40,6 +40,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
 
     const [isEditingFlowName, setEditingFlowName] = useState(null)
     const [flowName, setFlowName] = useState('')
+    const [isPublic, setIsPublic] = useState(false)
     const [isSettingsOpen, setSettingsOpen] = useState(false)
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
     const [apiDialogOpen, setAPIDialogOpen] = useState(false)
@@ -167,9 +168,21 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
         handleSaveFlow(flowName)
     }
 
+    const onChangePublicStatus = (flowName) => {
+        const newStatus = !isPublic
+        setIsPublic(newStatus)
+        chatflow.public = newStatus
+        const updateBody = {
+            isPublic: newStatus
+        }
+
+        updateChatflowApi.request(chatflow.id, updateBody)
+    }
+
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
+            setIsPublic(updateChatflowApi.data.isPublic)
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
         }
         setEditingFlowName(false)
@@ -180,6 +193,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
+            setIsPublic(chatflow.isPublic)
         }
     }, [chatflow])
 
@@ -209,6 +223,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                     </Avatar>
                 </ButtonBase>
             </Box>
+
             <Box sx={{ flexGrow: 1 }}>
                 {!isEditingFlowName && (
                     <Stack flexDirection='row'>
@@ -246,6 +261,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                         )}
                     </Stack>
                 )}
+
                 {isEditingFlowName && (
                     <Stack flexDirection='row'>
                         <TextField
@@ -301,6 +317,15 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                         </ButtonBase>
                     </Stack>
                 )}
+            </Box>
+            <Box sx={{ flexWrap: 'wrap-reverse', paddingRight: 2 }}>
+                <FormGroup>
+                    <FormControlLabel
+                        labelPlacement='start'
+                        control={<Switch checked={isPublic} onChange={onChangePublicStatus} />}
+                        label='Public  '
+                    />
+                </FormGroup>
             </Box>
             <Box>
                 {chatflow?.id && (

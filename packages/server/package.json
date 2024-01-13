@@ -55,6 +55,7 @@
         "cors": "^2.8.5",
         "crypto-js": "^4.1.1",
         "dotenv": "^16.0.0",
+        "dotenv-cli": "^7.3.0",
         "express": "^4.17.3",
         "express-basic-auth": "^1.2.1",
         "express-rate-limit": "^6.9.0",
