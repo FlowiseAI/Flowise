@@ -30,7 +30,7 @@ class ChatLocalAI_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['LocalAIApi'],
+            credentialNames: ['localAIApi'],
             optional: true
         }
         this.inputs = [
@@ -95,11 +95,11 @@ class ChatLocalAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const localAIApiKey = getCredentialParam('LocalAIApiKey', credentialData, nodeData)
+        const localAIApiKey = getCredentialParam('localAIApiKey', credentialData, nodeData)
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { localAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
