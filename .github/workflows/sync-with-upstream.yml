@@ -1,0 +1,25 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Fetch upstream changes
+      run: |
+        git remote add upstream https://github.com/FlowiseAI/Flowise.git
+        git fetch upstream
+
+    - name: Merge upstream changes
+      run: |
+        git checkout main
+        git merge upstream/main
+        git push origin main
