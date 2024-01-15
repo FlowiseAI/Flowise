@@ -48,6 +48,7 @@
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
         "faiss-node": "^0.2.2",
+        "fast-json-patch": "^3.1.1",
         "form-data": "^4.0.0",
         "google-auth-library": "^9.4.0",
         "graphql": "^16.6.0",

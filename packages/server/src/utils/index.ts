@@ -26,7 +26,8 @@ import {
     getEncryptionKeyPath,
     ICommonObject,
     IDatabaseEntity,
-    IMessage
+    IMessage,
+    FlowiseMemory
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
@@ -270,7 +271,7 @@ export const buildLangchain = async (
     depthQueue: IDepthQueue,
     componentNodes: IComponentNodes,
     question: string,
-    chatHistory: IMessage[] | string,
+    chatHistory: IMessage[],
     chatId: string,
     chatflowid: string,
     appDataSource: DataSource,
@@ -317,9 +318,10 @@ export const buildLangchain = async (
                 await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
                     chatflowid,
+                    chatHistory,
+                    logger,
                     appDataSource,
                     databaseEntities,
-                    logger,
                     cachePool,
                     dynamicVariables
                 })
@@ -330,9 +332,10 @@ export const buildLangchain = async (
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
                     chatflowid,
+                    chatHistory,
+                    logger,
                     appDataSource,
                     databaseEntities,
-                    logger,
                     cachePool,
                     dynamicVariables
                 })
@@ -424,66 +427,52 @@ export const buildLangchain = async (
 }
 
 /**
- * Clear all session memories on the canvas
- * @param {IReactFlowNode[]} reactFlowNodes
- * @param {IComponentNodes} componentNodes
- * @param {string} chatId
- * @param {DataSource} appDataSource
- * @param {string} sessionId
- */
-export const clearAllSessionMemory = async (
-    reactFlowNodes: IReactFlowNode[],
-    componentNodes: IComponentNodes,
-    chatId: string,
-    appDataSource: DataSource,
-    sessionId?: string
-) => {
-    for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
-        const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
-        const nodeModule = await import(nodeInstanceFilePath)
-        const newNodeInstance = new nodeModule.nodeClass()
-
-        if (sessionId && node.data.inputs) {
-            node.data.inputs.sessionId = sessionId
-        }
-
-        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
-            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
-        }
-    }
-}
-
-/**
- * Clear specific session memory from View Message Dialog UI
+ * Clear session memories
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {IComponentNodes} componentNodes
  * @param {string} chatId
  * @param {DataSource} appDataSource
  * @param {string} sessionId
  * @param {string} memoryType
+ * @param {string} isClearFromViewMessageDialog
  */
-export const clearSessionMemoryFromViewMessageDialog = async (
+export const clearSessionMemory = async (
     reactFlowNodes: IReactFlowNode[],
     componentNodes: IComponentNodes,
     chatId: string,
     appDataSource: DataSource,
     sessionId?: string,
-    memoryType?: string
+    memoryType?: string,
+    isClearFromViewMessageDialog?: string
 ) => {
-    if (!sessionId) return
     for (const node of reactFlowNodes) {
         if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
-        if (memoryType && node.data.label !== memoryType) continue
+
+        // Only clear specific session memory from View Message Dialog UI
+        if (isClearFromViewMessageDialog && memoryType && node.data.label !== memoryType) continue
+
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
+        const options: ICommonObject = { chatId, appDataSource, databaseEntities, logger }
 
-        if (sessionId && node.data.inputs) node.data.inputs.sessionId = sessionId
-
-        if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.clearSessionMemory) {
-            await newNodeInstance.memoryMethods.clearSessionMemory(node.data, { chatId, appDataSource, databaseEntities, logger })
-            return
+        // SessionId always take priority first because it is the sessionId used for 3rd party memory node
+        if (sessionId && node.data.inputs) {
+            if (node.data.type === 'OpenAIAssistant') {
+                await newNodeInstance.clearChatMessages(node.data, options, { type: 'threadId', id: sessionId })
+            } else {
+                node.data.inputs.sessionId = sessionId
+                const initializedInstance: FlowiseMemory = await newNodeInstance.init(node.data, '', options)
+                await initializedInstance.clearChatMessages(sessionId)
+            }
+        } else if (chatId && node.data.inputs) {
+            if (node.data.type === 'OpenAIAssistant') {
+                await newNodeInstance.clearChatMessages(node.data, options, { type: 'chatId', id: chatId })
+            } else {
+                node.data.inputs.sessionId = chatId
+                const initializedInstance: FlowiseMemory = await newNodeInstance.init(node.data, '', options)
+                await initializedInstance.clearChatMessages(chatId)
+            }
         }
     }
 }
@@ -500,7 +489,7 @@ export const getVariableValue = (
     paramValue: string,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[] | string,
+    chatHistory: IMessage[],
     isAcceptVariable = false
 ) => {
     let returnVal = paramValue
@@ -533,10 +522,7 @@ export const getVariableValue = (
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
-                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(
-                    typeof chatHistory === 'string' ? chatHistory : convertChatHistoryToText(chatHistory),
-                    false
-                )
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
             }
 
             // Split by first occurrence of '.' to get just nodeId
@@ -583,7 +569,7 @@ export const resolveVariables = (
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
-    chatHistory: IMessage[] | string
+    chatHistory: IMessage[]
 ): INodeData => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -970,21 +956,43 @@ export const redactCredentialWithPasswordType = (
 }
 
 /**
- * Replace sessionId with new chatId
- * Ex: after clear chat history, use the new chatId as sessionId
+ * Get sessionId
+ * Hierarchy of sessionId (top down)
+ * API/Embed:
+ * (1) Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
+ * (2) Provided in API body - incomingInput.chatId
+ *
+ * API/Embed + UI:
+ * (3) Hard-coded sessionId in UI
+ * (4) Not specified on UI nor API, default to chatId
  * @param {any} instance
+ * @param {IncomingInput} incomingInput
  * @param {string} chatId
  */
-export const checkMemorySessionId = (instance: any, chatId: string): string | undefined => {
-    if (instance.memory && instance.memory.isSessionIdUsingChatMessageId && chatId) {
-        instance.memory.sessionId = chatId
-        instance.memory.chatHistory.sessionId = chatId
+export const getMemorySessionId = (
+    memoryNode: IReactFlowNode,
+    incomingInput: IncomingInput,
+    chatId: string,
+    isInternal: boolean
+): string | undefined => {
+    if (!isInternal) {
+        // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
+        if (incomingInput.overrideConfig?.sessionId) {
+            return incomingInput.overrideConfig?.sessionId
+        }
+        // Provided in API body - incomingInput.chatId
+        if (incomingInput.chatId) {
+            return incomingInput.chatId
+        }
     }
 
-    if (instance.memory && instance.memory.sessionId) return instance.memory.sessionId
-    else if (instance.memory && instance.memory.chatHistory && instance.memory.chatHistory.sessionId)
-        return instance.memory.chatHistory.sessionId
-    return undefined
+    // Hard-coded sessionId in UI
+    if (memoryNode.data.inputs?.sessionId) {
+        return memoryNode.data.inputs.sessionId
+    }
+
+    // Default chatId
+    return chatId
 }
 
 /**
@@ -996,31 +1004,52 @@ export const checkMemorySessionId = (instance: any, chatId: string): string | un
  * @param {any} logger
  * @returns {string}
  */
-export const replaceChatHistory = async (
+export const getSessionChatHistory = async (
     memoryNode: IReactFlowNode,
+    componentNodes: IComponentNodes,
     incomingInput: IncomingInput,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
     logger: any
-): Promise<string> => {
-    const nodeInstanceFilePath = memoryNode.data.filePath as string
+): Promise<IMessage[]> => {
+    const nodeInstanceFilePath = componentNodes[memoryNode.data.name].filePath as string
     const nodeModule = await import(nodeInstanceFilePath)
     const newNodeInstance = new nodeModule.nodeClass()
 
+    // Replace memory's sessionId/chatId
     if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
         memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
+    } else if (incomingInput.chatId && memoryNode.data.inputs) {
+        memoryNode.data.inputs.sessionId = incomingInput.chatId
     }
 
-    if (newNodeInstance.memoryMethods && newNodeInstance.memoryMethods.getChatMessages) {
-        return await newNodeInstance.memoryMethods.getChatMessages(memoryNode.data, {
-            chatId: incomingInput.chatId,
-            appDataSource,
-            databaseEntities,
-            logger
-        })
-    }
+    const initializedInstance: FlowiseMemory = await newNodeInstance.init(memoryNode.data, '', {
+        appDataSource,
+        databaseEntities,
+        logger
+    })
 
-    return ''
+    return (await initializedInstance.getChatMessages()) as IMessage[]
+}
+
+/**
+ * Method that find memory that is connected within chatflow
+ * In a chatflow, there should only be 1 memory node
+ * @param {IReactFlowNode[]} nodes
+ * @param {IReactFlowEdge[]} edges
+ * @returns {string | undefined}
+ */
+export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined => {
+    const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
+    const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
+
+    for (const edge of edges) {
+        if (memoryNodeIds.includes(edge.source)) {
+            const memoryNode = nodes.find((node) => node.data.id === edge.source)
+            return memoryNode
+        }
+    }
+    return undefined
 }
 
 /**

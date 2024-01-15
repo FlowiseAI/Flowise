@@ -20,7 +20,6 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
-    IReactFlowEdge,
     IDepthQueue,
     INodeDirectedGraph
 } from './Interface'
@@ -39,14 +38,14 @@ import {
     databaseEntities,
     transformToCredentialEntity,
     decryptCredentialData,
-    clearAllSessionMemory,
     replaceInputsWithConfig,
     getEncryptionKey,
-    checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog,
+    getMemorySessionId,
     getUserHome,
-    replaceChatHistory,
-    getAllConnectedNodes
+    getSessionChatHistory,
+    getAllConnectedNodes,
+    clearSessionMemory,
+    findMemoryNode
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -533,17 +532,18 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
 
-            if (isClearFromViewMessageDialog) {
-                await clearSessionMemoryFromViewMessageDialog(
+            try {
+                await clearSessionMemory(
                     nodes,
                     this.nodesPool.componentNodes,
                     chatId,
                     this.AppDataSource,
                     sessionId,
-                    memoryType
+                    memoryType,
+                    isClearFromViewMessageDialog
                 )
-            } else {
-                await clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+            } catch (e) {
+                return res.status(500).send('Error clearing chat messages')
             }
 
             const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
@@ -1399,26 +1399,6 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
-    /**
-     * Method that find memory label that is connected within chatflow
-     * In a chatflow, there should only be 1 memory node
-     * @param {IReactFlowNode[]} nodes
-     * @param {IReactFlowEdge[]} edges
-     * @returns {string | undefined}
-     */
-    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined {
-        const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
-        const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
-
-        for (const edge of edges) {
-            if (memoryNodeIds.includes(edge.source)) {
-                const memoryNode = nodes.find((node) => node.data.id === edge.source)
-                return memoryNode
-            }
-        }
-        return undefined
-    }
-
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
             const chatflowid = req.params.id
@@ -1587,7 +1567,6 @@ export class App {
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
-             * - Its not an Upsert request
              * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
@@ -1641,22 +1620,28 @@ export class App {
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
 
-                let chatHistory: IMessage[] | string = incomingInput.history
+                let chatHistory: IMessage[] = incomingInput.history ?? []
 
-                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory
+                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
+
                     if (!endingNodeData.inputs?.memory) continue
-                    if (
-                        endingNodeData.inputs?.memory &&
-                        !incomingInput.history &&
-                        (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
-                    ) {
-                        const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
-                        const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
-                        if (memoryNode) {
-                            chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-                        }
+
+                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
+                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+
+                    if (!memoryNode) continue
+
+                    if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
+                        chatHistory = await getSessionChatHistory(
+                            memoryNode,
+                            this.nodesPool.componentNodes,
+                            incomingInput,
+                            this.AppDataSource,
+                            databaseEntities,
+                            logger
+                        )
                     }
                 }
 
@@ -1715,16 +1700,11 @@ export class App {
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
-            let sessionId = undefined
-            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
-
-            const memoryNode = this.findMemoryLabel(nodes, edges)
+            const memoryNode = findMemoryNode(nodes, edges)
             const memoryType = memoryNode?.data.label
 
-            let chatHistory: IMessage[] | string = incomingInput.history
-            if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-            }
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
@@ -1732,24 +1712,24 @@ export class App {
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
-                      socketIO,
-                      socketIOClientId: incomingInput.socketIOClientId,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
                       analytic: chatflow.analytic,
-                      chatId
+                      socketIO,
+                      socketIOClientId: incomingInput.socketIOClientId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic,
-                      chatId
+                      analytic: chatflow.analytic
                   })
 
             result = typeof result === 'string' ? { text: result } : result
