@@ -361,7 +361,8 @@ export class App {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
-            if (chatflow && chatflow.chatbotConfig) {
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            if (chatflow.chatbotConfig) {
                 try {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     return res.json(parsedConfig)
@@ -369,7 +370,7 @@ export class App {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
             }
-            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
+            return res.status(200).send('OK')
         })
 
         // Save chatflow
@@ -521,7 +522,7 @@ export class App {
                 res.status(404).send(`Chatflow ${chatflowid} not found`)
                 return
             }
-            const chatId = (req.query?.chatId as string) ?? (await getChatId(chatflowid))
+            const chatId = req.query?.chatId as string
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
             const chatType = req.query?.chatType as string | undefined
@@ -545,7 +546,8 @@ export class App {
                 return res.status(500).send('Error clearing chat messages')
             }
 
-            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
+            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
+            if (chatId) deleteOptions.chatId = chatId
             if (memoryType) deleteOptions.memoryType = memoryType
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
@@ -633,7 +635,7 @@ export class App {
             return res.json(result)
         })
 
-        // Delete all chatmessages from chatflowid
+        // Delete all credentials from chatflowid
         this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Credential).delete({ id: req.params.id })
             return res.json(results)
@@ -1788,23 +1790,6 @@ export class App {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
-}
-
-/**
- * Get first chat message id
- * @param {string} chatflowid
- * @returns {string}
- */
-export async function getChatId(chatflowid: string): Promise<string> {
-    // first chatmessage id as the unique chat id
-    const firstChatMessage = await getDataSource()
-        .getRepository(ChatMessage)
-        .createQueryBuilder('cm')
-        .select('cm.id')
-        .where('chatflowid = :chatflowid', { chatflowid })
-        .orderBy('cm.createdDate', 'ASC')
-        .getOne()
-    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined

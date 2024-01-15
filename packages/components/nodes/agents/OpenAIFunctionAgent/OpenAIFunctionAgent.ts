@@ -112,7 +112,7 @@ const prepareAgent = (
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['ai', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
+        ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
         new MessagesPlaceholder(memoryKey),
         ['human', `{${inputKey}}`],
         new MessagesPlaceholder('agent_scratchpad')
