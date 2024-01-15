@@ -35,3 +35,14 @@
     flex-grow: 1;
     height: 100%;
 }
+
+div.details.collapsed {
+    visibility: hidden;
+    height: 0;
+}
+
+div.details.collapsed * {
+    height: 0;
+    top: 50% !important;
+    position: absolute;
+}

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useContext, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useUpdateNodeInternals, useEdgesState } from 'reactflow'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
@@ -54,6 +55,30 @@ const CanvasNode = ({ data }) => {
     const [infoDialogProps, setInfoDialogProps] = useState({})
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
+    const updateNodeInternals = useUpdateNodeInternals()
+    const [isCollapsed, setIsCollapsed] = useState(false)
+    const [setEdges] = useEdgesState()
+    const { reactFlowInstance } = useContext(flowContext)
+
+    const handleDoubleClick = () => {
+        setIsCollapsed(!isCollapsed)
+    }
+
+    useEffect(() => {
+        if (data.id && reactFlowInstance) {
+            setTimeout(() => {
+                updateNodeInternals(data.id)
+
+                const updatedEdges = reactFlowInstance.getEdges().map((edge) => {
+                    if (edge.source === data.id || edge.target === data.id) {
+                        return { ...edge, dummyProperty: Date.now() }
+                    }
+                    return edge
+                })
+                setEdges(updatedEdges)
+            }, 100)
+        }
+    }, [isCollapsed, data.id, updateNodeInternals, reactFlowInstance, setEdges])
 
     const handleClose = () => {
         setOpen(false)
@@ -150,7 +175,11 @@ const CanvasNode = ({ data }) => {
                     placement='right-start'
                 >
                     <Box>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <div
+                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            className='header'
+                            onDoubleClick={handleDoubleClick}
+                        >
                             <Box style={{ width: 50, marginRight: 10, padding: 5 }}>
                                 <div
                                     style={{
@@ -190,62 +219,63 @@ const CanvasNode = ({ data }) => {
                                 </>
                             )}
                         </div>
-                        {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
-                            <>
-                                <Divider />
-                                <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                                    <Typography
-                                        sx={{
-                                            fontWeight: 500,
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        Inputs
-                                    </Typography>
-                                </Box>
-                                <Divider />
-                            </>
-                        )}
-                        {data.inputAnchors.map((inputAnchor, index) => (
-                            <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
-                        ))}
-                        {data.inputParams
-                            .filter((inputParam) => !inputParam.hidden)
-                            .map((inputParam, index) => (
-                                <NodeInputHandler key={index} inputParam={inputParam} data={data} />
+                        <div className={isCollapsed ? 'collapsed details' : 'details'}>
+                            {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
+                                <>
+                                    <Divider />
+                                    <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
+                                        <Typography
+                                            sx={{
+                                                fontWeight: 500,
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            Inputs
+                                        </Typography>
+                                    </Box>
+                                    <Divider />
+                                </>
+                            )}
+                            {data.inputAnchors.map((inputAnchor, index) => (
+                                <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
                             ))}
-                        {data.inputParams.find((param) => param.additionalParams) && (
-                            <div
-                                style={{
-                                    textAlign: 'center',
-                                    marginTop:
-                                        data.inputParams.filter((param) => param.additionalParams).length ===
-                                        data.inputParams.length + data.inputAnchors.length
-                                            ? 20
-                                            : 0
-                                }}
-                            >
-                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
-                                    Additional Parameters
-                                </Button>
-                            </div>
-                        )}
-                        <Divider />
-                        <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 500,
-                                    textAlign: 'center'
-                                }}
-                            >
-                                Output
-                            </Typography>
-                        </Box>
-                        <Divider />
-
-                        {data.outputAnchors.map((outputAnchor, index) => (
-                            <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
-                        ))}
+                            {data.inputParams
+                                .filter((inputParam) => !inputParam.hidden)
+                                .map((inputParam, index) => (
+                                    <NodeInputHandler key={index} inputParam={inputParam} data={data} />
+                                ))}
+                            {data.inputParams.find((param) => param.additionalParams) && (
+                                <div
+                                    style={{
+                                        textAlign: 'center',
+                                        marginTop:
+                                            data.inputParams.filter((param) => param.additionalParams).length ===
+                                            data.inputParams.length + data.inputAnchors.length
+                                                ? 20
+                                                : 0
+                                    }}
+                                >
+                                    <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                        Additional Parameters
+                                    </Button>
+                                </div>
+                            )}
+                            <Divider />
+                            <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 500,
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    Output
+                                </Typography>
+                            </Box>
+                            <Divider />
+                            {data.outputAnchors.map((outputAnchor, index) => (
+                                <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
+                            ))}
+                        </div>
                     </Box>
                 </LightTooltip>
             </CardWrapper>
