@@ -1264,5 +1264,50 @@ export const translationObject = {
     Variables: 'Переменные',
     variable: 'переменная',
     Variable: 'Переменная',
-    'Please wait....loading Prompts': 'Пожалуйста, подождите....загрузка подсказок'
+    'Please wait....loading Prompts': 'Пожалуйста, подождите....загрузка подсказок',
+    'Astra DB Collection Name': 'Название коллекции Astra DB',
+    'Astra DB Application Token': 'Токен приложения Astra DB',
+    'Astra DB Api Endpoint': 'Конечная точка API Astra DB',
+    'LocalAI Api Key': 'Ключ API LocalAI',
+    'In beta, available to both Growth and <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users':
+        'В бета-версии доступно как для пользователей Growth, так и для пользователей <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara.',
+    'Only available to <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users':
+        'Доступно только для <a target="_blank" href="https://vectara.com/pricing/">Scale</a> пользователей Vectara.',
+    'In beta, only available to <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users':
+        'В бета-версии доступно только <a target="_blank" href="https://vectara.com/pricing/">Scale</a> пользователям Vectara.',
+    "BAD REQUEST: Too much text for the summarizer to summarize. Please try reducing the number of search results to summarize, or the context of each result by adjusting the 'summary_num_sentences', and 'summary_num_results' parameters respectively.":
+        'ПЛОХАЯ ПРОСЬБА: Слишком много текста, чтобы составитель мог подвести итог. Попробуйте уменьшить количество результатов поиска для суммирования или контекст каждого результата, изменив параметры summary_num_sentences и summary_num_results соответственно.',
+    'Upsert embedded data and perform similarity search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству по запросу с помощью DataStax Astra DB, бессерверной векторной базы данных, которая идеально подходит для управления критически важными рабочими нагрузками искусственного интеллекта.',
+    'Dimension used for storing vector embedding': 'Размерность, используемая для хранения векторного внедрения',
+    'cosine | euclidean | dot_product': 'косинус | евклидов | скалярное произведение',
+    'Similarity Metric': 'Метрика сходства',
+    'Astra Retriever': 'Астра ретривер',
+    'Astra Vector Store': 'Магазин Астра Вектор',
+    'Milvus Text Field': 'Текстовое поле Милвуса',
+    langchain_text: 'текст лангчейна',
+    'Milvus Filter': 'Milvus Фильтр',
+    'Milvus Collection Name': 'Название коллекции Milvus',
+    'Milvus Server URL': 'URL-адрес сервера Milvus',
+    'Filter data with a simple string query. Refer Milvus <a target="_blank" href="https://milvus.io/blog/2022-08-08-How-to-use-string-data-to-empower-your-similarity-search-applications.md#Hybrid-search">docs</a> for more details.':
+        'Фильтруйте данные с помощью простого строкового запроса. Обратитесь к Milvus <a target="_blank" href="https://milvus.io/blog/2022-08-08-How-to-use-string-data-to-empower-your-similarity-search-applications. md#Hybrid-search">документация</a> для получения более подробной информации.',
+    'Enable hybrid search to improve retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.':
+        'Включите гибридный поиск, чтобы повысить точность поиска, регулируя баланс (от 0 до 1) между нейронным поиском и факторами поиска на основе ключевых слов.',
+    'A value of 0.0 means that only neural search is used, while a value of 1.0 means that only keyword-based search is used. Defaults to 0.0 (neural only).':
+        'Значение 0,0 означает, что используется только нейронный поиск, а значение 1,0 означает, что используется только поиск по ключевым словам. По умолчанию 0,0 (только нейронные сети).',
+    'Enable hybrid search to improve retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors. A value of 0.0 means that only neural search is used, while a value of 1.0 means that only keyword-based search is used. Defaults to 0.0 (neural only).':
+        'Включите гибридный поиск, чтобы повысить точность поиска, регулируя баланс (от 0 до 1) между нейронным поиском и факторами поиска на основе ключевых слов. Значение 0,0 означает, что используется только нейронный поиск, а значение 1,0 означает, что используется только поиск по ключевым словам. По умолчанию 0,0 (только нейронные сети).',
+    'Number of top results to fetch for MMR. Defaults to 50': 'Количество лучших результатов для MMR. По умолчанию 50',
+    'MMR diversity bias': 'Предвзятость разнообразия MMR',
+    'The diversity bias to use for MMR. This is a value between 0.0 and 1.0':
+        'предвзятость к разнообразию для использования в MMR. Это значение от 0,0 до 1,0.',
+    'Values closer to 1.0 optimize for the most diverse results.':
+        'Значения ближе к 1,0 оптимизируют для получения самых разнообразных результатов.',
+    'Defaults to 0 (MMR disabled)': 'По умолчанию 0 (MMR отключен)',
+    'The diversity bias to use for MMR. This is a value between 0.0 and 1.0 Values closer to 1.0 optimize for the most diverse results. Defaults to 0 (MMR disabled)':
+        'Смещение разнообразия для использования в MMR. Это значение от 0,0 до 1,0. Значения ближе к 1,0 оптимизируют результаты для самых разнообразных результатов. По умолчанию 0 (MMR отключен)',
+    'Number of top results to fetch. Defaults to 5': 'Количество лучших результатов для получения. По умолчанию 5',
+    'The number of results to rerank if MMR is enabled.': 'Количество результатов для повторного ранжирования, если включен MMR.',
+    'Diversity Bias parameter for MMR, if enabled. 0.0 means no diversiry bias, 1.0 means maximum diversity bias. Defaults to 0.0 (MMR disabled).':
+        'Параметр Diversity Bias для MMR, если он включен. 0,0 означает отсутствие систематической ошибки из-за разнообразия, 1,0 означает максимальную ошибку из-за разнообразия. По умолчанию 0,0 (MMR отключен).'
 }
