@@ -237,6 +237,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     let langSmithField: LangChainTracerFields = {
                         projectName: langSmithProject ?? 'default',
+                        //@ts-ignore
                         client
                     }
 
