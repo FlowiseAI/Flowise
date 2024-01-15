@@ -109,9 +109,18 @@ class OpenAIFunctionAgent_Agents implements INode {
 
 const formatAgentSteps = (steps: AgentStep[]): BaseMessage[] =>
     steps.flatMap(({ action, observation }) => {
+        const create_function_message = (observation: string, action: AgentAction) => {
+            let content: string
+            if (typeof observation !== 'string') {
+                content = JSON.stringify(observation)
+            } else {
+                content = observation
+            }
+            return new FunctionMessage(content, action.tool)
+        }
         if ('messageLog' in action && action.messageLog !== undefined) {
             const log = action.messageLog as BaseMessage[]
-            return log.concat(new FunctionMessage(observation, action.tool))
+            return log.concat(create_function_message(observation, action))
         } else {
             return [new AIMessage(action.log)]
         }
@@ -127,7 +136,7 @@ const prepareAgent = (nodeData: INodeData, sessionId?: string) => {
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['ai', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
+        ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
         new MessagesPlaceholder(memoryKey),
         ['human', `{${inputKey}}`],
         new MessagesPlaceholder('agent_scratchpad')
