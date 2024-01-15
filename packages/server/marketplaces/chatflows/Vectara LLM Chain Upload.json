@@ -361,12 +361,33 @@
                     {
                         "label": "Top K",
                         "name": "topK",
-                        "description": "Number of top results to fetch. Defaults to 4",
-                        "placeholder": "4",
+                        "description": "Number of top results to fetch. Defaults to 5",
+                        "placeholder": "5",
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
                         "id": "vectara_0-input-topK-number"
+                    },
+                    {
+                        "label": "MMR K",
+                        "name": "mmrK",
+                        "description": "The number of results to rerank if MMR is enabled.",
+                        "placeholder": "50",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-mmrK-number"
+                    },
+                    {
+                        "label": "MMR Diversity Bias",
+                        "name": "mmrDiversityBias",
+                        "step": 0.1,
+                        "description": "Diversity Bias parameter for MMR, if enabled. 0.0 means no diversiry bias, 1.0 means maximum diversity bias. Defaults to 0.0 (MMR disabled).",
+                        "placeholder": "0.0",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_0-input-mmrDiversityBias-number"
                     }
                 ],
                 "inputAnchors": [
@@ -385,7 +406,9 @@
                     "sentencesBefore": "",
                     "sentencesAfter": "",
                     "lambda": "",
-                    "topK": ""
+                    "topK": "",
+                    "mmrK": "",
+                    "mmrDiversityBias": ""
                 },
                 "outputAnchors": [
                     {
