@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import CardWrapper from './CardWrapper'
-import LightTooltip from './LightTooltip'
+import NodeCardWrapper from '../../ui-component/cards/NodeCardWrapper'
+import NodeTooltip from '../../ui-component/tooltip/NodeTooltip'
 import { IconButton, Box } from '@mui/material'
 import { IconCopy, IconTrash } from '@tabler/icons'
 import { Input } from 'ui-component/input/Input'
@@ -33,7 +33,7 @@ const StickyNote = ({ data }) => {
 
     return (
         <>
-            <CardWrapper
+            <NodeCardWrapper
                 content={false}
                 sx={{
                     padding: 0,
@@ -42,7 +42,7 @@ const StickyNote = ({ data }) => {
                 }}
                 border={false}
             >
-                <LightTooltip
+                <NodeTooltip
                     open={!canvas.canvasDialogShow && open}
                     onClose={handleClose}
                     onOpen={handleOpen}
@@ -90,8 +90,8 @@ const StickyNote = ({ data }) => {
                             nodeId={data.id}
                         />
                     </Box>
-                </LightTooltip>
-            </CardWrapper>
+                </NodeTooltip>
+            </NodeCardWrapper>
         </>
     )
 }

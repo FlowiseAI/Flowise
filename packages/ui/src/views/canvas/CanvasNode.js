@@ -8,8 +8,8 @@ import { IconButton, Box, Typography, Divider, Button } from '@mui/material'
 import Tooltip from '@mui/material/Tooltip'
 
 // project imports
-import CardWrapper from './CardWrapper'
-import LightTooltip from './LightTooltip'
+import NodeCardWrapper from '../../ui-component/cards/NodeCardWrapper'
+import NodeTooltip from '../../ui-component/tooltip/NodeTooltip'
 import NodeInputHandler from './NodeInputHandler'
 import NodeOutputHandler from './NodeOutputHandler'
 import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
@@ -72,7 +72,7 @@ const CanvasNode = ({ data }) => {
 
     return (
         <>
-            <CardWrapper
+            <NodeCardWrapper
                 content={false}
                 sx={{
                     padding: 0,
@@ -80,7 +80,7 @@ const CanvasNode = ({ data }) => {
                 }}
                 border={false}
             >
-                <LightTooltip
+                <NodeTooltip
                     open={!canvas.canvasDialogShow && open}
                     onClose={handleClose}
                     onOpen={handleOpen}
@@ -225,8 +225,8 @@ const CanvasNode = ({ data }) => {
                             <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
                         ))}
                     </Box>
-                </LightTooltip>
-            </CardWrapper>
+                </NodeTooltip>
+            </NodeCardWrapper>
             <AdditionalParamsDialog
                 show={showDialog}
                 dialogProps={dialogProps}

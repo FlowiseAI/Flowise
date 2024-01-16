@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles'
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip'
 
-const LightTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)(({ theme }) => ({
+const NodeTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)(({ theme }) => ({
     [`& .${tooltipClasses.tooltip}`]: {
         backgroundColor: theme.palette.nodeToolTip.background,
         color: theme.palette.nodeToolTip.color,
@@ -9,4 +9,4 @@ const LightTooltip = styled(({ className, ...props }) => <Tooltip {...props} cla
     }
 }))
 
-export default LightTooltip
+export default NodeTooltip

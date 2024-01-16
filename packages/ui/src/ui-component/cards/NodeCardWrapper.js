@@ -2,9 +2,9 @@
 import { styled } from '@mui/material/styles'
 
 // project imports
-import MainCard from '../../ui-component/cards/MainCard'
+import MainCard from './MainCard'
 
-const CardWrapper = styled(MainCard)(({ theme }) => ({
+const NodeCardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
     border: 'solid 1px',
@@ -18,4 +18,4 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     }
 }))
 
-export default CardWrapper
+export default NodeCardWrapper
