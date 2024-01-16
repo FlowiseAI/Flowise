@@ -2,7 +2,7 @@ import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } f
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
 import { ICommonObject } from '../../../src'
-import { InputValues, MemoryVariables, OutputValues, getBufferString } from 'langchain/memory'
+import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
 import { BaseMessage } from 'langchain/schema'
 
 class ZepMemory_Memory implements INode {
@@ -55,10 +55,9 @@ class ZepMemory_Memory implements INode {
                 label: 'Size',
                 name: 'k',
                 type: 'number',
-                placeholder: '10',
+                default: '10',
                 description: 'Window of size k to surface the last k back-and-forth to use as memory.',
-                additionalParams: true,
-                optional: true
+                additionalParams: true
             },
             {
                 label: 'AI Prefix',
@@ -101,27 +100,6 @@ class ZepMemory_Memory implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         return await initalizeZep(nodeData, options)
     }
-
-    //@ts-ignore
-    memoryMethods = {
-        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const zep = await initalizeZep(nodeData, options)
-            const sessionId = nodeData.inputs?.sessionId as string
-            const chatId = options?.chatId as string
-            options.logger.info(`Clearing Zep memory session ${sessionId ? sessionId : chatId}`)
-            await zep.clear()
-            options.logger.info(`Successfully cleared Zep memory session ${sessionId ? sessionId : chatId}`)
-        },
-        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
-            const memoryKey = nodeData.inputs?.memoryKey as string
-            const aiPrefix = nodeData.inputs?.aiPrefix as string
-            const humanPrefix = nodeData.inputs?.humanPrefix as string
-            const zep = await initalizeZep(nodeData, options)
-            const key = memoryKey ?? 'chat_history'
-            const memoryResult = await zep.loadMemoryVariables({})
-            return getBufferString(memoryResult[key], humanPrefix, aiPrefix)
-        }
-    }
 }
 
 const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
@@ -131,30 +109,19 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
     const memoryKey = nodeData.inputs?.memoryKey as string
     const inputKey = nodeData.inputs?.inputKey as string
     const k = nodeData.inputs?.k as string
-    const chatId = options?.chatId as string
-
-    let isSessionIdUsingChatMessageId = false
-    let sessionId = ''
-
-    if (!nodeData.inputs?.sessionId && chatId) {
-        isSessionIdUsingChatMessageId = true
-        sessionId = chatId
-    } else {
-        sessionId = nodeData.inputs?.sessionId
-    }
+    const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
     const obj: ZepMemoryInput & ZepMemoryExtendedInput = {
         baseURL,
-        sessionId,
         aiPrefix,
         humanPrefix,
         returnMessages: true,
         memoryKey,
         inputKey,
-        isSessionIdUsingChatMessageId,
+        sessionId,
         k: k ? parseInt(k, 10) : undefined
     }
     if (apiKey) obj.apiKey = apiKey
@@ -163,17 +130,14 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
 }
 
 interface ZepMemoryExtendedInput {
-    isSessionIdUsingChatMessageId: boolean
     k?: number
 }
 
 class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
-    isSessionIdUsingChatMessageId? = false
     lastN?: number
 
     constructor(fields: ZepMemoryInput & ZepMemoryExtendedInput) {
         super(fields)
-        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
         this.lastN = fields.k
     }
 
