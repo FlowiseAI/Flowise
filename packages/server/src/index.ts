@@ -314,7 +314,7 @@ export class App {
         })
 
         // execute custom function node
-        this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
+        indexRouter.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
             const body = req.body
             const nodeData = { inputs: body }
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
@@ -392,7 +392,7 @@ export class App {
 
         // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
         // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
-        this.app.get('/api/v1/public-chatbotConfig/:id', async (req: Request, res: Response) => {
+        indexRouter.get('/api/v1/public-chatbotConfig/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
@@ -1088,7 +1088,7 @@ export class App {
         })
 
         // Download file from assistant
-        this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
+        indexRouter.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
             const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
             //raise error if file path is not absolute
             if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
@@ -1849,8 +1849,7 @@ export class App {
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic,
-                      chatId
+                      analytic: chatflow.analytic
                   })
 
             result = typeof result === 'string' ? { text: result } : result
