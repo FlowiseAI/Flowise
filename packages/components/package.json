@@ -26,6 +26,7 @@
         "@gomomento/sdk": "^1.51.1",
         "@gomomento/sdk-core": "^1.51.1",
         "@google-ai/generativelanguage": "^0.2.1",
+        "@google/generative-ai": "^0.1.3",
         "@huggingface/inference": "^2.6.1",
         "@langchain/community": "^0.0.16",
         "@langchain/google-genai": "^0.0.6",

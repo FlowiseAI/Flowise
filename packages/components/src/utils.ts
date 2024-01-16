@@ -673,3 +673,18 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
     }
     return formatmessages
 }
+
+/**
+ * Convert MultiOptions String to String Array
+ * @param {string} inputString
+ * @returns {string[]}
+ */
+export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
+    let ArrayString: string[] = []
+    try {
+        ArrayString = JSON.parse(inputString)
+    } catch (e) {
+        ArrayString = []
+    }
+    return ArrayString
+}
