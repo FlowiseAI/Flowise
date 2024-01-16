@@ -681,7 +681,10 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
  */
 export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
     let ArrayString: string[] = []
-    if (inputString) ArrayString = JSON.parse(inputString)
-
+    try {
+        ArrayString = JSON.parse(inputString)
+    } catch (e) {
+        ArrayString = []
+    }
     return ArrayString
 }
