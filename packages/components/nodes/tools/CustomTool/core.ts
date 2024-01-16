@@ -55,7 +55,12 @@ export class DynamicStructuredTool<
         this.schema = fields.schema
     }
 
-    async call(arg: z.output<T>, configArg?: RunnableConfig | Callbacks, tags?: string[], overrideSessionId?: string): Promise<string> {
+    async call(
+        arg: z.output<T>,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
         const config = parseCallbackConfigArg(configArg)
         if (config.runName === undefined) {
             config.runName = this.name
@@ -86,7 +91,7 @@ export class DynamicStructuredTool<
         )
         let result
         try {
-            result = await this._call(parsed, runManager, overrideSessionId)
+            result = await this._call(parsed, runManager, flowConfig)
         } catch (e) {
             await runManager?.handleToolError(e)
             throw e
@@ -95,7 +100,11 @@ export class DynamicStructuredTool<
         return result
     }
 
-    protected async _call(arg: z.output<T>, _?: CallbackManagerForToolRun, overrideSessionId?: string): Promise<string> {
+    protected async _call(
+        arg: z.output<T>,
+        _?: CallbackManagerForToolRun,
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
         let sandbox: any = {}
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
@@ -126,7 +135,7 @@ export class DynamicStructuredTool<
 
         // inject flow properties
         if (this.flowObj) {
-            sandbox['$flow'] = { ...this.flowObj, sessionId: overrideSessionId }
+            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
         }
 
         const defaultAllowBuiltInDep = [
