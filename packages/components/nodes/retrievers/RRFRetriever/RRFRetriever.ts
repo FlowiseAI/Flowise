@@ -1,9 +1,10 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
 import { BaseRetriever } from 'langchain/schema/retriever'
 import { ReciprocalRankFusion } from './ReciprocalRankFusion'
 import { VectorStoreRetriever } from 'langchain/vectorstores/base'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class RRFRetriever_Retrievers implements INode {
     label: string
@@ -16,20 +17,21 @@ class RRFRetriever_Retrievers implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     badge: string
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Reciprocal Rank Fusion Retriever'
         this.name = 'RRFRetriever'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'RRFRetriever'
         this.badge = 'NEW'
-        this.icon = 'compressionRetriever.svg'
+        this.icon = 'rrfRetriever.svg'
         this.category = 'Retrievers'
         this.description = 'Reciprocal Rank Fusion to re-rank search results by multiple query generation.'
         this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
-                label: 'Base Retriever',
+                label: 'Vector Store Retriever',
                 name: 'baseRetriever',
                 type: 'VectorStoreRetriever'
             },
@@ -37,6 +39,14 @@ class RRFRetriever_Retrievers implements INode {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Query Count',
@@ -54,7 +64,6 @@ class RRFRetriever_Retrievers implements INode {
                 description: 'Number of top results to fetch. Default to the TopK of the Base Retriever',
                 placeholder: '0',
                 type: 'number',
-                default: 0,
                 additionalParams: true,
                 optional: true
             },
@@ -71,27 +80,56 @@ class RRFRetriever_Retrievers implements INode {
                 optional: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Reciprocal Rank Fusion Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Document',
+                name: 'document',
+                baseClasses: ['Document']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const llm = nodeData.inputs?.model as BaseLanguageModel
         const baseRetriever = nodeData.inputs?.baseRetriever as BaseRetriever
+        const query = nodeData.inputs?.query as string
         const queryCount = nodeData.inputs?.queryCount as string
         const q = queryCount ? parseFloat(queryCount) : 4
         const topK = nodeData.inputs?.topK as string
-        let k = topK ? parseFloat(topK) : 4
+        const k = topK ? parseFloat(topK) : (baseRetriever as VectorStoreRetriever).k ?? 4
         const constantC = nodeData.inputs?.c as string
-        let c = topK ? parseFloat(constantC) : 60
-
-        if (k <= 0) {
-            k = (baseRetriever as VectorStoreRetriever).k
-        }
+        const c = topK ? parseFloat(constantC) : 60
+        const output = nodeData.outputs?.output as string
 
         const ragFusion = new ReciprocalRankFusion(llm, baseRetriever as VectorStoreRetriever, q, k, c)
-        return new ContextualCompressionRetriever({
+        const retriever = new ContextualCompressionRetriever({
             baseCompressor: ragFusion,
             baseRetriever: baseRetriever
         })
+
+        if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'text') {
+            let finaltext = ''
+
+            const docs = await retriever.getRelevantDocuments(query ? query : input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
+        }
+
+        return retriever
     }
 }
 

@@ -73,7 +73,11 @@ class CustomFunction_Utilities implements INode {
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
+                let value = inputVars[item]
+                if (typeof value === 'string') {
+                    value = handleEscapeCharacters(value, true)
+                }
+                sandbox[`$${item}`] = value
             }
         }
 
