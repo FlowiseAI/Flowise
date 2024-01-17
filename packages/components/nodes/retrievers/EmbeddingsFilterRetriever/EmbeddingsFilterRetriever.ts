@@ -3,6 +3,7 @@ import { BaseRetriever } from 'langchain/schema/retriever'
 import { Embeddings } from 'langchain/embeddings/base'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class EmbeddingsFilterRetriever_Retrievers implements INode {
     label: string
@@ -29,15 +30,22 @@ class EmbeddingsFilterRetriever_Retrievers implements INode {
         this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
-                label: 'Base Retriever',
+                label: 'Vector Store Retriever',
                 name: 'baseRetriever',
                 type: 'VectorStoreRetriever'
             },
             {
                 label: 'Embeddings',
                 name: 'embeddings',
-                type: 'Embeddings',
-                optional: false
+                type: 'Embeddings'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Similarity Threshold',
@@ -61,36 +69,64 @@ class EmbeddingsFilterRetriever_Retrievers implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Embeddings Filter Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Document',
+                name: 'document',
+                baseClasses: ['Document']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const baseRetriever = nodeData.inputs?.baseRetriever as BaseRetriever
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const query = nodeData.inputs?.query as string
         const similarityThreshold = nodeData.inputs?.similarityThreshold as string
         const k = nodeData.inputs?.k as string
+        const output = nodeData.outputs?.output as string
 
         if (k === undefined && similarityThreshold === undefined) {
             throw new Error(`Must specify one of "k" or "similarity_threshold".`)
         }
 
-        let similarityThresholdNumber = 0.8
-        if (similarityThreshold) {
-            similarityThresholdNumber = parseFloat(similarityThreshold)
-        }
-        let kNumber = 0.8
-        if (k) {
-            kNumber = parseFloat(k)
-        }
+        const similarityThresholdNumber = similarityThreshold ? parseFloat(similarityThreshold) : 0.8
+        const kNumber = k ? parseFloat(k) : undefined
+
         const baseCompressor = new EmbeddingsFilter({
             embeddings: embeddings,
             similarityThreshold: similarityThresholdNumber,
             k: kNumber
         })
 
-        return new ContextualCompressionRetriever({
+        const retriever = new ContextualCompressionRetriever({
             baseCompressor,
             baseRetriever: baseRetriever
         })
+
+        if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'text') {
+            let finaltext = ''
+
+            const docs = await retriever.getRelevantDocuments(query ? query : input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
+        }
+
+        return retriever
     }
 }
 

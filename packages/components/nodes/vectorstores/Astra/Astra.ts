@@ -4,6 +4,7 @@ import { Document } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 import { AstraDBVectorStore, AstraLibArgs } from '@langchain/community/vectorstores/astradb'
+import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Astra_VectorStores implements INode {
     label: string
@@ -26,7 +27,7 @@ class Astra_VectorStores implements INode {
         this.type = 'Astra'
         this.icon = 'astra.svg'
         this.category = 'Vector Stores'
-        this.description = `Upsert embedded data and perform similarity search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads`
+        this.description = `Upsert embedded data and perform similarity or mmr search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -74,6 +75,7 @@ class Astra_VectorStores implements INode {
                 optional: true
             }
         ]
+        addMMRInputParams(this.inputs)
         this.outputs = [
             {
                 label: 'Astra Retriever',
@@ -139,9 +141,6 @@ class Astra_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const vectorDimension = nodeData.inputs?.vectorDimension as number
         const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
@@ -176,14 +175,7 @@ class Astra_VectorStores implements INode {
 
         const vectorStore = await AstraDBVectorStore.fromExistingIndex(embeddings, astraConfig)
 
-        if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
-        } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
-        }
-        return vectorStore
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }
 }
 

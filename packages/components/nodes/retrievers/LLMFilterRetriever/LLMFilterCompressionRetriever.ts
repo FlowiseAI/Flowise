@@ -3,6 +3,7 @@ import { BaseRetriever } from 'langchain/schema/retriever'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { LLMChainExtractor } from 'langchain/retrievers/document_compressors/chain_extract'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class LLMFilterCompressionRetriever_Retrievers implements INode {
     label: string
@@ -22,7 +23,7 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
         this.name = 'llmFilterRetriever'
         this.version = 1.0
         this.type = 'LLMFilterRetriever'
-        this.icon = 'compressionRetriever.svg'
+        this.icon = 'llmFilterRetriever.svg'
         this.category = 'Retrievers'
         this.badge = 'NEW'
         this.description =
@@ -30,30 +31,69 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
         this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [
             {
-                label: 'Base Retriever',
+                label: 'Vector Store Retriever',
                 name: 'baseRetriever',
                 type: 'VectorStoreRetriever'
             },
             {
                 label: 'Language Model',
                 name: 'model',
-                type: 'BaseLanguageModel',
-                optional: true
+                type: 'BaseLanguageModel'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
+            }
+        ]
+        this.outputs = [
+            {
+                label: 'LLM Filter Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Document',
+                name: 'document',
+                baseClasses: ['Document']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                baseClasses: ['string', 'json']
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const baseRetriever = nodeData.inputs?.baseRetriever as BaseRetriever
         const model = nodeData.inputs?.model as BaseLanguageModel
+        const query = nodeData.inputs?.query as string
+        const output = nodeData.outputs?.output as string
 
-        if (model) {
-            return new ContextualCompressionRetriever({
-                baseCompressor: LLMChainExtractor.fromLLM(model),
-                baseRetriever: baseRetriever
-            })
+        if (!model) throw new Error('There must be a LLM model connected to LLM Filter Retriever')
+
+        const retriever = new ContextualCompressionRetriever({
+            baseCompressor: LLMChainExtractor.fromLLM(model),
+            baseRetriever: baseRetriever
+        })
+
+        if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'text') {
+            let finaltext = ''
+
+            const docs = await retriever.getRelevantDocuments(query ? query : input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
         }
-        return {}
+
+        return retriever
     }
 }
 
