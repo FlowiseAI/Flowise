@@ -1,10 +1,11 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
-import { test } from 'linkifyjs'
-import { parse } from 'css-what'
-import { webCrawl, xmlScrape } from '../../../src'
 import { SelectorType } from 'cheerio'
+import { parse } from 'css-what'
+import { Document } from 'langchain/document'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
+import { TextSplitter } from 'langchain/text_splitter'
+import { test } from 'linkifyjs'
+import { webCrawl, xmlScrape } from '../../../src'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -77,6 +78,23 @@ class Cheerio_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
+                label: 'Base URL Prefixes',
+                name: 'urlFilter',
+                type: 'string',
+                description: 'Delimited by comma. If specified, only links that start with this URL will be retrieved. (Web Crawl only)',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Excluded URL Prefixes',
+                name: 'exUrlFilter',
+                type: 'string',
+                description:
+                    "Delimited by comma. If specified, only links that don't start with this URL will be retrieved. (Web Crawl only)",
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -106,18 +124,53 @@ class Cheerio_DocumentLoaders implements INode {
             params['selector'] = selector
         }
 
-        async function cheerioLoader(url: string): Promise<any> {
+        const baseUrlFilters = ((nodeData.inputs?.urlFilter as string)?.trim()?.toLowerCase() || '').split(',').filter((x) => !!x)
+        const exBaseUrlFilter = ((nodeData.inputs?.exUrlFilter as string)?.trim()?.toLowerCase() || '').split(',').filter((x) => !!x)
+
+        console.info(`Prefix urls: ${baseUrlFilters.join(',')}`)
+        console.info(`Excluded urls: ${exBaseUrlFilter.join(',')}`)
+
+        const loadedDocUrls = new Set<string>()
+
+        async function cheerioLoader(url: string): Promise<Document[]> {
             try {
-                let docs = []
+                let docs = [] as Document[]
+                if (!!baseUrlFilters?.length && !baseUrlFilters.some((baseUrl) => url.toLowerCase().startsWith(baseUrl))) {
+                    console.info(`scraping - skipping url ${url} because it does not start with ${baseUrlFilters}`)
+                    return docs
+                }
+
+                if (!!exBaseUrlFilter?.length && exBaseUrlFilter.some((exBaseUrl) => url.toLowerCase().startsWith(exBaseUrl))) {
+                    console.info(`scraping - skipping url ${url} because it starts with ${exBaseUrlFilter}`)
+                    return docs
+                }
+
                 const loader = new CheerioWebBaseLoader(url, params)
+                console.info(`scraping - loading url ${url}`)
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {
                     docs = await loader.load()
                 }
-                return docs
+
+                const newDocs = docs.filter(
+                    (doc) =>
+                        !loadedDocUrls.has(doc.metadata.source) &&
+                        (!baseUrlFilters || baseUrlFilters.some((baseUrl) => doc.metadata.source.toLowerCase().startsWith(baseUrl))) &&
+                        (!exBaseUrlFilter || !exBaseUrlFilter.some((exBaseUrl) => doc.metadata.source.toLowerCase().startsWith(exBaseUrl)))
+                )
+
+                newDocs
+                    .map((doc) => doc.metadata.source)
+                    .forEach((docUrl) => {
+                        if (!loadedDocUrls.has(docUrl)) loadedDocUrls.add(docUrl)
+                    })
+
+                console.info(`scraping - loaded ${docs.length} new docs from ${url}`)
+                return newDocs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                return []
             }
         }
 
@@ -126,13 +179,33 @@ class Cheerio_DocumentLoaders implements INode {
             if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
             if (!limit) limit = '10'
             else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
-            const pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
+            console.info(`scrape limit: ${limit}`)
+            console.info(`scraping url: ${url}`)
+            let pages: string[] =
+                relativeLinksMethod === 'webCrawl'
+                    ? await webCrawl(url, parseInt(limit), baseUrlFilters, exBaseUrlFilter)
+                    : await xmlScrape(url, parseInt(limit))
+
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
-            if (!pages || pages.length === 0) throw new Error('No relative links found')
-            for (const page of pages) {
-                docs.push(...(await cheerioLoader(page)))
+            if (!pages || !Array.isArray(pages) || pages.length === 0) {
+                console.warn(`No relative links found for ${url}`)
+                return
             }
+
+            if (!!limit && parseInt(limit) > 0) {
+                console.info(`scraping limit to ${limit}`)
+                pages = pages.slice(0, parseInt(limit)) // limit docs to be returned
+            }
+
+            try {
+                console.info(`scraping found ${pages.length} pages: ${pages.join(', ')}`)
+                for (const page of pages) {
+                    docs.push(...(await cheerioLoader(page)))
+                }
+            } catch (err) {
+                console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+            }
+
             if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
         } else {
             docs = await cheerioLoader(url)
@@ -141,6 +214,7 @@ class Cheerio_DocumentLoaders implements INode {
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
             let finaldocs = []
+
             for (const doc of docs) {
                 const newdoc = {
                     ...doc,
@@ -152,6 +226,12 @@ class Cheerio_DocumentLoaders implements INode {
                 finaldocs.push(newdoc)
             }
             return finaldocs
+        }
+
+        console.info(`scraped ${docs.length} docs from ${url}`)
+        if (!!limit && parseInt(limit) > 0 && docs.length > parseInt(limit)) {
+            console.info(`scraped docs limiting to ${limit}`)
+            docs = docs.slice(0, parseInt(limit)) // limit docs to be returned
         }
 
         return docs

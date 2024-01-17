@@ -1,13 +1,14 @@
 import axios from 'axios'
 import { load } from 'cheerio'
-import * as fs from 'fs'
-import * as path from 'path'
-import { JSDOM } from 'jsdom'
-import { z } from 'zod'
-import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
 import { AES, enc } from 'crypto-js'
+import * as fs from 'fs'
+import { JSDOM } from 'jsdom'
 import { ChatMessageHistory } from 'langchain/memory'
+import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import * as path from 'path'
+import { DataSource } from 'typeorm'
+import { z } from 'zod'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
 import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
@@ -300,15 +301,21 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  * @param {string} urlString
  * @returns {string}
  */
-function normalizeURL(urlString: string): string {
+function normalizeURL(urlString: string, removeBookmark?: boolean): string {
     const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname
+    let hostPath = urlObj.hostname + urlObj.pathname
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
     }
+    if (removeBookmark && urlString.includes('#')) {
+        // handling bookmark
+        hostPath = hostPath.substring(0, hostPath.indexOf('#'))
+    }
+
     return hostPath
 }
+const LARGE_FILE_EXTENSIONS = ['zip', 'tar', 'rar', 'jar', 'arj', 'gz'] //todo: add full listing
 
 /**
  * Recursive crawl using normalizeURL and getURLsFromHTML
@@ -318,23 +325,51 @@ function normalizeURL(urlString: string): string {
  * @param {number} limit
  * @returns {Promise<string[]>}
  */
-async function crawl(baseURL: string, currentURL: string, pages: string[], limit: number): Promise<string[]> {
+async function crawl(
+    baseURL: string,
+    currentURL: string,
+    pages: string[],
+    limit: number,
+    prefixUrls?: string[],
+    exPrefixUrls?: string[]
+): Promise<string[]> {
     const baseURLObj = new URL(baseURL)
     const currentURLObj = new URL(currentURL)
 
-    if (limit !== 0 && pages.length === limit) return pages
+    if (limit > 0 && pages.length >= limit) {
+        console.info(`crawl limit reached: ${limit}`)
+        return pages
+    }
 
     if (baseURLObj.hostname !== currentURLObj.hostname) return pages
 
-    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL)
+    const normalizeCurrentURL = baseURLObj.protocol + '//' + normalizeURL(currentURL, true)
+
+    const lastSec = normalizeCurrentURL.substring(normalizeCurrentURL.lastIndexOf('/') + 1)
+    const dotPos = lastSec.lastIndexOf('.')
+    const urlExt = dotPos > -1 && dotPos < lastSec.length - 1 ? lastSec.substring(dotPos + 1) : ''
+
+    //fix issue with interable error when crawing a zip file, most likely timed out
+    if (!!urlExt && LARGE_FILE_EXTENSIONS.includes(urlExt)) return pages
+
+    if (!!prefixUrls?.length && !prefixUrls.some((prefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(prefixUrl))) {
+        console.info(`skipping url ${normalizeCurrentURL} because it does not start with any required prefix urls.`)
+        return pages
+    }
+
+    if (!!exPrefixUrls?.length && exPrefixUrls.some((exPrefixUrl) => normalizeCurrentURL.toLowerCase().startsWith(exPrefixUrl))) {
+        console.info(`skipping url ${normalizeCurrentURL} because it starts with one or more excluded prefix urls.`)
+        return pages
+    }
+
     if (pages.includes(normalizeCurrentURL)) {
         return pages
     }
 
     pages.push(normalizeCurrentURL)
 
-    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
+        console.info(`crawling ${currentURL}`)
         const resp = await fetch(currentURL)
 
         if (resp.status > 399) {
@@ -349,13 +384,17 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         }
 
         const htmlBody = await resp.text()
+        console.info(`crawled ${currentURL}`)
         const nextURLs = getURLsFromHTML(htmlBody, baseURL)
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
+
+    console.info(`crawled ${pages.length} pages so far, limit: ${limit}}`)
+
     return pages
 }
 
@@ -365,10 +404,10 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
  * @param {number} limit
  * @returns {Promise<string[]>}
  */
-export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+export async function webCrawl(stringURL: string, limit: number, baseUrls?: string[], exBaseUrls?: string[]): Promise<string[]> {
     const URLObj = new URL(stringURL)
     const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
-    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
+    return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit, baseUrls, exBaseUrls)
 }
 
 export function getURLsFromXML(xmlBody: string, limit: number): string[] {
