@@ -146,6 +146,16 @@
     align-items: center;
 }
 
+.preview {
+    position: absolute;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For momentum scroll on mobile devices */
+    scrollbar-width: none; /* For Firefox */
+}
+
 .file-drop-field {
     position: relative; /* Needed to position the icon correctly */
     /* Other styling for the field */
@@ -162,26 +172,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 10; /* Ensure it's above other content */
+    z-index: 2000; /* Ensure it's above other content */
     border: 2px dashed #0094ff; /* Example style */
-}
-
-.preview-container {
-
-}
-
-.preview-card {
-    border: 2px solid #E7EDF3;
-    border-radius: 16%;
-    transition: 0.4s;
-}
-
-.preview-card&:hover {
-    border-color: #5B9FED;
-}
-
-
-.button {
-    flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
-    margin: 5px; /* Adjust as needed for spacing between buttons */
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
@@ -8,30 +8,33 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
-import audioUploadSVG from 'assets/images/wave-sound.jpg'
 
 import {
     Box,
     Button,
     Card,
-    CardActions,
     CardMedia,
     Chip,
     CircularProgress,
     Divider,
-    Grid,
     IconButton,
     InputAdornment,
     OutlinedInput,
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconCircleDot } from '@tabler/icons'
+import { IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconCircleDot, IconTrash } from '@tabler/icons'
+import robotPNG from 'assets/images/robot.png'
+import userPNG from 'assets/images/account.png'
+import audioUploadSVG from 'assets/images/wave-sound.jpg'
 
 // project import
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
 import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
+import StarterPromptsCard from 'ui-component/cards/StarterPromptsCard'
+import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
+import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from 'ui-component/button/ImageButton'
 import './ChatMessage.css'
 import './audio-recording.css'
 
@@ -46,12 +49,14 @@ import useApi from 'hooks/useApi'
 // Const
 import { baseURL, maxScroll } from 'store/constant'
 
-import robotPNG from 'assets/images/robot.png'
-import userPNG from 'assets/images/account.png'
-import StarterPromptsCard from '../../ui-component/cards/StarterPromptsCard'
+// Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
-import DeleteIcon from '@mui/icons-material/Delete'
-import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
+
+const messageImageStyle = {
+    width: '128px',
+    height: '128px',
+    objectFit: 'cover'
+}
 
 export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const theme = useTheme()
@@ -76,13 +81,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
+    const getAllowChatFlowUploads = useApi(chatflowsApi.getAllowChatflowUploads)
     const getChatflowConfig = useApi(chatflowsApi.getSpecificChatflow)
 
     const [starterPrompts, setStarterPrompts] = useState([])
 
     // drag & drop and file input
     const fileUploadRef = useRef(null)
-    const getAllowChatFlowUploads = useApi(chatflowsApi.getAllowChatflowUploads)
     const [isChatFlowAvailableForUploads, setIsChatFlowAvailableForUploads] = useState(false)
     const [previews, setPreviews] = useState([])
     const [isDragOver, setIsDragOver] = useState(false)
@@ -91,20 +96,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const [isRecording, setIsRecording] = useState(false)
     const [recordingNotSupported, setRecordingNotSupported] = useState(false)
 
-    const handleDragOver = (e) => {
-        if (!isChatFlowAvailableForUploads) {
-            return
-        }
-        e.preventDefault()
-    }
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
+        /**
+         * {isUploadAllowed: boolean, uploadFileSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
+         */
         let acceptFile = false
-        if (constraints.allowUploads) {
+        if (constraints.isUploadAllowed) {
             const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            constraints.allowed.map((allowed) => {
-                if (allowed.allowedTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+            constraints.uploadFileSizeAndTypes.map((allowed) => {
+                if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
                     acceptFile = true
                 }
             })
@@ -114,11 +116,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
         return acceptFile
     }
+
     const handleDrop = async (e) => {
         if (!isChatFlowAvailableForUploads) {
             return
         }
         e.preventDefault()
+        e.stopPropagation()
         setIsDragOver(false)
         let files = []
         if (e.dataTransfer.files.length > 0) {
@@ -156,10 +160,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             const newFiles = await Promise.all(files)
             setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
-            // if (newFiles.length > 0) {
-            //     document.getElementById('messagelist').style.height = '80%'
-            // }
         }
+
         if (e.dataTransfer.items) {
             for (const item of e.dataTransfer.items) {
                 if (item.kind === 'string' && item.type.match('^text/uri-list')) {
@@ -191,6 +193,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             }
         }
     }
+
     const handleFileChange = async (event) => {
         const fileObj = event.target.files && event.target.files[0]
         if (!fileObj) {
@@ -247,9 +250,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
     }
 
+    const handleDragOver = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+    }
+
     const handleDragEnter = (e) => {
         if (isChatFlowAvailableForUploads) {
             e.preventDefault()
+            e.stopPropagation()
             setIsDragOver(true)
         }
     }
@@ -257,32 +266,25 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const handleDragLeave = (e) => {
         if (isChatFlowAvailableForUploads) {
             e.preventDefault()
+            e.stopPropagation()
             if (e.originalEvent?.pageX !== 0 || e.originalEvent?.pageY !== 0) {
+                setIsDragOver(false)
                 return false
             }
-            setIsDragOver(false) // Set the drag over state to false when the drag leaves
+            setIsDragOver(false)
         }
     }
+
     const handleDeletePreview = (itemToDelete) => {
         if (itemToDelete.type === 'file') {
             URL.revokeObjectURL(itemToDelete.preview) // Clean up for file
         }
         setPreviews(previews.filter((item) => item !== itemToDelete))
     }
+
     const handleUploadClick = () => {
         // 👇️ open file input box on click of another element
         fileUploadRef.current.click()
-    }
-
-    const previewStyle = {
-        width: '128px',
-        height: '64px',
-        objectFit: 'fit' // This makes the image cover the area, cropping it if necessary
-    }
-    const messageImageStyle = {
-        width: '128px',
-        height: '128px',
-        objectFit: 'cover' // This makes the image cover the area, cropping it if necessary
     }
 
     const clearPreviews = () => {
@@ -295,11 +297,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         setIsRecording(true)
         startAudioRecording(setIsRecording, setRecordingNotSupported)
     }
+
     const onRecordingCancelled = () => {
         cancelAudioRecording()
         setIsRecording(false)
         setRecordingNotSupported(false)
     }
+
     const onRecordingStopped = () => {
         stopAudioRecording(addRecordingToPreviews)
         setIsRecording(false)
@@ -505,7 +509,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // Get chatflow uploads capability
     useEffect(() => {
         if (getAllowChatFlowUploads.data) {
-            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.allowUploads ?? false)
+            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.isUploadAllowed ?? false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllowChatFlowUploads.data])
@@ -544,12 +548,18 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     useEffect(() => {
         let socket
         if (open && chatflowid) {
+            // API request
             getChatmessageApi.request(chatflowid)
             getIsChatflowStreamingApi.request(chatflowid)
             getAllowChatFlowUploads.request(chatflowid)
             getChatflowConfig.request(chatflowid)
+
+            // Scroll to bottom
             scrollToBottom()
+
             setIsRecording(false)
+
+            // SocketIO
             socket = socketIOClient(baseURL)
 
             socket.on('connect', () => {
@@ -584,20 +594,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }, [open, chatflowid])
 
     return (
-        <div
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`file-drop-field`}
-        >
-            {isDragOver && getAllowChatFlowUploads.data?.allowUploads && (
+        <>
+            {isDragOver && getAllowChatFlowUploads.data?.isUploadAllowed && (
                 <Box className='drop-overlay'>
                     <Typography variant='h2'>Drop here to upload</Typography>
-                    {getAllowChatFlowUploads.data.allowed.map((allowed) => {
+                    {getAllowChatFlowUploads.data.uploadFileSizeAndTypes.map((allowed) => {
                         return (
                             <>
-                                <Typography variant='subtitle1'>{allowed.allowedTypes?.join(', ')}</Typography>
+                                <Typography variant='subtitle1'>{allowed.fileTypes?.join(', ')}</Typography>
                                 <Typography variant='subtitle1'>Max Allowed Size: {allowed.maxUploadSize} MB</Typography>
                             </>
                         )
@@ -639,7 +643,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     )}
                 </Box>
             )}
-            <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
+            <div
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}
+            >
                 <div ref={ps} id='messagelist' className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
@@ -683,6 +693,42 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                                 clickable
                                                                 onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                             />
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                            {message.fileUploads && message.fileUploads.length > 0 && (
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', width: '100%' }}>
+                                                    {message.fileUploads.map((item, index) => {
+                                                        return (
+                                                            <>
+                                                                {item.mime.startsWith('image/') ? (
+                                                                    <Card
+                                                                        key={index}
+                                                                        sx={{
+                                                                            p: 0,
+                                                                            m: 0,
+                                                                            maxWidth: 128,
+                                                                            marginRight: '10px',
+                                                                            flex: '0 0 auto'
+                                                                        }}
+                                                                    >
+                                                                        <CardMedia
+                                                                            component='img'
+                                                                            image={item.data}
+                                                                            sx={{ height: 64 }}
+                                                                            alt={'preview'}
+                                                                            style={messageImageStyle}
+                                                                        />
+                                                                    </Card>
+                                                                ) : (
+                                                                    // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                    <audio controls='controls'>
+                                                                        Your browser does not support the &lt;audio&gt; tag.
+                                                                        <source src={item.data} type={item.mime} />
+                                                                    </audio>
+                                                                )}
+                                                            </>
                                                         )
                                                     })}
                                                 </div>
@@ -732,30 +778,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                     })}
                                                 </div>
                                             )}
-                                            {message.fileUploads &&
-                                                message.fileUploads.map((item, index) => {
-                                                    return (
-                                                        <>
-                                                            {item.mime.startsWith('image/') ? (
-                                                                <Card key={index} sx={{ maxWidth: 128, margin: 5 }}>
-                                                                    <CardMedia
-                                                                        component='img'
-                                                                        image={item.data}
-                                                                        sx={{ height: 64 }}
-                                                                        alt={'preview'}
-                                                                        style={messageImageStyle}
-                                                                    />
-                                                                </Card>
-                                                            ) : (
-                                                                // eslint-disable-next-line jsx-a11y/media-has-caption
-                                                                <audio controls='controls'>
-                                                                    Your browser does not support the &lt;audio&gt; tag.
-                                                                    <source src={item.data} type={item.mime} />
-                                                                </audio>
-                                                            )}
-                                                        </>
-                                                    )
-                                                })}
                                             {message.sourceDocuments && (
                                                 <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                     {removeDuplicateURL(message).map((source, index) => {
@@ -796,55 +818,79 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
             <div style={{ position: 'relative' }}>
                 {messages && messages.length === 1 && (
-                    <StarterPromptsCard starterPrompts={starterPrompts || []} onPromptClick={handlePromptClick} isGrid={isDialog} />
+                    <StarterPromptsCard
+                        sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
+                        starterPrompts={starterPrompts || []}
+                        onPromptClick={handlePromptClick}
+                        isGrid={isDialog}
+                    />
                 )}
                 <Divider />
             </div>
-            <Divider />
-            <div>
+
+            <div style={{ position: 'relative' }}>
                 {previews && previews.length > 0 && (
-                    <div className='flex-col flex'>
-                        <div className='flex justify-between items-center h-[80px] px-1 py-1'>
-                            <Grid container spacing={2} sx={{ mt: '2px' }}>
-                                {previews.map((item, index) => (
-                                    <>
-                                        {item.mime.startsWith('image/') ? (
-                                            <Grid item xs={6} sm={3} md={3} lg={3} key={index}>
-                                                <Card key={index} sx={{ maxWidth: 128 }} variant='outlined'>
-                                                    <CardMedia style={previewStyle} component='img' image={item.data} alt={'preview'} />
-                                                    <CardActions className='center'>
-                                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </CardActions>
-                                                </Card>
-                                            </Grid>
-                                        ) : (
-                                            <Grid item xs={12} sm={6} md={6} lg={6} key={index}>
-                                                <Card key={index} variant='outlined'>
-                                                    <CardMedia component='audio' sx={{ h: 68 }} controls src={item.data} />
-                                                    <CardActions className='center'>
-                                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </CardActions>
-                                                </Card>
-                                            </Grid>
-                                        )}
-                                    </>
-                                ))}
-                            </Grid>
-                        </div>
-                    </div>
+                    <Box className={'preview'} sx={{ maxWidth: isDialog ? 'inherit' : '400px', m: 1, pb: 0.5 }}>
+                        {previews.map((item, index) => (
+                            <>
+                                {item.mime.startsWith('image/') ? (
+                                    <ImageButton
+                                        focusRipple
+                                        key={index}
+                                        style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            marginRight: '10px',
+                                            flex: '0 0 auto'
+                                        }}
+                                        onClick={() => handleDeletePreview(item)}
+                                    >
+                                        <ImageSrc style={{ backgroundImage: `url(${item.data})` }} />
+                                        <ImageBackdrop className='MuiImageBackdrop-root' />
+                                        <ImageMarked className='MuiImageMarked-root'>
+                                            <IconTrash size={20} color='white' />
+                                        </ImageMarked>
+                                    </ImageButton>
+                                ) : (
+                                    <Card
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            height: '48px',
+                                            width: isDialog ? ps?.current?.offsetWidth / 4 : ps?.current?.offsetWidth / 2,
+                                            pl: 0.5,
+                                            mr: 1,
+                                            backgroundColor: theme.palette.grey[500],
+                                            flex: '0 0 auto'
+                                        }}
+                                        key={index}
+                                        variant='outlined'
+                                    >
+                                        <CardMedia
+                                            component='audio'
+                                            sx={{ height: '40px', color: 'transparent' }}
+                                            controls
+                                            src={item.data}
+                                        />
+                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
+                                            <IconTrash size={20} color='white' />
+                                        </IconButton>
+                                    </Card>
+                                )}
+                            </>
+                        ))}
+                    </Box>
                 )}
+                <Divider />
             </div>
+
             <div className='center'>
                 <div style={{ width: '100%' }}>
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                         <OutlinedInput
                             inputRef={inputRef}
                             // eslint-disable-next-line
-                        autoFocus
+                            autoFocus
                             sx={{ width: '100%' }}
                             disabled={loading || !chatflowid}
                             onKeyDown={handleEnter}
@@ -857,7 +903,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             maxRows={isDialog ? 7 : 2}
                             startAdornment={
                                 isChatFlowAvailableForUploads && (
-                                    <InputAdornment position='start' sx={{ padding: '15px' }}>
+                                    <InputAdornment position='start' sx={{ pl: 2 }}>
                                         <IconButton
                                             onClick={handleUploadClick}
                                             type='button'
@@ -910,13 +956,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             }
                         />
                         {isChatFlowAvailableForUploads && (
-                            <input style={{ display: 'none' }} ref={fileUploadRef} type='file' onChange={handleFileChange} />
+                            <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
                         )}
                     </form>
                 </div>
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
-        </div>
+        </>
     )
 }
 

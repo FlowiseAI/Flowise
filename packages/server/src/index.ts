@@ -21,7 +21,8 @@ import {
     chatType,
     IChatMessage,
     IDepthQueue,
-    INodeDirectedGraph
+    INodeDirectedGraph,
+    IUploadFileSizeAndTypes
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -57,7 +58,7 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, INodeParams, handleEscapeCharacters } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware } from './utils/XSS'
@@ -147,7 +148,9 @@ export class App {
                 '/api/v1/node-icon/',
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
+                '/api/v1/chatflows-uploads',
                 '/api/v1/openai-assistants-file',
+                '/api/v1/get-upload-file',
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
@@ -464,8 +467,45 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
 
-            const obj = this.shouldAllowUploads(chatflow)
-            return res.json(obj)
+            const uploadAllowedNodes = ['OpenAIMultiModalChain', 'OpenAIWhisper']
+
+            try {
+                const flowObj = JSON.parse(chatflow.flowData)
+                let isUploadAllowed = false
+                const allowances: IUploadFileSizeAndTypes[] = []
+
+                flowObj.nodes.forEach((node: IReactFlowNode) => {
+                    if (uploadAllowedNodes.indexOf(node.data.type) > -1) {
+                        logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
+                        isUploadAllowed = true
+
+                        const allowance: IUploadFileSizeAndTypes = {
+                            fileTypes: [],
+                            maxUploadSize: 0
+                        }
+
+                        node.data.inputParams.map((param: INodeParams) => {
+                            if (param.name === 'allowedUploadTypes') {
+                                allowance.fileTypes = (param.default as string).split(';')
+                            }
+                            if (param.name === 'maxUploadSize') {
+                                allowance.maxUploadSize = parseInt(param.default ? (param.default as string) : '0')
+                            }
+                        })
+
+                        if (allowance.fileTypes && allowance.maxUploadSize) {
+                            allowances.push(allowance)
+                        }
+                    }
+                })
+
+                return res.json({
+                    isUploadAllowed,
+                    uploadFileSizeAndTypes: allowances
+                })
+            } catch (e) {
+                return res.status(500).send(e)
+            }
         })
 
         // ----------------------------------------
@@ -1058,10 +1098,14 @@ export class App {
                 return res.status(500).send(`Invalid file path`)
             }
             const filePath = path.join(getUserHome(), '.flowise', 'gptvision', req.query.chatId as string, req.params.id)
-            console.log(filePath)
-            if (!path.isAbsolute(filePath) || !fs.existsSync(filePath)) {
+            //raise error if file path is not absolute
+            if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
+            //raise error if file path contains '..'
+            if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
+            //only return from the .flowise gptvision folder
+            if (!(filePath.includes('.flowise') && filePath.includes('gptvision') && filePath.includes(req.query.chatId as string)))
                 return res.status(500).send(`Invalid file path`)
-            }
+            res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
             streamFileToUser(res, filePath)
         })
 
@@ -1348,35 +1392,6 @@ export class App {
         this.app.use((req, res) => {
             res.sendFile(uiHtmlPath)
         })
-    }
-
-    private uploadAllowedNodes = ['OpenAIMultiModalChain', 'OpenAIWhisper']
-    private shouldAllowUploads(result: ChatFlow): any {
-        const flowObj = JSON.parse(result.flowData)
-        let allowUploads = false
-        const allowances: any = []
-        flowObj.nodes.forEach((node: IReactFlowNode) => {
-            if (this.uploadAllowedNodes.indexOf(node.data.type) > -1) {
-                logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
-                allowUploads = true
-                const allowance: any = {}
-                node.data.inputParams.map((param: any) => {
-                    if (param.name === 'allowedUploadTypes') {
-                        allowance.allowedTypes = param.default.split(';')
-                    }
-                    if (param.name === 'maxUploadSize') {
-                        allowance.maxUploadSize = parseInt(param.default ? param.default : '0')
-                    }
-                })
-                if (allowance.allowedTypes && allowance.maxUploadSize) {
-                    allowances.push(allowance)
-                }
-            }
-        })
-        return {
-            allowUploads,
-            allowed: allowances
-        }
     }
 
     /**

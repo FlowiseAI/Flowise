@@ -1,6 +1,5 @@
 .button-container {
     position: absolute;
-    bottom: 0;
     z-index: 1000;
     display: flex;
     overflow-x: auto;

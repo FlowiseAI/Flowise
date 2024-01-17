@@ -214,3 +214,8 @@ export interface ICredentialReqBody {
 export interface ICredentialReturnResponse extends ICredential {
     plainDataObj: ICredentialDataDecrypted
 }
+
+export interface IUploadFileSizeAndTypes {
+    fileTypes: string[]
+    maxUploadSize: number
+}
