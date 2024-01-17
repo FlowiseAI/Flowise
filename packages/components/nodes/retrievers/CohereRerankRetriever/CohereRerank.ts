@@ -7,11 +7,13 @@ export class CohereRerank extends BaseDocumentCompressor {
     private COHERE_API_URL = 'https://api.cohere.ai/v1/rerank'
     private readonly model: string
     private readonly k: number
-    constructor(cohereAPIKey: string, model: string, k: number) {
+    private readonly maxChunksPerDoc: number
+    constructor(cohereAPIKey: string, model: string, k: number, maxChunksPerDoc: number) {
         super()
         this.cohereAPIKey = cohereAPIKey
         this.model = model
         this.k = k
+        this.maxChunksPerDoc = maxChunksPerDoc
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
@@ -32,7 +34,7 @@ export class CohereRerank extends BaseDocumentCompressor {
         const data = {
             model: this.model,
             topN: this.k,
-            max_chunks_per_doc: 10,
+            max_chunks_per_doc: this.maxChunksPerDoc,
             query: query,
             return_documents: false,
             documents: documents.map((doc) => doc.pageContent)

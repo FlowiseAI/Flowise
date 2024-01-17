@@ -67,6 +67,15 @@ class CohereRerankRetriever_Retrievers implements INode {
                 default: 0,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Max Chunks Per Document',
+                name: 'maxChunksPerDoc',
+                placeholder: '10',
+                type: 'number',
+                default: 10,
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -78,12 +87,14 @@ class CohereRerankRetriever_Retrievers implements INode {
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
         const topK = nodeData.inputs?.topK as string
         let k = topK ? parseFloat(topK) : 4
+        const maxChunks = nodeData.inputs?.maxChunksPerDoc as string
+        let max = maxChunks ? parseInt(maxChunks) : 10
 
         if (k <= 0) {
             k = (baseRetriever as VectorStoreRetriever).k
         }
 
-        const cohereCompressor = new CohereRerank(cohereApiKey, model, k)
+        const cohereCompressor = new CohereRerank(cohereApiKey, model, k, max)
         return new ContextualCompressionRetriever({
             baseCompressor: cohereCompressor,
             baseRetriever: baseRetriever
