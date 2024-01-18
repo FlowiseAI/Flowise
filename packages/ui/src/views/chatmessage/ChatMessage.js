@@ -304,10 +304,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         setRecordingNotSupported(false)
     }
 
-    const onRecordingStopped = () => {
+    const onRecordingStopped = async () => {
         stopAudioRecording(addRecordingToPreviews)
         setIsRecording(false)
         setRecordingNotSupported(false)
+        handlePromptClick('')
     }
 
     const onSourceDialogClick = (data, title) => {
@@ -366,7 +367,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (e) e.preventDefault()
 
         if (!promptStarterInput && userInput.trim() === '') {
-            return
+            if (!(previews.length === 1 && previews[0].type === 'audio')) {
+                return
+            }
         }
 
         let input = userInput
@@ -626,7 +629,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             </div>
                             <i className='stop-recording-button'>
                                 <Button variant='outlined' color='primary' onClick={onRecordingStopped}>
-                                    Save
+                                    Send
                                 </Button>
                             </i>
                         </div>

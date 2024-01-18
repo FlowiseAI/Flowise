@@ -1,15 +1,9 @@
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeOutputsValue,
-    INodeParams
-} from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
-import { OpenAIMultiModalChainInput, VLLMChain } from "./VLLMChain";
+import { OpenAIMultiModalChainInput, VLLMChain } from './VLLMChain'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { checkInputs, Moderation, streamResponse } from "../../moderation/Moderation";
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 
 class OpenAIMultiModalChain_Chains implements INode {
     label: string
@@ -72,7 +66,7 @@ class OpenAIMultiModalChain_Chains implements INode {
                 label: 'Speech to Text',
                 name: 'speechToText',
                 type: 'boolean',
-                optional: true,
+                optional: true
             },
             // TODO: only show when speechToText is true
             {
@@ -84,7 +78,8 @@ class OpenAIMultiModalChain_Chains implements INode {
                     {
                         label: 'Transcriptions',
                         name: 'transcriptions',
-                        description: 'Transcribe audio into whatever language the audio is in. Default method when Speech to Text is turned on.'
+                        description:
+                            'Transcribe audio into whatever language the audio is in. Default method when Speech to Text is turned on.'
                     },
                     {
                         label: 'Translations',
@@ -186,7 +181,6 @@ class OpenAIMultiModalChain_Chains implements INode {
         const topP = nodeData.inputs?.topP as string
         const speechToText = nodeData.inputs?.speechToText as boolean
 
-
         const fields: OpenAIMultiModalChainInput = {
             openAIApiKey: openAIApiKey,
             imageResolution: imageResolution,
@@ -256,6 +250,22 @@ const runPrediction = async (
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
+    const speechToText = nodeData.inputs?.speechToText as boolean
+
+    if (options?.uploads) {
+        if (options.uploads.length === 1 && input.length === 0) {
+            if (speechToText) {
+                //special case, text input is empty, but we have an upload (recorded audio)
+                const convertedText = await chain.processAudioWithWisper(options.uploads[0], undefined)
+                //so we use the upload as input
+                input = convertedText
+            }
+            // do not send the audio file to the model
+        } else {
+            chain.uploads = options.uploads
+        }
+    }
+
     if (moderations && moderations.length > 0) {
         try {
             // Use the output of the moderation chain as input for the LLM chain
@@ -273,9 +283,6 @@ const runPrediction = async (
      * TO: { "value": "hello i am ben\n\n\thow are you?" }
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
-    if (options?.uploads) {
-        chain.uploads = options.uploads
-    }
     if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []
 

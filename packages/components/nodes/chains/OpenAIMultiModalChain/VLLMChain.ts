@@ -101,42 +101,20 @@ export class VLLMChain extends BaseChain implements OpenAIMultiModalChainInput {
         })
         if (this.speechToTextMode && this.uploads && this.uploads.length > 0) {
             const audioUploads = this.getAudioUploads(this.uploads)
-            for (const url of audioUploads) {
-                const filePath = path.join(getUserHome(), '.flowise', 'gptvision', url.data, url.name)
-
-                // as the image is stored in the server, read the file and convert it to base64
-                const audio_file = fs.createReadStream(filePath)
-                if (this.speechToTextMode.purpose === 'transcriptions') {
-                    const transcription = await this.client.audio.transcriptions.create({
-                        file: audio_file,
-                        model: 'whisper-1'
-                    })
-                    chatMessages.push({
-                        type: 'text',
-                        text: transcription.text
-                    })
-                } else if (this.speechToTextMode.purpose === 'translations') {
-                    const translation = await this.client.audio.translations.create({
-                        file: audio_file,
-                        model: 'whisper-1'
-                    })
-                    chatMessages.push({
-                        type: 'text',
-                        text: translation.text
-                    })
-                }
+            for (const upload of audioUploads) {
+                await this.processAudioWithWisper(upload, chatMessages)
             }
         }
         if (this.uploads && this.uploads.length > 0) {
             const imageUploads = this.getImageUploads(this.uploads)
-            for (const url of imageUploads) {
-                let bf = url.data
-                if (url.type == 'stored-file') {
-                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', url.data, url.name)
+            for (const upload of imageUploads) {
+                let bf = upload.data
+                if (upload.type == 'stored-file') {
+                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', upload.data, upload.name)
 
                     // as the image is stored in the server, read the file and convert it to base64
                     const contents = fs.readFileSync(filePath)
-                    bf = 'data:' + url.mime + ';base64,' + contents.toString('base64')
+                    bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
                 }
                 chatMessages.push({
                     type: 'image_url',
@@ -180,6 +158,40 @@ export class VLLMChain extends BaseChain implements OpenAIMultiModalChainInput {
         return {
             [this.outputKey]: output.message.content
         }
+    }
+
+    public async processAudioWithWisper(upload: IFileUpload, chatMessages: ChatCompletionContentPart[] | undefined): Promise<string> {
+        const filePath = path.join(getUserHome(), '.flowise', 'gptvision', upload.data, upload.name)
+
+        // as the image is stored in the server, read the file and convert it to base64
+        const audio_file = fs.createReadStream(filePath)
+        if (this.speechToTextMode === 'transcriptions') {
+            const transcription = await this.client.audio.transcriptions.create({
+                file: audio_file,
+                model: 'whisper-1'
+            })
+            if (chatMessages) {
+                chatMessages.push({
+                    type: 'text',
+                    text: transcription.text
+                })
+            }
+            return transcription.text
+        } else if (this.speechToTextMode === 'translations') {
+            const translation = await this.client.audio.translations.create({
+                file: audio_file,
+                model: 'whisper-1'
+            })
+            if (chatMessages) {
+                chatMessages.push({
+                    type: 'text',
+                    text: translation.text
+                })
+            }
+            return translation.text
+        }
+        //should never get here
+        return ''
     }
 
     getAudioUploads = (urls: any[]) => {
