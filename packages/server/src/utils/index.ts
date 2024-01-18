@@ -273,6 +273,7 @@ export const buildLangchain = async (
     question: string,
     chatHistory: IMessage[],
     chatId: string,
+    sessionId: string,
     chatflowid: string,
     appDataSource: DataSource,
     overrideConfig?: ICommonObject,
@@ -317,6 +318,7 @@ export const buildLangchain = async (
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
+                    sessionId,
                     chatflowid,
                     chatHistory,
                     logger,
@@ -331,6 +333,7 @@ export const buildLangchain = async (
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
+                    sessionId,
                     chatflowid,
                     chatHistory,
                     logger,

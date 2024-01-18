@@ -1,6 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { NodeVM } from 'vm2'
-import { availableDependencies } from '../../../src/utils'
+import { DataSource } from 'typeorm'
+import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
 
 class IfElseFunction_Utilities implements INode {
     label: string
@@ -73,10 +74,20 @@ class IfElseFunction_Utilities implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, input: string): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const ifFunction = nodeData.inputs?.ifFunction as string
         const elseFunction = nodeData.inputs?.elseFunction as string
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+        const variables = await getVars(appDataSource, databaseEntities, nodeData)
+        const flow = {
+            chatflowId: options.chatflowid,
+            sessionId: options.sessionId,
+            chatId: options.chatId,
+            input
+        }
 
         let inputVars: ICommonObject = {}
         if (functionInputVariablesRaw) {
@@ -89,28 +100,14 @@ class IfElseFunction_Utilities implements INode {
         }
 
         let sandbox: any = { $input: input }
+        sandbox['$vars'] = prepareSandboxVars(variables)
+        sandbox['$flow'] = flow
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
                 sandbox[`$${item}`] = inputVars[item]
             }
         }
-
-        const defaultAllowBuiltInDep = [
-            'assert',
-            'buffer',
-            'crypto',
-            'events',
-            'http',
-            'https',
-            'net',
-            'path',
-            'querystring',
-            'timers',
-            'tls',
-            'url',
-            'zlib'
-        ]
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))

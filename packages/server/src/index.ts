@@ -294,7 +294,13 @@ export class App {
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newNodeInstance = new nodeModule.nodeClass()
 
-                    const returnData = await newNodeInstance.init(nodeData)
+                    const options: ICommonObject = {
+                        appDataSource: this.AppDataSource,
+                        databaseEntities,
+                        logger
+                    }
+
+                    const returnData = await newNodeInstance.init(nodeData, '', options)
                     const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
 
                     return res.json(result)
@@ -1448,6 +1454,11 @@ export class App {
             let chatId = incomingInput.chatId ?? ''
             let isUpsert = true
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             const vsNodes = nodes.filter(
                 (node) =>
                     node.data.category === 'Vector Stores' &&
@@ -1485,6 +1496,7 @@ export class App {
                 incomingInput.question,
                 chatHistory,
                 chatId,
+                sessionId ?? '',
                 chatflowid,
                 this.AppDataSource,
                 incomingInput?.overrideConfig,
@@ -1561,6 +1573,12 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
+
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            const memoryType = memoryNode?.data.label
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
@@ -1671,6 +1689,7 @@ export class App {
                     incomingInput.question,
                     chatHistory,
                     chatId,
+                    sessionId ?? '',
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
@@ -1699,12 +1718,6 @@ export class App {
             }
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
-            const memoryNode = findMemoryNode(nodes, edges)
-            const memoryType = memoryNode?.data.label
-
-            let sessionId = undefined
-            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
