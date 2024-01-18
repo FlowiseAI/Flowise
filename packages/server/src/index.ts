@@ -1606,7 +1606,7 @@ export class App {
             if (incomingInput.uploads) {
                 // @ts-ignore
                 ;(incomingInput.uploads as any[]).forEach((upload: any) => {
-                    if (upload.type === 'file') {
+                    if (upload.type === 'file' || upload.type === 'audio') {
                         const filename = upload.name
                         const dir = path.join(getUserHome(), '.flowise', 'gptvision', chatId)
                         if (!fs.existsSync(dir)) {
@@ -1615,7 +1615,7 @@ export class App {
                         const filePath = path.join(dir, filename)
                         const splitDataURI = upload.data.split(',')
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                        //TODO: check if file exists, what should we do if it exists?
+                        //writes data to a file, replacing the file if it already exists.
                         fs.writeFileSync(filePath, bf)
                         // don't need to store the file contents in chatmessage, just the filename and chatId
                         upload.data = chatId
