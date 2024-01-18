@@ -262,7 +262,7 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "conversationChain_0-input-model-BaseChatModel"

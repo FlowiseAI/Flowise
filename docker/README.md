@@ -1,6 +1,6 @@
 # Flowise Docker Hub Image
 
-Starts Flowise from [DockerHub Image](https://hub.docker.com/repository/docker/flowiseai/flowise/general)
+Starts Flowise from [DockerHub Image](https://hub.docker.com/r/flowiseai/flowise)
 
 ## Usage
 

@@ -9,6 +9,8 @@ import fetch from 'node-fetch'
 import { flatten, uniqWith, isEqual } from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { AnalyticHandler } from '../../../src/handler'
+import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class OpenAIAssistant_Agents implements INode {
     label: string
@@ -24,7 +26,7 @@ class OpenAIAssistant_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Assistant'
         this.name = 'openAIAssistant'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'OpenAIAssistant'
         this.category = 'Agents'
         this.icon = 'assistant.svg'
@@ -41,6 +43,14 @@ class OpenAIAssistant_Agents implements INode {
                 label: 'Allowed Tools',
                 name: 'tools',
                 type: 'Tool',
+                list: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
                 list: true
             },
             {
@@ -86,45 +96,51 @@ class OpenAIAssistant_Agents implements INode {
         return null
     }
 
-    //@ts-ignore
-    memoryMethods = {
-        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
-            const appDataSource = options.appDataSource as DataSource
-            const databaseEntities = options.databaseEntities as IDatabaseEntity
-            let sessionId = nodeData.inputs?.sessionId as string
+    async clearChatMessages(nodeData: INodeData, options: ICommonObject, sessionIdObj: { type: string; id: string }): Promise<void> {
+        const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
 
-            const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
-                id: selectedAssistantId
+        const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
+            id: selectedAssistantId
+        })
+
+        if (!assistant) {
+            options.logger.error(`Assistant ${selectedAssistantId} not found`)
+            return
+        }
+
+        if (!sessionIdObj) return
+
+        let sessionId = ''
+        if (sessionIdObj.type === 'chatId') {
+            const chatId = sessionIdObj.id
+            const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
+                chatId
             })
-
-            if (!assistant) {
-                options.logger.error(`Assistant ${selectedAssistantId} not found`)
+            if (!chatmsg) {
+                options.logger.error(`Chat Message with Chat Id: ${chatId} not found`)
                 return
             }
+            sessionId = chatmsg.sessionId
+        } else if (sessionIdObj.type === 'threadId') {
+            sessionId = sessionIdObj.id
+        }
 
-            if (!sessionId && options.chatId) {
-                const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                    chatId: options.chatId
-                })
-                if (!chatmsg) {
-                    options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
-                    return
-                }
-                sessionId = chatmsg.sessionId
-            }
+        const credentialData = await getCredentialData(assistant.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        if (!openAIApiKey) {
+            options.logger.error(`OpenAI ApiKey not found`)
+            return
+        }
 
-            const credentialData = await getCredentialData(assistant.credential ?? '', options)
-            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-            if (!openAIApiKey) {
-                options.logger.error(`OpenAI ApiKey not found`)
-                return
-            }
-
-            const openai = new OpenAI({ apiKey: openAIApiKey })
-            options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
+        const openai = new OpenAI({ apiKey: openAIApiKey })
+        options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
+        try {
             if (sessionId) await openai.beta.threads.del(sessionId)
             options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+        } catch (e) {
+            throw new Error(e)
         }
     }
 
@@ -133,6 +149,20 @@ class OpenAIAssistant_Agents implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const disableFileDownload = nodeData.inputs?.disableFileDownload as boolean
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const isStreaming = options.socketIO && options.socketIOClientId
+        const socketIO = isStreaming ? options.socketIO : undefined
+        const socketIOClientId = isStreaming ? options.socketIOClientId : ''
+
+        if (moderations && moderations.length > 0) {
+            try {
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
@@ -249,7 +279,12 @@ class OpenAIAssistant_Agents implements INode {
                                 const actions: ICommonObject[] = []
                                 run.required_action.submit_tool_outputs.tool_calls.forEach((item) => {
                                     const functionCall = item.function
-                                    const args = JSON.parse(functionCall.arguments)
+                                    let args = {}
+                                    try {
+                                        args = JSON.parse(functionCall.arguments)
+                                    } catch (e) {
+                                        console.error('Error parsing arguments, default to empty object')
+                                    }
                                     actions.push({
                                         tool: functionCall.name,
                                         toolInput: args,
@@ -264,31 +299,54 @@ class OpenAIAssistant_Agents implements INode {
 
                                     // Start tool analytics
                                     const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
+                                    if (options.socketIO && options.socketIOClientId)
+                                        options.socketIO.to(options.socketIOClientId).emit('tool', tool.name)
 
-                                    const toolOutput = await tool.call(actions[i].toolInput)
-
-                                    // End tool analytics
-                                    await analyticHandlers.onToolEnd(toolIds, toolOutput)
-
-                                    submitToolOutputs.push({
-                                        tool_call_id: actions[i].toolCallId,
-                                        output: toolOutput
-                                    })
-                                    usedTools.push({
-                                        tool: tool.name,
-                                        toolInput: actions[i].toolInput,
-                                        toolOutput
-                                    })
+                                    try {
+                                        const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, {
+                                            sessionId: threadId,
+                                            chatId: options.chatId,
+                                            input
+                                        })
+                                        await analyticHandlers.onToolEnd(toolIds, toolOutput)
+                                        submitToolOutputs.push({
+                                            tool_call_id: actions[i].toolCallId,
+                                            output: toolOutput
+                                        })
+                                        usedTools.push({
+                                            tool: tool.name,
+                                            toolInput: actions[i].toolInput,
+                                            toolOutput
+                                        })
+                                    } catch (e) {
+                                        await analyticHandlers.onToolEnd(toolIds, e)
+                                        console.error('Error executing tool', e)
+                                        clearInterval(timeout)
+                                        reject(
+                                            new Error(
+                                                `Error processing thread: ${state}, Thread ID: ${threadId}, Run ID: ${runId}, Tool: ${tool.name}`
+                                            )
+                                        )
+                                        break
+                                    }
                                 }
 
-                                if (submitToolOutputs.length) {
-                                    await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
-                                        tool_outputs: submitToolOutputs
-                                    })
-                                    resolve(state)
-                                } else {
-                                    await openai.beta.threads.runs.cancel(threadId, runId)
-                                    resolve('requires_action_retry')
+                                const newRun = await openai.beta.threads.runs.retrieve(threadId, runId)
+                                const newStatus = newRun?.status
+
+                                try {
+                                    if (submitToolOutputs.length && newStatus === 'requires_action') {
+                                        await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
+                                            tool_outputs: submitToolOutputs
+                                        })
+                                        resolve(state)
+                                    } else {
+                                        await openai.beta.threads.runs.cancel(threadId, runId)
+                                        resolve('requires_action_retry')
+                                    }
+                                } catch (e) {
+                                    clearInterval(timeout)
+                                    reject(new Error(`Error submitting tool outputs: ${state}, Thread ID: ${threadId}, Run ID: ${runId}`))
                                 }
                             }
                         } else if (state === 'cancelled' || state === 'expired' || state === 'failed') {
@@ -414,6 +472,7 @@ class OpenAIAssistant_Agents implements INode {
             const imageRegex = /<img[^>]*\/>/g
             let llmOutput = returnVal.replace(imageRegex, '')
             llmOutput = llmOutput.replace('<br/>', '')
+
             await analyticHandlers.onLLMEnd(llmIds, llmOutput)
             await analyticHandlers.onChainEnd(parentIds, messageData, true)
 

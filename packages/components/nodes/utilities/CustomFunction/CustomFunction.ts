@@ -65,7 +65,7 @@ class CustomFunction_Utilities implements INode {
                 inputVars =
                     typeof functionInputVariablesRaw === 'object' ? functionInputVariablesRaw : JSON.parse(functionInputVariablesRaw)
             } catch (exception) {
-                throw new Error("Invalid JSON in the PromptTemplate's promptValues: " + exception)
+                throw new Error('Invalid JSON in the Custom Function Input Variables: ' + exception)
             }
         }
 
@@ -73,7 +73,11 @@ class CustomFunction_Utilities implements INode {
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
+                let value = inputVars[item]
+                if (typeof value === 'string') {
+                    value = handleEscapeCharacters(value, true)
+                }
+                sandbox[`$${item}`] = value
             }
         }
 

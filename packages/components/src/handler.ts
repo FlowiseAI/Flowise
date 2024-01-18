@@ -1,13 +1,13 @@
-import { BaseTracer, Run, BaseCallbackHandler } from 'langchain/callbacks'
+import { BaseTracer, Run, BaseCallbackHandler, LangChainTracer } from 'langchain/callbacks'
 import { AgentAction, ChainValues } from 'langchain/schema'
 import { Logger } from 'winston'
 import { Server } from 'socket.io'
 import { Client } from 'langsmith'
-import { LangChainTracer } from 'langchain/callbacks'
-import { LLMonitorHandler } from 'langchain/callbacks/handlers/llmonitor'
+import { LLMonitorHandler, LLMonitorHandlerFields } from 'langchain/callbacks/handlers/llmonitor'
 import { getCredentialData, getCredentialParam } from './utils'
 import { ICommonObject, INodeData } from './Interface'
 import CallbackHandler from 'langfuse-langchain'
+import { LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
 import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
 import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
 import monitor from 'llmonitor'
@@ -235,11 +235,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         apiKey: langSmithApiKey
                     })
 
-                    const tracer = new LangChainTracer({
+                    let langSmithField: LangChainTracerFields = {
                         projectName: langSmithProject ?? 'default',
                         //@ts-ignore
                         client
-                    })
+                    }
+
+                    if (nodeData?.inputs?.analytics?.langSmith) {
+                        langSmithField = { ...langSmithField, ...nodeData?.inputs?.analytics?.langSmith }
+                    }
+
+                    const tracer = new LangChainTracer(langSmithField)
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
                     const release = analytic[provider].release as string
@@ -248,13 +254,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
                     const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
 
-                    const langFuseOptions: any = {
+                    let langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
                     if (release) langFuseOptions.release = release
-                    if (options.chatId) langFuseOptions.userId = options.chatId
+                    if (options.chatId) langFuseOptions.sessionId = options.chatId
+
+                    if (nodeData?.inputs?.analytics?.langFuse) {
+                        langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
+                    }
 
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)
@@ -262,9 +272,13 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, nodeData)
                     const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, nodeData)
 
-                    const llmonitorFields: ICommonObject = {
+                    let llmonitorFields: LLMonitorHandlerFields = {
                         appId: llmonitorAppId,
                         apiUrl: llmonitorEndpoint ?? 'https://app.llmonitor.com'
+                    }
+
+                    if (nodeData?.inputs?.analytics?.llmonitor) {
+                        llmonitorFields = { ...llmonitorFields, ...nodeData?.inputs?.analytics?.llmonitor }
                     }
 
                     const handler = new LLMonitorHandler(llmonitorFields)
@@ -360,7 +374,8 @@ export class AnalyticHandler {
                     },
                     serialized: {},
                     project_name: this.handlers['langSmith'].langSmithProject,
-                    client: this.handlers['langSmith'].client
+                    client: this.handlers['langSmith'].client,
+                    ...this.nodeData?.inputs?.analytics?.langSmith
                 }
                 const parentRun = new RunTree(parentRunConfig)
                 await parentRun.postRun()
@@ -390,8 +405,9 @@ export class AnalyticHandler {
                 const langfuse: Langfuse = this.handlers['langFuse'].client
                 langfuseTraceClient = langfuse.trace({
                     name,
-                    userId: this.options.chatId,
-                    metadata: { tags: ['openai-assistant'] }
+                    sessionId: this.options.chatId,
+                    metadata: { tags: ['openai-assistant'] },
+                    ...this.nodeData?.inputs?.analytics?.langFuse
                 })
             } else {
                 langfuseTraceClient = this.handlers['langFuse'].trace[parentIds['langFuse']]
@@ -420,7 +436,8 @@ export class AnalyticHandler {
                     runId,
                     name,
                     userId: this.options.chatId,
-                    input
+                    input,
+                    ...this.nodeData?.inputs?.analytics?.llmonitor
                 })
                 this.handlers['llmonitor'].chainEvent = { [runId]: runId }
                 returnIds['llmonitor'].chainEvent = runId
@@ -538,7 +555,7 @@ export class AnalyticHandler {
             if (trace) {
                 const generation = trace.generation({
                     name,
-                    prompt: input
+                    input: input
                 })
                 this.handlers['langFuse'].generation = { [generation.id]: generation }
                 returnIds['langFuse'].generation = generation.id
@@ -583,7 +600,7 @@ export class AnalyticHandler {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
                 generation.end({
-                    completion: output
+                    output: output
                 })
             }
         }
@@ -618,7 +635,7 @@ export class AnalyticHandler {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
                 generation.end({
-                    completion: error
+                    output: error
                 })
             }
         }
