@@ -1,0 +1,24 @@
+name: autoSyncMergedPullRequest
+on:
+  pull_request:
+    types:
+      - closed
+    branches: [ "main" ]
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Show PR info
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+          echo The PR #${{ github.event.pull_request.number }} was merged on main branch!
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.AUTOSYNC_TOKEN }}
+          repository: ${{ secrets.AUTOSYNC_CH_URL }}
+          event-type: ${{ secrets.AUTOSYNC_PR_EVENT_TYPE }}
+          client-payload: '{"ref": "${{ github.ref }}", "prNumber": "${{ github.event.pull_request.number }}", "sha": "${{ github.sha }}"}'
