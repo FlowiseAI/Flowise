@@ -234,3 +234,10 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
+
+export interface IFileUpload {
+    data: string
+    type: string
+    name: string
+    mime: string
+}

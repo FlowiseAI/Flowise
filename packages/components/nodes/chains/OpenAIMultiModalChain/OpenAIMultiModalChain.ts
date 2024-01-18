@@ -1,10 +1,17 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import {
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeOutputsValue,
+    INodeParams
+} from "../../../src/Interface";
 import { getBaseClasses, getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
-import { OpenAIVisionChainInput, VLLMChain } from './VLLMChain'
+import { OpenAIMultiModalChainInput, VLLMChain } from "./VLLMChain";
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import { checkInputs, Moderation, streamResponse } from "../../moderation/Moderation";
 
-class OpenAIVisionChain_Chains implements INode {
+class OpenAIMultiModalChain_Chains implements INode {
     label: string
     name: string
     version: number
@@ -24,7 +31,7 @@ class OpenAIVisionChain_Chains implements INode {
         this.version = 1.0
         this.type = 'OpenAIMultiModalChain'
         this.icon = 'chain.svg'
-        this.category = 'MultiModal'
+        this.category = 'Chains'
         this.badge = 'BETA'
         this.description = 'Chain to query against Image and Audio Input.'
         this.baseClasses = [this.type, ...getBaseClasses(VLLMChain)]
@@ -36,16 +43,18 @@ class OpenAIVisionChain_Chains implements INode {
         }
         this.inputs = [
             {
-                label: 'Audio Input',
-                name: 'audioInput',
-                type: 'OpenAIWhisper',
-                optional: true
-            },
-            {
                 label: 'Prompt',
                 name: 'prompt',
                 type: 'BasePromptTemplate',
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             },
             {
                 label: 'Model Name',
@@ -55,13 +64,37 @@ class OpenAIVisionChain_Chains implements INode {
                     {
                         label: 'gpt-4-vision-preview',
                         name: 'gpt-4-vision-preview'
-                    },
-                    {
-                        label: 'whisper-1',
-                        name: 'whisper-1'
                     }
                 ],
                 default: 'gpt-4-vision-preview'
+            },
+            {
+                label: 'Speech to Text',
+                name: 'speechToText',
+                type: 'boolean',
+                optional: true,
+            },
+            // TODO: only show when speechToText is true
+            {
+                label: 'Speech to Text Method',
+                description: 'How to turn audio into text',
+                name: 'speechToTextMode',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Transcriptions',
+                        name: 'transcriptions',
+                        description: 'Transcribe audio into whatever language the audio is in. Default method when Speech to Text is turned on.'
+                    },
+                    {
+                        label: 'Translations',
+                        name: 'translations',
+                        description: 'Translate and transcribe the audio into english.'
+                    }
+                ],
+                optional: false,
+                default: 'transcriptions',
+                additionalParams: true
             },
             {
                 label: 'Image Resolution',
@@ -76,6 +109,10 @@ class OpenAIVisionChain_Chains implements INode {
                     {
                         label: 'High',
                         name: 'high'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
                     }
                 ],
                 default: 'low',
@@ -108,17 +145,10 @@ class OpenAIVisionChain_Chains implements INode {
                 additionalParams: true
             },
             {
-                label: 'Chain Name',
-                name: 'chainName',
-                type: 'string',
-                placeholder: 'Name Your Chain',
-                optional: true
-            },
-            {
                 label: 'Accepted Upload Types',
                 name: 'allowedUploadTypes',
                 type: 'string',
-                default: 'image/gif;image/jpeg;image/png;image/webp',
+                default: 'image/gif;image/jpeg;image/png;image/webp;audio/mpeg;audio/x-wav;audio/mp4',
                 hidden: true
             },
             {
@@ -154,19 +184,23 @@ class OpenAIVisionChain_Chains implements INode {
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
-        const whisperConfig = nodeData.inputs?.audioInput
+        const speechToText = nodeData.inputs?.speechToText as boolean
 
-        const fields: OpenAIVisionChainInput = {
+
+        const fields: OpenAIMultiModalChainInput = {
             openAIApiKey: openAIApiKey,
             imageResolution: imageResolution,
             verbose: process.env.DEBUG === 'true',
-            imageUrls: options.uploads,
+            uploads: options.uploads,
             modelName: modelName
         }
         if (temperature) fields.temperature = parseFloat(temperature)
         if (maxTokens) fields.maxTokens = parseInt(maxTokens, 10)
         if (topP) fields.topP = parseFloat(topP)
-        if (whisperConfig) fields.whisperConfig = whisperConfig
+        if (speechToText) {
+            const speechToTextMode = nodeData.inputs?.speechToTextMode ?? 'transcriptions'
+            if (speechToTextMode) fields.speechToTextMode = speechToTextMode
+        }
 
         if (output === this.name) {
             const chain = new VLLMChain({
@@ -221,6 +255,17 @@ const runPrediction = async (
     const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
+    const moderations = nodeData.inputs?.inputModeration as Moderation[]
+    if (moderations && moderations.length > 0) {
+        try {
+            // Use the output of the moderation chain as input for the LLM chain
+            input = await checkInputs(moderations, input)
+        } catch (e) {
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+            return formatResponse(e.message)
+        }
+    }
 
     /**
      * Apply string transformation to reverse converted special chars:
@@ -229,7 +274,7 @@ const runPrediction = async (
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
     if (options?.uploads) {
-        chain.imageUrls = options.uploads
+        chain.uploads = options.uploads
     }
     if (promptValues && inputVariables.length > 0) {
         let seen: string[] = []
@@ -285,4 +330,4 @@ const runPrediction = async (
     }
 }
 
-module.exports = { nodeClass: OpenAIVisionChain_Chains }
+module.exports = { nodeClass: OpenAIMultiModalChain_Chains }

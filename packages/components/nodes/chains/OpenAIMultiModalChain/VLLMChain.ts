@@ -1,27 +1,30 @@
-import { OpenAI as OpenAIClient, ClientOptions } from 'openai'
+import { OpenAI as OpenAIClient, ClientOptions, OpenAI } from 'openai'
 import { BaseChain, ChainInputs } from 'langchain/chains'
 import { ChainValues } from 'langchain/schema'
-import { BasePromptTemplate, ChatPromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
+import { BasePromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
 import path from 'path'
 import { getUserHome } from '../../../src/utils'
 import fs from 'fs'
+import { ChatCompletionContentPart, ChatCompletionMessageParam } from 'openai/src/resources/chat/completions'
+import ChatCompletionCreateParamsNonStreaming = OpenAI.ChatCompletionCreateParamsNonStreaming
+import { IFileUpload } from '../../../src'
 
 /**
  * Interface for the input parameters of the OpenAIVisionChain class.
  */
-export interface OpenAIVisionChainInput extends ChainInputs {
+export interface OpenAIMultiModalChainInput extends ChainInputs {
     openAIApiKey?: string
     openAIOrganization?: string
     throwError?: boolean
     prompt?: BasePromptTemplate
     configuration?: ClientOptions
-    imageUrls?: []
-    imageResolution?: string
+    uploads?: IFileUpload[]
+    imageResolution?: 'auto' | 'low' | 'high'
     temperature?: number
     modelName?: string
     maxTokens?: number
     topP?: number
-    whisperConfig?: any
+    speechToTextMode?: string
 }
 
 /**
@@ -29,7 +32,7 @@ export interface OpenAIVisionChainInput extends ChainInputs {
  * Vision API. It extends the BaseChain class and implements the
  * OpenAIVisionChainInput interface.
  */
-export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
+export class VLLMChain extends BaseChain implements OpenAIMultiModalChainInput {
     static lc_name() {
         return 'VLLMChain'
     }
@@ -37,8 +40,8 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
 
     inputKey = 'input'
     outputKey = 'text'
-    imageUrls?: []
-    imageResolution: string = 'low'
+    uploads?: IFileUpload[]
+    imageResolution: 'auto' | 'low' | 'high'
     openAIApiKey?: string
     openAIOrganization?: string
     clientConfig: ClientOptions
@@ -49,9 +52,9 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
     maxTokens?: number
     topP?: number
 
-    whisperConfig?: any
+    speechToTextMode?: any
 
-    constructor(fields: OpenAIVisionChainInput) {
+    constructor(fields: OpenAIMultiModalChainInput) {
         super(fields)
         this.throwError = fields?.throwError ?? false
         this.imageResolution = fields?.imageResolution ?? 'low'
@@ -61,8 +64,8 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         this.modelName = fields?.modelName
         this.maxTokens = fields?.maxTokens
         this.topP = fields?.topP
-        this.imageUrls = fields?.imageUrls ?? []
-        this.whisperConfig = fields?.whisperConfig ?? {}
+        this.uploads = fields?.uploads ?? []
+        this.speechToTextMode = fields?.speechToTextMode ?? {}
         if (!this.openAIApiKey) {
             throw new Error('OpenAI API key not found')
         }
@@ -81,8 +84,8 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
     async _call(values: ChainValues): Promise<ChainValues> {
         const userInput = values[this.inputKey]
 
-        const vRequest: any = {
-            model: this.modelName,
+        const vRequest: ChatCompletionCreateParamsNonStreaming = {
+            model: 'gpt-4-vision-preview',
             temperature: this.temperature,
             top_p: this.topP,
             messages: []
@@ -90,42 +93,42 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
         if (this.maxTokens) vRequest.max_tokens = this.maxTokens
         else vRequest.max_tokens = 1024
 
-        const userRole: any = { role: 'user' }
-        userRole.content = []
-        userRole.content.push({
+        const chatMessages: ChatCompletionContentPart[] = []
+        const userRole: ChatCompletionMessageParam = { role: 'user', content: [] }
+        chatMessages.push({
             type: 'text',
             text: userInput
         })
-        if (this.whisperConfig && this.imageUrls && this.imageUrls.length > 0) {
-            const audioUploads = this.getAudioUploads(this.imageUrls)
+        if (this.speechToTextMode && this.uploads && this.uploads.length > 0) {
+            const audioUploads = this.getAudioUploads(this.uploads)
             for (const url of audioUploads) {
                 const filePath = path.join(getUserHome(), '.flowise', 'gptvision', url.data, url.name)
 
                 // as the image is stored in the server, read the file and convert it to base64
                 const audio_file = fs.createReadStream(filePath)
-                if (this.whisperConfig.purpose === 'transcription') {
+                if (this.speechToTextMode.purpose === 'transcriptions') {
                     const transcription = await this.client.audio.transcriptions.create({
                         file: audio_file,
                         model: 'whisper-1'
                     })
-                    userRole.content.push({
+                    chatMessages.push({
                         type: 'text',
                         text: transcription.text
                     })
-                } else if (this.whisperConfig.purpose === 'translation') {
+                } else if (this.speechToTextMode.purpose === 'translations') {
                     const translation = await this.client.audio.translations.create({
                         file: audio_file,
                         model: 'whisper-1'
                     })
-                    userRole.content.push({
+                    chatMessages.push({
                         type: 'text',
                         text: translation.text
                     })
                 }
             }
         }
-        if (this.imageUrls && this.imageUrls.length > 0) {
-            const imageUploads = this.getImageUploads(this.imageUrls)
+        if (this.uploads && this.uploads.length > 0) {
+            const imageUploads = this.getImageUploads(this.uploads)
             for (const url of imageUploads) {
                 let bf = url.data
                 if (url.type == 'stored-file') {
@@ -135,7 +138,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
                     const contents = fs.readFileSync(filePath)
                     bf = 'data:' + url.mime + ';base64,' + contents.toString('base64')
                 }
-                userRole.content.push({
+                chatMessages.push({
                     type: 'image_url',
                     image_url: {
                         url: bf,
@@ -144,6 +147,7 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
                 })
             }
         }
+        userRole.content = chatMessages
         vRequest.messages.push(userRole)
         if (this.prompt && this.prompt instanceof ChatPromptTemplate) {
             let chatPrompt = this.prompt as ChatPromptTemplate
@@ -151,12 +155,12 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
                 if (message instanceof SystemMessagePromptTemplate) {
                     vRequest.messages.push({
                         role: 'system',
-                        content: [
-                            {
-                                type: 'text',
-                                text: (message.prompt as any).template
-                            }
-                        ]
+                        content: (message.prompt as any).template
+                    })
+                } else if (message instanceof HumanMessagePromptTemplate) {
+                    vRequest.messages.push({
+                        role: 'user',
+                        content: (message.prompt as any).template
                     })
                 }
             })
@@ -164,7 +168,6 @@ export class VLLMChain extends BaseChain implements OpenAIVisionChainInput {
 
         let response
         try {
-            // @ts-ignore
             response = await this.client.chat.completions.create(vRequest)
         } catch (error) {
             if (error instanceof Error) {

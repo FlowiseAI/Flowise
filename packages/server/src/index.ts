@@ -1695,9 +1695,7 @@ export class App {
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
                     if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                        if (endingNodeData.type !== 'OpenAIMultiModalChain') {
-                            return res.status(500).send(`Ending node must be either a Chain or Agent`)
-                        }
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
                     }
 
                     if (
