@@ -60,6 +60,7 @@
         "multer": "^1.4.5-lts.1",
         "mysql": "^2.18.1",
         "pg": "^8.11.1",
+        "posthog-node": "^3.5.0",
         "reflect-metadata": "^0.1.13",
         "sanitize-html": "^2.11.0",
         "socket.io": "^4.6.1",
