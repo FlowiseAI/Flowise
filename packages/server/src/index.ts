@@ -1821,7 +1821,6 @@ export class App {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
                 chatId,
-                sessionId,
                 type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
