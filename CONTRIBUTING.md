@@ -141,6 +141,7 @@ Flowise support different environment variables to configure your instance. You 
 | DATABASE_SSL                | Database connection overssl (When DATABASE_TYPE is postgre)                  | Boolean                                          | false                               |
 | SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
 | FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
+| DISABLE_FLOWISE_TELEMETRY   | Turn off telemetry                                                           | Boolean                                          |
 
 You can also specify the env variables when using `npx`. For example:
 
