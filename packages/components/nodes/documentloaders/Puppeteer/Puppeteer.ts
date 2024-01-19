@@ -119,6 +119,7 @@ class Puppeteer_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
+        const selectedLinks = nodeData.inputs?.selectedLinks as string[]
         let limit = nodeData.inputs?.limit as string
         let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
         let waitForSelector = nodeData.inputs?.waitForSelector as string
@@ -169,13 +170,22 @@ class Puppeteer_DocumentLoaders implements INode {
             if (!limit) limit = '10'
             else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
+                selectedLinks && selectedLinks.length > 0
+                    ? selectedLinks.slice(0, parseInt(limit))
+                    : relativeLinksMethod === 'webCrawl'
+                    ? await webCrawl(url, parseInt(limit))
+                    : await xmlScrape(url, parseInt(limit))
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await puppeteerLoader(page)))
             }
             if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+        } else if (selectedLinks && selectedLinks.length > 0) {
+            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+            for (const page of selectedLinks) {
+                docs.push(...(await puppeteerLoader(page)))
+            }
         } else {
             docs = await puppeteerLoader(url)
         }
