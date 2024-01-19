@@ -5,14 +5,16 @@ on:
       - closed
     branches: [ "main" ]
 jobs:
-  build:
+  autoSyncMergedPullRequest:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Show PR info
         env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo The PR #${{ github.event.pull_request.number }} was merged on main branch!
       - name: Repository Dispatch
