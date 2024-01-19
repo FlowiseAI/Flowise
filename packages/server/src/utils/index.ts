@@ -1082,3 +1082,59 @@ export const getAllValuesFromJson = (obj: any): any[] => {
     extractValues(obj)
     return values
 }
+
+/**
+ * Get only essential flow data items for telemetry
+ * @param {IReactFlowNode[]} nodes
+ * @param {IReactFlowEdge[]} edges
+ */
+export const getTelemetryFlowObj = (nodes: IReactFlowNode[], edges: IReactFlowEdge[]) => {
+    const nodeData = nodes.map((node) => node.id)
+    const edgeData = edges.map((edge) => ({ source: edge.source, target: edge.target }))
+    return { nodes: nodeData, edges: edgeData }
+}
+
+/**
+ * Get user settings file
+ * TODO: move env variables to settings json file, easier configuration
+ */
+export const getUserSettingsFilePath = () => {
+    const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
+    for (const checkPath of checkPaths) {
+        if (fs.existsSync(checkPath)) {
+            return checkPath
+        }
+    }
+    return ''
+}
+
+/**
+ * Get app current version
+ */
+export const getAppVersion = async () => {
+    const getPackageJsonPath = (): string => {
+        const checkPaths = [
+            path.join(__dirname, '..', 'package.json'),
+            path.join(__dirname, '..', '..', 'package.json'),
+            path.join(__dirname, '..', '..', '..', 'package.json'),
+            path.join(__dirname, '..', '..', '..', '..', 'package.json'),
+            path.join(__dirname, '..', '..', '..', '..', '..', 'package.json')
+        ]
+        for (const checkPath of checkPaths) {
+            if (fs.existsSync(checkPath)) {
+                return checkPath
+            }
+        }
+        return ''
+    }
+
+    const packagejsonPath = getPackageJsonPath()
+    if (!packagejsonPath) return ''
+    try {
+        const content = await fs.promises.readFile(packagejsonPath, 'utf8')
+        const parsedContent = JSON.parse(content)
+        return parsedContent.version
+    } catch (error) {
+        return ''
+    }
+}
