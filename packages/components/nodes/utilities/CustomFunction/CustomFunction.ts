@@ -80,6 +80,17 @@ class CustomFunction_Utilities implements INode {
             }
         }
 
+        // Some values might be a stringified JSON, parse it
+        for (const key in inputVars) {
+            if (typeof inputVars[key] === 'string' && inputVars[key].startsWith('{') && inputVars[key].endsWith('}')) {
+                try {
+                    inputVars[key] = JSON.parse(inputVars[key])
+                } catch (e) {
+                    continue
+                }
+            }
+        }
+
         let sandbox: any = { $input: input }
         sandbox['$vars'] = prepareSandboxVars(variables)
         sandbox['$flow'] = flow
