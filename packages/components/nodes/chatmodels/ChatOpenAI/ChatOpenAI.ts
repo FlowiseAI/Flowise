@@ -19,7 +19,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -152,6 +152,73 @@ class ChatOpenAI_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Allow Audio Uploads',
+                name: 'allowAudioUploads',
+                type: 'boolean',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Allow Speech to Text',
+                name: 'allowSpeechToText',
+                type: 'boolean',
+                default: false,
+                optional: true
+            },
+            // TODO: only show when speechToText is true
+            {
+                label: 'Speech to Text Method',
+                description: 'How to turn audio into text',
+                name: 'speechToTextMode',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Transcriptions',
+                        name: 'transcriptions',
+                        description:
+                            'Transcribe audio into whatever language the audio is in. Default method when Speech to Text is turned on.'
+                    },
+                    {
+                        label: 'Translations',
+                        name: 'translations',
+                        description: 'Translate and transcribe the audio into english.'
+                    }
+                ],
+                optional: false,
+                default: 'transcriptions',
+                additionalParams: true
+            },
+            {
+                label: 'Image Resolution',
+                description: 'This parameter controls the resolution in which the model views the image.',
+                name: 'imageResolution',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                default: 'low',
+                optional: false,
+                additionalParams: true
             }
         ]
     }
@@ -167,6 +234,12 @@ class ChatOpenAI_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const allowAudioUploads = nodeData.inputs?.allowAudioUploads as boolean
+        const allowSpeechToText = nodeData.inputs?.allowSpeechToText as boolean
+        const speechToTextMode = nodeData.inputs?.speechToTextMode as string
+        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -199,6 +272,20 @@ class ChatOpenAI_ChatModels implements INode {
         const model = new ChatOpenAI(obj, {
             basePath,
             baseOptions: parsedBaseOptions
+        })
+
+        const multiModal = {
+            allowImageUploads: allowImageUploads ?? false,
+            allowAudioUploads: allowAudioUploads ?? false,
+            allowSpeechToText: allowSpeechToText ?? false,
+            imageResolution,
+            speechToTextMode
+        }
+        Object.defineProperty(model, 'multiModal', {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: multiModal
         })
         return model
     }

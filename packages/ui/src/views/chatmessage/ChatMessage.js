@@ -74,6 +74,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     ])
     const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
+    const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatId, setChatId] = useState(undefined)
@@ -513,6 +514,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     useEffect(() => {
         if (getAllowChatFlowUploads.data) {
             setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.isUploadAllowed ?? false)
+            setIsChatFlowAvailableForSpeech(getAllowChatFlowUploads.data?.allowSpeechToText ?? false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllowChatFlowUploads.data])
@@ -922,7 +924,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             }
                             endAdornment={
                                 <>
-                                    {isChatFlowAvailableForUploads && (
+                                    {isChatFlowAvailableForSpeech && (
                                         <InputAdornment position='end'>
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}

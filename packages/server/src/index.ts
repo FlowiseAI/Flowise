@@ -467,40 +467,45 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
 
-            const uploadAllowedNodes = ['OpenAIMultiModalChain', 'OpenAIWhisper']
+            const uploadAllowedCategoryNodes = ['Chat Models']
 
             try {
                 const flowObj = JSON.parse(chatflow.flowData)
-                let isUploadAllowed = false
                 const allowances: IUploadFileSizeAndTypes[] = []
-
+                let allowSpeechToText = false
+                let allowImageUploads = false
+                let allowAudioUploads = false
                 flowObj.nodes.forEach((node: IReactFlowNode) => {
-                    if (uploadAllowedNodes.indexOf(node.data.type) > -1) {
+                    if (uploadAllowedCategoryNodes.indexOf(node.data.category) > -1) {
                         logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
-                        isUploadAllowed = true
 
-                        const allowance: IUploadFileSizeAndTypes = {
-                            fileTypes: [],
-                            maxUploadSize: 0
-                        }
-
+                        // there could be multiple components allowing uploads, so we check if it's already added
+                        // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
                         node.data.inputParams.map((param: INodeParams) => {
-                            if (param.name === 'allowedUploadTypes') {
-                                allowance.fileTypes = (param.default as string).split(';')
+                            if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads'] && !allowImageUploads) {
+                                allowances.push({
+                                    fileTypes: 'image/gif;image/jpeg;image/png;image/webp'.split(';'),
+                                    maxUploadSize: 5
+                                })
+                                allowImageUploads = true
                             }
-                            if (param.name === 'maxUploadSize') {
-                                allowance.maxUploadSize = parseInt(param.default ? (param.default as string) : '0')
+                            if (param.name === 'allowAudioUploads' && node.data.inputs?.['allowAudioUploads'] && !allowAudioUploads) {
+                                allowances.push({
+                                    fileTypes: 'audio/mpeg;audio/x-wav;audio/mp4'.split(';'),
+                                    maxUploadSize: 5
+                                })
+                                allowAudioUploads = true
+                            }
+                            if (param.name === 'allowSpeechToText' && node.data.inputs?.['allowSpeechToText']) {
+                                allowSpeechToText = true
                             }
                         })
-
-                        if (allowance.fileTypes && allowance.maxUploadSize) {
-                            allowances.push(allowance)
-                        }
                     }
                 })
 
                 return res.json({
-                    isUploadAllowed,
+                    allowSpeechToText: allowSpeechToText,
+                    isUploadAllowed: allowances.length > 0,
                     uploadFileSizeAndTypes: allowances
                 })
             } catch (e) {

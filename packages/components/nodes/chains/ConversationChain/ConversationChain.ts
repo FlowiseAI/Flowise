@@ -1,4 +1,4 @@
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
 import { getBaseClasses } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
@@ -8,6 +8,8 @@ import { flatten } from 'lodash'
 import { Document } from 'langchain/document'
 import { RunnableSequence } from 'langchain/schema/runnable'
 import { StringOutputParser } from 'langchain/schema/output_parser'
+import { addImagesToMessages, processSpeechToText } from '../../../src/MultiModalUtils'
+import { HumanMessage } from 'langchain/schema'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -67,13 +69,15 @@ class ConversationChain_Chains implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const chain = prepareChain(nodeData, this.sessionId, options.chatHistory)
+        const chain = prepareChain(nodeData, options, this.sessionId)
         return chain
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const memory = nodeData.inputs?.memory
-        const chain = prepareChain(nodeData, this.sessionId, options.chatHistory)
+        input = await processSpeechToText(nodeData, input, options)
+
+        const chain = prepareChain(nodeData, options, this.sessionId)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -105,7 +109,7 @@ class ConversationChain_Chains implements INode {
     }
 }
 
-const prepareChatPrompt = (nodeData: INodeData) => {
+const prepareChatPrompt = (nodeData: INodeData, options: ICommonObject) => {
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const prompt = nodeData.inputs?.systemMessagePrompt as string
     const docs = nodeData.inputs?.document as Document[]
@@ -128,16 +132,31 @@ const prepareChatPrompt = (nodeData: INodeData) => {
 
     if (finalText) systemMessage = `${systemMessage}\nThe AI has the following context:\n${finalText}`
 
-    const chatPrompt = ChatPromptTemplate.fromMessages([
+    // TODO: add audio uploads
+    // if (options.uploads.length > 0) {
+    //     const audioUploads = getAudioUploads(options.uploads)
+    //     for (const upload of audioUploads) {
+    //         await this.processAudioWithWhisper(upload, chatMessages)
+    //     }
+    // }
+    const imageContent = addImagesToMessages(nodeData, options)
+
+    //TODO, this should not be any[], what interface should it be?
+    let promptMessages: any[] = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? `${prompt}\n${systemMessage}` : systemMessage),
         new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
         HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
-    ])
+    ]
+    if (imageContent.length > 0) {
+        promptMessages.push(new HumanMessage({ content: imageContent }))
+    }
+    const chatPrompt = ChatPromptTemplate.fromMessages(promptMessages)
 
     return chatPrompt
 }
 
-const prepareChain = (nodeData: INodeData, sessionId?: string, chatHistory: IMessage[] = []) => {
+const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
+    const chatHistory = options.chatHistory
     const model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
@@ -150,7 +169,7 @@ const prepareChain = (nodeData: INodeData, sessionId?: string, chatHistory: IMes
                 return history
             }
         },
-        prepareChatPrompt(nodeData),
+        prepareChatPrompt(nodeData, options),
         model,
         new StringOutputParser()
     ])
