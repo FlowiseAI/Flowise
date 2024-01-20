@@ -1,13 +1,12 @@
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConversationChain } from 'langchain/chains'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { flatten } from 'lodash'
-import { Document } from 'langchain/document'
 import { RunnableSequence } from 'langchain/schema/runnable'
 import { StringOutputParser } from 'langchain/schema/output_parser'
+import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -27,7 +26,7 @@ class ConversationChain_Chains implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversation Chain'
         this.name = 'conversationChain'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ConversationChain'
         this.icon = 'conv.svg'
         this.category = 'Chains'
@@ -45,6 +44,14 @@ class ConversationChain_Chains implements INode {
                 type: 'BaseMemory'
             },
             {
+                label: 'Chat Prompt Template',
+                name: 'chatPromptTemplate',
+                type: 'ChatPromptTemplate',
+                description: 'Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable',
+                optional: true
+            },
+            /* Deprecated
+            {
                 label: 'Document',
                 name: 'document',
                 type: 'Document',
@@ -52,15 +59,17 @@ class ConversationChain_Chains implements INode {
                     'Include whole document into the context window, if you get maximum context length error, please use model with higher context window like Claude 100k, or gpt4 32k',
                 optional: true,
                 list: true
-            },
+            },*/
             {
                 label: 'System Message',
                 name: 'systemMessagePrompt',
                 type: 'string',
                 rows: 4,
+                description: 'If Chat Prompt Template is provided, this will be ignored',
                 additionalParams: true,
                 optional: true,
-                placeholder: 'You are a helpful assistant that write codes'
+                default: systemMessage,
+                placeholder: systemMessage
             }
         ]
         this.sessionId = fields?.sessionId
@@ -76,15 +85,21 @@ class ConversationChain_Chains implements INode {
         const chain = prepareChain(nodeData, this.sessionId, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const callbacks = await additionalCallbacks(nodeData, options)
+        const additionalCallback = await additionalCallbacks(nodeData, options)
 
         let res = ''
+        let callbacks = [loggerHandler, ...additionalCallback]
+
+        if (process.env.DEBUG === 'true') {
+            callbacks.push(new LCConsoleCallbackHandler())
+        }
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
-            res = await chain.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            callbacks.push(handler)
+            res = await chain.invoke({ input }, { callbacks })
         } else {
-            res = await chain.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            res = await chain.invoke({ input }, { callbacks })
         }
 
         await memory.addChatMessages(
@@ -108,28 +123,27 @@ class ConversationChain_Chains implements INode {
 const prepareChatPrompt = (nodeData: INodeData) => {
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const prompt = nodeData.inputs?.systemMessagePrompt as string
-    const docs = nodeData.inputs?.document as Document[]
+    const chatPromptTemplate = nodeData.inputs?.chatPromptTemplate as ChatPromptTemplate
 
-    const flattenDocs = docs && docs.length ? flatten(docs) : []
-    const finalDocs = []
-    for (let i = 0; i < flattenDocs.length; i += 1) {
-        if (flattenDocs[i] && flattenDocs[i].pageContent) {
-            finalDocs.push(new Document(flattenDocs[i]))
+    if (chatPromptTemplate && chatPromptTemplate.promptMessages.length) {
+        const sysPrompt = chatPromptTemplate.promptMessages[0]
+        const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
+        const chatPrompt = ChatPromptTemplate.fromMessages([
+            sysPrompt,
+            new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
+            humanPrompt
+        ])
+
+        if ((chatPromptTemplate as any).promptValues) {
+            // @ts-ignore
+            chatPrompt.promptValues = (chatPromptTemplate as any).promptValues
         }
+
+        return chatPrompt
     }
-
-    let finalText = ''
-    for (let i = 0; i < finalDocs.length; i += 1) {
-        finalText += finalDocs[i].pageContent
-    }
-
-    const replaceChar: string[] = ['{', '}']
-    for (const char of replaceChar) finalText = finalText.replaceAll(char, '')
-
-    if (finalText) systemMessage = `${systemMessage}\nThe AI has the following context:\n${finalText}`
 
     const chatPrompt = ChatPromptTemplate.fromMessages([
-        SystemMessagePromptTemplate.fromTemplate(prompt ? `${prompt}\n${systemMessage}` : systemMessage),
+        SystemMessagePromptTemplate.fromTemplate(prompt ? prompt : systemMessage),
         new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
         HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
     ])
@@ -142,15 +156,31 @@ const prepareChain = (nodeData: INodeData, sessionId?: string, chatHistory: IMes
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
 
+    const chatPrompt = prepareChatPrompt(nodeData)
+    let promptVariables = {}
+    const promptValuesRaw = (chatPrompt as any).promptValues
+    if (promptValuesRaw) {
+        const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+        for (const val in promptValues) {
+            promptVariables = {
+                ...promptVariables,
+                [val]: () => {
+                    return promptValues[val]
+                }
+            }
+        }
+    }
+
     const conversationChain = RunnableSequence.from([
         {
             [inputKey]: (input: { input: string }) => input.input,
             [memoryKey]: async () => {
                 const history = await memory.getChatMessages(sessionId, true, chatHistory)
                 return history
-            }
+            },
+            ...promptVariables
         },
-        prepareChatPrompt(nodeData),
+        chatPrompt,
         model,
         new StringOutputParser()
     ])
