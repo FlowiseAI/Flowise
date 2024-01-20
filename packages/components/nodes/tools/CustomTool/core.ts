@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { NodeVM } from 'vm2'
-import { availableDependencies } from '../../../src/utils'
+import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
@@ -55,7 +55,12 @@ export class DynamicStructuredTool<
         this.schema = fields.schema
     }
 
-    async call(arg: z.output<T>, configArg?: RunnableConfig | Callbacks, tags?: string[], overrideSessionId?: string): Promise<string> {
+    async call(
+        arg: z.output<T>,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
         const config = parseCallbackConfigArg(configArg)
         if (config.runName === undefined) {
             config.runName = this.name
@@ -86,7 +91,7 @@ export class DynamicStructuredTool<
         )
         let result
         try {
-            result = await this._call(parsed, runManager, overrideSessionId)
+            result = await this._call(parsed, runManager, flowConfig)
         } catch (e) {
             await runManager?.handleToolError(e)
             throw e
@@ -95,7 +100,11 @@ export class DynamicStructuredTool<
         return result
     }
 
-    protected async _call(arg: z.output<T>, _?: CallbackManagerForToolRun, overrideSessionId?: string): Promise<string> {
+    protected async _call(
+        arg: z.output<T>,
+        _?: CallbackManagerForToolRun,
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
         let sandbox: any = {}
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
@@ -103,47 +112,12 @@ export class DynamicStructuredTool<
             }
         }
 
-        // inject variables
-        let vars = {}
-        if (this.variables) {
-            for (const item of this.variables) {
-                let value = item.value
-
-                // read from .env file
-                if (item.type === 'runtime') {
-                    value = process.env[item.name]
-                }
-
-                Object.defineProperty(vars, item.name, {
-                    enumerable: true,
-                    configurable: true,
-                    writable: true,
-                    value: value
-                })
-            }
-        }
-        sandbox['$vars'] = vars
+        sandbox['$vars'] = prepareSandboxVars(this.variables)
 
         // inject flow properties
         if (this.flowObj) {
-            sandbox['$flow'] = { ...this.flowObj, sessionId: overrideSessionId }
+            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
         }
-
-        const defaultAllowBuiltInDep = [
-            'assert',
-            'buffer',
-            'crypto',
-            'events',
-            'http',
-            'https',
-            'net',
-            'path',
-            'querystring',
-            'timers',
-            'tls',
-            'url',
-            'zlib'
-        ]
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))

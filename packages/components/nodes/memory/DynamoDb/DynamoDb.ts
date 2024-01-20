@@ -12,13 +12,7 @@ import {
 import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from 'langchain/schema'
-import {
-    convertBaseMessagetoIMessage,
-    getBaseClasses,
-    getCredentialData,
-    getCredentialParam,
-    serializeChatHistory
-} from '../../../src/utils'
+import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
 class DynamoDb_Memory implements INode {
@@ -70,7 +64,8 @@ class DynamoDb_Memory implements INode {
                 label: 'Session ID',
                 name: 'sessionId',
                 type: 'string',
-                description: 'If not specified, the first CHAT_MESSAGE_ID will be used as sessionId',
+                description:
+                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -88,25 +83,6 @@ class DynamoDb_Memory implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         return initalizeDynamoDB(nodeData, options)
     }
-
-    //@ts-ignore
-    memoryMethods = {
-        async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
-            const sessionId = nodeData.inputs?.sessionId as string
-            const chatId = options?.chatId as string
-            options.logger.info(`Clearing DynamoDb memory session ${sessionId ? sessionId : chatId}`)
-            await dynamodbMemory.clear()
-            options.logger.info(`Successfully cleared DynamoDb memory session ${sessionId ? sessionId : chatId}`)
-        },
-        async getChatMessages(nodeData: INodeData, options: ICommonObject): Promise<string> {
-            const memoryKey = nodeData.inputs?.memoryKey as string
-            const dynamodbMemory = await initalizeDynamoDB(nodeData, options)
-            const key = memoryKey ?? 'chat_history'
-            const memoryResult = await dynamodbMemory.loadMemoryVariables({})
-            return serializeChatHistory(memoryResult[key])
-        }
-    }
 }
 
 const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
@@ -114,17 +90,7 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     const partitionKey = nodeData.inputs?.partitionKey as string
     const region = nodeData.inputs?.region as string
     const memoryKey = nodeData.inputs?.memoryKey as string
-    const chatId = options.chatId
-
-    let isSessionIdUsingChatMessageId = false
-    let sessionId = ''
-
-    if (!nodeData.inputs?.sessionId && chatId) {
-        isSessionIdUsingChatMessageId = true
-        sessionId = chatId
-    } else {
-        sessionId = nodeData.inputs?.sessionId
-    }
+    const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
@@ -150,7 +116,6 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: dynamoDb,
-        isSessionIdUsingChatMessageId,
         sessionId,
         dynamodbClient: client
     })
@@ -158,7 +123,6 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
 }
 
 interface BufferMemoryExtendedInput {
-    isSessionIdUsingChatMessageId: boolean
     dynamodbClient: DynamoDBClient
     sessionId: string
 }
@@ -178,7 +142,6 @@ interface DynamoDBSerializedChatMessage {
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
-    isSessionIdUsingChatMessageId = false
     sessionId = ''
     dynamodbClient: DynamoDBClient
 
@@ -305,10 +268,6 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         }
         await this.dynamodbClient.send(new DeleteItemCommand(params))
         await this.clear()
-    }
-
-    async resumeMessages(): Promise<void> {
-        return
     }
 }
 
