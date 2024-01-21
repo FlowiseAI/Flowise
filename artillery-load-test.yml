@@ -33,4 +33,4 @@ scenarios:
 #     Seconds
 # Total Users = 2 + 3 + 3 = 8
 # Each making 1 HTTP call
-# Over a duration of 3 seconds
+# Over a durations of 3 seconds

@@ -39,7 +39,8 @@ export default class Start extends Command {
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
-        LANGCHAIN_PROJECT: Flags.string()
+        LANGCHAIN_PROJECT: Flags.string(),
+        DISABLE_FLOWISE_TELEMETRY: Flags.string()
     }
 
     async stopProcess() {
@@ -112,6 +113,9 @@ export default class Start extends Command {
         if (flags.LANGCHAIN_ENDPOINT) process.env.LANGCHAIN_ENDPOINT = flags.LANGCHAIN_ENDPOINT
         if (flags.LANGCHAIN_API_KEY) process.env.LANGCHAIN_API_KEY = flags.LANGCHAIN_API_KEY
         if (flags.LANGCHAIN_PROJECT) process.env.LANGCHAIN_PROJECT = flags.LANGCHAIN_PROJECT
+
+        // Telemetry
+        if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
 
         await (async () => {
             try {

@@ -5,6 +5,7 @@ import { Document } from 'langchain/document'
 import { Embeddings } from 'langchain/embeddings/base'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Weaviate_VectorStores implements INode {
     label: string
@@ -23,12 +24,12 @@ class Weaviate_VectorStores implements INode {
     constructor() {
         this.label = 'Weaviate'
         this.name = 'weaviate'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Weaviate'
         this.icon = 'weaviate.png'
         this.category = 'Vector Stores'
         this.description =
-            'Upsert embedded data and perform similarity search upon query using Weaviate, a scalable open-source vector database'
+            'Upsert embedded data and perform similarity or mmr search using Weaviate, a scalable open-source vector database'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
         this.credential = {
@@ -107,6 +108,7 @@ class Weaviate_VectorStores implements INode {
                 optional: true
             }
         ]
+        addMMRInputParams(this.inputs)
         this.outputs = [
             {
                 label: 'Weaviate Retriever',
@@ -174,9 +176,6 @@ class Weaviate_VectorStores implements INode {
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
@@ -199,14 +198,7 @@ class Weaviate_VectorStores implements INode {
 
         const vectorStore = await WeaviateStore.fromExistingIndex(embeddings, obj)
 
-        if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
-        } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
-        }
-        return vectorStore
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }
 }
 
