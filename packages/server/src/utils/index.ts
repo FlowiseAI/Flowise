@@ -1099,6 +1099,7 @@ export const getTelemetryFlowObj = (nodes: IReactFlowNode[], edges: IReactFlowEd
  * TODO: move env variables to settings json file, easier configuration
  */
 export const getUserSettingsFilePath = () => {
+    if (process.env.SECRETKEY_PATH) return path.join(process.env.SECRETKEY_PATH, 'settings.json')
     const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
