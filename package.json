@@ -1,8 +1,8 @@
 {
-    "name": "flowise",
+    "name": "DevinAI",
     "version": "1.4.10",
     "private": true,
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://devinai.com",
     "workspaces": [
         "packages/*",
         "flowise",

@@ -90,7 +90,7 @@ const Assistants = () => {
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
                     <Grid sx={{ mb: 1.25 }} container direction='row'>
-                        <h1>OpenAI Assistants</h1>
+                        <h1>DevinAI Agents</h1>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
                             <Button variant='outlined' sx={{ mr: 2 }} onClick={loadExisting} startIcon={<IconFileImport />}>
@@ -123,7 +123,7 @@ const Assistants = () => {
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
                         </Box>
-                        <div>No Assistants Added Yet</div>
+                        <div>No Agents Added Yet</div>
                     </Stack>
                 )}
             </MainCard>

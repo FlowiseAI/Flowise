@@ -13,7 +13,7 @@ const dashboard = {
     children: [
         {
             id: 'chatflows',
-            title: 'Chatflows',
+            title: 'Workflows',
             type: 'item',
             url: '/chatflows',
             icon: icons.IconHierarchy,
@@ -21,7 +21,7 @@ const dashboard = {
         },
         {
             id: 'marketplaces',
-            title: 'Marketplaces',
+            title: 'Pre-Config',
             type: 'item',
             url: '/marketplaces',
             icon: icons.IconBuildingStore,
@@ -37,7 +37,7 @@ const dashboard = {
         },
         {
             id: 'assistants',
-            title: 'Assistants',
+            title: 'Agents',
             type: 'item',
             url: '/assistants',
             icon: icons.IconRobot,
