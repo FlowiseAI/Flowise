@@ -21,7 +21,7 @@ const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
             aria-describedby='alert-dialog-description'
             sx={{ overflow: 'visible' }}
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+            <DialogTitle sx={{ fontSize: '1rem', p: 1.5 }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                     {dialogProps.title}
                     <div style={{ flex: 1 }}></div>
@@ -43,7 +43,10 @@ const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
                     )}
                 </div>
             </DialogTitle>
-            <DialogContent sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column' }}>
+            <DialogContent
+                className='cloud-dialog-wrapper'
+                sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', p: 0 }}
+            >
                 <ChatMessage isDialog={true} open={dialogProps.open} chatflowid={dialogProps.chatflowid} />
             </DialogContent>
         </Dialog>

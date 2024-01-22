@@ -191,7 +191,14 @@ export const ChatPopUp = ({ chatflowid }) => {
                     <Transitions in={open} {...TransitionProps}>
                         <Paper>
                             <ClickAwayListener onClickAway={handleClose}>
-                                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
+                                <MainCard
+                                    border={false}
+                                    className='cloud-wrapper'
+                                    elevation={16}
+                                    content={false}
+                                    boxShadow
+                                    shadow={theme.shadows[16]}
+                                >
                                     <ChatMessage chatflowid={chatflowid} open={open} />
                                 </MainCard>
                             </ClickAwayListener>

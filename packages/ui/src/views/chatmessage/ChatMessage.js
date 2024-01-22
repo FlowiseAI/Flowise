@@ -703,7 +703,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                 </div>
                                             )}
                                             {message.fileUploads && message.fileUploads.length > 0 && (
-                                                <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', width: '100%' }}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexWrap: 'wrap',
+                                                        flexDirection: 'row',
+                                                        width: '100%'
+                                                    }}
+                                                >
                                                     {message.fileUploads.map((item, index) => {
                                                         return (
                                                             <>
@@ -833,9 +840,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 <Divider />
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div className='center'>
                 {previews && previews.length > 0 && (
-                    <Box className={'preview'} sx={{ maxWidth: isDialog ? 'inherit' : '400px', m: 1, pb: 0.5 }}>
+                    <Box sx={{ width: '100%', mb: 1.5 }}>
                         {previews.map((item, index) => (
                             <>
                                 {item.mime.startsWith('image/') ? (
@@ -886,85 +893,70 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         ))}
                     </Box>
                 )}
-                <Divider />
-            </div>
-
-            <div className='center'>
-                <div style={{ width: '100%' }}>
-                    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                        <OutlinedInput
-                            inputRef={inputRef}
-                            // eslint-disable-next-line
-                            autoFocus
-                            sx={{ width: '100%' }}
-                            disabled={loading || !chatflowid}
-                            onKeyDown={handleEnter}
-                            id='userInput'
-                            name='userInput'
-                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
-                            value={userInput}
-                            onChange={onChange}
-                            multiline={true}
-                            maxRows={isDialog ? 7 : 2}
-                            startAdornment={
-                                isChatFlowAvailableForUploads && (
-                                    <InputAdornment position='start' sx={{ pl: 2 }}>
+                <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+                    <OutlinedInput
+                        inputRef={inputRef}
+                        // eslint-disable-next-line
+                        autoFocus
+                        sx={{ width: '100%' }}
+                        disabled={loading || !chatflowid}
+                        onKeyDown={handleEnter}
+                        id='userInput'
+                        name='userInput'
+                        placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
+                        value={userInput}
+                        onChange={onChange}
+                        multiline={true}
+                        maxRows={isDialog ? 7 : 2}
+                        startAdornment={
+                            isChatFlowAvailableForUploads && (
+                                <InputAdornment position='start' sx={{ pl: 2 }}>
+                                    <IconButton onClick={handleUploadClick} type='button' disabled={loading || !chatflowid} edge='start'>
+                                        <IconPhotoPlus
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                        />
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }
+                        endAdornment={
+                            <>
+                                {isChatFlowAvailableForUploads && (
+                                    <InputAdornment position='end'>
                                         <IconButton
-                                            onClick={handleUploadClick}
+                                            onClick={() => onMicrophonePressed()}
                                             type='button'
                                             disabled={loading || !chatflowid}
-                                            edge='start'
+                                            edge='end'
                                         >
-                                            <IconPhotoPlus
+                                            <IconMicrophone
+                                                className={'start-recording-button'}
                                                 color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
                                             />
                                         </IconButton>
                                     </InputAdornment>
-                                )
-                            }
-                            endAdornment={
-                                <>
-                                    {isChatFlowAvailableForSpeech && (
-                                        <InputAdornment position='end'>
-                                            <IconButton
-                                                onClick={() => onMicrophonePressed()}
-                                                type='button'
-                                                disabled={loading || !chatflowid}
-                                                edge='end'
-                                            >
-                                                <IconMicrophone
-                                                    className={'start-recording-button'}
-                                                    color={
-                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
-                                                    }
-                                                />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    )}
-                                    <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                        <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
-                                            {loading ? (
-                                                <div>
-                                                    <CircularProgress color='inherit' size={20} />
-                                                </div>
-                                            ) : (
-                                                // Send icon SVG in input field
-                                                <IconSend
-                                                    color={
-                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
-                                                    }
-                                                />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                </>
-                            }
-                        />
-                        {isChatFlowAvailableForUploads && (
-                            <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
-                        )}
-                    </form>
-                </div>
+                                )}
+                                <InputAdornment position='end' sx={{ padding: '15px' }}>
+                                    <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
+                                        {loading ? (
+                                            <div>
+                                                <CircularProgress color='inherit' size={20} />
+                                            </div>
+                                        ) : (
+                                            // Send icon SVG in input field
+                                            <IconSend
+                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        )}
+                                    </IconButton>
+                                </InputAdornment>
+                            </>
+                        }
+                    />
+                    {isChatFlowAvailableForUploads && (
+                        <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
+                    )}
+                </form>
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </>
