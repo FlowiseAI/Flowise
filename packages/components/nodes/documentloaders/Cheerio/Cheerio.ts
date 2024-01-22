@@ -1,4 +1,4 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
@@ -87,7 +87,7 @@ class Cheerio_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
@@ -119,13 +119,13 @@ class Cheerio_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true') options.logger.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
         let docs = []
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
             if (!limit) limit = 10
             else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
@@ -134,14 +134,15 @@ class Cheerio_DocumentLoaders implements INode {
                     : relativeLinksMethod === 'webCrawl'
                     ? await webCrawl(url, limit)
                     : await xmlScrape(url, limit)
-            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await cheerioLoader(page)))
             }
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
         } else if (selectedLinks && selectedLinks.length > 0) {
-            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+            if (process.env.DEBUG === 'true')
+                options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
             for (const page of selectedLinks) {
                 docs.push(...(await cheerioLoader(page)))
             }
