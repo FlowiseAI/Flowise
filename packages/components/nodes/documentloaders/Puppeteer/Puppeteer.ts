@@ -120,7 +120,7 @@ class Puppeteer_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
-        let limit = nodeData.inputs?.limit as string
+        let limit = parseInt(nodeData.inputs?.limit as string)
         let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
         let waitForSelector = nodeData.inputs?.waitForSelector as string
 
@@ -167,14 +167,14 @@ class Puppeteer_DocumentLoaders implements INode {
         let docs = []
         if (relativeLinksMethod) {
             if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            if (!limit) limit = '10'
-            else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
+            if (!limit) limit = 10
+            else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
                 selectedLinks && selectedLinks.length > 0
-                    ? selectedLinks.slice(0, parseInt(limit))
+                    ? selectedLinks.slice(0, limit)
                     : relativeLinksMethod === 'webCrawl'
-                    ? await webCrawl(url, parseInt(limit))
-                    : await xmlScrape(url, parseInt(limit))
+                    ? await webCrawl(url, limit)
+                    : await xmlScrape(url, limit)
             if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
