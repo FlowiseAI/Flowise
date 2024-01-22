@@ -91,7 +91,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const fileUploadRef = useRef(null)
     const [isChatFlowAvailableForUploads, setIsChatFlowAvailableForUploads] = useState(false)
     const [previews, setPreviews] = useState([])
-    const [isDragOver, setIsDragOver] = useState(false)
+    const [isDragActive, setIsDragActive] = useState(false)
 
     // recording
     const [isRecording, setIsRecording] = useState(false)
@@ -123,8 +123,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             return
         }
         e.preventDefault()
-        e.stopPropagation()
-        setIsDragOver(false)
+        setIsDragActive(false)
         let files = []
         if (e.dataTransfer.files.length > 0) {
             for (const file of e.dataTransfer.files) {
@@ -251,28 +250,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
     }
 
-    const handleDragOver = (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-    }
-
-    const handleDragEnter = (e) => {
+    const handleDrag = (e) => {
         if (isChatFlowAvailableForUploads) {
             e.preventDefault()
             e.stopPropagation()
-            setIsDragOver(true)
-        }
-    }
-
-    const handleDragLeave = (e) => {
-        if (isChatFlowAvailableForUploads) {
-            e.preventDefault()
-            e.stopPropagation()
-            if (e.originalEvent?.pageX !== 0 || e.originalEvent?.pageY !== 0) {
-                setIsDragOver(false)
-                return false
+            if (e.type === 'dragenter' || e.type === 'dragover') {
+                console.log('drag enter')
+                setIsDragActive(true)
+            } else if (e.type === 'dragleave') {
+                console.log('drag leave')
+                setIsDragActive(false)
             }
-            setIsDragOver(false)
         }
     }
 
@@ -599,8 +587,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }, [open, chatflowid])
 
     return (
-        <>
-            {isDragOver && getAllowChatFlowUploads.data?.isUploadAllowed && (
+        <div onDragEnter={handleDrag}>
+            {isDragActive && (
+                <div
+                    className='image-dropzone'
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragEnd={handleDrag}
+                    onDrop={handleDrop}
+                />
+            )}
+            {isDragActive && getAllowChatFlowUploads.data?.isUploadAllowed && (
                 <Box className='drop-overlay'>
                     <Typography variant='h2'>Drop here to upload</Typography>
                     {getAllowChatFlowUploads.data.uploadFileSizeAndTypes.map((allowed) => {
@@ -648,13 +645,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     )}
                 </Box>
             )}
-            <div
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}
-            >
+            <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div ref={ps} id='messagelist' className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
@@ -959,7 +950,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 </form>
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
-        </>
+        </div>
     )
 }
 
