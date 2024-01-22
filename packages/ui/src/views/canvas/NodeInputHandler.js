@@ -470,7 +470,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         }}
                                         disabled={disabled}
                                         sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
-                                        variant='contained'
+                                        variant='outlined'
                                         onClick={() =>
                                             onManageLinksDialogClicked(
                                                 data.inputs[inputParam.name] ?? inputParam.default ?? '',
