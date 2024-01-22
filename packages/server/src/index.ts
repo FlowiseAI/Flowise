@@ -20,7 +20,6 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
-    IReactFlowEdge,
     IDepthQueue,
     INodeDirectedGraph
 } from './Interface'
@@ -39,14 +38,16 @@ import {
     databaseEntities,
     transformToCredentialEntity,
     decryptCredentialData,
-    clearAllSessionMemory,
     replaceInputsWithConfig,
     getEncryptionKey,
-    checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog,
+    getMemorySessionId,
     getUserHome,
-    replaceChatHistory,
-    getAllConnectedNodes
+    getSessionChatHistory,
+    getAllConnectedNodes,
+    clearSessionMemory,
+    findMemoryNode,
+    getTelemetryFlowObj,
+    getAppVersion
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -65,6 +66,7 @@ import { sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
+import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
 
 export class App {
@@ -72,6 +74,7 @@ export class App {
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
     cachePool: CachePool
+    telemetry: Telemetry
     AppDataSource = getDataSource()
 
     constructor() {
@@ -106,6 +109,9 @@ export class App {
 
                 // Initialize cache pool
                 this.cachePool = new CachePool()
+
+                // Initialize telemetry
+                this.telemetry = new Telemetry()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -295,7 +301,13 @@ export class App {
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newNodeInstance = new nodeModule.nodeClass()
 
-                    const returnData = await newNodeInstance.init(nodeData)
+                    const options: ICommonObject = {
+                        appDataSource: this.AppDataSource,
+                        databaseEntities,
+                        logger
+                    }
+
+                    const returnData = await newNodeInstance.init(nodeData, '', options)
                     const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
 
                     return res.json(result)
@@ -362,7 +374,8 @@ export class App {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: req.params.id
             })
-            if (chatflow && chatflow.chatbotConfig) {
+            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            if (chatflow.chatbotConfig) {
                 try {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     return res.json(parsedConfig)
@@ -370,7 +383,7 @@ export class App {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
             }
-            return res.status(404).send(`Chatbot Config for Chatflow ${req.params.id} not found`)
+            return res.status(200).send('OK')
         })
 
         // Save chatflow
@@ -381,6 +394,12 @@ export class App {
 
             const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            await this.telemetry.sendTelemetry('chatflow_created', {
+                version: await getAppVersion(),
+                chatlowId: results.id,
+                flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
+            })
 
             return res.json(results)
         })
@@ -522,7 +541,7 @@ export class App {
                 res.status(404).send(`Chatflow ${chatflowid} not found`)
                 return
             }
-            const chatId = (req.query?.chatId as string) ?? (await getChatId(chatflowid))
+            const chatId = req.query?.chatId as string
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
             const chatType = req.query?.chatType as string | undefined
@@ -532,20 +551,22 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
 
-            if (isClearFromViewMessageDialog) {
-                await clearSessionMemoryFromViewMessageDialog(
+            try {
+                await clearSessionMemory(
                     nodes,
                     this.nodesPool.componentNodes,
                     chatId,
                     this.AppDataSource,
                     sessionId,
-                    memoryType
+                    memoryType,
+                    isClearFromViewMessageDialog
                 )
-            } else {
-                await clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+            } catch (e) {
+                return res.status(500).send('Error clearing chat messages')
             }
 
-            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
+            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
+            if (chatId) deleteOptions.chatId = chatId
             if (memoryType) deleteOptions.memoryType = memoryType
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
@@ -633,7 +654,7 @@ export class App {
             return res.json(result)
         })
 
-        // Delete all chatmessages from chatflowid
+        // Delete all credentials from chatflowid
         this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Credential).delete({ id: req.params.id })
             return res.json(results)
@@ -665,6 +686,12 @@ export class App {
 
             const tool = this.AppDataSource.getRepository(Tool).create(newTool)
             const results = await this.AppDataSource.getRepository(Tool).save(tool)
+
+            await this.telemetry.sendTelemetry('tool_created', {
+                version: await getAppVersion(),
+                toolId: results.id,
+                toolName: results.name
+            })
 
             return res.json(results)
         })
@@ -871,6 +898,11 @@ export class App {
 
             const assistant = this.AppDataSource.getRepository(Assistant).create(newAssistant)
             const results = await this.AppDataSource.getRepository(Assistant).save(assistant)
+
+            await this.telemetry.sendTelemetry('assistant_created', {
+                version: await getAppVersion(),
+                assistantId: results.id
+            })
 
             return res.json(results)
         })
@@ -1397,26 +1429,6 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
-    /**
-     * Method that find memory label that is connected within chatflow
-     * In a chatflow, there should only be 1 memory node
-     * @param {IReactFlowNode[]} nodes
-     * @param {IReactFlowEdge[]} edges
-     * @returns {string | undefined}
-     */
-    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined {
-        const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
-        const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
-
-        for (const edge of edges) {
-            if (memoryNodeIds.includes(edge.source)) {
-                const memoryNode = nodes.find((node) => node.data.id === edge.source)
-                return memoryNode
-            }
-        }
-        return undefined
-    }
-
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
             const chatflowid = req.params.id
@@ -1466,6 +1478,11 @@ export class App {
             let chatId = incomingInput.chatId ?? ''
             let isUpsert = true
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             const vsNodes = nodes.filter(
                 (node) =>
                     node.data.category === 'Vector Stores' &&
@@ -1503,6 +1520,7 @@ export class App {
                 incomingInput.question,
                 chatHistory,
                 chatId,
+                sessionId ?? '',
                 chatflowid,
                 this.AppDataSource,
                 incomingInput?.overrideConfig,
@@ -1514,6 +1532,15 @@ export class App {
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
             this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+
+            await this.telemetry.sendTelemetry('vector_upserted', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                stopNodeId
+            })
+
             return res.status(201).send('Successfully Upserted')
         } catch (e: any) {
             logger.error('[server]: Error:', e)
@@ -1580,12 +1607,17 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            const memoryType = memoryNode?.data.label
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
-             * - Its not an Upsert request
              * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
@@ -1639,22 +1671,28 @@ export class App {
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
 
-                let chatHistory: IMessage[] | string = incomingInput.history
+                let chatHistory: IMessage[] = incomingInput.history ?? []
 
-                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory
+                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
+
                     if (!endingNodeData.inputs?.memory) continue
-                    if (
-                        endingNodeData.inputs?.memory &&
-                        !incomingInput.history &&
-                        (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
-                    ) {
-                        const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
-                        const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
-                        if (memoryNode) {
-                            chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-                        }
+
+                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
+                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+
+                    if (!memoryNode) continue
+
+                    if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
+                        chatHistory = await getSessionChatHistory(
+                            memoryNode,
+                            this.nodesPool.componentNodes,
+                            incomingInput,
+                            this.AppDataSource,
+                            databaseEntities,
+                            logger
+                        )
                     }
                 }
 
@@ -1684,6 +1722,7 @@ export class App {
                     incomingInput.question,
                     chatHistory,
                     chatId,
+                    sessionId ?? '',
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
@@ -1713,41 +1752,30 @@ export class App {
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
-            let sessionId = undefined
-            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
-
-            const memoryNode = this.findMemoryLabel(nodes, edges)
-            const memoryType = memoryNode?.data.label
-
-            let chatHistory: IMessage[] | string = incomingInput.history
-            if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-            }
-
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
             const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
-                      socketIO,
-                      socketIOClientId: incomingInput.socketIOClientId,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
                       analytic: chatflow.analytic,
-                      chatId
+                      socketIO,
+                      socketIOClientId: incomingInput.socketIOClientId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic,
-                      chatId
+                      analytic: chatflow.analytic
                   })
 
             result = typeof result === 'string' ? { text: result } : result
@@ -1789,9 +1817,18 @@ export class App {
             await this.addChatMessage(apiMessage)
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+            await this.telemetry.sendTelemetry('prediction_sent', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                chatId,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges)
+            })
 
-            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
-            if (incomingInput.chatId || isInternal) result.chatId = chatId
+            // Prepare response
+            result.chatId = chatId
+            if (sessionId) result.sessionId = sessionId
+            if (memoryType) result.memoryType = memoryType
 
             return res.json(result)
         } catch (e: any) {
@@ -1803,28 +1840,12 @@ export class App {
     async stopApp() {
         try {
             const removePromises: any[] = []
+            removePromises.push(this.telemetry.flush())
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
-}
-
-/**
- * Get first chat message id
- * @param {string} chatflowid
- * @returns {string}
- */
-export async function getChatId(chatflowid: string): Promise<string> {
-    // first chatmessage id as the unique chat id
-    const firstChatMessage = await getDataSource()
-        .getRepository(ChatMessage)
-        .createQueryBuilder('cm')
-        .select('cm.id')
-        .where('chatflowid = :chatflowid', { chatflowid })
-        .orderBy('cm.createdDate', 'ASC')
-        .getOne()
-    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined

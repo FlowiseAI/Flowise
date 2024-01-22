@@ -1,4 +1,4 @@
-import { FlowiseWindowMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
+import { FlowiseWindowMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
 import { BufferWindowMemory, BufferWindowMemoryInput } from 'langchain/memory'
 import { BaseMessage } from 'langchain/schema'
@@ -67,35 +67,27 @@ class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMe
         super(fields)
     }
 
-    async getChatMessages(_?: string, returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(_?: string, returnBaseMessages = false, prevHistory: IMessage[] = []): Promise<IMessage[] | BaseMessage[]> {
+        await this.chatHistory.clear()
+
+        // Insert into chatHistory
+        for (const msg of prevHistory) {
+            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
+            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
+        }
+
         const memoryResult = await this.loadMemoryVariables({})
         const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
-    async addChatMessages(msgArray: { text: string; type: MessageType }[]): Promise<void> {
-        const input = msgArray.find((msg) => msg.type === 'userMessage')
-        const output = msgArray.find((msg) => msg.type === 'apiMessage')
-
-        const inputValues = { [this.inputKey ?? 'input']: input?.text }
-        const outputValues = { output: output?.text }
-
-        await this.saveContext(inputValues, outputValues)
+    async addChatMessages(): Promise<void> {
+        // adding chat messages will be done on the fly in getChatMessages()
+        return
     }
 
     async clearChatMessages(): Promise<void> {
         await this.clear()
-    }
-
-    async resumeMessages(messages: IMessage[]): Promise<void> {
-        // Clear existing chatHistory to avoid duplication
-        if (messages.length) await this.clear()
-
-        // Insert into chatHistory
-        for (const msg of messages) {
-            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
-            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
-        }
     }
 }
 
