@@ -23,7 +23,7 @@ import {
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconCircleDot, IconTrash } from '@tabler/icons'
+import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconSquare, IconTrash, IconX } from '@tabler/icons'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import audioUploadSVG from 'assets/images/wave-sound.jpg'
@@ -608,41 +608,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     })}
                 </Box>
             )}
-            {isRecording && (
-                <Box className='drop-overlay'>
-                    <div className={'audio-recording-container'}>
-                        <Typography variant='h2'>Recording</Typography>
-                        <div className='recording-control-buttons-container'>
-                            <i className='cancel-recording-button'>
-                                <Button variant='outlined' color='error' onClick={onRecordingCancelled}>
-                                    Cancel
-                                </Button>
-                            </i>
-                            <div className='recording-elapsed-time'>
-                                <i className='red-recording-dot'>
-                                    <IconCircleDot />
-                                </i>
-                                <p id='elapsed-time'>00:00</p>
-                            </div>
-                            <i className='stop-recording-button'>
-                                <Button variant='outlined' color='primary' onClick={onRecordingStopped}>
-                                    Send
-                                </Button>
-                            </i>
-                        </div>
-                    </div>
-                    {recordingNotSupported && (
-                        <div className='overlay hide'>
-                            <div className='browser-not-supporting-audio-recording-box'>
-                                <p>To record audio, use browsers like Chrome and Firefox that support audio recording.</p>
-                                <button type='button' onClick={() => onRecordingCancelled()}>
-                                    Ok.
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </Box>
-            )}
             <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div ref={ps} id='messagelist' className={'messagelist'}>
                     {messages &&
@@ -829,6 +794,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 <Divider />
             </div>
 
+            <Divider sx={{ width: '100%' }} />
+
             <div className='center'>
                 {previews && previews.length > 0 && (
                     <Box sx={{ width: '100%', mb: 1.5 }}>
@@ -882,70 +849,129 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         ))}
                     </Box>
                 )}
-                <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                    <OutlinedInput
-                        inputRef={inputRef}
-                        // eslint-disable-next-line
-                        autoFocus
-                        sx={{ width: '100%' }}
-                        disabled={loading || !chatflowid}
-                        onKeyDown={handleEnter}
-                        id='userInput'
-                        name='userInput'
-                        placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
-                        value={userInput}
-                        onChange={onChange}
-                        multiline={true}
-                        maxRows={isDialog ? 7 : 2}
-                        startAdornment={
-                            isChatFlowAvailableForUploads && (
-                                <InputAdornment position='start' sx={{ pl: 2 }}>
-                                    <IconButton onClick={handleUploadClick} type='button' disabled={loading || !chatflowid} edge='start'>
-                                        <IconPhotoPlus
-                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                        />
-                                    </IconButton>
-                                </InputAdornment>
-                            )
-                        }
-                        endAdornment={
-                            <>
-                                {isChatFlowAvailableForUploads && (
-                                    <InputAdornment position='end'>
+                {isRecording ? (
+                    <>
+                        {recordingNotSupported && (
+                            <div className='overlay hide'>
+                                <div className='browser-not-supporting-audio-recording-box'>
+                                    <p>To record audio, use modern browsers like Chrome or Firefox that support audio recording.</p>
+                                    <Button
+                                        variant='contained'
+                                        color='error'
+                                        size='small'
+                                        type='button'
+                                        onClick={() => onRecordingCancelled()}
+                                    >
+                                        Okay
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                        <Box
+                            sx={{
+                                width: '100%',
+                                height: '54px',
+                                px: 2,
+                                borderRadius: 1.5,
+                                backgroundColor: '#32353b',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }}
+                        >
+                            <div className='recording-elapsed-time'>
+                                <i className='red-recording-dot'>
+                                    <IconCircleDot />
+                                </i>
+                                <p id='elapsed-time'>00:00</p>
+                            </div>
+                            <div className='recording-control-buttons-container'>
+                                <IconButton onClick={onRecordingCancelled} size='small'>
+                                    <IconX color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'} />
+                                </IconButton>
+                                <IconButton onClick={onRecordingStopped} size='small'>
+                                    <IconSquare
+                                        color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                    />
+                                </IconButton>
+                            </div>
+                        </Box>
+                    </>
+                ) : (
+                    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+                        <OutlinedInput
+                            inputRef={inputRef}
+                            // eslint-disable-next-line
+                            autoFocus
+                            sx={{ width: '100%' }}
+                            disabled={loading || !chatflowid}
+                            onKeyDown={handleEnter}
+                            id='userInput'
+                            name='userInput'
+                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
+                            value={userInput}
+                            onChange={onChange}
+                            multiline={true}
+                            maxRows={isDialog ? 7 : 2}
+                            startAdornment={
+                                isChatFlowAvailableForUploads && (
+                                    <InputAdornment position='start' sx={{ pl: 2 }}>
                                         <IconButton
-                                            onClick={() => onMicrophonePressed()}
+                                            onClick={handleUploadClick}
                                             type='button'
                                             disabled={loading || !chatflowid}
-                                            edge='end'
+                                            edge='start'
                                         >
-                                            <IconMicrophone
-                                                className={'start-recording-button'}
+                                            <IconPhotoPlus
                                                 color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
                                             />
                                         </IconButton>
                                     </InputAdornment>
-                                )}
-                                <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                    <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
-                                        {loading ? (
-                                            <div>
-                                                <CircularProgress color='inherit' size={20} />
-                                            </div>
-                                        ) : (
-                                            // Send icon SVG in input field
-                                            <IconSend
-                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                            />
-                                        )}
-                                    </IconButton>
-                                </InputAdornment>
-                            </>
-                        }
-                    />
-                    {isChatFlowAvailableForUploads && (
-                        <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
-                    )}
-                </form>
+                                )
+                            }
+                            endAdornment={
+                                <>
+                                    {isChatFlowAvailableForUploads && (
+                                        <InputAdornment position='end'>
+                                            <IconButton
+                                                onClick={() => onMicrophonePressed()}
+                                                type='button'
+                                                disabled={loading || !chatflowid}
+                                                edge='end'
+                                            >
+                                                <IconMicrophone
+                                                    className={'start-recording-button'}
+                                                    color={
+                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                    }
+                                                />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )}
+                                    <InputAdornment position='end' sx={{ padding: '15px' }}>
+                                        <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
+                                            {loading ? (
+                                                <div>
+                                                    <CircularProgress color='inherit' size={20} />
+                                                </div>
+                                            ) : (
+                                                // Send icon SVG in input field
+                                                <IconSend
+                                                    color={
+                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                    }
+                                                />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                </>
+                            }
+                        />
+                        {isChatFlowAvailableForUploads && (
+                            <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
+                        )}
+                    </form>
+                )}
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </div>

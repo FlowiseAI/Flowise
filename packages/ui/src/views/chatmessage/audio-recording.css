@@ -8,20 +8,6 @@
     * {
         box-sizing: border-box;
     }
-    .audio-recording-container {
-        width: 100%;
-        /* view port height*/
-        /*targeting Chrome & Safari*/
-        display: -webkit-flex;
-        /*targeting IE10*/
-        display: -ms-flex;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        /*horizontal centering*/
-        align-items: center;
-        background-color: white;
-    }
     .start-recording-button {
         font-size: 70px;
         color: #435f7a;
@@ -36,34 +22,13 @@
         /*targeting IE10*/
         display: -ms-flex;
         display: flex;
-        justify-content: space-evenly;
+        justify-content: center;
         /*horizontal centering*/
         align-items: center;
-        width: 334px;
-        margin-bottom: 30px;
-        background-color: white;
-    }
-    .cancel-recording-button,
-    .stop-recording-button {
-        font-size: 70px;
-        cursor: pointer;
-    }
-    .cancel-recording-button {
-        color: red;
-        opacity: 0.7;
-    }
-    .cancel-recording-button:hover {
-        color: rgb(206, 4, 4);
-    }
-    .stop-recording-button {
-        color: #33cc33;
-        opacity: 0.7;
-    }
-    .stop-recording-button:hover {
-        color: #27a527;
+        gap: 12px;
     }
     .recording-elapsed-time {
-        font-size: 32px;
+        font-size: 16px;
         /*targeting Chrome & Safari*/
         display: -webkit-flex;
         /*targeting IE10*/
@@ -72,6 +37,15 @@
         justify-content: center;
         /*horizontal centering*/
         align-items: center;
+    }
+    .recording-elapsed-time #elapsed-time {
+        margin: 0;
+    }
+    .recording-indicator-wrapper {
+        position: relative;
+        display: flex;
+        width: 16px;
+        height: 16px;
     }
     .red-recording-dot {
         font-size: 25px;
@@ -136,17 +110,11 @@
             opacity: 1;
         }
     }
-    .elapsed-time {
-        font-size: 32px;
-    }
     .recording-control-buttons-container.hide {
         display: none;
     }
     .overlay {
-        position: absolute;
-        top: 0;
         width: 100%;
-        background-color: rgba(82, 76, 76, 0.35);
         /*targeting Chrome & Safari*/
         display: -webkit-flex;
         /*targeting IE10*/
@@ -155,6 +123,7 @@
         justify-content: center;
         /*horizontal centering*/
         align-items: center;
+        margin-bottom: 12px;
     }
     .overlay.hide {
         display: none;
@@ -165,16 +134,15 @@
         /*targeting IE10*/
         display: -ms-flex;
         display: flex;
-        flex-direction: column;
         justify-content: space-between;
         /*horizontal centering*/
         align-items: center;
-        width: 317px;
-        height: 119px;
-        background-color: white;
-        border-radius: 10px;
-        padding: 15px;
+        width: 100%;
         font-size: 16px;
+        gap: 12px;
+    }
+    .browser-not-supporting-audio-recording-box > p {
+        margin: 0;
     }
     .close-browser-not-supported-box {
         cursor: pointer;
@@ -219,16 +187,16 @@
         -o-animation-iteration-count: infinite;
     }
     .text-indication-of-audio-playing span:nth-child(2) {
-        animation-delay: .4s;
-        -webkit-animation-delay: .4s;
-        -moz-animation-delay: .4s;
-        -o-animation-delay: .4s;
+        animation-delay: 0.4s;
+        -webkit-animation-delay: 0.4s;
+        -moz-animation-delay: 0.4s;
+        -o-animation-delay: 0.4s;
     }
     .text-indication-of-audio-playing span:nth-child(3) {
-        animation-delay: .8s;
-        -webkit-animation-delay: .8s;
-        -moz-animation-delay: .8s;
-        -o-animation-delay: .8s;
+        animation-delay: 0.8s;
+        -webkit-animation-delay: 0.8s;
+        -moz-animation-delay: 0.8s;
+        -o-animation-delay: 0.8s;
     }
     /* The animation code */
     @keyframes blinking-dot {
