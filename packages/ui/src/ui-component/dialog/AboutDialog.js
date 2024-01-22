@@ -52,7 +52,7 @@ const AboutDialog = ({ show, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Flowise Version
+                DevinAI Version
             </DialogTitle>
             <DialogContent>
                 {data && (

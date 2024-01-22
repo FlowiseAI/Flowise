@@ -1,6 +1,6 @@
 {
-    "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
-    "badge": "POPULAR",
+    "description": "DevinAI Docs Github QnA using conversational retrieval QA chain",
+    "badge": "INTERNAL",
     "nodes": [
         {
             "width": 300,
@@ -274,7 +274,7 @@
                         "label": "Repo Link",
                         "name": "repoLink",
                         "type": "string",
-                        "placeholder": "https://github.com/FlowiseAI/Flowise",
+                        "placeholder": "https://github.com/devinai",
                         "id": "github_0-input-repoLink-string"
                     },
                     {
