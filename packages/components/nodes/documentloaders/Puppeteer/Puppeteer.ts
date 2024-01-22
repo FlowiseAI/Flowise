@@ -62,6 +62,7 @@ class Puppeteer_DocumentLoaders implements INode {
                 name: 'limit',
                 type: 'number',
                 optional: true,
+                default: '10',
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
