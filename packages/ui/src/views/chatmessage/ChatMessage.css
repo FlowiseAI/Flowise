@@ -156,6 +156,7 @@
     display: flex;
     justify-content: center;
     align-items: start;
+    flex-grow: 1;
 }
 
 .cloud-message {

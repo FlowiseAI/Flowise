@@ -255,10 +255,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             e.preventDefault()
             e.stopPropagation()
             if (e.type === 'dragenter' || e.type === 'dragover') {
-                console.log('drag enter')
                 setIsDragActive(true)
             } else if (e.type === 'dragleave') {
-                console.log('drag leave')
                 setIsDragActive(false)
             }
         }
