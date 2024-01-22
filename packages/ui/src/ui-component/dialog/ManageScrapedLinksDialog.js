@@ -115,52 +115,52 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                     </Stack>
                 </Box>
                 <Typography sx={{ mb: 2, fontWeight: 500 }}>Scraped Links</Typography>
-                {selectedLinks.length > 0 ? (
-                    <PerfectScrollbar
-                        style={{
-                            height: '100%',
-                            maxHeight: '320px',
-                            overflowX: 'hidden',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 4
-                        }}
-                    >
-                        {selectedLinks.map((link, index) => (
-                            <div key={index} style={{ display: 'flex', width: '100%' }}>
-                                <Box sx={{ display: 'flex', width: '100%' }}>
-                                    <OutlinedInput
-                                        sx={{ width: '100%' }}
-                                        key={index}
-                                        type='text'
-                                        onChange={(e) => handleChangeLink(index, e)}
-                                        size='small'
-                                        value={link}
-                                        name={`link_${index}`}
-                                    />
-                                </Box>
-                                <Box sx={{ width: 'auto', flexGrow: 1 }}>
-                                    <IconButton
-                                        sx={{ height: 30, width: 30 }}
-                                        size='small'
-                                        color='error'
-                                        onClick={() => handleRemoveLink(index)}
-                                        edge='end'
-                                    >
-                                        <IconTrash />
-                                    </IconButton>
-                                </Box>
-                            </div>
-                        ))}
-                    </PerfectScrollbar>
-                ) : (
-                    <>
-                        {loading && <BackdropLoader open={loading} />}
+                <>
+                    {loading && <BackdropLoader open={loading} />}
+                    {selectedLinks.length > 0 ? (
+                        <PerfectScrollbar
+                            style={{
+                                height: '100%',
+                                maxHeight: '320px',
+                                overflowX: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 4
+                            }}
+                        >
+                            {selectedLinks.map((link, index) => (
+                                <div key={index} style={{ display: 'flex', width: '100%' }}>
+                                    <Box sx={{ display: 'flex', width: '100%' }}>
+                                        <OutlinedInput
+                                            sx={{ width: '100%' }}
+                                            key={index}
+                                            type='text'
+                                            onChange={(e) => handleChangeLink(index, e)}
+                                            size='small'
+                                            value={link}
+                                            name={`link_${index}`}
+                                        />
+                                    </Box>
+                                    <Box sx={{ width: 'auto', flexGrow: 1 }}>
+                                        <IconButton
+                                            sx={{ height: 30, width: 30 }}
+                                            size='small'
+                                            color='error'
+                                            onClick={() => handleRemoveLink(index)}
+                                            edge='end'
+                                        >
+                                            <IconTrash />
+                                        </IconButton>
+                                    </Box>
+                                </div>
+                            ))}
+                        </PerfectScrollbar>
+                    ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Typography sx={{ my: 2 }}>Links scraped from the URL will appear here</Typography>
                         </div>
-                    </>
-                )}
+                    )}
+                </>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
