@@ -1825,8 +1825,10 @@ export class App {
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
 
-            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
-            if (incomingInput.chatId || isInternal) result.chatId = chatId
+            // Prepare response
+            result.chatId = chatId
+            if (sessionId) result.sessionId = sessionId
+            if (memoryType) result.memoryType = memoryType
 
             return res.json(result)
         } catch (e: any) {
