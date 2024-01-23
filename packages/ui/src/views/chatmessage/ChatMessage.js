@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
@@ -96,6 +96,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // recording
     const [isRecording, setIsRecording] = useState(false)
     const [recordingNotSupported, setRecordingNotSupported] = useState(false)
+    const [isLoadingRecording, setIsLoadingRecording] = useState(false)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -292,10 +293,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }
 
     const onRecordingStopped = async () => {
+        setIsLoadingRecording(true)
         stopAudioRecording(addRecordingToPreviews)
-        setIsRecording(false)
-        setRecordingNotSupported(false)
-        handlePromptClick('')
     }
 
     const onSourceDialogClick = (data, title) => {
@@ -364,14 +363,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (promptStarterInput !== undefined && promptStarterInput.trim() !== '') input = promptStarterInput
 
         setLoading(true)
-        const urls = []
-        previews.map((item) => {
-            urls.push({
+        const urls = previews.map((item) => {
+            return {
                 data: item.data,
                 type: item.type,
                 name: item.name,
                 mime: item.mime
-            })
+            }
         })
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
@@ -383,7 +381,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
-            if (urls) params.uploads = urls
+            if (urls && urls.length > 0) params.uploads = urls
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
@@ -584,6 +582,16 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, chatflowid])
 
+    useEffect(() => {
+        // wait for audio recording to load and then send
+        if (previews.length === 1 && previews[0].type === 'audio') {
+            setIsRecording(false)
+            setRecordingNotSupported(false)
+            handlePromptClick('')
+        }
+        // eslint-disable-next-line
+    }, [previews])
+
     return (
         <div onDragEnter={handleDrag}>
             {isDragActive && (
@@ -614,169 +622,167 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         messages.map((message, index) => {
                             return (
                                 // The latest message sent by the user will be animated while waiting for a response
-                                <>
-                                    <Box
-                                        sx={{
-                                            background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
-                                        }}
-                                        key={index}
-                                        style={{ display: 'flex' }}
-                                        className={
-                                            message.type === 'userMessage' && loading && index === messages.length - 1
-                                                ? customization.isDarkMode
-                                                    ? 'usermessagewaiting-dark'
-                                                    : 'usermessagewaiting-light'
-                                                : message.type === 'usermessagewaiting'
-                                                ? 'apimessage'
-                                                : 'usermessage'
-                                        }
-                                    >
-                                        {/* Display the correct icon depending on the message type */}
-                                        {message.type === 'apiMessage' ? (
-                                            <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
-                                        ) : (
-                                            <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
-                                        )}
-                                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                            {message.usedTools && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.usedTools.map((tool, index) => {
-                                                        return (
-                                                            <Chip
-                                                                size='small'
-                                                                key={index}
-                                                                label={tool.tool}
-                                                                component='a'
-                                                                sx={{ mr: 1, mt: 1 }}
-                                                                variant='outlined'
-                                                                clickable
-                                                                onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                            />
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            {message.fileUploads && message.fileUploads.length > 0 && (
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexWrap: 'wrap',
-                                                        flexDirection: 'row',
-                                                        width: '100%'
-                                                    }}
-                                                >
-                                                    {message.fileUploads.map((item, index) => {
-                                                        return (
-                                                            <>
-                                                                {item.mime.startsWith('image/') ? (
-                                                                    <Card
-                                                                        key={index}
-                                                                        sx={{
-                                                                            p: 0,
-                                                                            m: 0,
-                                                                            maxWidth: 128,
-                                                                            marginRight: '10px',
-                                                                            flex: '0 0 auto'
-                                                                        }}
-                                                                    >
-                                                                        <CardMedia
-                                                                            component='img'
-                                                                            image={item.data}
-                                                                            sx={{ height: 64 }}
-                                                                            alt={'preview'}
-                                                                            style={messageImageStyle}
-                                                                        />
-                                                                    </Card>
-                                                                ) : (
-                                                                    // eslint-disable-next-line jsx-a11y/media-has-caption
-                                                                    <audio controls='controls'>
-                                                                        Your browser does not support the &lt;audio&gt; tag.
-                                                                        <source src={item.data} type={item.mime} />
-                                                                    </audio>
-                                                                )}
-                                                            </>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            <div className='markdownanswer'>
-                                                {/* Messages are being rendered in Markdown format */}
-                                                <MemoizedReactMarkdown
-                                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                    components={{
-                                                        code({ inline, className, children, ...props }) {
-                                                            const match = /language-(\w+)/.exec(className || '')
-                                                            return !inline ? (
-                                                                <CodeBlock
-                                                                    key={Math.random()}
-                                                                    chatflowid={chatflowid}
-                                                                    isDialog={isDialog}
-                                                                    language={(match && match[1]) || ''}
-                                                                    value={String(children).replace(/\n$/, '')}
-                                                                    {...props}
-                                                                />
-                                                            ) : (
-                                                                <code className={className} {...props}>
-                                                                    {children}
-                                                                </code>
-                                                            )
-                                                        }
-                                                    }}
-                                                >
-                                                    {message.message}
-                                                </MemoizedReactMarkdown>
+                                <Box
+                                    sx={{
+                                        background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
+                                    }}
+                                    key={index}
+                                    style={{ display: 'flex' }}
+                                    className={
+                                        message.type === 'userMessage' && loading && index === messages.length - 1
+                                            ? customization.isDarkMode
+                                                ? 'usermessagewaiting-dark'
+                                                : 'usermessagewaiting-light'
+                                            : message.type === 'usermessagewaiting'
+                                            ? 'apimessage'
+                                            : 'usermessage'
+                                    }
+                                >
+                                    {/* Display the correct icon depending on the message type */}
+                                    {message.type === 'apiMessage' ? (
+                                        <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
+                                    ) : (
+                                        <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
+                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                        {message.usedTools && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {message.usedTools.map((tool, index) => {
+                                                    return (
+                                                        <Chip
+                                                            size='small'
+                                                            key={index}
+                                                            label={tool.tool}
+                                                            component='a'
+                                                            sx={{ mr: 1, mt: 1 }}
+                                                            variant='outlined'
+                                                            clickable
+                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                        />
+                                                    )
+                                                })}
                                             </div>
-                                            {message.fileAnnotations && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.fileAnnotations.map((fileAnnotation, index) => {
-                                                        return (
-                                                            <Button
-                                                                sx={{ fontSize: '0.85rem', textTransform: 'none', mb: 1 }}
-                                                                key={index}
-                                                                variant='outlined'
-                                                                onClick={() => downloadFile(fileAnnotation)}
-                                                                endIcon={<IconDownload color={theme.palette.primary.main} />}
-                                                            >
-                                                                {fileAnnotation.fileName}
-                                                            </Button>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            {message.sourceDocuments && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {removeDuplicateURL(message).map((source, index) => {
-                                                        const URL =
-                                                            source.metadata && source.metadata.source
-                                                                ? isValidURL(source.metadata.source)
-                                                                : undefined
-                                                        return (
-                                                            <Chip
-                                                                size='small'
-                                                                key={index}
-                                                                label={
-                                                                    URL
-                                                                        ? URL.pathname.substring(0, 15) === '/'
-                                                                            ? URL.host
-                                                                            : `${URL.pathname.substring(0, 15)}...`
-                                                                        : `${source.pageContent.substring(0, 15)}...`
-                                                                }
-                                                                component='a'
-                                                                sx={{ mr: 1, mb: 1 }}
-                                                                variant='outlined'
-                                                                clickable
-                                                                onClick={() =>
-                                                                    URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
-                                                                }
+                                        )}
+                                        {message.fileUploads && message.fileUploads.length > 0 && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    flexDirection: 'row',
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                {message.fileUploads.map((item, index) => {
+                                                    return (
+                                                        <>
+                                                            {item.mime.startsWith('image/') ? (
+                                                                <Card
+                                                                    key={index}
+                                                                    sx={{
+                                                                        p: 0,
+                                                                        m: 0,
+                                                                        maxWidth: 128,
+                                                                        marginRight: '10px',
+                                                                        flex: '0 0 auto'
+                                                                    }}
+                                                                >
+                                                                    <CardMedia
+                                                                        component='img'
+                                                                        image={item.data}
+                                                                        sx={{ height: 64 }}
+                                                                        alt={'preview'}
+                                                                        style={messageImageStyle}
+                                                                    />
+                                                                </Card>
+                                                            ) : (
+                                                                // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                <audio controls='controls'>
+                                                                    Your browser does not support the &lt;audio&gt; tag.
+                                                                    <source src={item.data} type={item.mime} />
+                                                                </audio>
+                                                            )}
+                                                        </>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                        <div className='markdownanswer'>
+                                            {/* Messages are being rendered in Markdown format */}
+                                            <MemoizedReactMarkdown
+                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                components={{
+                                                    code({ inline, className, children, ...props }) {
+                                                        const match = /language-(\w+)/.exec(className || '')
+                                                        return !inline ? (
+                                                            <CodeBlock
+                                                                key={Math.random()}
+                                                                chatflowid={chatflowid}
+                                                                isDialog={isDialog}
+                                                                language={(match && match[1]) || ''}
+                                                                value={String(children).replace(/\n$/, '')}
+                                                                {...props}
                                                             />
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
                                                         )
-                                                    })}
-                                                </div>
-                                            )}
+                                                    }
+                                                }}
+                                            >
+                                                {message.message}
+                                            </MemoizedReactMarkdown>
                                         </div>
-                                    </Box>
-                                </>
+                                        {message.fileAnnotations && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {message.fileAnnotations.map((fileAnnotation, index) => {
+                                                    return (
+                                                        <Button
+                                                            sx={{ fontSize: '0.85rem', textTransform: 'none', mb: 1 }}
+                                                            key={index}
+                                                            variant='outlined'
+                                                            onClick={() => downloadFile(fileAnnotation)}
+                                                            endIcon={<IconDownload color={theme.palette.primary.main} />}
+                                                        >
+                                                            {fileAnnotation.fileName}
+                                                        </Button>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                        {message.sourceDocuments && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {removeDuplicateURL(message).map((source, index) => {
+                                                    const URL =
+                                                        source.metadata && source.metadata.source
+                                                            ? isValidURL(source.metadata.source)
+                                                            : undefined
+                                                    return (
+                                                        <Chip
+                                                            size='small'
+                                                            key={index}
+                                                            label={
+                                                                URL
+                                                                    ? URL.pathname.substring(0, 15) === '/'
+                                                                        ? URL.host
+                                                                        : `${URL.pathname.substring(0, 15)}...`
+                                                                    : `${source.pageContent.substring(0, 15)}...`
+                                                            }
+                                                            component='a'
+                                                            sx={{ mr: 1, mb: 1 }}
+                                                            variant='outlined'
+                                                            clickable
+                                                            onClick={() =>
+                                                                URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
+                                                            }
+                                                        />
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                </Box>
                             )
                         })}
                 </div>
@@ -800,11 +806,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 {previews && previews.length > 0 && (
                     <Box sx={{ width: '100%', mb: 1.5 }}>
                         {previews.map((item, index) => (
-                            <>
+                            <Fragment key={index}>
                                 {item.mime.startsWith('image/') ? (
                                     <ImageButton
                                         focusRipple
-                                        key={index}
                                         style={{
                                             width: '48px',
                                             height: '48px',
@@ -831,7 +836,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                             backgroundColor: theme.palette.grey[500],
                                             flex: '0 0 auto'
                                         }}
-                                        key={index}
                                         variant='outlined'
                                     >
                                         <CardMedia
@@ -845,7 +849,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                         </IconButton>
                                     </Card>
                                 )}
-                            </>
+                            </Fragment>
                         ))}
                     </Box>
                 )}
@@ -854,7 +858,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                         {recordingNotSupported && (
                             <div className='overlay hide'>
                                 <div className='browser-not-supporting-audio-recording-box'>
-                                    <p>To record audio, use modern browsers like Chrome or Firefox that support audio recording.</p>
+                                    <Typography variant='body1'>
+                                        To record audio, use modern browsers like Chrome or Firefox that support audio recording.
+                                    </Typography>
                                     <Button
                                         variant='contained'
                                         color='error'
@@ -880,10 +886,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             }}
                         >
                             <div className='recording-elapsed-time'>
-                                <i className='red-recording-dot'>
+                                <span className='red-recording-dot'>
                                     <IconCircleDot />
-                                </i>
-                                <p id='elapsed-time'>00:00</p>
+                                </span>
+                                <Typography id='elapsed-time'>00:00</Typography>
+                                {isLoadingRecording && <Typography ml={1.5}>Sending...</Typography>}
                             </div>
                             <div className='recording-control-buttons-container'>
                                 <IconButton onClick={onRecordingCancelled} size='small'>
