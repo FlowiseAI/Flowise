@@ -102,8 +102,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         setShowManageScrapedLinksDialog(true)
     }
 
-    const onManageLinksDialogSave = (links) => {
+    const onManageLinksDialogSave = (url, links) => {
         setShowManageScrapedLinksDialog(false)
+        data.inputs.url = url
         data.inputs.selectedLinks = links
     }
 

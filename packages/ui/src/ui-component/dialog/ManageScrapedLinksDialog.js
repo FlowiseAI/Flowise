@@ -74,7 +74,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
     }
 
     const handleSaveLinks = () => {
-        onSave(selectedLinks)
+        onSave(url, selectedLinks)
     }
 
     const component = show ? (
