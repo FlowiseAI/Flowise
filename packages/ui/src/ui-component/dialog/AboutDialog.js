@@ -28,10 +28,10 @@ const AboutDialog = ({ show, onCancel }) => {
             Promise.all([currentVersionReq])
                 .then(([currentVersionData]) => {
                     const finalData = {
-                        name: '23.3',
+                        name: '24.1',
                         html_url: 'https://docs-symphony.zendesk.com/hc/en-us/sections/19506012331405-Logi-Symphony-23',
                         currentVersion: currentVersionData.data.version,
-                        published_at: 'October 1, 2023'
+                        published_at: 'March 31, 2024'
                     }
                     setData(finalData)
                 })
