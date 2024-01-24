@@ -5,13 +5,86 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
 import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+/*
+ * List of dependencies allowed to be import in vm2
+ */
+export const availableDependencies = [
+    '@aws-sdk/client-bedrock-runtime',
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/client-s3',
+    '@elastic/elasticsearch',
+    '@dqbd/tiktoken',
+    '@getzep/zep-js',
+    '@gomomento/sdk',
+    '@gomomento/sdk-core',
+    '@google-ai/generativelanguage',
+    '@huggingface/inference',
+    '@notionhq/client',
+    '@opensearch-project/opensearch',
+    '@pinecone-database/pinecone',
+    '@qdrant/js-client-rest',
+    '@supabase/supabase-js',
+    '@upstash/redis',
+    '@zilliz/milvus2-sdk-node',
+    'apify-client',
+    'axios',
+    'cheerio',
+    'chromadb',
+    'cohere-ai',
+    'd3-dsv',
+    'faiss-node',
+    'form-data',
+    'google-auth-library',
+    'graphql',
+    'html-to-text',
+    'ioredis',
+    'langchain',
+    'langfuse',
+    'langsmith',
+    'linkifyjs',
+    'llmonitor',
+    'mammoth',
+    'moment',
+    'mongodb',
+    'mysql2',
+    'node-fetch',
+    'node-html-markdown',
+    'notion-to-md',
+    'openai',
+    'pdf-parse',
+    'pdfjs-dist',
+    'pg',
+    'playwright',
+    'puppeteer',
+    'redis',
+    'replicate',
+    'srt-parser-2',
+    'typeorm',
+    'weaviate-ts-client'
+]
+
+export const defaultAllowBuiltInDep = [
+    'assert',
+    'buffer',
+    'crypto',
+    'events',
+    'http',
+    'https',
+    'net',
+    'path',
+    'querystring',
+    'timers',
+    'tls',
+    'url',
+    'zlib'
+]
 
 /**
  * Get base classes of components
@@ -379,7 +452,8 @@ const getEncryptionKeyFilePath = (): string => {
         path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(getUserHome(), '.flowise', 'encryption.key')
     ]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
@@ -389,7 +463,7 @@ const getEncryptionKeyFilePath = (): string => {
     return ''
 }
 
-const getEncryptionKeyPath = (): string => {
+export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
 }
 
@@ -612,9 +686,8 @@ export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
 
 /**
  * Convert BaseMessage to IMessage
- * @param {ICommonObject} obj
- * @param {string} parentKey
- * @returns {ICommonObject}
+ * @param {BaseMessage[]} messages
+ * @returns {IMessage[]}
  */
 export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[] => {
     const formatmessages: IMessage[] = []
@@ -637,4 +710,73 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
         }
     }
     return formatmessages
+}
+
+/**
+ * Convert MultiOptions String to String Array
+ * @param {string} inputString
+ * @returns {string[]}
+ */
+export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
+    let ArrayString: string[] = []
+    try {
+        ArrayString = JSON.parse(inputString)
+    } catch (e) {
+        ArrayString = []
+    }
+    return ArrayString
+}
+
+/**
+ * Get variables
+ * @param {DataSource} appDataSource
+ * @param {IDatabaseEntity} databaseEntities
+ * @param {INodeData} nodeData
+ */
+export const getVars = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData) => {
+    const variables = ((await appDataSource.getRepository(databaseEntities['Variable']).find()) as IVariable[]) ?? []
+
+    // override variables defined in overrideConfig
+    // nodeData.inputs.variables is an Object, check each property and override the variable
+    if (nodeData?.inputs?.vars) {
+        for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.vars)) {
+            const foundVar = variables.find((v) => v.name === propertyName)
+            if (foundVar) {
+                // even if the variable was defined as runtime, we override it with static value
+                foundVar.type = 'static'
+                foundVar.value = nodeData.inputs.vars[propertyName]
+            } else {
+                // add it the variables, if not found locally in the db
+                variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.vars[propertyName] })
+            }
+        }
+    }
+
+    return variables
+}
+
+/**
+ * Prepare sandbox variables
+ * @param {IVariable[]} variables
+ */
+export const prepareSandboxVars = (variables: IVariable[]) => {
+    let vars = {}
+    if (variables) {
+        for (const item of variables) {
+            let value = item.value
+
+            // read from .env file
+            if (item.type === 'runtime') {
+                value = process.env[item.name] ?? ''
+            }
+
+            Object.defineProperty(vars, item.name, {
+                enumerable: true,
+                configurable: true,
+                writable: true,
+                value: value
+            })
+        }
+    }
+    return vars
 }

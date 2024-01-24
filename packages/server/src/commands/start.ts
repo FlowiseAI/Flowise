@@ -35,10 +35,12 @@ export default class Start extends Command {
         DATABASE_NAME: Flags.string(),
         DATABASE_USER: Flags.string(),
         DATABASE_PASSWORD: Flags.string(),
+        DATABASE_SSL: Flags.string(),
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
-        LANGCHAIN_PROJECT: Flags.string()
+        LANGCHAIN_PROJECT: Flags.string(),
+        DISABLE_FLOWISE_TELEMETRY: Flags.string()
     }
 
     async stopProcess() {
@@ -104,12 +106,16 @@ export default class Start extends Command {
         if (flags.DATABASE_NAME) process.env.DATABASE_NAME = flags.DATABASE_NAME
         if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
+        if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2
         if (flags.LANGCHAIN_ENDPOINT) process.env.LANGCHAIN_ENDPOINT = flags.LANGCHAIN_ENDPOINT
         if (flags.LANGCHAIN_API_KEY) process.env.LANGCHAIN_API_KEY = flags.LANGCHAIN_API_KEY
         if (flags.LANGCHAIN_PROJECT) process.env.LANGCHAIN_PROJECT = flags.LANGCHAIN_PROJECT
+
+        // Telemetry
+        if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
 
         await (async () => {
             try {

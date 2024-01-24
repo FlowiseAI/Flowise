@@ -23,7 +23,7 @@ class Pinecone_Existing_VectorStores implements INode {
         this.name = 'pineconeExistingIndex'
         this.version = 1.0
         this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
@@ -95,11 +95,9 @@ class Pinecone_Existing_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         })
 
         const pineconeIndex = client.Index(index)

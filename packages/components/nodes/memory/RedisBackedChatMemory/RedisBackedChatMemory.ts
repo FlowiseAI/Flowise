@@ -2,7 +2,7 @@ import { Redis } from 'ioredis'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/ioredis'
 import { mapStoredMessageToChatMessage, BaseMessage, AIMessage, HumanMessage } from 'langchain/schema'
-import { INode, INodeData, INodeParams, ICommonObject, MessageType, IMessage } from '../../../src/Interface'
+import { INode, INodeData, INodeParams, ICommonObject, MessageType, IMessage, MemoryMethods, FlowiseMemory } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class RedisBackedChatMemory_Memory implements INode {
@@ -58,6 +58,14 @@ class RedisBackedChatMemory_Memory implements INode {
                 type: 'string',
                 default: 'chat_history',
                 additionalParams: true
+            },
+            {
+                label: 'Window Size',
+                name: 'windowSize',
+                type: 'number',
+                description: 'Window of size k to surface the last k back-and-forth to use as memory.',
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -70,17 +78,8 @@ class RedisBackedChatMemory_Memory implements INode {
 const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const sessionTTL = nodeData.inputs?.sessionTTL as number
     const memoryKey = nodeData.inputs?.memoryKey as string
-    const chatId = options?.chatId as string
-
-    let isSessionIdUsingChatMessageId = false
-    let sessionId = ''
-
-    if (!nodeData.inputs?.sessionId && chatId) {
-        isSessionIdUsingChatMessageId = true
-        sessionId = chatId
-    } else {
-        sessionId = nodeData.inputs?.sessionId
-    }
+    const sessionId = nodeData.inputs?.sessionId as string
+    const windowSize = nodeData.inputs?.windowSize as number
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
@@ -92,12 +91,16 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
         const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
         const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
         const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+        const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
+
+        const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
         client = new Redis({
             port: portStr ? parseInt(portStr) : 6379,
             host,
             username,
-            password
+            password,
+            ...tlsOptions
         })
     } else {
         client = new Redis(redisUrl)
@@ -117,9 +120,8 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
 
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
 
-    /**** Methods below are needed to override the original implementations ****/
-    redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, 0, -1)
+    /*redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
+        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, windowSize ? -windowSize : 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         return orderedMessages.map(mapStoredMessageToChatMessage)
     }
@@ -134,14 +136,13 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
 
     redisChatMessageHistory.clear = async (): Promise<void> => {
         await client.del((redisChatMessageHistory as any).sessionId)
-    }
-    /**** End of override functions ****/
+    }*/
 
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
-        isSessionIdUsingChatMessageId,
         sessionId,
+        windowSize,
         redisClient: client
     })
 
@@ -149,31 +150,31 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
 }
 
 interface BufferMemoryExtendedInput {
-    isSessionIdUsingChatMessageId: boolean
     redisClient: Redis
     sessionId: string
+    windowSize?: number
 }
 
-class BufferMemoryExtended extends BufferMemory {
-    isSessionIdUsingChatMessageId = false
+class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
     redisClient: Redis
+    windowSize?: number
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
-        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
         this.sessionId = fields.sessionId
         this.redisClient = fields.redisClient
+        this.windowSize = fields.windowSize
     }
 
-    async getChatMessages(overrideSessionId = ''): Promise<IMessage[]> {
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.redisClient) return []
 
         const id = overrideSessionId ?? this.sessionId
-        const rawStoredMessages = await this.redisClient.lrange(id, 0, -1)
+        const rawStoredMessages = await this.redisClient.lrange(id, this.windowSize ? this.windowSize * -1 : 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         const baseMessages = orderedMessages.map(mapStoredMessageToChatMessage)
-        return convertBaseMessagetoIMessage(baseMessages)
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {

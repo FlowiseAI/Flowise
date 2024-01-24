@@ -147,8 +147,8 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
 }
 
 FlowListTable.propTypes = {
-    data: PropTypes.object,
-    images: PropTypes.array,
+    data: PropTypes.array,
+    images: PropTypes.object,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }

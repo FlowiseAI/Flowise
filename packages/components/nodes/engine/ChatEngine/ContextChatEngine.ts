@@ -1,5 +1,6 @@
-import { ICommonObject, IMessage, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { ContextChatEngine, ChatMessage } from 'llamaindex'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { BaseNode, Metadata, BaseRetriever, LLM, ContextChatEngine, ChatMessage } from 'llamaindex'
+import { reformatSourceDocuments } from '../EngineUtils'
 
 class ContextChatEngine_LlamaIndex implements INode {
     label: string
@@ -13,8 +14,9 @@ class ContextChatEngine_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    sessionId?: string
 
-    constructor() {
+    constructor(fields?: { sessionId?: string }) {
         this.label = 'Context Chat Engine'
         this.name = 'contextChatEngine'
         this.version = 1.0
@@ -41,6 +43,12 @@ class ContextChatEngine_LlamaIndex implements INode {
                 type: 'BaseChatMemory'
             },
             {
+                label: 'Return Source Documents',
+                name: 'returnSourceDocuments',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'System Message',
                 name: 'systemMessagePrompt',
                 type: 'string',
@@ -50,30 +58,21 @@ class ContextChatEngine_LlamaIndex implements INode {
                     'I want you to act as a document that I am having a conversation with. Your name is "AI Assistant". You will provide me with answers from the given info. If the answer is not included, say exactly "Hmm, I am not sure." and stop after that. Refuse to answer any question not about the info. Never break character.'
             }
         ]
+        this.sessionId = fields?.sessionId
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model
-        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
-        const memory = nodeData.inputs?.memory
-
-        const chatEngine = new ContextChatEngine({ chatModel: model, retriever: vectorStoreRetriever })
-        ;(chatEngine as any).memory = memory
-        return chatEngine
+    async init(): Promise<any> {
+        return null
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
-        const chatEngine = nodeData.instance as ContextChatEngine
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
+        const model = nodeData.inputs?.model as LLM
+        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
-        const memory = nodeData.inputs?.memory
+        const memory = nodeData.inputs?.memory as FlowiseMemory
+        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
         const chatHistory = [] as ChatMessage[]
-
-        let sessionId = ''
-        if (memory) {
-            if (memory.isSessionIdUsingChatMessageId) sessionId = options.chatId
-            else sessionId = nodeData.inputs?.sessionId
-        }
 
         if (systemMessagePrompt) {
             chatHistory.push({
@@ -82,14 +81,9 @@ class ContextChatEngine_LlamaIndex implements INode {
             })
         }
 
-        /* When incomingInput.history is provided, only force replace chatHistory if its ShortTermMemory
-         * LongTermMemory will automatically retrieved chatHistory from sessionId
-         */
-        if (options && options.chatHistory && memory.isShortTermMemory) {
-            await memory.resumeMessages(options.chatHistory)
-        }
+        const chatEngine = new ContextChatEngine({ chatModel: model, retriever: vectorStoreRetriever })
 
-        const msgs: IMessage[] = await memory.getChatMessages(sessionId)
+        const msgs = (await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({
@@ -104,74 +98,51 @@ class ContextChatEngine_LlamaIndex implements INode {
             }
         }
 
-        if (options.socketIO && options.socketIOClientId) {
-            let response = ''
-            const stream = await chatEngine.chat(input, chatHistory, true)
-            let isStart = true
-            const onNextPromise = () => {
-                return new Promise((resolve, reject) => {
-                    const onNext = async () => {
-                        try {
-                            const { value, done } = await stream.next()
-                            if (!done) {
-                                if (isStart) {
-                                    options.socketIO.to(options.socketIOClientId).emit('start')
-                                    isStart = false
-                                }
-                                options.socketIO.to(options.socketIOClientId).emit('token', value)
-                                response += value
-                                onNext()
-                            } else {
-                                resolve(response)
-                            }
-                        } catch (error) {
-                            reject(error)
-                        }
-                    }
-                    onNext()
-                })
+        let text = ''
+        let isStreamingStarted = false
+        let sourceDocuments: ICommonObject[] = []
+        let sourceNodes: BaseNode<Metadata>[] = []
+        const isStreamingEnabled = options.socketIO && options.socketIOClientId
+
+        if (isStreamingEnabled) {
+            const stream = await chatEngine.chat({ message: input, chatHistory, stream: true })
+            for await (const chunk of stream) {
+                text += chunk.response
+                if (chunk.sourceNodes) sourceNodes = chunk.sourceNodes
+                if (!isStreamingStarted) {
+                    isStreamingStarted = true
+                    options.socketIO.to(options.socketIOClientId).emit('start', chunk.response)
+                }
+
+                options.socketIO.to(options.socketIOClientId).emit('token', chunk.response)
             }
 
-            try {
-                const result = await onNextPromise()
-                if (memory) {
-                    await memory.addChatMessages(
-                        [
-                            {
-                                text: input,
-                                type: 'userMessage'
-                            },
-                            {
-                                text: result,
-                                type: 'apiMessage'
-                            }
-                        ],
-                        sessionId
-                    )
-                }
-                return result as string
-            } catch (error) {
-                throw new Error(error)
+            if (returnSourceDocuments) {
+                sourceDocuments = reformatSourceDocuments(sourceNodes)
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
             }
         } else {
-            const response = await chatEngine.chat(input, chatHistory)
-            if (memory) {
-                await memory.addChatMessages(
-                    [
-                        {
-                            text: input,
-                            type: 'userMessage'
-                        },
-                        {
-                            text: response?.response,
-                            type: 'apiMessage'
-                        }
-                    ],
-                    sessionId
-                )
-            }
-            return response?.response
+            const response = await chatEngine.chat({ message: input, chatHistory })
+            text = response?.response
+            sourceDocuments = reformatSourceDocuments(response?.sourceNodes ?? [])
         }
+
+        await memory.addChatMessages(
+            [
+                {
+                    text: input,
+                    type: 'userMessage'
+                },
+                {
+                    text: text,
+                    type: 'apiMessage'
+                }
+            ],
+            this.sessionId
+        )
+
+        if (returnSourceDocuments) return { text, sourceDocuments }
+        else return { text }
     }
 }
 

@@ -144,7 +144,7 @@
                 "baseClasses": ["AzureChatOpenAI", "BaseChatModel_LlamaIndex"],
                 "tags": ["LlamaIndex"],
                 "category": "Chat Models",
-                "description": "Wrapper around Azure OpenAI Chat LLM with LlamaIndex implementation",
+                "description": "Wrapper around Azure OpenAI Chat LLM specific for LlamaIndex",
                 "inputParams": [
                     {
                         "label": "Connect Credential",

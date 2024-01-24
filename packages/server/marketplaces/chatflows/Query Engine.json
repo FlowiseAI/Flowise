@@ -197,7 +197,7 @@
                 "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
                 "tags": ["LlamaIndex"],
                 "category": "Embeddings",
-                "description": "OpenAI Embedding with LlamaIndex implementation",
+                "description": "OpenAI Embedding specific for LlamaIndex",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -328,7 +328,7 @@
                 "baseClasses": ["ChatAnthropic", "BaseChatModel_LlamaIndex"],
                 "tags": ["LlamaIndex"],
                 "category": "Chat Models",
-                "description": "Wrapper around ChatAnthropic LLM with LlamaIndex implementation",
+                "description": "Wrapper around ChatAnthropic LLM specific for LlamaIndex",
                 "inputParams": [
                     {
                         "label": "Connect Credential",

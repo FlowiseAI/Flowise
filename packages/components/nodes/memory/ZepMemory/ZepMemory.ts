@@ -1,8 +1,9 @@
-import { IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
 import { ICommonObject } from '../../../src'
 import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
+import { BaseMessage } from 'langchain/schema'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -21,7 +22,7 @@ class ZepMemory_Memory implements INode {
         this.name = 'ZepMemory'
         this.version = 2.0
         this.type = 'ZepMemory'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Memory'
         this.description = 'Summarizes the conversation and stores the memory in zep server'
         this.baseClasses = [this.type, ...getBaseClasses(ZepMemory)]
@@ -108,17 +109,7 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
     const memoryKey = nodeData.inputs?.memoryKey as string
     const inputKey = nodeData.inputs?.inputKey as string
     const k = nodeData.inputs?.k as string
-    const chatId = options?.chatId as string
-
-    let isSessionIdUsingChatMessageId = false
-    let sessionId = ''
-
-    if (!nodeData.inputs?.sessionId && chatId) {
-        isSessionIdUsingChatMessageId = true
-        sessionId = chatId
-    } else {
-        sessionId = nodeData.inputs?.sessionId
-    }
+    const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
@@ -131,7 +122,6 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
         memoryKey,
         inputKey,
         sessionId,
-        isSessionIdUsingChatMessageId,
         k: k ? parseInt(k, 10) : undefined
     }
     if (apiKey) obj.apiKey = apiKey
@@ -140,46 +130,43 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
 }
 
 interface ZepMemoryExtendedInput {
-    isSessionIdUsingChatMessageId: boolean
     k?: number
 }
 
-class ZepMemoryExtended extends ZepMemory {
-    isSessionIdUsingChatMessageId = false
+class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     lastN?: number
 
     constructor(fields: ZepMemoryInput & ZepMemoryExtendedInput) {
         super(fields)
-        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
         this.lastN = fields.k
     }
 
     async loadMemoryVariables(values: InputValues, overrideSessionId = ''): Promise<MemoryVariables> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.loadMemoryVariables({ ...values, lastN: this.lastN })
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideSessionId = ''): Promise<void> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.saveContext(inputValues, outputValues)
     }
 
     async clear(overrideSessionId = ''): Promise<void> {
         if (overrideSessionId) {
-            super.sessionId = overrideSessionId
+            this.sessionId = overrideSessionId
         }
         return super.clear()
     }
 
-    async getChatMessages(overrideSessionId = ''): Promise<IMessage[]> {
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         const id = overrideSessionId ?? this.sessionId
         const memoryVariables = await this.loadMemoryVariables({}, id)
         const baseMessages = memoryVariables[this.memoryKey]
-        return convertBaseMessagetoIMessage(baseMessages)
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {

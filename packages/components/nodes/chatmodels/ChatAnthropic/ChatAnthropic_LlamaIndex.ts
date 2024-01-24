@@ -1,7 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Anthropic } from 'llamaindex'
-import { availableModels } from './utils'
 
 class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     label: string
@@ -21,9 +20,9 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
         this.name = 'chatAnthropic_LlamaIndex'
         this.version = 1.0
         this.type = 'ChatAnthropic'
-        this.icon = 'chatAnthropic.png'
+        this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around ChatAnthropic LLM with LlamaIndex implementation'
+        this.description = 'Wrapper around ChatAnthropic LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Anthropic)]
         this.tags = ['LlamaIndex']
         this.credential = {
@@ -37,7 +36,18 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
-                options: [...availableModels],
+                options: [
+                    {
+                        label: 'claude-2',
+                        name: 'claude-2',
+                        description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
+                    },
+                    {
+                        label: 'claude-instant-1',
+                        name: 'claude-instant-1',
+                        description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
+                    }
+                ],
                 default: 'claude-2',
                 optional: true
             },
@@ -70,7 +80,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
+        const modelName = nodeData.inputs?.modelName as 'claude-2' | 'claude-instant-1' | undefined
         const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
 

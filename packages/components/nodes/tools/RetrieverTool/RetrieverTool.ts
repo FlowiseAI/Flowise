@@ -21,7 +21,7 @@ class Retriever_Tools implements INode {
         this.name = 'retrieverTool'
         this.version = 1.0
         this.type = 'RetrieverTool'
-        this.icon = 'retriever-tool.png'
+        this.icon = 'retrievertool.svg'
         this.category = 'Tools'
         this.description = 'Use a retriever as allowed tool for agent'
         this.baseClasses = [this.type, 'DynamicTool', ...getBaseClasses(DynamicTool)]

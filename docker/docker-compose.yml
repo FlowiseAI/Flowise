@@ -16,11 +16,13 @@ services:
             - DATABASE_NAME=${DATABASE_NAME}
             - DATABASE_USER=${DATABASE_USER}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_SSL=${DATABASE_SSL}
             - APIKEY_PATH=${APIKEY_PATH}
             - SECRETKEY_PATH=${SECRETKEY_PATH}
             - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
             - LOG_LEVEL=${LOG_LEVEL}
             - LOG_PATH=${LOG_PATH}
+            - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
         ports:
             - '${PORT}:${PORT}'
         volumes:

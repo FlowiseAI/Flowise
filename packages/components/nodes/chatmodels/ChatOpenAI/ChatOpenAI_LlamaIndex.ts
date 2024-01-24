@@ -20,9 +20,9 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         this.name = 'chatOpenAI_LlamaIndex'
         this.version = 1.0
         this.type = 'ChatOpenAI'
-        this.icon = 'openai.png'
+        this.icon = 'openai.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around OpenAI Chat LLM with LlamaIndex implementation'
+        this.description = 'Wrapper around OpenAI Chat LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(OpenAI)]
         this.tags = ['LlamaIndex']
         this.credential = {

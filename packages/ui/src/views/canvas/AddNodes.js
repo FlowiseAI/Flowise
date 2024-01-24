@@ -271,7 +271,13 @@ const AddNodes = ({ nodesData, node }) => {
                                                 'aria-label': 'weight'
                                             }}
                                         />
-                                        <Tabs variant='fullWidth' value={tabValue} onChange={handleTabChange} aria-label='tabs'>
+                                        <Tabs
+                                            sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
+                                            variant='fullWidth'
+                                            value={tabValue}
+                                            onChange={handleTabChange}
+                                            aria-label='tabs'
+                                        >
                                             {['LangChain', 'LlamaIndex'].map((item, index) => (
                                                 <Tab
                                                     icon={
@@ -293,32 +299,35 @@ const AddNodes = ({ nodesData, node }) => {
                                                         </div>
                                                     }
                                                     iconPosition='start'
+                                                    sx={{ minHeight: '50px', height: '50px' }}
                                                     key={index}
-                                                    label={
-                                                        item === 'LlamaIndex' ? (
-                                                            <>
-                                                                <h4>{item}</h4>
-                                                                &nbsp;
-                                                                <Chip
-                                                                    sx={{
-                                                                        width: 'max-content',
-                                                                        fontWeight: 700,
-                                                                        fontSize: '0.65rem',
-                                                                        background: theme.palette.primary.main,
-                                                                        color: 'white'
-                                                                    }}
-                                                                    size='small'
-                                                                    label='BETA'
-                                                                />
-                                                            </>
-                                                        ) : (
-                                                            <h4>{item}</h4>
-                                                        )
-                                                    }
+                                                    label={item}
                                                     {...a11yProps(index)}
                                                 ></Tab>
                                             ))}
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    borderRadius: 10,
+                                                    background: 'rgb(254,252,191)',
+                                                    paddingLeft: 6,
+                                                    paddingRight: 6,
+                                                    paddingTop: 1,
+                                                    paddingBottom: 1,
+                                                    width: 'max-content',
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    fontSize: '0.65rem',
+                                                    fontWeight: 700
+                                                }}
+                                            >
+                                                <span style={{ color: 'rgb(116,66,16)' }}>BETA</span>
+                                            </div>
                                         </Tabs>
+
                                         <Divider />
                                     </Box>
                                     <PerfectScrollbar
@@ -327,7 +336,7 @@ const AddNodes = ({ nodesData, node }) => {
                                         }}
                                         style={{ height: '100%', maxHeight: 'calc(100vh - 380px)', overflowX: 'hidden' }}
                                     >
-                                        <Box sx={{ p: 2 }}>
+                                        <Box sx={{ p: 2, pt: 0 }}>
                                             <List
                                                 sx={{
                                                     width: '100%',

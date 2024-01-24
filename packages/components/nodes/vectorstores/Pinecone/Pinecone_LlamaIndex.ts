@@ -34,7 +34,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
         this.name = 'pineconeLlamaIndex'
         this.version = 1.0
         this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorIndexRetriever']
@@ -106,12 +106,10 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-            const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
             const pcvs = new PineconeVectorStore({
                 indexName,
                 apiKey: pineconeApiKey,
-                environment: pineconeEnv,
                 namespace: pineconeNamespace
             })
 
@@ -150,12 +148,10 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const obj: PineconeParams = {
             indexName,
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
@@ -186,7 +182,6 @@ class PineconeLlamaIndex_VectorStores implements INode {
 type PineconeParams = {
     indexName: string
     apiKey: string
-    environment: string
     namespace?: string
     chunkSize?: number
     queryFilter?: object
@@ -197,7 +192,6 @@ class PineconeVectorStore implements VectorStore {
     db?: Pinecone
     indexName: string
     apiKey: string
-    environment: string
     chunkSize: number
     namespace?: string
     queryFilter?: object
@@ -205,7 +199,6 @@ class PineconeVectorStore implements VectorStore {
     constructor(params: PineconeParams) {
         this.indexName = params?.indexName
         this.apiKey = params?.apiKey
-        this.environment = params?.environment
         this.namespace = params?.namespace ?? ''
         this.chunkSize = params?.chunkSize ?? Number.parseInt(process.env.PINECONE_CHUNK_SIZE ?? '100')
         this.queryFilter = params?.queryFilter ?? {}
@@ -214,8 +207,7 @@ class PineconeVectorStore implements VectorStore {
     private async getDb(): Promise<Pinecone> {
         if (!this.db) {
             this.db = new Pinecone({
-                apiKey: this.apiKey,
-                environment: this.environment
+                apiKey: this.apiKey
             })
         }
         return Promise.resolve(this.db)

@@ -1,5 +1,5 @@
-import { ICommonObject, IMessage, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { ChatMessage, SimpleChatEngine } from 'llamaindex'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { LLM, ChatMessage, SimpleChatEngine } from 'llamaindex'
 
 class SimpleChatEngine_LlamaIndex implements INode {
     label: string
@@ -13,8 +13,9 @@ class SimpleChatEngine_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    sessionId?: string
 
-    constructor() {
+    constructor(fields?: { sessionId?: string }) {
         this.label = 'Simple Chat Engine'
         this.name = 'simpleChatEngine'
         this.version = 1.0
@@ -44,29 +45,19 @@ class SimpleChatEngine_LlamaIndex implements INode {
                 placeholder: 'You are a helpful assistant'
             }
         ]
+        this.sessionId = fields?.sessionId
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model
-        const memory = nodeData.inputs?.memory
-
-        const chatEngine = new SimpleChatEngine({ llm: model })
-        ;(chatEngine as any).memory = memory
-        return chatEngine
+    async init(): Promise<any> {
+        return null
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const chatEngine = nodeData.instance as SimpleChatEngine
+        const model = nodeData.inputs?.model as LLM
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
-        const memory = nodeData.inputs?.memory
+        const memory = nodeData.inputs?.memory as FlowiseMemory
 
         const chatHistory = [] as ChatMessage[]
-
-        let sessionId = ''
-        if (memory) {
-            if (memory.isSessionIdUsingChatMessageId) sessionId = options.chatId
-            else sessionId = nodeData.inputs?.sessionId
-        }
 
         if (systemMessagePrompt) {
             chatHistory.push({
@@ -75,14 +66,9 @@ class SimpleChatEngine_LlamaIndex implements INode {
             })
         }
 
-        /* When incomingInput.history is provided, only force replace chatHistory if its ShortTermMemory
-         * LongTermMemory will automatically retrieved chatHistory from sessionId
-         */
-        if (options && options.chatHistory && memory.isShortTermMemory) {
-            await memory.resumeMessages(options.chatHistory)
-        }
+        const chatEngine = new SimpleChatEngine({ llm: model })
 
-        const msgs: IMessage[] = await memory.getChatMessages(sessionId)
+        const msgs = (await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({
@@ -97,74 +83,41 @@ class SimpleChatEngine_LlamaIndex implements INode {
             }
         }
 
-        if (options.socketIO && options.socketIOClientId) {
-            let response = ''
-            const stream = await chatEngine.chat(input, chatHistory, true)
-            let isStart = true
-            const onNextPromise = () => {
-                return new Promise((resolve, reject) => {
-                    const onNext = async () => {
-                        try {
-                            const { value, done } = await stream.next()
-                            if (!done) {
-                                if (isStart) {
-                                    options.socketIO.to(options.socketIOClientId).emit('start')
-                                    isStart = false
-                                }
-                                options.socketIO.to(options.socketIOClientId).emit('token', value)
-                                response += value
-                                onNext()
-                            } else {
-                                resolve(response)
-                            }
-                        } catch (error) {
-                            reject(error)
-                        }
-                    }
-                    onNext()
-                })
-            }
+        let text = ''
+        let isStreamingStarted = false
+        const isStreamingEnabled = options.socketIO && options.socketIOClientId
 
-            try {
-                const result = await onNextPromise()
-                if (memory) {
-                    await memory.addChatMessages(
-                        [
-                            {
-                                text: input,
-                                type: 'userMessage'
-                            },
-                            {
-                                text: result,
-                                type: 'apiMessage'
-                            }
-                        ],
-                        sessionId
-                    )
+        if (isStreamingEnabled) {
+            const stream = await chatEngine.chat({ message: input, chatHistory, stream: true })
+            for await (const chunk of stream) {
+                text += chunk.response
+                if (!isStreamingStarted) {
+                    isStreamingStarted = true
+                    options.socketIO.to(options.socketIOClientId).emit('start', chunk.response)
                 }
-                return result as string
-            } catch (error) {
-                throw new Error(error)
+
+                options.socketIO.to(options.socketIOClientId).emit('token', chunk.response)
             }
         } else {
-            const response = await chatEngine.chat(input, chatHistory)
-            if (memory) {
-                await memory.addChatMessages(
-                    [
-                        {
-                            text: input,
-                            type: 'userMessage'
-                        },
-                        {
-                            text: response?.response,
-                            type: 'apiMessage'
-                        }
-                    ],
-                    sessionId
-                )
-            }
-            return response?.response
+            const response = await chatEngine.chat({ message: input, chatHistory })
+            text = response?.response
         }
+
+        await memory.addChatMessages(
+            [
+                {
+                    text: input,
+                    type: 'userMessage'
+                },
+                {
+                    text: text,
+                    type: 'apiMessage'
+                }
+            ],
+            this.sessionId
+        )
+
+        return text
     }
 }
 

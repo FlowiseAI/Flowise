@@ -1,7 +1,8 @@
-import { IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { FlowiseSummaryMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
 import { ConversationSummaryMemory, ConversationSummaryMemoryInput } from 'langchain/memory'
 import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseMessage } from 'langchain/schema'
 
 class ConversationSummaryMemory_Memory implements INode {
     label: string
@@ -60,46 +61,36 @@ class ConversationSummaryMemory_Memory implements INode {
     }
 }
 
-class ConversationSummaryMemoryExtended extends ConversationSummaryMemory {
-    isShortTermMemory = true
-
+class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements MemoryMethods {
     constructor(fields: ConversationSummaryMemoryInput) {
         super(fields)
     }
 
-    async getChatMessages(): Promise<IMessage[]> {
-        const memoryResult = await this.loadMemoryVariables({})
-        const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
-        return convertBaseMessagetoIMessage(baseMessages)
-    }
+    async getChatMessages(_?: string, returnBaseMessages = false, prevHistory: IMessage[] = []): Promise<IMessage[] | BaseMessage[]> {
+        await this.chatHistory.clear()
+        this.buffer = ''
 
-    async addChatMessages(msgArray: { text: string; type: MessageType }[]): Promise<void> {
-        const input = msgArray.find((msg) => msg.type === 'userMessage')
-        const output = msgArray.find((msg) => msg.type === 'apiMessage')
-
-        const inputValues = { [this.inputKey ?? 'input']: input?.text }
-        const outputValues = { output: output?.text }
-
-        await this.saveContext(inputValues, outputValues)
-    }
-
-    async clearChatMessages(): Promise<void> {
-        await this.clear()
-    }
-
-    async resumeMessages(messages: IMessage[]): Promise<void> {
-        // Clear existing chatHistory to avoid duplication
-        if (messages.length) await this.clear()
-
-        // Insert into chatHistory
-        for (const msg of messages) {
+        for (const msg of prevHistory) {
             if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
             else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
         }
 
-        // Replace buffer
+        // Get summary
         const chatMessages = await this.chatHistory.getMessages()
-        this.buffer = await this.predictNewSummary(chatMessages.slice(-2), this.buffer)
+        this.buffer = chatMessages.length ? await this.predictNewSummary(chatMessages.slice(-2), this.buffer) : ''
+
+        const memoryResult = await this.loadMemoryVariables({})
+        const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+    }
+
+    async addChatMessages(): Promise<void> {
+        // adding chat messages will be done on the fly in getChatMessages()
+        return
+    }
+
+    async clearChatMessages(): Promise<void> {
+        await this.clear()
     }
 }
 

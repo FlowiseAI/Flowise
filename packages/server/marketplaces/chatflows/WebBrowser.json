@@ -578,7 +578,7 @@
                         "id": "conversationalAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "conversationalAgent_0-input-model-BaseChatModel"

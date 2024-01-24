@@ -19,7 +19,7 @@ class Serper_Tools implements INode {
         this.name = 'serper'
         this.version = 1.0
         this.type = 'Serper'
-        this.icon = 'serper.png'
+        this.icon = 'serper.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around Serper.dev - Google Search API'
         this.inputs = []

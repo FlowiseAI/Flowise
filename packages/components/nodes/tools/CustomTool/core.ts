@@ -1,38 +1,18 @@
 import { z } from 'zod'
-import { CallbackManagerForToolRun } from 'langchain/callbacks'
-import { StructuredTool, ToolParams } from 'langchain/tools'
 import { NodeVM } from 'vm2'
+import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
+import { RunnableConfig } from '@langchain/core/runnables'
+import { StructuredTool, ToolParams } from '@langchain/core/tools'
+import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 
-/*
- * List of dependencies allowed to be import in vm2
- */
-const availableDependencies = [
-    '@dqbd/tiktoken',
-    '@getzep/zep-js',
-    '@huggingface/inference',
-    '@pinecone-database/pinecone',
-    '@supabase/supabase-js',
-    'axios',
-    'cheerio',
-    'chromadb',
-    'cohere-ai',
-    'd3-dsv',
-    'form-data',
-    'graphql',
-    'html-to-text',
-    'langchain',
-    'linkifyjs',
-    'mammoth',
-    'moment',
-    'node-fetch',
-    'pdf-parse',
-    'pdfjs-dist',
-    'playwright',
-    'puppeteer',
-    'srt-parser-2',
-    'typeorm',
-    'weaviate-ts-client'
-]
+class ToolInputParsingException extends Error {
+    output?: string
+
+    constructor(message: string, output?: string) {
+        super(message)
+        this.output = output
+    }
+}
 
 export interface BaseDynamicToolInput extends ToolParams {
     name: string
@@ -62,6 +42,8 @@ export class DynamicStructuredTool<
     func: DynamicStructuredToolInput['func']
 
     schema: T
+    private variables: any[]
+    private flowObj: any
 
     constructor(fields: DynamicStructuredToolInput<T>) {
         super(fields)
@@ -73,7 +55,56 @@ export class DynamicStructuredTool<
         this.schema = fields.schema
     }
 
-    protected async _call(arg: z.output<T>): Promise<string> {
+    async call(
+        arg: z.output<T>,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
+        const config = parseCallbackConfigArg(configArg)
+        if (config.runName === undefined) {
+            config.runName = this.name
+        }
+        let parsed
+        try {
+            parsed = await this.schema.parseAsync(arg)
+        } catch (e) {
+            throw new ToolInputParsingException(`Received tool input did not match expected schema`, JSON.stringify(arg))
+        }
+        const callbackManager_ = await CallbackManager.configure(
+            config.callbacks,
+            this.callbacks,
+            config.tags || tags,
+            this.tags,
+            config.metadata,
+            this.metadata,
+            { verbose: this.verbose }
+        )
+        const runManager = await callbackManager_?.handleToolStart(
+            this.toJSON(),
+            typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            config.runName
+        )
+        let result
+        try {
+            result = await this._call(parsed, runManager, flowConfig)
+        } catch (e) {
+            await runManager?.handleToolError(e)
+            throw e
+        }
+        await runManager?.handleToolEnd(result)
+        return result
+    }
+
+    protected async _call(
+        arg: z.output<T>,
+        _?: CallbackManagerForToolRun,
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
         let sandbox: any = {}
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
@@ -81,21 +112,12 @@ export class DynamicStructuredTool<
             }
         }
 
-        const defaultAllowBuiltInDep = [
-            'assert',
-            'buffer',
-            'crypto',
-            'events',
-            'http',
-            'https',
-            'net',
-            'path',
-            'querystring',
-            'timers',
-            'tls',
-            'url',
-            'zlib'
-        ]
+        sandbox['$vars'] = prepareSandboxVars(this.variables)
+
+        // inject flow properties
+        if (this.flowObj) {
+            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
+        }
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
@@ -116,5 +138,13 @@ export class DynamicStructuredTool<
         const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)
 
         return response
+    }
+
+    setVariables(variables: any[]) {
+        this.variables = variables
+    }
+
+    setFlowObject(flow: any) {
+        this.flowObj = flow
     }
 }

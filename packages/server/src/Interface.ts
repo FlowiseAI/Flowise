@@ -68,6 +68,15 @@ export interface ICredential {
     createdDate: Date
 }
 
+export interface IVariable {
+    id: string
+    name: string
+    value: string
+    type: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
@@ -172,7 +181,7 @@ export interface IncomingInput {
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }

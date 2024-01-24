@@ -1,14 +1,15 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import {
     RetrieverQueryEngine,
-    BaseNode,
-    Metadata,
     ResponseSynthesizer,
     CompactAndRefine,
     TreeSummarize,
     Refine,
-    SimpleResponseBuilder
+    SimpleResponseBuilder,
+    BaseNode,
+    Metadata
 } from 'llamaindex'
+import { reformatSourceDocuments } from '../EngineUtils'
 
 class QueryEngine_LlamaIndex implements INode {
     label: string
@@ -22,8 +23,9 @@ class QueryEngine_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    sessionId?: string
 
-    constructor() {
+    constructor(fields?: { sessionId?: string }) {
         this.label = 'Query Engine'
         this.name = 'queryEngine'
         this.version = 1.0
@@ -54,9 +56,15 @@ class QueryEngine_LlamaIndex implements INode {
                 optional: true
             }
         ]
+        this.sessionId = fields?.sessionId
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(): Promise<any> {
+        return null
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
+        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
         const responseSynthesizerObj = nodeData.inputs?.responseSynthesizer
 
@@ -97,30 +105,39 @@ class QueryEngine_LlamaIndex implements INode {
         }
 
         const queryEngine = new RetrieverQueryEngine(vectorStoreRetriever)
-        return queryEngine
+
+        let text = ''
+        let sourceDocuments: ICommonObject[] = []
+        let sourceNodes: BaseNode<Metadata>[] = []
+        let isStreamingStarted = false
+        const isStreamingEnabled = options.socketIO && options.socketIOClientId
+
+        if (isStreamingEnabled) {
+            const stream = await queryEngine.query({ query: input, stream: true })
+            for await (const chunk of stream) {
+                text += chunk.response
+                if (chunk.sourceNodes) sourceNodes = chunk.sourceNodes
+                if (!isStreamingStarted) {
+                    isStreamingStarted = true
+                    options.socketIO.to(options.socketIOClientId).emit('start', chunk.response)
+                }
+
+                options.socketIO.to(options.socketIOClientId).emit('token', chunk.response)
+            }
+
+            if (returnSourceDocuments) {
+                sourceDocuments = reformatSourceDocuments(sourceNodes)
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
+            }
+        } else {
+            const response = await queryEngine.query({ query: input })
+            text = response?.response
+            sourceDocuments = reformatSourceDocuments(response?.sourceNodes ?? [])
+        }
+
+        if (returnSourceDocuments) return { text, sourceDocuments }
+        else return { text }
     }
-
-    async run(nodeData: INodeData, input: string): Promise<string | object> {
-        const queryEngine = nodeData.instance as RetrieverQueryEngine
-        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
-
-        const response = await queryEngine.query(input)
-        if (returnSourceDocuments && response.sourceNodes?.length)
-            return { text: response?.response, sourceDocuments: reformatSourceDocuments(response.sourceNodes) }
-
-        return response?.response
-    }
-}
-
-const reformatSourceDocuments = (sourceNodes: BaseNode<Metadata>[]) => {
-    const sourceDocuments = []
-    for (const node of sourceNodes) {
-        sourceDocuments.push({
-            pageContent: (node as any).text,
-            metadata: node.metadata
-        })
-    }
-    return sourceDocuments
 }
 
 module.exports = { nodeClass: QueryEngine_LlamaIndex }

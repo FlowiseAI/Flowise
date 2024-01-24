@@ -18,9 +18,9 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'AWS Bedrock Embeddings'
         this.name = 'AWSBedrockEmbeddings'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AWSBedrockEmbeddings'
-        this.icon = 'awsBedrock.png'
+        this.icon = 'aws.svg'
         this.category = 'Embeddings'
         this.description = 'AWSBedrock embedding models to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(BedrockEmbeddings)]
@@ -86,6 +86,13 @@ class AWSBedrockEmbedding_Embeddings implements INode {
                     { label: 'cohere.embed-multilingual-v3', name: 'cohere.embed-multilingual-v3' }
                 ],
                 default: 'amazon.titan-embed-text-v1'
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModel',
+                description: 'If provided, will override model selected from Model Name option',
+                type: 'string',
+                optional: true
             }
         ]
     }
@@ -93,9 +100,10 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const iRegion = nodeData.inputs?.region as string
         const iModel = nodeData.inputs?.model as string
+        const customModel = nodeData.inputs?.customModel as string
 
         const obj: BedrockEmbeddingsParams = {
-            model: iModel,
+            model: customModel ? customModel : iModel,
             region: iRegion
         }
 

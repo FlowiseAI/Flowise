@@ -1,9 +1,9 @@
 import { MongoClient, Collection, Document } from 'mongodb'
 import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { BaseMessage, mapStoredMessageToChatMessage, AIMessage, HumanMessage } from 'langchain/schema'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ICommonObject, IMessage, INode, INodeData, INodeParams, MessageType } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
 class MongoDB_Memory implements INode {
     label: string
@@ -22,7 +22,7 @@ class MongoDB_Memory implements INode {
         this.name = 'MongoDBAtlasChatMemory'
         this.version = 1.0
         this.type = 'MongoDBAtlasChatMemory'
-        this.icon = 'mongodb.png'
+        this.icon = 'mongodb.svg'
         this.category = 'Memory'
         this.description = 'Stores the conversation in MongoDB Atlas'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
@@ -74,30 +74,19 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const databaseName = nodeData.inputs?.databaseName as string
     const collectionName = nodeData.inputs?.collectionName as string
     const memoryKey = nodeData.inputs?.memoryKey as string
-    const chatId = options?.chatId as string
-
-    let isSessionIdUsingChatMessageId = false
-    let sessionId = ''
-
-    if (!nodeData.inputs?.sessionId && chatId) {
-        isSessionIdUsingChatMessageId = true
-        sessionId = chatId
-    } else {
-        sessionId = nodeData.inputs?.sessionId
-    }
+    const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-    let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
+    const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
     const client = new MongoClient(mongoDBConnectUrl)
     await client.connect()
 
     const collection = client.db(databaseName).collection(collectionName)
 
-    /**** Methods below are needed to override the original implementations ****/
     const mongoDBChatMessageHistory = new MongoDBChatMessageHistory({
         collection,
-        sessionId: sessionId ? sessionId : chatId
+        sessionId
     })
 
     mongoDBChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
@@ -122,43 +111,38 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     mongoDBChatMessageHistory.clear = async (): Promise<void> => {
         await collection.deleteOne({ sessionId: (mongoDBChatMessageHistory as any).sessionId })
     }
-    /**** End of override functions ****/
 
     return new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: mongoDBChatMessageHistory,
-        isSessionIdUsingChatMessageId,
         sessionId,
         collection
     })
 }
 
 interface BufferMemoryExtendedInput {
-    isSessionIdUsingChatMessageId: boolean
     collection: Collection<Document>
     sessionId: string
 }
 
-class BufferMemoryExtended extends BufferMemory {
-    isSessionIdUsingChatMessageId = false
+class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
     collection: Collection<Document>
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
-        this.isSessionIdUsingChatMessageId = fields.isSessionIdUsingChatMessageId
         this.sessionId = fields.sessionId
         this.collection = fields.collection
     }
 
-    async getChatMessages(overrideSessionId = ''): Promise<IMessage[]> {
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.collection) return []
 
         const id = overrideSessionId ?? this.sessionId
         const document = await this.collection.findOne({ sessionId: id })
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
-        return convertBaseMessagetoIMessage(baseMessages)
+        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {

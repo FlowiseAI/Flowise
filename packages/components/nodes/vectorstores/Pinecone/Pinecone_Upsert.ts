@@ -25,7 +25,7 @@ class PineconeUpsert_VectorStores implements INode {
         this.name = 'pineconeUpsert'
         this.version = 1.0
         this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Pinecone'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
@@ -96,11 +96,9 @@ class PineconeUpsert_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         })
 
         const pineconeIndex = client.Index(index)

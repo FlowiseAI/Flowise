@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import CanvasNode from './CanvasNode'
 import ButtonEdge from './ButtonEdge'
+import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
@@ -40,13 +41,13 @@ import useConfirm from 'hooks/useConfirm'
 import { IconX } from '@tabler/icons'
 
 // utils
-import { getUniqueNodeId, initNode, getEdgeLabelName, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper'
+import { getUniqueNodeId, initNode, rearrangeToolsOrdering, getUpsertDetails } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
 
-const nodeTypes = { customNode: CanvasNode }
+const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
 // ==============================|| CANVAS ||============================== //
@@ -100,8 +101,7 @@ const Canvas = () => {
         const newEdge = {
             ...params,
             type: 'buttonedge',
-            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`,
-            data: { label: getEdgeLabelName(params.sourceHandle) }
+            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
         }
 
         const targetNodeId = params.targetHandle.split('-')[0]
@@ -170,7 +170,7 @@ const Canvas = () => {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate(-1)
+                navigate('/')
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
@@ -277,7 +277,7 @@ const Canvas = () => {
             const newNode = {
                 id: newNodeId,
                 position,
-                type: 'customNode',
+                type: nodeData.type !== 'StickyNote' ? 'customNode' : 'stickyNote',
                 data: initNode(nodeData, newNodeId)
             }
 
