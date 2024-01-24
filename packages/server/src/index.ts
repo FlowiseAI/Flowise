@@ -1933,7 +1933,8 @@ export async function start(): Promise<void> {
     serverApp = new App()
 
     const port = parseInt(process.env.PORT || '', 10) || 3000
-    const subpath = process.env.SUBPATH ? process.env.SUBPATH + '/socket.io' : ''
+    const basesubpath = process.env.SUBPATH || '/aichatbot'
+    const subpath = `${basesubpath}${basesubpath === '/' ? '' : '/'}socket.io`
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
