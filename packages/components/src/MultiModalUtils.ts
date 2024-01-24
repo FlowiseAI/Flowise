@@ -6,15 +6,26 @@ import path from 'path'
 import { getUserHome } from './utils'
 import fs from 'fs'
 import { MessageContent } from '@langchain/core/dist/messages'
+import { FlowiseChatOpenAI } from '../nodes/chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 
-export const processSpeechToText = async (nodeData: INodeData, input: string, options: ICommonObject) => {
+export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject) => {
+    let model = nodeData.inputs?.model as BaseChatModel
+
+    if (model instanceof FlowiseChatOpenAI) {
+        // TODO: this should not be static, need to figure out how to pass the nodeData and options to the invoke method
+        FlowiseChatOpenAI.chainNodeOptions = options
+        FlowiseChatOpenAI.chainNodeData = nodeData
+    }
+}
+
+export const checkSpeechToText = async (nodeData: INodeData, options: ICommonObject) => {
     const MODEL_NAME = 'whisper-1'
-
+    let input = undefined
     let model = nodeData.inputs?.model as BaseChatModel
     if (model instanceof ChatOpenAI && (model as any).multiModal) {
         const multiModalConfig = (model as any).multiModal
         if (options?.uploads) {
-            if (options.uploads.length === 1 && input.length === 0 && options.uploads[0].mime === 'audio/webm') {
+            if (options.uploads.length === 1 && options.uploads[0].mime === 'audio/webm') {
                 const upload = options.uploads[0]
                 //special case, text input is empty, but we have an upload (recorded audio)
                 if (multiModalConfig.allowSpeechToText) {

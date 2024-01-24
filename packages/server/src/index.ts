@@ -474,7 +474,6 @@ export class App {
                 const allowances: IUploadFileSizeAndTypes[] = []
                 let allowSpeechToText = false
                 let allowImageUploads = false
-                let allowAudioUploads = false
                 flowObj.nodes.forEach((node: IReactFlowNode) => {
                     if (uploadAllowedCategoryNodes.indexOf(node.data.category) > -1) {
                         logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
@@ -484,17 +483,10 @@ export class App {
                         node.data.inputParams.map((param: INodeParams) => {
                             if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads'] && !allowImageUploads) {
                                 allowances.push({
-                                    fileTypes: 'image/gif;image/jpeg;image/png;image/webp'.split(';'),
+                                    fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
                                     maxUploadSize: 5
                                 })
                                 allowImageUploads = true
-                            }
-                            if (param.name === 'allowAudioUploads' && node.data.inputs?.['allowAudioUploads'] && !allowAudioUploads) {
-                                allowances.push({
-                                    fileTypes: 'audio/mpeg;audio/x-wav;audio/mp4'.split(';'),
-                                    maxUploadSize: 5
-                                })
-                                allowAudioUploads = true
                             }
                             if (param.name === 'allowSpeechToText' && node.data.inputs?.['allowSpeechToText']) {
                                 allowSpeechToText = true

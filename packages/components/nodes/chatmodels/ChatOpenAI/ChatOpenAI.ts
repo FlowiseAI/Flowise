@@ -3,6 +3,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 import { BaseCache } from 'langchain/schema'
 import { BaseLLMParams } from 'langchain/llms/base'
+import { FlowiseChatOpenAI } from './FlowiseChatOpenAI'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -157,13 +158,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                default: false,
-                optional: true
-            },
-            {
-                label: 'Allow Audio Uploads',
-                name: 'allowAudioUploads',
-                type: 'boolean',
+                description: 'Enabling this option, would default the model to gpt-4-vision-preview',
                 default: false,
                 optional: true
             },
@@ -236,7 +231,6 @@ class ChatOpenAI_ChatModels implements INode {
         const baseOptions = nodeData.inputs?.baseOptions
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const allowAudioUploads = nodeData.inputs?.allowAudioUploads as boolean
         const allowSpeechToText = nodeData.inputs?.allowSpeechToText as boolean
         const speechToTextMode = nodeData.inputs?.speechToTextMode as string
         const imageResolution = nodeData.inputs?.imageResolution as string
@@ -269,24 +263,18 @@ class ChatOpenAI_ChatModels implements INode {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-        const model = new ChatOpenAI(obj, {
-            basePath,
+        const model = new FlowiseChatOpenAI(obj, {
+            baseURL: basePath,
             baseOptions: parsedBaseOptions
         })
 
         const multiModal = {
             allowImageUploads: allowImageUploads ?? false,
-            allowAudioUploads: allowAudioUploads ?? false,
             allowSpeechToText: allowSpeechToText ?? false,
             imageResolution,
             speechToTextMode
         }
-        Object.defineProperty(model, 'multiModal', {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: multiModal
-        })
+        model.multiModal = multiModal
         return model
     }
 }

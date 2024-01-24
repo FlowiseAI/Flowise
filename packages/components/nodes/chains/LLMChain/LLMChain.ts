@@ -8,6 +8,7 @@ import { formatResponse, injectOutputParser } from '../../outputparsers/OutputPa
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { injectChainNodeData } from '../../../src/MultiModalUtils'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -129,6 +130,7 @@ class LLMChain_Chains implements INode {
         if (!this.outputParser && outputParser) {
             this.outputParser = outputParser
         }
+        injectChainNodeData(nodeData, options)
         promptValues = injectOutputParser(this.outputParser, chain, promptValues)
         const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
         // eslint-disable-next-line no-console

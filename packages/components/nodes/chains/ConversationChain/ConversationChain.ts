@@ -8,8 +8,7 @@ import { flatten } from 'lodash'
 import { Document } from 'langchain/document'
 import { RunnableSequence } from 'langchain/schema/runnable'
 import { StringOutputParser } from 'langchain/schema/output_parser'
-import { addImagesToMessages, processSpeechToText } from '../../../src/MultiModalUtils'
-import { HumanMessage } from 'langchain/schema'
+import { injectChainNodeData } from '../../../src/MultiModalUtils'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -75,7 +74,7 @@ class ConversationChain_Chains implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const memory = nodeData.inputs?.memory
-        input = await processSpeechToText(nodeData, input, options)
+        injectChainNodeData(nodeData, options)
 
         const chain = prepareChain(nodeData, options, this.sessionId)
 
@@ -132,24 +131,12 @@ const prepareChatPrompt = (nodeData: INodeData, options: ICommonObject) => {
 
     if (finalText) systemMessage = `${systemMessage}\nThe AI has the following context:\n${finalText}`
 
-    // TODO: add audio uploads
-    // if (options.uploads.length > 0) {
-    //     const audioUploads = getAudioUploads(options.uploads)
-    //     for (const upload of audioUploads) {
-    //         await this.processAudioWithWhisper(upload, chatMessages)
-    //     }
-    // }
-    const imageContent = addImagesToMessages(nodeData, options)
-
     //TODO, this should not be any[], what interface should it be?
     let promptMessages: any[] = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? `${prompt}\n${systemMessage}` : systemMessage),
         new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
         HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
     ]
-    if (imageContent.length > 0) {
-        promptMessages.push(new HumanMessage({ content: imageContent }))
-    }
     const chatPrompt = ChatPromptTemplate.fromMessages(promptMessages)
 
     return chatPrompt

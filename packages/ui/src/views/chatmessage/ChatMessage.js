@@ -23,7 +23,7 @@ import {
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconSquare, IconTrash, IconX } from '@tabler/icons'
+import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX } from '@tabler/icons'
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
 import audioUploadSVG from 'assets/images/wave-sound.jpg'
@@ -897,9 +897,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                     <IconX color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'} />
                                 </IconButton>
                                 <IconButton onClick={onRecordingStopped} size='small'>
-                                    <IconSquare
-                                        color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                    />
+                                    <IconSend color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'} />
                                 </IconButton>
                             </div>
                         </Box>
