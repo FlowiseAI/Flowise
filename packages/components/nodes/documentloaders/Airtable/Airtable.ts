@@ -124,6 +124,10 @@ class Airtable_DocumentLoaders implements INode {
 
         const loader = new AirtableLoader(airtableOptions)
 
+        if (!baseId || !tableId) {
+            throw new Error('Base ID and Table ID must be provided.')
+        }
+
         let docs = []
 
         if (textSplitter) {
@@ -213,7 +217,7 @@ class AirtableLoader extends BaseDocumentLoader {
         return this.loadLimit()
     }
 
-    protected async fetchAirtableData(url: string, data: any): Promise<AirtableLoaderResponse> {
+    protected async fetchAirtableData(url: string, data: AirtableLoaderRequest): Promise<AirtableLoaderResponse> {
         try {
             const headers = {
                 Authorization: `Bearer ${this.accessToken}`,
@@ -223,7 +227,11 @@ class AirtableLoader extends BaseDocumentLoader {
             const response = await axios.post(url, data, { headers })
             return response.data
         } catch (error) {
-            throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Failed to fetch ${url} from Airtable: ${error.message}, status: ${error.response?.status}`)
+            } else {
+                throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
+            }
         }
     }
 
@@ -259,7 +267,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     private async loadAll(): Promise<Document[]> {
         let data: AirtableLoaderRequest = {
-            pageSize: this.limit,
+            maxRecords: this.limit,
             view: this.viewId
         }
 
@@ -272,7 +280,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
         do {
             response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
-            returnPages.push.apply(returnPages, response.records)
+            returnPages.push(...response.records)
             data.offset = response.offset
         } while (response.offset !== undefined)
         return returnPages.map((page) => this.createDocumentFromPage(page))
