@@ -12,7 +12,11 @@
     "scripts": {
         "build": "turbo run build",
         "build-force": "turbo run build --force",
+        "build:admin": "turbo run build --filter=flowise-ui --filter=flowise --filter=flowise-components",
+        "build:sdk": "turbo run build --filter=flowise-embed --filter=flowise-embed-react",
         "dev": "turbo run dev --parallel",
+        "dev:admin": "turbo run dev --parallel --filter=flowise-ui --filter=flowise --filter=flowise-components",
+        "dev:sdk": "turbo run dev --parallel --filter=flowise-embed --filter=flowise-embed-react",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
