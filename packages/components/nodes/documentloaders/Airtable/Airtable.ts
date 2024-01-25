@@ -65,13 +65,13 @@ class Airtable_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Exclude Field Names',
-                name: 'excludeFieldNames',
+                label: 'Fields',
+                name: 'fields',
                 type: 'string',
-                placeholder: 'Name, Assignee',
+                placeholder: 'Name, Assignee, fld1u0qUz0SoOQ9Gg, fldew39v6LBN5CjUl',
                 optional: true,
                 additionalParams: true,
-                description: 'Comma-separated list of field names to exclude'
+                description: 'Comma-separated list of field names or IDs to include. Use field IDs if field names contain commas.'
             },
             {
                 label: 'Return All',
@@ -102,7 +102,8 @@ class Airtable_DocumentLoaders implements INode {
         const baseId = nodeData.inputs?.baseId as string
         const tableId = nodeData.inputs?.tableId as string
         const viewId = nodeData.inputs?.viewId as string
-        const excludeFieldNames = nodeData.inputs?.excludeFieldNames as string
+        const fieldsInput = nodeData.inputs?.fields as string
+        const fields = fieldsInput ? fieldsInput.split(',').map((field) => field.trim()) : []
         const returnAll = nodeData.inputs?.returnAll as boolean
         const limit = nodeData.inputs?.limit as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
@@ -115,7 +116,7 @@ class Airtable_DocumentLoaders implements INode {
             baseId,
             tableId,
             viewId,
-            excludeFieldNames: excludeFieldNames ? excludeFieldNames.split(',').map((id) => id.trim()) : [],
+            fields,
             returnAll,
             accessToken,
             limit: limit ? parseInt(limit, 10) : 100
@@ -156,7 +157,7 @@ interface AirtableLoaderParams {
     tableId: string
     accessToken: string
     viewId?: string
-    excludeFieldNames?: string[]
+    fields?: string[]
     limit?: number
     returnAll?: boolean
 }
@@ -179,7 +180,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly viewId?: string
 
-    public readonly excludeFieldNames: string[]
+    public readonly fields: string[]
 
     public readonly accessToken: string
 
@@ -187,12 +188,12 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly returnAll: boolean
 
-    constructor({ baseId, tableId, viewId, excludeFieldNames = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
+    constructor({ baseId, tableId, viewId, fields = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
         super()
         this.baseId = baseId
         this.tableId = tableId
         this.viewId = viewId
-        this.excludeFieldNames = excludeFieldNames
+        this.fields = fields
         this.accessToken = accessToken
         this.limit = limit
         this.returnAll = returnAll
@@ -205,14 +206,14 @@ class AirtableLoader extends BaseDocumentLoader {
         return this.loadLimit()
     }
 
-    protected async fetchAirtableData(url: string, params: ICommonObject): Promise<AirtableLoaderResponse> {
+    protected async fetchAirtableData(url: string, data: any): Promise<AirtableLoaderResponse> {
         try {
             const headers = {
                 Authorization: `Bearer ${this.accessToken}`,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
-            const response = await axios.get(url, { params, headers })
+            const response = await axios.get(url, data, { headers })
             return response.data
         } catch (error) {
             throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
@@ -222,12 +223,6 @@ class AirtableLoader extends BaseDocumentLoader {
     private createDocumentFromPage(page: AirtableLoaderPage): Document {
         // Generate the URL
         const pageUrl = `https://api.airtable.com/v0/${this.baseId}/${this.tableId}/${page.id}`
-        const fields = { ...page.fields }
-
-        // Exclude any specified fields
-        this.excludeFieldNames.forEach((id) => {
-            delete fields[id]
-        })
 
         // Return a langchain document
         return new Document({
@@ -239,24 +234,40 @@ class AirtableLoader extends BaseDocumentLoader {
     }
 
     private async loadLimit(): Promise<Document[]> {
-        const params = { maxRecords: this.limit, view: this.viewId }
-        const data = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, params)
-        if (data.records.length === 0) {
+        const data = {
+            maxRecords: this.limit,
+            view: this.viewId
+        }
+
+        if (this.fields.length > 0) {
+            data.fields = this.fields
+        }
+
+        const response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
+        if (response.records.length === 0) {
             return []
         }
-        return data.records.map((page) => this.createDocumentFromPage(page))
+        return response.records.map((page) => this.createDocumentFromPage(page))
     }
 
     private async loadAll(): Promise<Document[]> {
-        const params: ICommonObject = { pageSize: 100, view: this.viewId }
-        let data: AirtableLoaderResponse
+        const data = {
+            pageSize: 100,
+            view: this.viewId
+        }
+
+        if (this.fields.length > 0) {
+            data.fields = this.fields
+        }
+
+        let response: AirtableLoaderResponse
         let returnPages: AirtableLoaderPage[] = []
 
         do {
-            data = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, params)
-            returnPages.push.apply(returnPages, data.records)
-            params.offset = data.offset
-        } while (data.offset !== undefined)
+            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
+            returnPages.push.apply(returnPages, response.records)
+            params.offset = response.offset
+        } while (response.offset !== undefined)
         return returnPages.map((page) => this.createDocumentFromPage(page))
     }
 }
