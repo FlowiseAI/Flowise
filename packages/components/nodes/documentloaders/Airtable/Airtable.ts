@@ -162,6 +162,12 @@ interface AirtableLoaderParams {
     returnAll?: boolean
 }
 
+interface AirtableLoaderRequest {
+    maxRecords: number
+    view: string | undefined
+    fields?: string[]
+}
+
 interface AirtableLoaderResponse {
     records: AirtableLoaderPage[]
     offset?: string
@@ -213,7 +219,7 @@ class AirtableLoader extends BaseDocumentLoader {
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
-            const response = await axios.get(url, data, { headers })
+            const response = await axios.post(url, data, { headers })
             return response.data
         } catch (error) {
             throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
@@ -226,7 +232,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
         // Return a langchain document
         return new Document({
-            pageContent: JSON.stringify(fields, null, 2),
+            pageContent: JSON.stringify(page.fields, null, 2),
             metadata: {
                 url: pageUrl
             }
@@ -234,7 +240,7 @@ class AirtableLoader extends BaseDocumentLoader {
     }
 
     private async loadLimit(): Promise<Document[]> {
-        const data = {
+        let data: AirtableLoaderRequest = {
             maxRecords: this.limit,
             view: this.viewId
         }
@@ -251,7 +257,7 @@ class AirtableLoader extends BaseDocumentLoader {
     }
 
     private async loadAll(): Promise<Document[]> {
-        const data = {
+        let data: AirtableLoaderRequest = {
             pageSize: 100,
             view: this.viewId
         }
