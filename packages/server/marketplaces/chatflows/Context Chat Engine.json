@@ -496,6 +496,13 @@
                 "description": "Answer question based on retrieved documents (context) with built-in memory to remember conversation",
                 "inputParams": [
                     {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "contextChatEngine_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
                         "label": "System Message",
                         "name": "systemMessagePrompt",
                         "type": "string",
@@ -529,7 +536,8 @@
                     "model": "{{chatOpenAI_LlamaIndex_2.data.instance}}",
                     "vectorStoreRetriever": "{{pineconeLlamaIndex_0.data.instance}}",
                     "memory": "{{RedisBackedChatMemory_0.data.instance}}",
-                    "systemMessagePrompt": ""
+                    "systemMessagePrompt": "",
+                    "returnSourceDocuments": true
                 },
                 "outputAnchors": [
                     {

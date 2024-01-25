@@ -70,6 +70,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
