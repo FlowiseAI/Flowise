@@ -328,14 +328,6 @@ export const buildLangchain = async (
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
             } else {
-                // skip initializing web scraper nodes during prediction since they would have already run as a part of upsert
-                if (
-                    reactFlowNode.data.name === 'cheerioWebScraper' ||
-                    reactFlowNode.data.name === 'playwrightWebScraper' ||
-                    reactFlowNode.data.name === 'puppeteerWebScraper'
-                ) {
-                    continue
-                }
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
                     chatId,
