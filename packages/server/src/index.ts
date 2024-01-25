@@ -62,7 +62,7 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware } from './utils/XSS'
+import { sanitizeMiddleware, getAllowedCorsOrigins, getAllowedEmbeddingOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
@@ -126,8 +126,30 @@ export class App {
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
-        // Allow access from *
-        this.app.use(cors())
+        // Allow access from specified domains
+        const corsOptions = {
+            origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+                const allowedOrigins = getAllowedCorsOrigins()
+                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+                    callback(null, true)
+                } else {
+                    callback(new Error('Not allowed by CORS'))
+                }
+            }
+        }
+        this.app.use(cors(corsOptions))
+
+        // Allow embedding from specified domains.
+        this.app.use((req, res, next) => {
+            const allowedOrigins = getAllowedEmbeddingOrigins()
+            if (allowedOrigins == '*') {
+                next()
+            } else {
+                const csp = `frame-ancestors ${allowedOrigins}`
+                res.setHeader('Content-Security-Policy', csp)
+                next()
+            }
+        })
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -1863,7 +1885,14 @@ export async function start(): Promise<void> {
 
     const io = new Server(server, {
         cors: {
-            origin: '*'
+            origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+                const allowedOrigins = getAllowedCorsOrigins()
+                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+                    callback(null, true)
+                } else {
+                    callback(new Error('Not allowed by CORS'))
+                }
+            }
         }
     })
 

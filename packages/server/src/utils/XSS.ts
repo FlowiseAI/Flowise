@@ -18,3 +18,14 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
     }
     next()
 }
+
+export function getAllowedCorsOrigins(): string {
+    // Expects FQDN separated by commas, otherwise nothing or * for all.
+    return process.env.CORS_ORIGINS ?? '*'
+}
+
+export function getAllowedEmbeddingOrigins(): string {
+    // Expects FQDN separated by commas, otherwise nothing or * for all.
+    // Also CSP allowed values: self or none
+    return process.env.EMBEDDING_ORIGINS ?? '*'
+}
