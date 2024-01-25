@@ -29,6 +29,12 @@ export interface ICommonObject {
     [key: string]: any | CommonType | ICommonObject | CommonType[] | ICommonObject[]
 }
 
+export interface IVariable {
+    name: string
+    value: string
+    type: string
+}
+
 export type IDatabaseEntity = {
     [key: string]: any
 }

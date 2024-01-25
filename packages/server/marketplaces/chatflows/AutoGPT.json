@@ -511,7 +511,7 @@
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "description": "Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -552,6 +552,45 @@
                         "additionalParams": true,
                         "optional": true,
                         "id": "pinecone_0-input-topK-number"
+                    },
+                    {
+                        "label": "Search Type",
+                        "name": "searchType",
+                        "type": "options",
+                        "default": "similarity",
+                        "options": [
+                            {
+                                "label": "Similarity",
+                                "name": "similarity"
+                            },
+                            {
+                                "label": "Max Marginal Relevance",
+                                "name": "mmr"
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-searchType-options"
+                    },
+                    {
+                        "label": "Fetch K (for MMR Search)",
+                        "name": "fetchK",
+                        "description": "Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR",
+                        "placeholder": "20",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-fetchK-number"
+                    },
+                    {
+                        "label": "Lambda (for MMR Search)",
+                        "name": "lambda",
+                        "description": "Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR",
+                        "placeholder": "0.5",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-lambda-number"
                     }
                 ],
                 "inputAnchors": [
@@ -576,7 +615,10 @@
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
                     "pineconeMetadataFilter": "",
-                    "topK": ""
+                    "topK": "",
+                    "searchType": "similarity",
+                    "fetchK": "",
+                    "lambda": ""
                 },
                 "outputAnchors": [
                     {

@@ -45,7 +45,9 @@ import {
     getSessionChatHistory,
     getAllConnectedNodes,
     clearSessionMemory,
-    findMemoryNode
+    findMemoryNode,
+    getTelemetryFlowObj,
+    getAppVersion
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -64,6 +66,7 @@ import { sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
+import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
 
 export class App {
@@ -71,6 +74,7 @@ export class App {
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
     cachePool: CachePool
+    telemetry: Telemetry
     AppDataSource = getDataSource()
 
     constructor() {
@@ -105,6 +109,9 @@ export class App {
 
                 // Initialize cache pool
                 this.cachePool = new CachePool()
+
+                // Initialize telemetry
+                this.telemetry = new Telemetry()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -294,7 +301,13 @@ export class App {
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newNodeInstance = new nodeModule.nodeClass()
 
-                    const returnData = await newNodeInstance.init(nodeData)
+                    const options: ICommonObject = {
+                        appDataSource: this.AppDataSource,
+                        databaseEntities,
+                        logger
+                    }
+
+                    const returnData = await newNodeInstance.init(nodeData, '', options)
                     const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
 
                     return res.json(result)
@@ -381,6 +394,12 @@ export class App {
 
             const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            await this.telemetry.sendTelemetry('chatflow_created', {
+                version: await getAppVersion(),
+                chatlowId: results.id,
+                flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
+            })
 
             return res.json(results)
         })
@@ -668,6 +687,12 @@ export class App {
             const tool = this.AppDataSource.getRepository(Tool).create(newTool)
             const results = await this.AppDataSource.getRepository(Tool).save(tool)
 
+            await this.telemetry.sendTelemetry('tool_created', {
+                version: await getAppVersion(),
+                toolId: results.id,
+                toolName: results.name
+            })
+
             return res.json(results)
         })
 
@@ -873,6 +898,11 @@ export class App {
 
             const assistant = this.AppDataSource.getRepository(Assistant).create(newAssistant)
             const results = await this.AppDataSource.getRepository(Assistant).save(assistant)
+
+            await this.telemetry.sendTelemetry('assistant_created', {
+                version: await getAppVersion(),
+                assistantId: results.id
+            })
 
             return res.json(results)
         })
@@ -1461,6 +1491,11 @@ export class App {
             let chatId = incomingInput.chatId ?? ''
             let isUpsert = true
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             const vsNodes = nodes.filter(
                 (node) =>
                     node.data.category === 'Vector Stores' &&
@@ -1498,6 +1533,7 @@ export class App {
                 incomingInput.question,
                 chatHistory,
                 chatId,
+                sessionId ?? '',
                 chatflowid,
                 this.AppDataSource,
                 incomingInput?.overrideConfig,
@@ -1509,6 +1545,15 @@ export class App {
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
             this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+
+            await this.telemetry.sendTelemetry('vector_upserted', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                stopNodeId
+            })
+
             return res.status(201).send('Successfully Upserted')
         } catch (e: any) {
             logger.error('[server]: Error:', e)
@@ -1574,6 +1619,12 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
+
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            const memoryType = memoryNode?.data.label
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
@@ -1684,6 +1735,7 @@ export class App {
                     incomingInput.question,
                     chatHistory,
                     chatId,
+                    sessionId ?? '',
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
@@ -1712,12 +1764,6 @@ export class App {
             }
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
-            const memoryNode = findMemoryNode(nodes, edges)
-            const memoryType = memoryNode?.data.label
-
-            let sessionId = undefined
-            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
@@ -1781,12 +1827,22 @@ export class App {
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-            await this.addChatMessage(apiMessage)
+            const chatMessage = await this.addChatMessage(apiMessage)
+            result.chatMessageId = chatMessage.id
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+            await this.telemetry.sendTelemetry('prediction_sent', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                chatId,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges)
+            })
 
-            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
-            if (incomingInput.chatId || isInternal) result.chatId = chatId
+            // Prepare response
+            result.chatId = chatId
+            if (sessionId) result.sessionId = sessionId
+            if (memoryType) result.memoryType = memoryType
 
             return res.json(result)
         } catch (e: any) {
@@ -1798,6 +1854,7 @@ export class App {
     async stopApp() {
         try {
             const removePromises: any[] = []
+            removePromises.push(this.telemetry.flush())
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
