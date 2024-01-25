@@ -166,6 +166,7 @@ interface AirtableLoaderRequest {
     maxRecords: number
     view: string | undefined
     fields?: string[]
+    offset?: string
 }
 
 interface AirtableLoaderResponse {
@@ -258,7 +259,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     private async loadAll(): Promise<Document[]> {
         let data: AirtableLoaderRequest = {
-            pageSize: 100,
+            pageSize: this.limit,
             view: this.viewId
         }
 
@@ -272,7 +273,7 @@ class AirtableLoader extends BaseDocumentLoader {
         do {
             response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
             returnPages.push.apply(returnPages, response.records)
-            params.offset = response.offset
+            data.offset = response.offset
         } while (response.offset !== undefined)
         return returnPages.map((page) => this.createDocumentFromPage(page))
     }
