@@ -19,6 +19,8 @@ export default class Start extends Command {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
+        CORS_ORIGINS: Flags.string(),
+        IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
@@ -78,6 +80,8 @@ export default class Start extends Command {
         const { flags } = await this.parse(Start)
 
         if (flags.PORT) process.env.PORT = flags.PORT
+        if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
+        if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
 

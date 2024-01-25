@@ -62,7 +62,7 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware, getAllowedCorsOrigins, getAllowedEmbeddingOrigins } from './utils/XSS'
+import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
@@ -127,21 +127,11 @@ export class App {
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
         // Allow access from specified domains
-        const corsOptions = {
-            origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-                const allowedOrigins = getAllowedCorsOrigins()
-                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
-                    callback(null, true)
-                } else {
-                    callback(new Error('Not allowed by CORS'))
-                }
-            }
-        }
-        this.app.use(cors(corsOptions))
+        this.app.use(cors(getCorsOptions()))
 
         // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
-            const allowedOrigins = getAllowedEmbeddingOrigins()
+            const allowedOrigins = getAllowedIframeOrigins()
             if (allowedOrigins == '*') {
                 next()
             } else {
@@ -1884,16 +1874,7 @@ export async function start(): Promise<void> {
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
-        cors: {
-            origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-                const allowedOrigins = getAllowedCorsOrigins()
-                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
-                    callback(null, true)
-                } else {
-                    callback(new Error('Not allowed by CORS'))
-                }
-            }
-        }
+        cors: getCorsOptions()
     })
 
     await serverApp.initDatabase()
