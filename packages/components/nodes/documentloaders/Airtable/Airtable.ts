@@ -71,7 +71,8 @@ class Airtable_DocumentLoaders implements INode {
                 placeholder: 'Name, Assignee, fld1u0qUz0SoOQ9Gg, fldew39v6LBN5CjUl',
                 optional: true,
                 additionalParams: true,
-                description: 'Comma-separated list of field names or IDs to include. If empty, then ALL fields are used. Use field IDs if field names contain commas.'
+                description:
+                    'Comma-separated list of field names or IDs to include. If empty, then ALL fields are used. Use field IDs if field names contain commas.'
             },
             {
                 label: 'Return All',
@@ -224,12 +225,15 @@ class AirtableLoader extends BaseDocumentLoader {
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
+            console.log('Sending request to Airtable with data: ', data)
             const response = await axios.post(url, data, { headers })
             return response.data
         } catch (error) {
             if (axios.isAxiosError(error)) {
+                console.error('Error response from Airtable:', error.response?.data)
                 throw new Error(`Failed to fetch ${url} from Airtable: ${error.message}, status: ${error.response?.status}`)
             } else {
+                console.error('An unexpected error occurred:', error)
                 throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
             }
         }
