@@ -9,9 +9,9 @@ import {
     DeleteItemCommandInput,
     AttributeValue
 } from '@aws-sdk/client-dynamodb'
-import { DynamoDBChatMessageHistory } from 'langchain/stores/message/dynamodb'
+import { DynamoDBChatMessageHistory } from '@langchain/community/stores/message/dynamodb'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from 'langchain/schema'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 

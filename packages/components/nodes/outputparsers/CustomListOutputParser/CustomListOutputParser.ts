@@ -1,7 +1,6 @@
-import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { CustomListOutputParser as LangchainCustomListOutputParser } from 'langchain/output_parsers'
+import { BaseOutputParser, CustomListOutputParser as LangchainCustomListOutputParser } from '@langchain/core/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
+import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 
 class CustomListOutputParser implements INode {
     label: string

@@ -3,7 +3,7 @@ import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCre
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput, InputValues, OutputValues } from 'langchain/memory'
 import fetch from 'node-fetch'
-import { AIMessage, BaseMessage, ChatMessage, HumanMessage } from 'langchain/schema'
+import { AIMessage, BaseMessage, ChatMessage, HumanMessage } from '@langchain/core/messages'
 
 type MotorheadMessage = {
     content: string

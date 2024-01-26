@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
-import { Embeddings } from 'langchain/embeddings/base'
+import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
+import { Embeddings } from '@langchain/core/embeddings'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
@@ -102,7 +102,7 @@ class Pinecone_Existing_VectorStores implements INode {
 
         const pineconeIndex = client.Index(index)
 
-        const obj: PineconeLibArgs = {
+        const obj: PineconeStoreParams = {
             pineconeIndex
         }
 

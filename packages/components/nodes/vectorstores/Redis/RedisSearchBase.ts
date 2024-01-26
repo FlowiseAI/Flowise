@@ -7,12 +7,11 @@ import {
     INodeOutputsValue,
     INodeParams
 } from '../../../src'
-
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 import { createClient, SearchOptions } from 'redis'
-import { RedisVectorStore } from 'langchain/vectorstores/redis'
+import { RedisVectorStore } from '@langchain/community/vectorstores/redis'
 import { escapeSpecialChars, unEscapeSpecialChars } from './utils'
 
 export abstract class RedisSearchBase {

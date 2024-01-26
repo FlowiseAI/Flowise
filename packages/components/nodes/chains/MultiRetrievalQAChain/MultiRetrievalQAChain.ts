@@ -1,7 +1,7 @@
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { MultiRetrievalQAChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeParams, VectorStoreRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { MultiRetrievalQAChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class MultiRetrievalQAChain_Chains implements INode {

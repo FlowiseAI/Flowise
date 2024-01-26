@@ -1,8 +1,8 @@
+import { AnthropicInput, ChatAnthropic } from '@langchain/anthropic'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AnthropicInput, ChatAnthropic } from 'langchain/chat_models/anthropic'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string

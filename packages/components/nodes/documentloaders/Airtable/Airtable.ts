@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import axios from 'axios'
+import { Document } from '@langchain/core/documents'
 import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { Document } from 'langchain/document'
-import axios from 'axios'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class Airtable_DocumentLoaders implements INode {
     label: string

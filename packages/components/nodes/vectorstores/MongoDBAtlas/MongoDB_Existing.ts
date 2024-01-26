@@ -1,8 +1,8 @@
 import { Collection } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
+import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 import { MongoDBSearchBase } from './MongoDBSearchBase'
 import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 

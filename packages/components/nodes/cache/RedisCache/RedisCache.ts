@@ -1,8 +1,9 @@
-import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { RedisCache as LangchainRedisCache } from 'langchain/cache/ioredis'
 import { Redis } from 'ioredis'
-import { Generation, ChatGeneration, StoredGeneration, mapStoredMessageToChatMessage } from 'langchain/schema'
 import hash from 'object-hash'
+import { RedisCache as LangchainRedisCache } from '@langchain/community/caches/ioredis'
+import { StoredGeneration, mapStoredMessageToChatMessage } from '@langchain/core/messages'
+import { Generation, ChatGeneration } from '@langchain/core/outputs'
+import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 
 class RedisCache implements INode {
     label: string

@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { OpenApiToolkit } from 'langchain/agents'
-import { JsonSpec, JsonObject } from 'langchain/tools'
-import { BaseLanguageModel } from 'langchain/base_language'
 import { load } from 'js-yaml'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { OpenApiToolkit } from 'langchain/agents'
+import { JsonSpec, JsonObject } from './core'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class OpenAPIToolkit_Tools implements INode {

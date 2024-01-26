@@ -1,10 +1,10 @@
 import { flatten } from 'lodash'
 import { createClient } from '@supabase/supabase-js'
-import { Document } from 'langchain/document'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { Embeddings } from '@langchain/core/embeddings'
+import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SupabaseLibArgs, SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Supabase_VectorStores implements INode {

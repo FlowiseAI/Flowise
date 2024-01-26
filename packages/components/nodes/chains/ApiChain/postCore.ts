@@ -1,8 +1,8 @@
-import { BaseLanguageModel } from 'langchain/base_language'
-import { CallbackManagerForChainRun } from 'langchain/callbacks'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { CallbackManagerForChainRun } from '@langchain/core/callbacks/manager'
 import { BaseChain, ChainInputs, LLMChain, SerializedAPIChain } from 'langchain/chains'
-import { BasePromptTemplate, PromptTemplate } from 'langchain/prompts'
-import { ChainValues } from 'langchain/schema'
+import { BasePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
+import { ChainValues } from '@langchain/core/utils/types'
 import fetch from 'node-fetch'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:

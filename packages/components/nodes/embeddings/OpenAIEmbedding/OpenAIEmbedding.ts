@@ -1,6 +1,6 @@
+import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/openai'
 
 class OpenAIEmbedding_Embeddings implements INode {
     label: string

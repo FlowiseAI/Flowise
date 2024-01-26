@@ -1,14 +1,16 @@
-import { Tool } from 'langchain/tools'
-import { BaseChatModel } from 'langchain/chat_models/base'
 import { flatten } from 'lodash'
-import { AgentStep, BaseMessage, ChainValues, AIMessage, HumanMessage } from 'langchain/schema'
-import { RunnableSequence } from 'langchain/schema/runnable'
+import { Tool } from '@langchain/core/tools'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { ChainValues } from '@langchain/core/utils/types'
+import { AgentStep } from '@langchain/core/agents'
+import { renderTemplate } from '@langchain/core/prompts'
+import { RunnableSequence } from '@langchain/core/runnables'
+import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
-import { ChatConversationalAgent } from 'langchain/agents'
-import { renderTemplate } from '@langchain/core/prompts'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 

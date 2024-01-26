@@ -1,13 +1,12 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
-import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
+import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
 import { OutputFixingParser } from 'langchain/output_parsers'
+import { LLMChain } from 'langchain/chains'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 
 class LLMChain_Chains implements INode {
     label: string

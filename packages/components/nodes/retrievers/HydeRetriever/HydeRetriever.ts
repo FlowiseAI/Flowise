@@ -1,9 +1,9 @@
-import { VectorStore } from 'langchain/vectorstores/base'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { PromptTemplate } from '@langchain/core/prompts'
 import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate } from 'langchain/prompts'
 import { handleEscapeCharacters } from '../../../src/utils'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class HydeRetriever_Retrievers implements INode {
     label: string

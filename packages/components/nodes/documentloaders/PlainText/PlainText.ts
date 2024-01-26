@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { Document } from 'langchain/document'
+import { Document } from '@langchain/core/documents'
 import { handleEscapeCharacters } from '../../../src'
 
 class PlainText_DocumentLoaders implements INode {

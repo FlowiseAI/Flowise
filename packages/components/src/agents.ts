@@ -1,11 +1,13 @@
-import { AgentExecutorInput, BaseSingleActionAgent, BaseMultiActionAgent, RunnableAgent, StoppingMethod } from 'langchain/agents'
-import { ChainValues, AgentStep, AgentFinish, AgentAction, BaseMessage, FunctionMessage, AIMessage } from 'langchain/schema'
-import { OutputParserException } from 'langchain/schema/output_parser'
-import { CallbackManager, CallbackManagerForChainRun, Callbacks } from 'langchain/callbacks'
+import { ChainValues } from '@langchain/core/utils/types'
+import { AgentStep, AgentFinish, AgentAction } from '@langchain/core/agents'
+import { BaseMessage, FunctionMessage, AIMessage } from '@langchain/core/messages'
+import { OutputParserException } from '@langchain/core/output_parsers'
+import { CallbackManager, CallbackManagerForChainRun, Callbacks } from '@langchain/core/callbacks/manager'
 import { ToolInputParsingException, Tool } from '@langchain/core/tools'
-import { Runnable } from 'langchain/schema/runnable'
-import { BaseChain, SerializedLLMChain } from 'langchain/chains'
+import { Runnable } from '@langchain/core/runnables'
 import { Serializable } from '@langchain/core/load/serializable'
+import { BaseChain, SerializedLLMChain } from 'langchain/chains'
+import { AgentExecutorInput, BaseSingleActionAgent, BaseMultiActionAgent, RunnableAgent, StoppingMethod } from 'langchain/agents'
 
 type AgentExecutorOutput = ChainValues
 

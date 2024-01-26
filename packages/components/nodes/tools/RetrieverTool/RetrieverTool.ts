@@ -1,8 +1,8 @@
+import { DynamicTool } from '@langchain/core/tools'
+import { BaseRetriever } from '@langchain/core/retrievers'
+import { createRetrieverTool } from 'langchain/tools/retriever'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { DynamicTool } from 'langchain/tools'
-import { createRetrieverTool } from 'langchain/agents/toolkits'
-import { BaseRetriever } from 'langchain/schema/retriever'
 
 class Retriever_Tools implements INode {
     label: string

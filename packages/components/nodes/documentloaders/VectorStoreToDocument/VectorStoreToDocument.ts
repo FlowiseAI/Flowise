@@ -1,4 +1,4 @@
-import { VectorStore } from 'langchain/vectorstores/base'
+import { VectorStore } from '@langchain/core/vectorstores'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src/utils'
 

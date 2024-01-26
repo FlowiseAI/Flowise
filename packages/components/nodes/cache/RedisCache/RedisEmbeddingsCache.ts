@@ -1,8 +1,8 @@
-import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { Redis } from 'ioredis'
+import { RedisByteStore } from '@langchain/community/storage/ioredis'
+import { Embeddings } from '@langchain/core/embeddings'
 import { CacheBackedEmbeddings } from 'langchain/embeddings/cache_backed'
-import { RedisByteStore } from 'langchain/storage/ioredis'
-import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 
 class RedisEmbeddingsCache implements INode {
     label: string
