@@ -262,7 +262,7 @@ class AirtableLoader extends BaseDocumentLoader {
             data.fields = this.fields
         }
 
-        const response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
+        const response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
         if (response.records.length === 0) {
             return []
         }
@@ -283,7 +283,7 @@ class AirtableLoader extends BaseDocumentLoader {
         let returnPages: AirtableLoaderPage[] = []
 
         do {
-            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, data)
+            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
             returnPages.push(...response.records)
             data.offset = response.offset
         } while (response.offset !== undefined)
