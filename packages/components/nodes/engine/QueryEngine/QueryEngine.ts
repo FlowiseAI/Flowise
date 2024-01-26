@@ -68,13 +68,15 @@ class QueryEngine_LlamaIndex implements INode {
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
         const responseSynthesizerObj = nodeData.inputs?.responseSynthesizer
 
+        let queryEngine = new RetrieverQueryEngine(vectorStoreRetriever)
+
         if (responseSynthesizerObj) {
             if (responseSynthesizerObj.type === 'TreeSummarize') {
                 const responseSynthesizer = new ResponseSynthesizer({
                     responseBuilder: new TreeSummarize(vectorStoreRetriever.serviceContext, responseSynthesizerObj.textQAPromptTemplate),
                     serviceContext: vectorStoreRetriever.serviceContext
                 })
-                return new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
             } else if (responseSynthesizerObj.type === 'CompactAndRefine') {
                 const responseSynthesizer = new ResponseSynthesizer({
                     responseBuilder: new CompactAndRefine(
@@ -84,7 +86,7 @@ class QueryEngine_LlamaIndex implements INode {
                     ),
                     serviceContext: vectorStoreRetriever.serviceContext
                 })
-                return new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
             } else if (responseSynthesizerObj.type === 'Refine') {
                 const responseSynthesizer = new ResponseSynthesizer({
                     responseBuilder: new Refine(
@@ -94,17 +96,15 @@ class QueryEngine_LlamaIndex implements INode {
                     ),
                     serviceContext: vectorStoreRetriever.serviceContext
                 })
-                return new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
             } else if (responseSynthesizerObj.type === 'SimpleResponseBuilder') {
                 const responseSynthesizer = new ResponseSynthesizer({
                     responseBuilder: new SimpleResponseBuilder(vectorStoreRetriever.serviceContext),
                     serviceContext: vectorStoreRetriever.serviceContext
                 })
-                return new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
             }
         }
-
-        const queryEngine = new RetrieverQueryEngine(vectorStoreRetriever)
 
         let text = ''
         let sourceDocuments: ICommonObject[] = []
