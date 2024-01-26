@@ -65,13 +65,13 @@ class Airtable_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Fields',
+                label: 'Include Only Fields',
                 name: 'fields',
                 type: 'string',
                 placeholder: 'Name, Assignee, fld1u0qUz0SoOQ9Gg, fldew39v6LBN5CjUl',
                 optional: true,
                 additionalParams: true,
-                description: 'Comma-separated list of field names or IDs to include. Use field IDs if field names contain commas.'
+                description: 'Comma-separated list of field names or IDs to include. If empty, then ALL fields are used. Use field IDs if field names contain commas.'
             },
             {
                 label: 'Return All',
