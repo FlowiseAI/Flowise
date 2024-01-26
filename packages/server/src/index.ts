@@ -473,7 +473,7 @@ export class App {
                     }
                 }
 
-                isStreaming = isFlowValidForStream(nodes, endingNodeData)
+                isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
             }
 
             const obj = { isStreaming }
@@ -1676,7 +1676,11 @@ export class App {
                             return res.status(500).send(`Ending node must be either a Chain or Agent`)
                         }
 
-                        if (!Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)) {
+                        if (
+                            endingNodeData.outputs &&
+                            Object.keys(endingNodeData.outputs).length &&
+                            !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
+                        ) {
                             return res
                                 .status(500)
                                 .send(
