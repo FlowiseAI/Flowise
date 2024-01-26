@@ -20,7 +20,7 @@ class Airtable_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Airtable'
         this.name = 'airtable'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 'airtable.svg'
         this.category = 'Document Loaders'
@@ -225,15 +225,12 @@ class AirtableLoader extends BaseDocumentLoader {
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
-            console.log('Sending request to Airtable with data: ', data)
             const response = await axios.post(url, data, { headers })
             return response.data
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.error('Error response from Airtable:', error.response?.data)
                 throw new Error(`Failed to fetch ${url} from Airtable: ${error.message}, status: ${error.response?.status}`)
             } else {
-                console.error('An unexpected error occurred:', error)
                 throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
             }
         }
