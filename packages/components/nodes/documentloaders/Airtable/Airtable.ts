@@ -251,7 +251,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     private async loadLimit(): Promise<Document[]> {
         let data: AirtableLoaderRequest = {
-            maxRecords: this.limit,
+            maxRecords: Math.min(this.limit, 100), // Airtable only returns up to 100 records per request
             view: this.viewId
         }
 
@@ -259,11 +259,25 @@ class AirtableLoader extends BaseDocumentLoader {
             data.fields = this.fields
         }
 
-        const response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
-        if (response.records.length === 0) {
-            return []
+        let response: AirtableLoaderResponse
+        let returnPages: AirtableLoaderPage[] = []
+
+        // Paginate if the user specifies a limit > 100 (like 200) but not return all.
+        do {
+            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
+            returnPages.push(...response.records)
+            data.offset = response.offset
+
+            // Stop if we have fetched enough records
+            if (returnPages.length >= this.limit) break
+        } while (response.offset !== undefined)
+
+        // Truncate array to the limit if necessary
+        if (returnPages.length > this.limit) {
+            returnPages.length = this.limit
         }
-        return response.records.map((page) => this.createDocumentFromPage(page))
+
+        return returnPages.map((page) => this.createDocumentFromPage(page))
     }
 
     private async loadAll(): Promise<Document[]> {
