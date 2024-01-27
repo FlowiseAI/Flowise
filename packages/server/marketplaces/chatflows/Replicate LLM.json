@@ -227,13 +227,23 @@
                         "type": "BaseLLMOutputParser",
                         "optional": true,
                         "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
                     "model": "{{replicate_0.data.instance}}",
                     "prompt": "{{promptTemplate_0.data.instance}}",
                     "outputParser": "",
-                    "chainName": ""
+                    "chainName": "",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {
