@@ -251,7 +251,7 @@ class AirtableLoader extends BaseDocumentLoader {
 
     private async loadLimit(): Promise<Document[]> {
         let data: AirtableLoaderRequest = {
-            maxRecords: Math.min(this.limit, 100), // Airtable only returns up to 100 records per request
+            maxRecords: this.limit,
             view: this.viewId
         }
 
