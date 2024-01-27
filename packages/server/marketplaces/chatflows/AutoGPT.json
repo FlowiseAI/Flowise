@@ -549,7 +549,7 @@
             "data": {
                 "id": "pinecone_0",
                 "label": "Pinecone",
-                "version": 1,
+                "version": 2,
                 "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
