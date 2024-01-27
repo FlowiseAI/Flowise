@@ -14,7 +14,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -27,6 +27,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_0-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -66,7 +88,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -346,7 +369,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 3,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -368,6 +391,14 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
@@ -536,7 +567,7 @@
             "data": {
                 "id": "pinecone_0",
                 "label": "Pinecone",
-                "version": 1,
+                "version": 2,
                 "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
