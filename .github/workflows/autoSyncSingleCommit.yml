@@ -28,4 +28,9 @@ jobs:
           token: ${{ secrets.AUTOSYNC_TOKEN }}
           repository: ${{ secrets.AUTOSYNC_CH_URL }}
           event-type: ${{ secrets.AUTOSYNC_SC_EVENT_TYPE }}
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+          client-payload: >-
+            {
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "commitMessage": "${{ github.event.commits[0].message }}"
+            }
