@@ -170,7 +170,7 @@ interface AirtableLoaderParams {
 }
 
 interface AirtableLoaderRequest {
-    maxRecords: number
+    maxRecords?: number
     view: string | undefined
     fields?: string[]
     offset?: string
