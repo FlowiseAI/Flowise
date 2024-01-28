@@ -5,12 +5,15 @@ import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } f
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
-let mongoClientSingleton = null
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
 
-const getMongoClient = async (mongoDBConnectUrl) => {
-    if (!mongoClientSingleton) {
-        mongoClientSingleton = new MongoClient(mongoDBConnectUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+const getMongoClient = async (newMongoUrl: string) => {
+    if (!mongoClientSingleton || newMongoUrl !== mongoUrl) {
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
         await mongoClientSingleton.connect()
+        return mongoClientSingleton
     }
     return mongoClientSingleton
 }
