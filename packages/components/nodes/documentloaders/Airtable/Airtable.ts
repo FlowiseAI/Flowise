@@ -78,6 +78,7 @@ class Airtable_DocumentLoaders implements INode {
                 label: 'Return All',
                 name: 'returnAll',
                 type: 'boolean',
+                optional: true,
                 default: true,
                 additionalParams: true,
                 description: 'If all results should be returned or only up to a given limit'
@@ -86,6 +87,7 @@ class Airtable_DocumentLoaders implements INode {
                 label: 'Limit',
                 name: 'limit',
                 type: 'number',
+                optional: true,
                 default: 100,
                 additionalParams: true,
                 description: 'Number of results to return'
@@ -282,7 +284,6 @@ class AirtableLoader extends BaseDocumentLoader {
 
     private async loadAll(): Promise<Document[]> {
         let data: AirtableLoaderRequest = {
-            maxRecords: this.limit,
             view: this.viewId
         }
 
