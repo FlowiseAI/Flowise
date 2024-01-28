@@ -1,8 +1,45 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { Redis } from 'ioredis'
+import { Redis, RedisOptions } from 'ioredis'
+import { isEqual } from 'lodash'
 import { CacheBackedEmbeddings } from 'langchain/embeddings/cache_backed'
 import { RedisByteStore } from 'langchain/storage/ioredis'
 import { Embeddings } from 'langchain/embeddings/base'
+
+let redisClientSingleton: Redis
+let redisClientOption: RedisOptions
+let redisClientUrl: string
+
+const getRedisClientbyOption = (option: RedisOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
+
+const getRedisClientbyUrl = (url: string) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    } else if (redisClientSingleton && url !== redisClientUrl) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 class RedisEmbeddingsCache implements INode {
     label: string
@@ -75,7 +112,7 @@ class RedisEmbeddingsCache implements INode {
 
             const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
-            client = new Redis({
+            client = getRedisClientbyOption({
                 port: portStr ? parseInt(portStr) : 6379,
                 host,
                 username,
@@ -83,7 +120,7 @@ class RedisEmbeddingsCache implements INode {
                 ...tlsOptions
             })
         } else {
-            client = new Redis(redisUrl)
+            client = getRedisClientbyUrl(redisUrl)
         }
 
         ttl ??= '3600'

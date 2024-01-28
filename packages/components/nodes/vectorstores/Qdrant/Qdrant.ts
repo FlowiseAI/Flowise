@@ -1,6 +1,5 @@
 import { flatten } from 'lodash'
 import { QdrantClient } from '@qdrant/js-client-rest'
-import type { Schemas as QdrantSchemas } from '@qdrant/js-client-rest'
 import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
 import { Document } from 'langchain/document'
 import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
@@ -9,12 +8,6 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
-type QdrantSearchResponse = QdrantSchemas['ScoredPoint'] & {
-    payload: {
-        metadata: object
-        content: string
-    }
-}
 
 class Qdrant_VectorStores implements INode {
     label: string
