@@ -1,19 +1,19 @@
-import { MongoClient, Collection, Document } from 'mongodb';
-import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb';
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory';
-import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema';
-import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface';
+import { MongoClient, Collection, Document } from 'mongodb'
+import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
+import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
-let mongoClientSingleton = null;
+let mongoClientSingleton = null
 
 const getMongoClient = async (mongoDBConnectUrl) => {
     if (!mongoClientSingleton) {
-        mongoClientSingleton = new MongoClient(mongoDBConnectUrl, { useNewUrlParser: true, useUnifiedTopology: true });
-        await mongoClientSingleton.connect();
+        mongoClientSingleton = new MongoClient(mongoDBConnectUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+        await mongoClientSingleton.connect()
     }
-    return mongoClientSingleton;
-};
+    return mongoClientSingleton
+}
 
 class MongoDB_Memory implements INode {
     label: string
