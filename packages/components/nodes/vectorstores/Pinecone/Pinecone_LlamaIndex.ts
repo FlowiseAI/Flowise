@@ -13,7 +13,7 @@ import {
 import { FetchResponse, Index, Pinecone, ScoredPineconeRecord } from '@pinecone-database/pinecone'
 import { flatten } from 'lodash'
 import { Document as LCDocument } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { flattenObject, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class PineconeLlamaIndex_VectorStores implements INode {
@@ -28,6 +28,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Pinecone'
@@ -93,6 +94,18 @@ class PineconeLlamaIndex_VectorStores implements INode {
                 optional: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Pinecone Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Pinecone Vector Store Index',
+                name: 'vectorStore',
+                baseClasses: [this.type, 'VectorStoreIndex']
+            }
+        ]
     }
 
     //@ts-ignore
@@ -155,8 +168,10 @@ class PineconeLlamaIndex_VectorStores implements INode {
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
+
+        let metadatafilter = {}
         if (pineconeMetadataFilter) {
-            const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
             obj.queryFilter = metadatafilter
         }
 
@@ -171,11 +186,21 @@ class PineconeLlamaIndex_VectorStores implements INode {
             serviceContext
         })
 
-        const retriever = index.asRetriever()
-        retriever.similarityTopK = k
-        ;(retriever as any).serviceContext = serviceContext
+        const output = nodeData.outputs?.output as string
 
-        return retriever
+        if (output === 'retriever') {
+            const retriever = index.asRetriever()
+            retriever.similarityTopK = k
+            ;(retriever as any).serviceContext = serviceContext
+            return retriever
+        } else if (output === 'vectorStore') {
+            ;(index as any).k = k
+            if (metadatafilter) {
+                ;(index as any).metadatafilter = metadatafilter
+            }
+            return index
+        }
+        return index
     }
 }
 

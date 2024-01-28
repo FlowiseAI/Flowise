@@ -33,6 +33,27 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
         }
         this.inputs = [
             {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'text-embedding-3-large',
+                        name: 'text-embedding-3-large'
+                    },
+                    {
+                        label: 'text-embedding-3-small',
+                        name: 'text-embedding-3-small'
+                    },
+                    {
+                        label: 'text-embedding-ada-002',
+                        name: 'text-embedding-ada-002'
+                    }
+                ],
+                default: 'text-embedding-ada-002',
+                optional: true
+            },
+            {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
@@ -51,12 +72,14 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const timeout = nodeData.inputs?.timeout as string
+        const modelName = nodeData.inputs?.modelName as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIEmbedding> = {
-            apiKey: openAIApiKey
+            apiKey: openAIApiKey,
+            model: modelName
         }
         if (timeout) obj.timeout = parseInt(timeout, 10)
 

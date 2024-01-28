@@ -844,7 +844,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Engine') {
-        const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine']
+        const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
         isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
     }
 

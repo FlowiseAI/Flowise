@@ -63,6 +63,18 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
                 optional: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'SimpleStore Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'SimpleStore Vector Store Index',
+                name: 'vectorStore',
+                baseClasses: [this.type, 'VectorStoreIndex']
+            }
+        ]
     }
 
     //@ts-ignore
@@ -114,10 +126,19 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
         const storageContext = await storageContextFromDefaults({ persistDir: filePath })
 
         const index = await VectorStoreIndex.init({ storageContext, serviceContext })
-        const retriever = index.asRetriever()
-        retriever.similarityTopK = k
 
-        return retriever
+        const output = nodeData.outputs?.output as string
+
+        if (output === 'retriever') {
+            const retriever = index.asRetriever()
+            retriever.similarityTopK = k
+            ;(retriever as any).serviceContext = serviceContext
+            return retriever
+        } else if (output === 'vectorStore') {
+            ;(index as any).k = k
+            return index
+        }
+        return index
     }
 }
 

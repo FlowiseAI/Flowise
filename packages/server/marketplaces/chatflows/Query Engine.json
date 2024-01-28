@@ -163,13 +163,29 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "pineconeLlamaIndex_0-output-pineconeLlamaIndex-Pinecone|VectorIndexRetriever",
-                        "name": "pineconeLlamaIndex",
-                        "label": "Pinecone",
-                        "type": "Pinecone | VectorIndexRetriever"
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorIndexRetriever"
+                            },
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorStoreIndex",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store Index",
+                                "type": "Pinecone | VectorStoreIndex"
+                            }
+                        ],
+                        "default": "retriever"
                     }
                 ],
-                "outputs": {},
+                "outputs": {
+                    "output": "retriever"
+                },
                 "selected": false
             },
             "selected": false,
@@ -205,6 +221,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbedding_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
                     },
                     {
                         "label": "Timeout",
