@@ -1,8 +1,45 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { RedisCache as LangchainRedisCache } from 'langchain/cache/ioredis'
-import { Redis } from 'ioredis'
+import { Redis, RedisOptions } from 'ioredis'
+import { isEqual } from 'lodash'
 import { Generation, ChatGeneration, StoredGeneration, mapStoredMessageToChatMessage } from 'langchain/schema'
 import hash from 'object-hash'
+
+let redisClientSingleton: Redis
+let redisClientOption: RedisOptions
+let redisClientUrl: string
+
+const getRedisClientbyOption = (option: RedisOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
+
+const getRedisClientbyUrl = (url: string) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    } else if (redisClientSingleton && url !== redisClientUrl) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 class RedisCache implements INode {
     label: string
@@ -60,7 +97,7 @@ class RedisCache implements INode {
 
             const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
-            client = new Redis({
+            client = getRedisClientbyOption({
                 port: portStr ? parseInt(portStr) : 6379,
                 host,
                 username,
@@ -68,7 +105,7 @@ class RedisCache implements INode {
                 ...tlsOptions
             })
         } else {
-            client = new Redis(redisUrl)
+            client = getRedisClientbyUrl(redisUrl)
         }
 
         const redisClient = new LangchainRedisCache(client)
