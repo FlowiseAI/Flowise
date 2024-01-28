@@ -9,15 +9,20 @@ let mongoClientSingleton: MongoClient
 let mongoUrl: string
 
 const getMongoClient = async (newMongoUrl: string) => {
-    if (!mongoClientSingleton || newMongoUrl !== mongoUrl) {
+    if (!mongoClientSingleton) {
+        // if client doesn't exists
         mongoClientSingleton = new MongoClient(newMongoUrl)
         mongoUrl = newMongoUrl
-        await mongoClientSingleton.connect()
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
         return mongoClientSingleton
     }
     return mongoClientSingleton
 }
-
 class MongoDB_Memory implements INode {
     label: string
     name: string
