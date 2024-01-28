@@ -90,7 +90,7 @@ class Airtable_DocumentLoaders implements INode {
                 optional: true,
                 default: 100,
                 additionalParams: true,
-                description: 'Number of results to return'
+                description: 'Number of results to return. Ignored when Return All is enabled.'
             },
             {
                 label: 'Metadata',
