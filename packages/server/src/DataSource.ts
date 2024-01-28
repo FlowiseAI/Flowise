@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 import path from 'path'
+import * as fs from 'fs'
 import { DataSource } from 'typeorm'
 import { getUserHome } from './utils'
 import { entities } from './database/entities'
@@ -11,9 +12,13 @@ let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
     let homePath
+    let flowisePath = path.join(getUserHome(), '.flowise')
+    if (!fs.existsSync(flowisePath)) {
+        fs.mkdirSync(flowisePath)
+    }
     switch (process.env.DATABASE_TYPE) {
         case 'sqlite':
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? flowisePath
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
@@ -54,7 +59,7 @@ export const init = async (): Promise<void> => {
             })
             break
         default:
-            homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+            homePath = process.env.DATABASE_PATH ?? flowisePath
             appDataSource = new DataSource({
                 type: 'sqlite',
                 database: path.resolve(homePath, 'database.sqlite'),
