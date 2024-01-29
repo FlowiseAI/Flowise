@@ -123,6 +123,8 @@ Flowise support different environment variables to configure your instance. You 
 | Variable                    | Description                                                                  | Type                                             | Default                             |
 | --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
 | PORT                        | The HTTP port Flowise runs on                                                | Number                                           | 3000                                |
+| CORS_ORIGINS                | The allowed origins for all cross-origin HTTP calls                          | String                                           |                                     |
+| IFRAME_ORIGINS              | The allowed origins for iframe src embedding                                 | String                                           |                                     |
 | FLOWISE_USERNAME            | Username to login                                                            | String                                           |                                     |
 | FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
 | DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |

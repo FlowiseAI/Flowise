@@ -6,6 +6,8 @@ services:
         restart: always
         environment:
             - PORT=${PORT}
+            - CORS_ORIGINS=${CORS_ORIGINS}
+            - IFRAME_ORIGINS=${IFRAME_ORIGINS}
             - FLOWISE_USERNAME=${FLOWISE_USERNAME}
             - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
             - DEBUG=${DEBUG}
