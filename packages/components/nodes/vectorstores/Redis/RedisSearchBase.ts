@@ -7,13 +7,34 @@ import {
     INodeOutputsValue,
     INodeParams
 } from '../../../src'
-
 import { Embeddings } from 'langchain/embeddings/base'
 import { VectorStore } from 'langchain/vectorstores/base'
 import { Document } from 'langchain/document'
-import { createClient, SearchOptions } from 'redis'
+import { createClient, SearchOptions, RedisClientOptions } from 'redis'
 import { RedisVectorStore } from 'langchain/vectorstores/redis'
 import { escapeSpecialChars, unEscapeSpecialChars } from './utils'
+import { isEqual } from 'lodash'
+
+let redisClientSingleton: ReturnType<typeof createClient>
+let redisClientOption: RedisClientOptions
+
+const getRedisClient = async (option: RedisClientOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 export abstract class RedisSearchBase {
     label: string
@@ -141,8 +162,7 @@ export abstract class RedisSearchBase {
             redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
         }
 
-        this.redisClient = createClient({ url: redisUrl })
-        await this.redisClient.connect()
+        this.redisClient = await getRedisClient({ url: redisUrl })
 
         const vectorStore = await this.constructVectorStore(embeddings, indexName, replaceIndex, docs)
         if (!contentKey || contentKey === '') contentKey = 'content'

@@ -3,7 +3,6 @@ import { Embeddings } from 'langchain/embeddings/base'
 import { VectorStore } from 'langchain/vectorstores/base'
 import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
 import { Document } from 'langchain/document'
-
 import { RedisSearchBase } from './RedisSearchBase'
 
 class RedisExisting_VectorStores extends RedisSearchBase implements INode {

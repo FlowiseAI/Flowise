@@ -105,11 +105,9 @@ class Pinecone_VectorStores implements INode {
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-            const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
             const client = new Pinecone({
-                apiKey: pineconeApiKey,
-                environment: pineconeEnv
+                apiKey: pineconeApiKey
             })
 
             const pineconeIndex = client.Index(index)
@@ -145,11 +143,9 @@ class Pinecone_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         })
 
         const pineconeIndex = client.Index(index)

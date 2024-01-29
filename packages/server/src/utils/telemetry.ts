@@ -25,7 +25,9 @@ export class Telemetry {
             const settings = {
                 instanceId
             }
-            const defaultLocation = path.join(getUserHome(), '.flowise', 'settings.json')
+            const defaultLocation = process.env.SECRETKEY_PATH
+                ? path.join(process.env.SECRETKEY_PATH, 'settings.json')
+                : path.join(getUserHome(), '.flowise', 'settings.json')
             await fs.promises.writeFile(defaultLocation, JSON.stringify(settings, null, 2))
             return instanceId
         }

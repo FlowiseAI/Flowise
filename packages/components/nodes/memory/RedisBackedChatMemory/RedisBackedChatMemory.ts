@@ -1,9 +1,46 @@
-import { Redis } from 'ioredis'
+import { Redis, RedisOptions } from 'ioredis'
+import { isEqual } from 'lodash'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { RedisChatMessageHistory, RedisChatMessageHistoryInput } from 'langchain/stores/message/ioredis'
 import { mapStoredMessageToChatMessage, BaseMessage, AIMessage, HumanMessage } from 'langchain/schema'
 import { INode, INodeData, INodeParams, ICommonObject, MessageType, IMessage, MemoryMethods, FlowiseMemory } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+
+let redisClientSingleton: Redis
+let redisClientOption: RedisOptions
+let redisClientUrl: string
+
+const getRedisClientbyOption = (option: RedisOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(option)
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
+
+const getRedisClientbyUrl = (url: string) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    } else if (redisClientSingleton && url !== redisClientUrl) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = new Redis(url)
+        redisClientUrl = url
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 class RedisBackedChatMemory_Memory implements INode {
     label: string
@@ -95,7 +132,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
 
         const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
-        client = new Redis({
+        client = getRedisClientbyOption({
             port: portStr ? parseInt(portStr) : 6379,
             host,
             username,
@@ -103,7 +140,7 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
             ...tlsOptions
         })
     } else {
-        client = new Redis(redisUrl)
+        client = getRedisClientbyUrl(redisUrl)
     }
 
     let obj: RedisChatMessageHistoryInput = {
@@ -119,24 +156,6 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
     }
 
     const redisChatMessageHistory = new RedisChatMessageHistory(obj)
-
-    /*redisChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const rawStoredMessages = await client.lrange((redisChatMessageHistory as any).sessionId, windowSize ? -windowSize : 0, -1)
-        const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
-        return orderedMessages.map(mapStoredMessageToChatMessage)
-    }
-
-    redisChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
-        const messageToAdd = [message].map((msg) => msg.toDict())
-        await client.lpush((redisChatMessageHistory as any).sessionId, JSON.stringify(messageToAdd[0]))
-        if (sessionTTL) {
-            await client.expire((redisChatMessageHistory as any).sessionId, sessionTTL)
-        }
-    }
-
-    redisChatMessageHistory.clear = async (): Promise<void> => {
-        await client.del((redisChatMessageHistory as any).sessionId)
-    }*/
 
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
