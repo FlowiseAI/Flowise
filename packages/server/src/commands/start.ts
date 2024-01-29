@@ -19,6 +19,8 @@ export default class Start extends Command {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
         PORT: Flags.string(),
+        CORS_ORIGINS: Flags.string(),
+        IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
@@ -36,6 +38,7 @@ export default class Start extends Command {
         DATABASE_USER: Flags.string(),
         DATABASE_PASSWORD: Flags.string(),
         DATABASE_SSL: Flags.string(),
+        DATABASE_SSL_KEY_BASE64: Flags.string(),
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
@@ -78,6 +81,8 @@ export default class Start extends Command {
         const { flags } = await this.parse(Start)
 
         if (flags.PORT) process.env.PORT = flags.PORT
+        if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
+        if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
 
@@ -107,6 +112,7 @@ export default class Start extends Command {
         if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
         if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
+        if (flags.DATABASE_SSL_KEY_BASE64) process.env.DATABASE_SSL_KEY_BASE64 = flags.DATABASE_SSL_KEY_BASE64
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2
