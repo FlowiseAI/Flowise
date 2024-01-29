@@ -40,7 +40,19 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: mysqlMigrations
+                migrations: mysqlMigrations,
+                ...(process.env.DATABASE_SSL_KEY_BASE64
+                    ? {
+                        ssl: {
+                            rejectUnauthorized: false,
+                            ca: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
+                        }
+                    }
+                    : process.env.DATABASE_SSL === 'true'
+                        ? {
+                            ssl: true
+                        }
+                        : {}),
             })
             break
         case 'postgres':
@@ -53,16 +65,16 @@ export const init = async (): Promise<void> => {
                 database: process.env.DATABASE_NAME,
                 ...(process.env.DATABASE_SSL_KEY_BASE64
                     ? {
-                          ssl: {
-                              rejectUnauthorized: false,
-                              cert: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
-                          }
-                      }
+                        ssl: {
+                            rejectUnauthorized: false,
+                            cert: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
+                        }
+                    }
                     : process.env.DATABASE_SSL === 'true'
-                    ? {
-                          ssl: true
-                      }
-                    : {}),
+                        ? {
+                            ssl: true
+                        }
+                        : {}),
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
