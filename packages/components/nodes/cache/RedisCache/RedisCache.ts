@@ -131,7 +131,7 @@ class RedisCache implements INode {
             for (let i = 0; i < value.length; i += 1) {
                 const key = getCacheKey(prompt, llmKey, String(i))
                 if (ttl) {
-                    await client.set(key, JSON.stringify(serializeGeneration(value[i])), 'EX', parseInt(ttl, 10))
+                    await client.set(key, JSON.stringify(serializeGeneration(value[i])), 'PX', parseInt(ttl, 10))
                 } else {
                     await client.set(key, JSON.stringify(serializeGeneration(value[i])))
                 }
