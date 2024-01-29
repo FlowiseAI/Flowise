@@ -53,5 +53,8 @@
     },
     "engines": {
         "node": ">=18.15.0"
+    },
+    "dependencies": {
+        "cross-spawn-async": "^2.2.5"
     }
 }
