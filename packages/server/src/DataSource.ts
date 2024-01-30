@@ -89,5 +89,5 @@ const getDatabaseSSLFromEnv = () => {
     } else if (process.env.DATABASE_SSL === 'true') {
         return true
     }
-    return {}
+    return undefined
 }
