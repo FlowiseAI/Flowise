@@ -473,6 +473,8 @@ export class App {
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
             let isStreaming = false
+            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
                 if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
@@ -488,7 +490,8 @@ export class App {
                 isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
             }
 
-            const obj = { isStreaming }
+            // Once custom function ending node exists, flow is always unavailable to stream
+            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
             return res.json(obj)
         })
 
@@ -1677,6 +1680,9 @@ export class App {
                 if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
                 const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
@@ -1703,6 +1709,9 @@ export class App {
 
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
+
+                // Once custom function ending node exists, flow is always unavailable to stream
+                isStreamValid = isEndingNodeExists ? false : isStreamValid
 
                 let chatHistory: IMessage[] = incomingInput.history ?? []
 

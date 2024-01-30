@@ -217,6 +217,13 @@
                         "rows": 3,
                         "placeholder": "Searches and returns documents regarding the state-of-the-union.",
                         "id": "retrieverTool_0-input-description-string"
+                    },
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "retrieverTool_0-input-returnSourceDocuments-boolean"
                     }
                 ],
                 "inputAnchors": [
@@ -230,7 +237,8 @@
                 "inputs": {
                     "name": "search_website",
                     "description": "Searches and return documents regarding Jane - a culinary institution that offers top quality coffee, pastries, breakfast, lunch, and a variety of baked goods. They have multiple locations, including Jane on Fillmore, Jane on Larkin, Jane the Bakery, Toy Boat By Jane, and Little Jane on Grant. They emphasize healthy eating with a focus on flavor and quality ingredients. They bake everything in-house and work with local suppliers to source ingredients directly from farmers. They also offer catering services and delivery options.",
-                    "retriever": "{{pinecone_0.data.instance}}"
+                    "retriever": "{{pinecone_0.data.instance}}",
+                    "returnSourceDocuments": true
                 },
                 "outputAnchors": [
                     {

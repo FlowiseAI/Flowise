@@ -64,7 +64,7 @@ class OpenAIFunctionAgent_Agents implements INode {
         return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
 
@@ -72,12 +72,20 @@ class OpenAIFunctionAgent_Agents implements INode {
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let res: ChainValues = {}
+        let sourceDocuments: ICommonObject[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            if (res.sourceDocuments) {
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                sourceDocuments = res.sourceDocuments
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            if (res.sourceDocuments) {
+                sourceDocuments = res.sourceDocuments
+            }
         }
 
         await memory.addChatMessages(
@@ -94,7 +102,7 @@ class OpenAIFunctionAgent_Agents implements INode {
             this.sessionId
         )
 
-        return res?.output
+        return sourceDocuments.length ? { text: res?.output, sourceDocuments: flatten(sourceDocuments) } : res?.output
     }
 }
 
