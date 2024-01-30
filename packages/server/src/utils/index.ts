@@ -611,28 +611,35 @@ export const resolveVariables = (
 export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
     const types = 'inputs'
 
-    const getParamValues = (paramsObj: ICommonObject) => {
+    const getParamValues = (inputsObj: ICommonObject) => {
         for (const config in overrideConfig) {
             // If overrideConfig[key] is object
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
                 if (nodeIds.includes(flowNodeData.id)) {
-                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
+                    inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                    continue
+                } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
+                    /*
+                     * "systemMessagePrompt": {
+                     *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
+                     * }
+                     */
                     continue
                 }
             }
 
-            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            let paramValue = overrideConfig[config] ?? inputsObj[config]
             // Check if boolean
             if (paramValue === 'true') paramValue = true
             else if (paramValue === 'false') paramValue = false
-            paramsObj[config] = paramValue
+            inputsObj[config] = paramValue
         }
     }
 
-    const paramsObj = flowNodeData[types] ?? {}
+    const inputsObj = flowNodeData[types] ?? {}
 
-    getParamValues(paramsObj)
+    getParamValues(inputsObj)
 
     return flowNodeData
 }
