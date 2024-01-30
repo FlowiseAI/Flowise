@@ -1078,7 +1078,8 @@ export const translationObject = {
     'If Function': 'If функция',
     'Function must return a value': 'Функция должна возвращать значение',
     'Else Function': 'Else функция',
-    'Set variable which can be retrieved at a later stage. Variable is only available during runtime.': '',
+    'Set variable which can be retrieved at a later stage. Variable is only available during runtime.':
+        'Установите переменную, которую можно будет получить позже. Переменная доступна только во время выполнения.',
     'Vector Stores': 'Установите переменную, которую можно будет получить позже. Переменная доступна только во время выполнения.',
     'Task Type': 'Тип задачи',
     POPULAR: 'популярный',
@@ -1309,5 +1310,34 @@ export const translationObject = {
     'Number of top results to fetch. Defaults to 5': 'Количество лучших результатов для получения. По умолчанию 5',
     'The number of results to rerank if MMR is enabled.': 'Количество результатов для повторного ранжирования, если включен MMR.',
     'Diversity Bias parameter for MMR, if enabled. 0.0 means no diversiry bias, 1.0 means maximum diversity bias. Defaults to 0.0 (MMR disabled).':
-        'Параметр Diversity Bias для MMR, если он включен. 0,0 означает отсутствие систематической ошибки из-за разнообразия, 1,0 означает максимальную ошибку из-за разнообразия. По умолчанию 0,0 (MMR отключен).'
+        'Параметр Diversity Bias для MMR, если он включен. 0,0 означает отсутствие систематической ошибки из-за разнообразия, 1,0 означает максимальную ошибку из-за разнообразия. По умолчанию 0,0 (MMR отключен).',
+    'Using previous chat history, rephrase question into a standalone question':
+        'Используя предыдущую историю чата, перефразируйте вопрос в отдельный вопрос.',
+    'Prompt must include input variables: {chat_history} and {question}':
+        'Подсказка должна включать входные переменные: {chat_history} и {question}',
+    'Taking the rephrased question, search for answer from the provided context':
+        'Взяв перефразированный вопрос, найдите ответ в предоставленном контексте.',
+    'Response Prompt': 'Ответный Prompt',
+    'Rephrase Prompt': 'Перефразировать Prompt',
+    'Top Next Highest Probability Tokens': 'Топ следующих токенов с наибольшей вероятностью',
+    'Decode using top-k sampling: consider the set of top_k most probable tokens. Must be positive':
+        'Декодирование с использованием выборки top-k: рассмотрим набор наиболее вероятных токенов top_k. Должно быть позитивным',
+    'Refer to <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_attribute_definitions">official guide</a> on how to use Harm Category':
+        'См. <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_attribute_definitions">официальное руководство</a> на как использовать категорию вреда',
+    Dangerous: 'Опасный',
+    Harassment: 'Домогательство',
+    'Hate Speech': 'Разжигание ненависти',
+    'Sexually Explicit': 'Сексуально откровенно',
+    'Harm Block Threshold': 'Порог блокировки вреда',
+    'Refer to <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_setting_thresholds">official guide</a> on how to use Harm Block Threshold':
+        'См. <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_setting_thresholds">официальное руководство</a> на как использовать порог блокировки вреда',
+    'Low and Above': 'Низко и выше',
+    'Medium and Above': 'Средний и выше',
+    None: 'Никто',
+    'Only High': 'Только высокий',
+    'Threshold Unspecified': 'Порог не указан',
+    'Harm Category & Harm Block Threshold are not the same length': 'Категория вреда и порог блокировки вреда не имеют одинаковой длины.',
+    'Sticky Note': 'Заметка',
+    'Add a sticky note': 'Добавить заметку',
+    'Type something here': 'Введите что-нибудь здесь'
 }

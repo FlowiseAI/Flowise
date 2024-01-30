@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.4.9",
+    "version": "1.4.10",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -80,5 +80,9 @@
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
         "typescript": "^4.8.4"
+    },
+    "resolutions": {
+        "wrap-ansi": "7.0.0",
+        "string-width": "4.1.0"
     }
 }

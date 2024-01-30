@@ -290,6 +290,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'row',
+                                    alignItems: 'center',
                                     borderRadius: 10,
                                     background: 'rgb(254,252,191)',
                                     padding: 10,
@@ -297,7 +298,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     marginBottom: 10
                                 }}
                             >
-                                <IconAlertTriangle size={36} color='orange' />
+                                <IconAlertTriangle size={30} color='orange' />
                                 <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>
                                     {translationObject[inputParam.warning] || inputParam.warning}
                                 </span>
