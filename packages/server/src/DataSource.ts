@@ -41,7 +41,7 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: mysqlMigrations,
-                ssl: getDatabaseSSLFromEnv(),
+                ssl: getDatabaseSSLFromEnv()
             })
             break
         case 'postgres':
@@ -85,9 +85,9 @@ const getDatabaseSSLFromEnv = () => {
         return {
             rejectUnauthorized: false,
             ca: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
-        };
+        }
     } else if (process.env.DATABASE_SSL === 'true') {
-        return true;
+        return true
     }
-    return {};
+    return {}
 }
