@@ -1339,5 +1339,68 @@ export const translationObject = {
     'Harm Category & Harm Block Threshold are not the same length': 'Категория вреда и порог блокировки вреда не имеют одинаковой длины.',
     'Sticky Note': 'Заметка',
     'Add a sticky note': 'Добавить заметку',
-    'Type something here': 'Введите что-нибудь здесь'
+    'Type something here': 'Введите что-нибудь здесь',
+    'Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable':
+        'Переопределить существующее приглашение с помощью шаблона приглашения чата. Человеческое сообщение должно включать переменную {input}.',
+    'If Chat Prompt Template is provided, this will be ignored': 'Если предоставлен шаблон подсказки чата, он будет проигнорирован.',
+    'Number of results to return. Ignored when Return All is enabled.':
+        'Количество результатов для возврата. Игнорируется, если включен параметр «Вернуть все».',
+    'Base ID and Table ID must be provided.': 'Необходимо указать базовый идентификатор и идентификатор таблицы.',
+    'Limit cannot be less than 0': 'Лимит не может быть меньше 0',
+    'Cohere Rerank indexes the documents from most to least semantically relevant to the query.':
+        'Cohere Rerank индексирует документы от наиболее к наименее семантически релевантным запросу.',
+    query: 'запрос',
+    'Query to retrieve documents from retriever. If not specified, user question will be used':
+        'Запрос на получение документов из ретривера. Если не указано, будет использоваться вопрос пользователя.',
+    'The maximum number of chunks to produce internally from a document. Default to 10':
+        'Максимальное количество фрагментов, которые можно создать внутри документа. По умолчанию 10',
+    'Cohere Rerank Retriever': 'Cohere: ретривер',
+    'A document compressor that uses embeddings to drop documents unrelated to the query':
+        'Компрессор документов, который использует встраивания для удаления документов, не связанных с запросом.',
+    'Iterate over the initially returned documents and extract, from each, only the content that is relevant to the query':
+        'Перебрать первоначально возвращенные документы и извлечь из каждого только тот контент, который имеет отношение к запросу.',
+    'You are a helpful assistant that generates multiple search queries based on a single input query.':
+        'Вы полезный помощник, который генерирует несколько поисковых запросов на основе одного входного запроса.',
+    'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.':
+        'Создайте несколько поисковых запросов, связанных с: {input}. Укажите эти альтернативные вопросы, разделенные символами новой строки, не добавляйте никаких цифр.',
+    'Reciprocal Rank Fusion to re-rank search results by multiple query generation':
+        'Reciprocal Rank Fusion для повторного ранжирования результатов поиска путем создания нескольких запросов.',
+    'Number of synthetic queries to generate. Default to 4':
+        'Количество синтетических запросов, которые нужно сгенерировать. По умолчанию 4',
+    'Query Count': 'Количество запросов',
+    'A constant added to the rank, controlling the balance between the importance of high-ranked items and the consideration given to lower-ranked items.\n':
+        'Константа, добавляемая к рангу, контролирующая баланс между важностью предметов с высоким рейтингом и вниманием к предметам с более низким рейтингом.\n',
+    'Default is 60': 'По умолчанию – 60.',
+    Constant: 'Постоянный',
+    'Reciprocal Rank Fusion Retriever': 'Ретривер реципрокного ранга Fusion',
+    'Search Type': 'Тип поиска',
+    'Max Marginal Relevance': 'Максимальная предельная релевантность',
+    'Fetch K (for MMR Search)': 'Получить K (для поиска MMR)',
+    'Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR':
+        'Количество исходных документов, которые необходимо получить для изменения рейтинга MMR. По умолчанию 20. Используется только в том случае, если тип поиска — MMR.',
+    'Lambda (for MMR Search)': 'Лямбда (для поиска MMR)',
+    'Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR':
+        'Число от 0 до 1, определяющее степень разнообразия результатов, где 0 соответствует максимальному разнообразию, а 1 — минимальному разнообразию. Используется только в том случае, если тип поиска — MMR.',
+    'Upsert embedded data and perform similarity or mmr search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR по запросу с помощью DataStax Astra DB, бессерверной векторной базы данных, которая идеально подходит для управления критически важными рабочими нагрузками искусственного интеллекта.',
+    'Upsert embedded data and perform similarity or mmr search upon query using MongoDB Atlas, a managed cloud mongodb database':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR по запросу с помощью MongoDB Atlas, управляемой облачной базы данных mongodb.',
+    'Upsert embedded data and perform similarity or mmr search upon query using Supabase via pgvector extension':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR по запросу с помощью Supabase через расширение pgvector.',
+    'Upsert embedded data and perform similarity or mmr search using Weaviate, a scalable open-source vector database':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR с помощью Weaviate, масштабируемой векторной базы данных с открытым исходным кодом.',
+    'Upsert embedded data and perform similarity or mmr search upon query using Zep, a fast and scalable building block for LLM apps':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR по запросу с помощью Zep, быстрого и масштабируемого строительного блока для приложений LLM.',
+    assert: 'утверждать',
+    buffer: 'буфер',
+    crypto: 'крипто',
+    events: 'события',
+    net: 'сеть',
+    path: 'путь',
+    querystring: 'Строка запроса',
+    timers: 'таймеры',
+    'Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database':
+        'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR с помощью Pinecone, ведущей полностью управляемой размещенной базы данных векторов.',
+    'Welcome to Skyworld Hotel, where your dreams take flight and your stay soars to new heights. Nestled amidst breathtaking cityscape views, our upscale establishment offers an unparalleled blend of luxury and comfort. Our rooms are elegantly appointed, featuring modern amenities and plush furnishings to ensure your relaxation.\n\nIndulge in culinary delights at our rooftop restaurant, offering a gastronomic journey with panoramic vistas. Skyworld Hotel boasts state-of-the-art conference facilities, perfect for business travelers, and an inviting spa for relaxation seekers. Our attentive staff is dedicated to ensuring your every need is met, making your stay memorable.\n\nCentrally located, we offer easy access to local attractions, making us an ideal choice for both leisure and business travelers. Experience the world of hospitality like never before at Skyworld Hotel.':
+        'Добро пожаловать в отель Skyworld, где ваши мечты осуществятся, а ваше пребывание поднимется на новую высоту. Наш высококлассный отель, расположенный среди захватывающих дух городских пейзажей, предлагает непревзойденное сочетание роскоши и комфорта. Наши номера элегантно обставлены, оснащены современными удобствами и роскошной мебелью, обеспечивающей ваш отдых.\n\nНаслаждайтесь кулинарными изысками в нашем ресторане на крыше, который предлагает гастрономическое путешествие с панорамными видами. Отель Skyworld может похвастаться самыми современными конференц-залами, идеально подходящими для деловых путешественников, а также привлекательным спа-центром для любителей отдыха. Наш внимательный персонал постарается удовлетворить все ваши потребности, сделав ваше пребывание незабываемым.\n\nМы расположены в центре города, поэтому мы предлагаем легкий доступ к местным достопримечательностям, что делает нас идеальным выбором как для туристов, так и для деловых путешественников. Окунитесь в мир гостеприимства, как никогда раньше, в отеле Skyworld.'
 }

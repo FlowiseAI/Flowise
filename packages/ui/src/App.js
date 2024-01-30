@@ -33,9 +33,6 @@ const App = () => {
             case 'u5.start-ai.ru':
                 ymID = 95948140
                 break
-            default:
-                ymID = 95948128
-                break
         }
         useEffect(() => {
             // Функция инициализации метрики
@@ -62,6 +59,7 @@ const App = () => {
 
             // Инициализация с конкретным ID метрики
             ym(ymID, 'init', {
+                defer: true,
                 clickmap: true,
                 trackLinks: true,
                 accurateTrackBounce: true,

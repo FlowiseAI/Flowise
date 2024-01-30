@@ -5,6 +5,24 @@ import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } f
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
+
+const getMongoClient = async (newMongoUrl: string) => {
+    if (!mongoClientSingleton) {
+        // if client doesn't exists
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    }
+    return mongoClientSingleton
+}
 class MongoDB_Memory implements INode {
     label: string
     name: string
@@ -79,9 +97,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-    const client = new MongoClient(mongoDBConnectUrl)
-    await client.connect()
-
+    const client = await getMongoClient(mongoDBConnectUrl)
     const collection = client.db(databaseName).collection(collectionName)
 
     const mongoDBChatMessageHistory = new MongoDBChatMessageHistory({
