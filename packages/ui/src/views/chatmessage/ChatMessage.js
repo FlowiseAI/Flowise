@@ -616,8 +616,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     })}
                 </Box>
             )}
-            <div className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
-                <div ref={ps} id='messagelist' className={'messagelist'}>
+            <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
+                <div id='messagelist' className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
                             return (
