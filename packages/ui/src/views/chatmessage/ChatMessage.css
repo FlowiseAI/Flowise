@@ -151,7 +151,7 @@
 .cloud-dialog {
     width: 100%;
     height: auto;
-    max-height: calc(100% - 72px);
+    max-height: calc(100% - 54px);
     overflow-y: scroll;
     display: flex;
     justify-content: center;

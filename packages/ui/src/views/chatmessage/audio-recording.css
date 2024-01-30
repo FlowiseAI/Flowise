@@ -115,6 +115,7 @@
     }
     .overlay {
         width: 100%;
+        height: '54px';
         /*targeting Chrome & Safari*/
         display: -webkit-flex;
         /*targeting IE10*/
@@ -123,7 +124,6 @@
         justify-content: center;
         /*horizontal centering*/
         align-items: center;
-        margin-bottom: 12px;
     }
     .overlay.hide {
         display: none;

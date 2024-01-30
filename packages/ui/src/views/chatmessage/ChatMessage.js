@@ -287,7 +287,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     }
 
     const onRecordingCancelled = () => {
-        cancelAudioRecording()
+        if (!recordingNotSupported) cancelAudioRecording()
         setIsRecording(false)
         setRecordingNotSupported(false)
     }
@@ -855,8 +855,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 )}
                 {isRecording ? (
                     <>
-                        {recordingNotSupported && (
-                            <div className='overlay hide'>
+                        {recordingNotSupported ? (
+                            <div className='overlay'>
                                 <div className='browser-not-supporting-audio-recording-box'>
                                     <Typography variant='body1'>
                                         To record audio, use modern browsers like Chrome or Firefox that support audio recording.
@@ -872,35 +872,42 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                     </Button>
                                 </div>
                             </div>
+                        ) : (
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '54px',
+                                    px: 2,
+                                    border: '1px solid',
+                                    borderRadius: 3,
+                                    backgroundColor: customization.isDarkMode ? '#32353b' : '#fafafa',
+                                    borderColor: 'rgba(0, 0, 0, 0.23)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}
+                            >
+                                <div className='recording-elapsed-time'>
+                                    <span className='red-recording-dot'>
+                                        <IconCircleDot />
+                                    </span>
+                                    <Typography id='elapsed-time'>00:00</Typography>
+                                    {isLoadingRecording && <Typography ml={1.5}>Sending...</Typography>}
+                                </div>
+                                <div className='recording-control-buttons-container'>
+                                    <IconButton onClick={onRecordingCancelled} size='small'>
+                                        <IconX
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                        />
+                                    </IconButton>
+                                    <IconButton onClick={onRecordingStopped} size='small'>
+                                        <IconSend
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                        />
+                                    </IconButton>
+                                </div>
+                            </Box>
                         )}
-                        <Box
-                            sx={{
-                                width: '100%',
-                                height: '54px',
-                                px: 2,
-                                borderRadius: 1.5,
-                                backgroundColor: '#32353b',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }}
-                        >
-                            <div className='recording-elapsed-time'>
-                                <span className='red-recording-dot'>
-                                    <IconCircleDot />
-                                </span>
-                                <Typography id='elapsed-time'>00:00</Typography>
-                                {isLoadingRecording && <Typography ml={1.5}>Sending...</Typography>}
-                            </div>
-                            <div className='recording-control-buttons-container'>
-                                <IconButton onClick={onRecordingCancelled} size='small'>
-                                    <IconX color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'} />
-                                </IconButton>
-                                <IconButton onClick={onRecordingStopped} size='small'>
-                                    <IconSend color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'} />
-                                </IconButton>
-                            </div>
-                        </Box>
                     </>
                 ) : (
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
@@ -936,7 +943,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             }
                             endAdornment={
                                 <>
-                                    {isChatFlowAvailableForUploads && (
+                                    {isChatFlowAvailableForSpeech && (
                                         <InputAdornment position='end'>
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}
