@@ -1,4 +1,4 @@
-import { createSignal, createEffect, For, onMount, Show, mergeProps, createMemo, Accessor } from 'solid-js';
+import { createSignal, createEffect, For, onMount, Show, mergeProps, createMemo } from 'solid-js';
 import { v4 as uuidv4 } from 'uuid';
 import { sendMessageQuery, isStreamAvailableQuery, IncomingInput, getChatbotConfig } from '@/queries/sendMessageQuery';
 import { TextInput } from './inputs/textInput';
