@@ -68,7 +68,8 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
-
+import { createClient } from 'redis'
+import { createAdapter } from '@socket.io/redis-streams-adapter'
 export class App {
     app: express.Application
     nodesPool: NodesPool
@@ -1815,14 +1816,15 @@ export class App {
             else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
             else resultText = JSON.stringify(result, null, 2)
 
-            const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+            const apiMessage: Omit<IChatMessage, 'id'> = {
                 role: 'apiMessage',
                 content: resultText,
                 chatflowid,
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
-                sessionId
+                sessionId,
+                createdDate: new Date()
             }
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
@@ -1873,11 +1875,13 @@ export async function start(): Promise<void> {
 
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
-
+    const redisClient = createClient({ url: 'redis://:123456@localhost:6399' })
+    await redisClient.connect()
     const io = new Server(server, {
         cors: {
             origin: '*'
-        }
+        },
+        adapter: createAdapter(redisClient)
     })
 
     await serverApp.initDatabase()
