@@ -7,8 +7,7 @@ import { ChatOpenAICallOptions } from '@langchain/openai/dist/chat_models'
 import { BaseMessageChunk, BaseMessageLike, HumanMessage, LLMResult } from 'langchain/schema'
 import { Callbacks } from '@langchain/core/callbacks/manager'
 import { ICommonObject, INodeData } from '../../../src'
-import { addImagesToMessages, checkSpeechToText } from '../../../src/MultiModalUtils'
-import { ChatPromptTemplate, PromptTemplate } from 'langchain/prompts'
+import { addImagesToMessages } from '../../../src/MultiModalUtils'
 
 export class FlowiseChatOpenAI extends ChatOpenAI {
     multiModal: {}
@@ -38,24 +37,6 @@ export class FlowiseChatOpenAI extends ChatOpenAI {
     private async injectMultiModalMessages(messages: BaseMessageLike[][]) {
         const nodeData = FlowiseChatOpenAI.chainNodeData
         const optionsData = FlowiseChatOpenAI.chainNodeOptions
-        let audioTrans = await checkSpeechToText(nodeData, optionsData)
-        if (audioTrans) {
-            if (messages.length > 0) {
-                const lastMessage = messages[0].pop() as HumanMessage
-                if (!nodeData.inputs?.prompt) {
-                    lastMessage.content = audioTrans
-                } else if (nodeData.inputs?.prompt instanceof ChatPromptTemplate) {
-                    lastMessage.content = audioTrans
-                } else if (nodeData.inputs?.prompt instanceof PromptTemplate) {
-                    let prompt = nodeData.inputs?.prompt as PromptTemplate
-                    let inputVar = prompt.inputVariables[0]
-                    let formattedValues: any = {}
-                    formattedValues[inputVar] = audioTrans
-                    lastMessage.content = await prompt.format(formattedValues)
-                }
-                messages[0].push(lastMessage)
-            }
-        }
         const messageContent = addImagesToMessages(nodeData, optionsData)
         if (messageContent) {
             if (messages[0].length > 0 && messages[0][messages[0].length - 1] instanceof HumanMessage) {

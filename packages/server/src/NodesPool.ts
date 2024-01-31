@@ -54,7 +54,7 @@ export class NodesPool {
                             }
                         }
 
-                        const skipCategories = ['Analytic']
+                        const skipCategories = ['Analytic', 'SpeechToText']
                         if (!skipCategories.includes(newNodeInstance.category)) {
                             this.componentNodes[newNodeInstance.name] = newNodeInstance
                         }

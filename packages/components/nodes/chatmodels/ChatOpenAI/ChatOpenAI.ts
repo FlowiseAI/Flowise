@@ -163,36 +163,6 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Allow Speech to Text',
-                name: 'allowSpeechToText',
-                type: 'boolean',
-                default: false,
-                optional: true
-            },
-            // TODO: only show when speechToText is true
-            {
-                label: 'Speech to Text Method',
-                description: 'How to turn audio into text',
-                name: 'speechToTextMode',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Transcriptions',
-                        name: 'transcriptions',
-                        description:
-                            'Transcribe audio into whatever language the audio is in. Default method when Speech to Text is turned on.'
-                    },
-                    {
-                        label: 'Translations',
-                        name: 'translations',
-                        description: 'Translate and transcribe the audio into english.'
-                    }
-                ],
-                optional: false,
-                default: 'transcriptions',
-                additionalParams: true
-            },
-            {
                 label: 'Image Resolution',
                 description: 'This parameter controls the resolution in which the model views the image.',
                 name: 'imageResolution',
@@ -231,8 +201,6 @@ class ChatOpenAI_ChatModels implements INode {
         const baseOptions = nodeData.inputs?.baseOptions
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const allowSpeechToText = nodeData.inputs?.allowSpeechToText as boolean
-        const speechToTextMode = nodeData.inputs?.speechToTextMode as string
         const imageResolution = nodeData.inputs?.imageResolution as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -270,9 +238,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         const multiModal = {
             allowImageUploads: allowImageUploads ?? false,
-            allowSpeechToText: allowSpeechToText ?? false,
-            imageResolution,
-            speechToTextMode
+            imageResolution
         }
         model.multiModal = multiModal
         return model

@@ -593,7 +593,6 @@ export const resolveVariables = (
     }
 
     const paramsObj = flowNodeData[types] ?? {}
-
     getParamValues(paramsObj)
 
     return flowNodeData
@@ -1078,4 +1077,37 @@ export const getAllValuesFromJson = (obj: any): any[] => {
 
     extractValues(obj)
     return values
+}
+
+export const convertedSpeechToText = async (upload: any, speechToTextConfig: any) => {
+    // const MODEL_NAME = 'whisper-1'
+    if (speechToTextConfig) {
+        //special case, text input is empty, but we have an upload (recorded audio)
+        // const openAIClientOptions: ClientOptions = {
+        //     apiKey: model.openAIApiKey,
+        //     organization: model.organization
+        // }
+        // const openAIClient = new OpenAIClient(openAIClientOptions)
+        // const filePath = path.join(getUserHome(), '.flowise', 'gptvision', upload.data, upload.name)
+        //
+        // // as the image is stored in the server, read the file and convert it to base64
+        // const audio_file = fs.createReadStream(filePath)
+        //
+        // if (multiModalConfig.speechToTextMode === 'transcriptions') {
+        //     const transcription = await openAIClient.audio.transcriptions.create({
+        //         file: audio_file,
+        //         model: MODEL_NAME
+        //     })
+        //     return transcription.text
+        // } else if (multiModalConfig.speechToTextMode === 'translations') {
+        //     const translation = await openAIClient.audio.translations.create({
+        //         file: audio_file,
+        //         model: MODEL_NAME
+        //     })
+        //     return translation.text
+        // }
+    } else {
+        throw new Error('Speech to text is not selected, but found a recorded audio file. Please fix the chain.')
+    }
+    return undefined
 }

@@ -41,8 +41,8 @@ import chatflowsApi from 'api/chatflows'
 
 const speechToTextProviders = [
     {
-        label: 'OpenAI Wisper',
-        name: 'openAIWisper',
+        label: 'OpenAI Whisper',
+        name: 'openAIWhisper',
         icon: openAISVG,
         url: 'https://platform.openai.com/docs/guides/speech-to-text',
         inputs: [
@@ -70,7 +70,7 @@ const speechToTextProviders = [
                 label: 'Connect Credential',
                 name: 'credential',
                 type: 'credential',
-                credentialNames: ['assemblyAiApi']
+                credentialNames: ['assemblyAIApi']
             },
             {
                 label: 'On/Off',
@@ -101,7 +101,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Analytic Configuration Saved',
+                    message: 'Speech To Text Configuration Saved',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -118,7 +118,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Analytic Configuration: ${errorData}`,
+                message: `Failed to save Speech To Text Configuration: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

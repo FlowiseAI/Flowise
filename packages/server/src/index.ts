@@ -46,7 +46,8 @@ import {
     getSessionChatHistory,
     getAllConnectedNodes,
     clearSessionMemory,
-    findMemoryNode
+    findMemoryNode,
+    convertedSpeechToText
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -58,7 +59,7 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, INodeParams, handleEscapeCharacters } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, INodeParams, handleEscapeCharacters, IFileUpload } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware } from './utils/XSS'
@@ -473,6 +474,17 @@ export class App {
                 const flowObj = JSON.parse(chatflow.flowData)
                 const allowances: IUploadFileSizeAndTypes[] = []
                 let allowSpeechToText = false
+                if (chatflow.speechToText) {
+                    const speechToTextProviders = JSON.parse(chatflow.speechToText)
+                    for (const provider in speechToTextProviders) {
+                        const providerObj = speechToTextProviders[provider]
+                        if (providerObj.status) {
+                            allowSpeechToText = true
+                            break
+                        }
+                    }
+                }
+
                 let allowImageUploads = false
                 flowObj.nodes.forEach((node: IReactFlowNode) => {
                     if (uploadAllowedCategoryNodes.indexOf(node.data.category) > -1) {
@@ -487,9 +499,6 @@ export class App {
                                     maxUploadSize: 5
                                 })
                                 allowImageUploads = true
-                            }
-                            if (param.name === 'allowSpeechToText' && node.data.inputs?.['allowSpeechToText']) {
-                                allowSpeechToText = true
                             }
                         })
                     }
@@ -1602,7 +1611,8 @@ export class App {
 
             if (incomingInput.uploads) {
                 // @ts-ignore
-                ;(incomingInput.uploads as any[]).forEach((upload: any) => {
+                const uploads = incomingInput.uploads as IFileUpload[]
+                for (const upload of uploads) {
                     if (upload.type === 'file' || upload.type === 'audio') {
                         const filename = upload.name
                         const dir = path.join(getUserHome(), '.flowise', 'gptvision', chatId)
@@ -1618,7 +1628,29 @@ export class App {
                         upload.data = chatId
                         upload.type = 'stored-file'
                     }
-                })
+
+                    if (upload.mime === 'audio/webm' && incomingInput.uploads?.length === 1) {
+                        //speechToText
+                        let speechToTextConfig: any = {}
+                        if (chatflow.speechToText) {
+                            const speechToTextProviders = JSON.parse(chatflow.speechToText)
+                            for (const provider in speechToTextProviders) {
+                                const providerObj = speechToTextProviders[provider]
+                                if (providerObj.status) {
+                                    speechToTextConfig = providerObj
+                                    speechToTextConfig['name'] = provider
+                                    break
+                                }
+                            }
+                        }
+                        if (speechToTextConfig) {
+                            const speechToTextResult = await convertedSpeechToText(upload.data, speechToTextConfig)
+                            if (speechToTextResult) {
+                                incomingInput.question = speechToTextResult
+                            }
+                        }
+                    }
+                }
             }
 
             let isStreamValid = false

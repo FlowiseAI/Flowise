@@ -18,49 +18,6 @@ export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject)
     }
 }
 
-export const checkSpeechToText = async (nodeData: INodeData, options: ICommonObject) => {
-    const MODEL_NAME = 'whisper-1'
-    let input = undefined
-    let model = nodeData.inputs?.model as BaseChatModel
-    if (model instanceof ChatOpenAI && (model as any).multiModal) {
-        const multiModalConfig = (model as any).multiModal
-        if (options?.uploads) {
-            if (options.uploads.length === 1 && options.uploads[0].mime === 'audio/webm') {
-                const upload = options.uploads[0]
-                //special case, text input is empty, but we have an upload (recorded audio)
-                if (multiModalConfig.allowSpeechToText) {
-                    const openAIClientOptions: ClientOptions = {
-                        apiKey: model.openAIApiKey,
-                        organization: model.organization
-                    }
-                    const openAIClient = new OpenAIClient(openAIClientOptions)
-                    const filePath = path.join(getUserHome(), '.flowise', 'gptvision', upload.data, upload.name)
-
-                    // as the image is stored in the server, read the file and convert it to base64
-                    const audio_file = fs.createReadStream(filePath)
-
-                    if (multiModalConfig.speechToTextMode === 'transcriptions') {
-                        const transcription = await openAIClient.audio.transcriptions.create({
-                            file: audio_file,
-                            model: MODEL_NAME
-                        })
-                        return transcription.text
-                    } else if (multiModalConfig.speechToTextMode === 'translations') {
-                        const translation = await openAIClient.audio.translations.create({
-                            file: audio_file,
-                            model: MODEL_NAME
-                        })
-                        return translation.text
-                    }
-                } else {
-                    throw new Error('Speech to text is not selected, but found a recorded audio file. Please fix the chain.')
-                }
-            }
-        }
-    }
-    return input
-}
-
 export const addImagesToMessages = (nodeData: INodeData, options: ICommonObject): MessageContent => {
     const imageContent: MessageContent = []
     let model = nodeData.inputs?.model as BaseChatModel
