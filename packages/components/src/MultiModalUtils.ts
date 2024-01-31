@@ -1,6 +1,5 @@
 import { ICommonObject, INodeData } from './Interface'
 import { BaseChatModel } from 'langchain/chat_models/base'
-import { type ClientOptions, OpenAIClient } from '@langchain/openai'
 import { ChatOpenAI } from 'langchain/chat_models/openai'
 import path from 'path'
 import { getUserHome } from './utils'

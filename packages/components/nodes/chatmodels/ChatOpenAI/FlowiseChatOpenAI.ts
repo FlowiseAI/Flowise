@@ -38,7 +38,7 @@ export class FlowiseChatOpenAI extends ChatOpenAI {
         const nodeData = FlowiseChatOpenAI.chainNodeData
         const optionsData = FlowiseChatOpenAI.chainNodeOptions
         const messageContent = addImagesToMessages(nodeData, optionsData)
-        if (messageContent) {
+        if (messageContent?.length) {
             if (messages[0].length > 0 && messages[0][messages[0].length - 1] instanceof HumanMessage) {
                 const lastMessage = messages[0].pop()
                 if (lastMessage instanceof HumanMessage) {

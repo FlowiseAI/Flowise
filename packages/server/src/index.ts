@@ -46,8 +46,7 @@ import {
     getSessionChatHistory,
     getAllConnectedNodes,
     clearSessionMemory,
-    findMemoryNode,
-    convertedSpeechToText
+    findMemoryNode
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -59,7 +58,15 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, INodeParams, handleEscapeCharacters, IFileUpload } from 'flowise-components'
+import {
+    ICommonObject,
+    IMessage,
+    INodeOptionsValue,
+    INodeParams,
+    handleEscapeCharacters,
+    convertSpeechToText,
+    IFileUpload
+} from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware } from './utils/XSS'
@@ -1644,7 +1651,11 @@ export class App {
                             }
                         }
                         if (speechToTextConfig) {
-                            const speechToTextResult = await convertedSpeechToText(upload.data, speechToTextConfig)
+                            const options: ICommonObject = {
+                                appDataSource: this.AppDataSource,
+                                databaseEntities: databaseEntities
+                            }
+                            const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                             if (speechToTextResult) {
                                 incomingInput.question = speechToTextResult
                             }
