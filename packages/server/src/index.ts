@@ -62,7 +62,7 @@ import { CachePool } from './CachePool'
 import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware } from './utils/XSS'
+import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
@@ -126,8 +126,20 @@ export class App {
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
-        // Allow access from *
-        this.app.use(cors())
+        // Allow access from specified domains
+        this.app.use(cors(getCorsOptions()))
+
+        // Allow embedding from specified domains.
+        this.app.use((req, res, next) => {
+            const allowedOrigins = getAllowedIframeOrigins()
+            if (allowedOrigins == '*') {
+                next()
+            } else {
+                const csp = `frame-ancestors ${allowedOrigins}`
+                res.setHeader('Content-Security-Policy', csp)
+                next()
+            }
+        })
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -461,6 +473,8 @@ export class App {
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
             let isStreaming = false
+            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
                 if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
@@ -476,7 +490,8 @@ export class App {
                 isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
             }
 
-            const obj = { isStreaming }
+            // Once custom function ending node exists, flow is always unavailable to stream
+            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
             return res.json(obj)
         })
 
@@ -1665,6 +1680,9 @@ export class App {
                 if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
                 const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
@@ -1691,6 +1709,9 @@ export class App {
 
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
+
+                // Once custom function ending node exists, flow is always unavailable to stream
+                isStreamValid = isEndingNodeExists ? false : isStreamValid
 
                 let chatHistory: IMessage[] = incomingInput.history ?? []
 
@@ -1883,9 +1904,7 @@ export async function start(): Promise<void> {
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
-        cors: {
-            origin: '*'
-        }
+        cors: getCorsOptions()
     })
 
     await serverApp.initDatabase()

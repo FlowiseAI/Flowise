@@ -17,7 +17,7 @@ class OpenAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Embeddings'
         this.name = 'openAIEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAIEmbeddings'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -30,6 +30,27 @@ class OpenAIEmbedding_Embeddings implements INode {
             credentialNames: ['openAIApi']
         }
         this.inputs = [
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                options: [
+                    {
+                        label: 'text-embedding-3-large',
+                        name: 'text-embedding-3-large'
+                    },
+                    {
+                        label: 'text-embedding-3-small',
+                        name: 'text-embedding-3-small'
+                    },
+                    {
+                        label: 'text-embedding-ada-002',
+                        name: 'text-embedding-ada-002'
+                    }
+                ],
+                default: 'text-embedding-ada-002',
+                optional: true
+            },
             {
                 label: 'Strip New Lines',
                 name: 'stripNewLines',
@@ -66,12 +87,14 @@ class OpenAIEmbedding_Embeddings implements INode {
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basepath as string
+        const modelName = nodeData.inputs?.modelName as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
-            openAIApiKey
+            openAIApiKey,
+            modelName
         }
 
         if (stripNewLines) obj.stripNewLines = stripNewLines

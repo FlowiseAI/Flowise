@@ -156,7 +156,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 3,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -180,6 +180,22 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-0613",
                                 "name": "gpt-4-0613"
                             },
@@ -194,6 +210,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
                             },
                             {
                                 "label": "gpt-3.5-turbo-0613",

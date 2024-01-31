@@ -489,13 +489,23 @@
                         "type": "BaseLLMOutputParser",
                         "optional": true,
                         "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
                     "model": "{{openAI_1.data.instance}}",
                     "prompt": "{{promptTemplate_0.data.instance}}",
                     "outputParser": "",
-                    "chainName": "FirstChain"
+                    "chainName": "FirstChain",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {
@@ -578,13 +588,23 @@
                         "type": "BaseLLMOutputParser",
                         "optional": true,
                         "id": "llmChain_1-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_1-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
                     "model": "{{openAI_2.data.instance}}",
                     "prompt": "{{promptTemplate_1.data.instance}}",
                     "outputParser": "",
-                    "chainName": "LastChain"
+                    "chainName": "LastChain",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {
@@ -742,8 +762,8 @@
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "prompt": "{{promptTemplate_2.data.instance}}",
                     "outputParser": "",
-                    "inputModeration": "",
-                    "chainName": "FallbackChain"
+                    "chainName": "FallbackChain",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {
@@ -888,7 +908,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 3,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -910,6 +930,14 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
