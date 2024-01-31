@@ -35,7 +35,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 label: 'Batch Size',
                 name: 'batchSize',
                 type: 'number',
-                default: '1',
+                default: '100',
                 optional: true,
                 additionalParams: true
             },

@@ -14,7 +14,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 3,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -36,6 +36,14 @@
                             {
                                 "label": "gpt-4",
                                 "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
                             },
                             {
                                 "label": "gpt-4-1106-preview",
@@ -261,7 +269,7 @@
             "data": {
                 "id": "conversationChain_0",
                 "label": "Conversation Chain",
-                "version": 2,
+                "version": 3,
                 "name": "conversationChain",
                 "type": "ConversationChain",
                 "baseClasses": ["ConversationChain", "LLMChain", "BaseChain", "Runnable"],
@@ -301,9 +309,19 @@
                         "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
                         "optional": true,
                         "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "memory": "{{bufferMemory_0.data.instance}}",
                     "chatPromptTemplate": "",
