@@ -46,7 +46,8 @@ import {
     getSessionChatHistory,
     getAllConnectedNodes,
     clearSessionMemory,
-    findMemoryNode
+    findMemoryNode,
+    deleteFolderRecursive
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -617,6 +618,10 @@ export class App {
             if (memoryType) deleteOptions.memoryType = memoryType
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
+
+            /* Delete all multimodal uploads corresponding to this chatflow */
+            const directory = path.join(getUserHome(), '.flowise', 'gptvision', chatflowid)
+            deleteFolderRecursive(directory)
 
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
