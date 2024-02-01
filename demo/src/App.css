@@ -37,6 +37,16 @@
     padding: 2em;
 }
 
+.card > p {
+    font-size: 1.2em;
+}
+
+code {
+    background-color: gray;
+    padding: 0.25em 0.5em;
+    border-radius: 0.5em;
+}
+
 .read-the-docs {
     color: #888;
 }
