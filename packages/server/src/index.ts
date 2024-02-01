@@ -475,7 +475,8 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
 
-            const uploadAllowedCategoryNodes = ['Chat Models']
+            const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
+            const uploadProcessingNodes = ['chatOpenAI']
 
             try {
                 const flowObj = JSON.parse(chatflow.flowData)
@@ -494,26 +495,27 @@ export class App {
 
                 let allowImageUploads = false
                 flowObj.nodes.forEach((node: IReactFlowNode) => {
-                    if (uploadAllowedCategoryNodes.indexOf(node.data.category) > -1) {
+                    if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
                         logger.debug(`[server]: Found Eligible Node ${node.data.type}, Allowing Uploads.`)
 
                         // there could be multiple components allowing uploads, so we check if it's already added
                         // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
                         node.data.inputParams.map((param: INodeParams) => {
-                            if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads'] && !allowImageUploads) {
+                            if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
                                 allowances.push({
                                     fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
                                     maxUploadSize: 5
                                 })
-                                allowImageUploads = true
                             }
                         })
+                    } else if (uploadAllowedNodes.indexOf(node.data.name) > -1 && !allowImageUploads) {
+                        allowImageUploads = true
                     }
                 })
 
                 return res.json({
                     allowSpeechToText: allowSpeechToText,
-                    isUploadAllowed: allowances.length > 0,
+                    isUploadAllowed: allowImageUploads,
                     uploadFileSizeAndTypes: allowances
                 })
             } catch (e) {
