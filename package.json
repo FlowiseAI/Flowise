@@ -4,6 +4,7 @@
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
+        "demo",
         "packages/*",
         "flowise",
         "ui",
