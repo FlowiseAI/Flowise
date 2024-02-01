@@ -431,6 +431,15 @@ export class App {
         // Delete chatflow via id
         this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
+
+            try {
+                /* Delete all multimodal uploads corresponding to this chatflow */
+                const directory = path.join(getUserHome(), '.flowise', 'gptvision', req.params.id)
+                deleteFolderRecursive(directory)
+            } catch (e) {
+                logger.error(`[server]: Error deleting multimodal uploads: ${e}`)
+            }
+
             return res.json(results)
         })
 
@@ -619,9 +628,13 @@ export class App {
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
 
-            /* Delete all multimodal uploads corresponding to this chatflow */
-            const directory = path.join(getUserHome(), '.flowise', 'gptvision', chatflowid)
-            deleteFolderRecursive(directory)
+            try {
+                /* Delete all multimodal uploads corresponding to this chatflow */
+                const directory = path.join(getUserHome(), '.flowise', 'gptvision', chatflowid)
+                deleteFolderRecursive(directory)
+            } catch (e) {
+                logger.error(`[server]: Error deleting multimodal uploads: ${e}`)
+            }
 
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
@@ -1629,7 +1642,7 @@ export class App {
                 for (const upload of uploads) {
                     if (upload.type === 'file' || upload.type === 'audio') {
                         const filename = upload.name
-                        const dir = path.join(getUserHome(), '.flowise', 'gptvision', chatId)
+                        const dir = path.join(getUserHome(), '.flowise', 'gptvision', chatflowid)
                         if (!fs.existsSync(dir)) {
                             fs.mkdirSync(dir, { recursive: true })
                         }
@@ -1639,7 +1652,7 @@ export class App {
                         //writes data to a file, replacing the file if it already exists.
                         fs.writeFileSync(filePath, bf)
                         // don't need to store the file contents in chatmessage, just the filename and chatId
-                        upload.data = chatId
+                        upload.data = chatflowid
                         upload.type = 'stored-file'
                     }
 

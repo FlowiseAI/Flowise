@@ -1080,23 +1080,25 @@ export const getAllValuesFromJson = (obj: any): any[] => {
 }
 
 export const deleteFolderRecursive = (directory: string) => {
-    fs.readdir(directory, (error, files) => {
-        if (error) throw new Error('Could not read directory')
+    if (fs.existsSync(directory)) {
+        fs.readdir(directory, (error, files) => {
+            if (error) throw new Error('Could not read directory')
 
-        files.forEach((file) => {
-            const file_path = path.join(directory, file)
+            files.forEach((file) => {
+                const file_path = path.join(directory, file)
 
-            fs.stat(file_path, (error, stat) => {
-                if (error) throw new Error('File do not exist')
+                fs.stat(file_path, (error, stat) => {
+                    if (error) throw new Error('File do not exist')
 
-                if (!stat.isDirectory()) {
-                    fs.unlink(file_path, (error) => {
-                        if (error) throw new Error('Could not delete file')
-                    })
-                } else {
-                    deleteFolderRecursive(file_path)
-                }
+                    if (!stat.isDirectory()) {
+                        fs.unlink(file_path, (error) => {
+                            if (error) throw new Error('Could not delete file')
+                        })
+                    } else {
+                        deleteFolderRecursive(file_path)
+                    }
+                })
             })
         })
-    })
+    }
 }
