@@ -47,7 +47,7 @@ export class CohereRerank extends BaseDocumentCompressor {
                 doc.metadata.relevance_score = result.relevance_score
                 finalResults.push(doc)
             })
-            return finalResults
+            return finalResults.splice(0, this.k)
         } catch (error) {
             return documents
         }
