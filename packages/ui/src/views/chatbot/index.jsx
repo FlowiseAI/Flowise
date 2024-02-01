@@ -111,7 +111,7 @@ const ChatbotFull = () => {
                             chatflowid={chatflow.id}
                             apiHost={baseURL}
                             chatflowConfig={chatbotOverrideConfig}
-                            theme={{ chatWindow: { ...chatbotTheme, poweredByTextColor: '#FFFFFF' } }}
+                            theme={{ chatWindow: { ...chatbotTheme, poweredByTextColor: 'transparent' } }}
                         />
                     )}
                     <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
