@@ -40,7 +40,8 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: mysqlMigrations
+                migrations: mysqlMigrations,
+                ssl: getDatabaseSSLFromEnv()
             })
             break
         case 'postgres':
@@ -51,18 +52,7 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                ...(process.env.DATABASE_SSL_KEY_BASE64
-                    ? {
-                          ssl: {
-                              rejectUnauthorized: false,
-                              cert: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
-                          }
-                      }
-                    : process.env.DATABASE_SSL === 'true'
-                    ? {
-                          ssl: true
-                      }
-                    : {}),
+                ssl: getDatabaseSSLFromEnv(),
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
@@ -88,4 +78,16 @@ export function getDataSource(): DataSource {
         init()
     }
     return appDataSource
+}
+
+const getDatabaseSSLFromEnv = () => {
+    if (process.env.DATABASE_SSL_KEY_BASE64) {
+        return {
+            rejectUnauthorized: false,
+            ca: Buffer.from(process.env.DATABASE_SSL_KEY_BASE64, 'base64')
+        }
+    } else if (process.env.DATABASE_SSL === 'true') {
+        return true
+    }
+    return undefined
 }
