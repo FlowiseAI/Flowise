@@ -80,6 +80,10 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'gpt-3.5-turbo'
                     },
                     {
+                        label: 'gpt-3.5-turbo-0125',
+                        name: 'gpt-3.5-turbo-0125'
+                    },
+                    {
                         label: 'gpt-3.5-turbo-1106',
                         name: 'gpt-3.5-turbo-1106'
                     },
