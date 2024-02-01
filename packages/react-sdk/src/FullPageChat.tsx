@@ -21,7 +21,7 @@ export const FullPageChat = ({ style, className, ...assignableProps }: Props) =>
 
     useEffect(() => {
         ;(async () => {
-            await import('flowise-embed/dist/web')
+            await import('flowise-embed/dist/web.js')
         })()
     }, [])
 
