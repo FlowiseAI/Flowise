@@ -1,6 +1,25 @@
-import { useEffect, useState } from 'react'
-import { FullPageChat } from 'flowise-embed-react'
+/* eslint-disable react/prop-types */
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+// We need the react component to use our own
+// embedded chat to remove the branding
+export const FullPageChat = ({ style, className, ...assignableProps }) => {
+    const ref = useRef(null)
+
+    useEffect(() => {
+        ;(async () => {
+            await import('flowise-embed/dist/web')
+        })()
+    }, [])
+
+    useEffect(() => {
+        if (!ref.current) return
+        Object.assign(ref.current, assignableProps)
+    }, [assignableProps])
+
+    return <flowise-fullchatbot ref={ref} style={style} class={className} />
+}
 
 // Project import
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
