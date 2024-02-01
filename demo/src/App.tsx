@@ -13,7 +13,8 @@ function App() {
             <h1>Test Bench</h1>
             <div className='card'>
                 <p>
-                    Change the <code>chatflowid</code> and <code>apiHost</code> props for the embed component in <code>src/App.tsx</code>
+                    Change <code>chatflowid</code> and <code>apiHost</code> for the embed component in: <code>src/App.tsx</code> (React) and{' '}
+                    <code>index.html</code> (JS)
                 </p>
                 <p>
                     Check the{' '}
@@ -23,7 +24,7 @@ function App() {
                     to see how to embed the chat widget on your site.
                 </p>
             </div>
-            <BubbleChat chatflowid='70704781-5c6b-439c-8542-cd2f52966f07' apiHost='http://localhost:3000' />
+            <BubbleChat chatflowid='your-chatflow-id' apiHost='http://localhost:3000' />
         </>
     )
 }

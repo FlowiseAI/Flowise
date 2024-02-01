@@ -35,10 +35,18 @@
 
 .card {
     padding: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .card > p {
     font-size: 1.2em;
+    text-align: center;
+}
+
+.card ul {
+    list-style: none;
 }
 
 code {
