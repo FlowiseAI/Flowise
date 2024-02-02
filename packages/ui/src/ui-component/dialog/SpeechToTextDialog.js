@@ -29,6 +29,7 @@ import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
 import { SwitchInput } from 'ui-component/switch/Switch'
 import { Input } from 'ui-component/input/Input'
 import { StyledButton } from 'ui-component/button/StyledButton'
+import { Dropdown } from 'ui-component/dropdown/Dropdown'
 import openAISVG from 'assets/images/openai.svg'
 import assemblyAIPng from 'assets/images/assemblyai.png'
 
@@ -51,6 +52,31 @@ const speechToTextProviders = [
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['openAIApi']
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description:
+                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                placeholder: 'en',
+                optional: true
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                optional: true
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                optional: true
             },
             {
                 label: 'On/Off',
@@ -306,6 +332,19 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                                                 }
                                             />
                                         )}
+
+                                    {providerExpanded[provider.name] && inputParam.type === 'options' && (
+                                        <Dropdown
+                                            name={inputParam.name}
+                                            options={inputParam.options}
+                                            onSelect={(newValue) => setValue(newValue, provider.name, inputParam.name)}
+                                            value={
+                                                speechToText[provider.name]
+                                                    ? speechToText[provider.name][inputParam.name]
+                                                    : inputParam.default ?? 'choose an option'
+                                            }
+                                        />
+                                    )}
                                 </Box>
                             ))}
                         </AccordionDetails>

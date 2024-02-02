@@ -21,7 +21,10 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
 
             const transcription = await openAIClient.audio.transcriptions.create({
                 file: audio_file,
-                model: 'whisper-1'
+                model: 'whisper-1',
+                language: speechToTextConfig?.language,
+                temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
+                prompt: speechToTextConfig?.prompt
             })
             if (transcription?.text) {
                 return transcription.text
