@@ -33,7 +33,9 @@ export class ChatOpenAI extends LangchainChatOpenAI {
     }
 
     async generate(messages: BaseMessageLike[][], options?: string[] | ChatOpenAICallOptions, callbacks?: Callbacks): Promise<LLMResult> {
-        await this.injectMultiModalMessages(messages)
+        if (ChatOpenAI.chainNodeData && ChatOpenAI.chainNodeOptions) {
+            await this.injectMultiModalMessages(messages)
+        }
         return super.generate(messages, options, callbacks)
     }
 
