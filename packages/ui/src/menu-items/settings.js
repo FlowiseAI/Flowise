@@ -36,7 +36,7 @@ const settings = {
         },
         {
             id: 'enableSpeechToText',
-            title: 'Enable Speech to Text',
+            title: 'Speech to Text',
             type: 'item',
             url: '',
             icon: icons.IconMicrophone

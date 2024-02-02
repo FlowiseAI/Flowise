@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
+import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
 import { BaseCache } from 'langchain/schema'
 import { BaseLLMParams } from 'langchain/llms/base'
-import { FlowiseChatOpenAI } from './FlowiseChatOpenAI'
+import { ChatOpenAI } from './FlowiseChatOpenAI'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -20,12 +20,12 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -47,6 +47,14 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-4',
                         name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-turbo-preview',
+                        name: 'gpt-4-turbo-preview'
+                    },
+                    {
+                        label: 'gpt-4-0125-preview',
+                        name: 'gpt-4-0125-preview'
                     },
                     {
                         label: 'gpt-4-1106-preview',
@@ -71,6 +79,10 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-0125',
+                        name: 'gpt-3.5-turbo-0125'
                     },
                     {
                         label: 'gpt-3.5-turbo-1106',
@@ -158,7 +170,7 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description: 'Enabling this option, would default the model to gpt-4-vision-preview',
+                description: 'Automatically uses gpt-4-vision-preview when image is being uploaded from chat',
                 default: false,
                 optional: true
             },
@@ -231,16 +243,19 @@ class ChatOpenAI_ChatModels implements INode {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-        const model = new FlowiseChatOpenAI(obj, {
+
+        const model = new ChatOpenAI(obj, {
             baseURL: basePath,
             baseOptions: parsedBaseOptions
         })
 
-        const multiModal = {
-            allowImageUploads: allowImageUploads ?? false,
-            imageResolution
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false,
+                imageResolution
+            }
         }
-        model.multiModal = multiModal
+        model.multiModalOption = multiModalOption
         return model
     }
 }

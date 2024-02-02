@@ -9,7 +9,7 @@ import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams }
 import { AgentExecutor } from '../../../src/agents'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { renderTemplate } from '@langchain/core/prompts'
-import { injectChainNodeData } from '../../../src/MultiModalUtils'
+import { injectChainNodeData } from '../../../src/multiModalUtils'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 

@@ -8,7 +8,7 @@ import { formatResponse, injectOutputParser } from '../../outputparsers/OutputPa
 import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
-import { injectChainNodeData } from '../../../src/MultiModalUtils'
+import { injectChainNodeData } from '../../../src/multiModalUtils'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -83,7 +83,7 @@ class LLMChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const prompt = nodeData.inputs?.prompt
         const output = nodeData.outputs?.output as string
-        const promptValues = prompt.promptValues as ICommonObject
+        let promptValues: ICommonObject | undefined = nodeData.inputs?.prompt.promptValues as ICommonObject
         const llmOutputParser = nodeData.inputs?.outputParser as BaseOutputParser
         this.outputParser = llmOutputParser
         if (llmOutputParser) {
@@ -108,17 +108,25 @@ class LLMChain_Chains implements INode {
                 verbose: process.env.DEBUG === 'true'
             })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
+            injectChainNodeData(nodeData, options)
+            promptValues = injectOutputParser(this.outputParser, chain, promptValues)
             const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
             // eslint-disable-next-line no-console
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
             console.log(res)
+
+            let finalRes = res
+            if (this.outputParser && typeof res === 'object' && Object.prototype.hasOwnProperty.call(res, 'json')) {
+                finalRes = (res as ICommonObject).json
+            }
+
             /**
              * Apply string transformation to convert special chars:
              * FROM: hello i am ben\n\n\thow are you?
              * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
              */
-            return handleEscapeCharacters(res, false)
+            return handleEscapeCharacters(finalRes, false)
         }
     }
 

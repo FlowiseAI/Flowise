@@ -1,17 +1,16 @@
-import { ICommonObject } from './Interface'
-import { getCredentialData, getUserHome } from './utils'
+import { ICommonObject, IFileUpload } from './Interface'
+import { getCredentialData, getStoragePath } from './utils'
 import { type ClientOptions, OpenAIClient } from '@langchain/openai'
 import fs from 'fs'
 import path from 'path'
 import { AssemblyAI } from 'assemblyai'
 
-export const convertSpeechToText = async (upload: any, speechToTextConfig: any, options: ICommonObject) => {
+export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
-        const filePath = path.join(getUserHome(), '.flowise', 'gptvision', upload.data, upload.name)
+        const filePath = path.join(getStoragePath(), options.chatflowid, options.chatId, upload.name)
 
-        // as the image is stored in the server, read the file and convert it to base64
         const audio_file = fs.createReadStream(filePath)
 
         if (speechToTextConfig.name === 'openAIWhisper') {

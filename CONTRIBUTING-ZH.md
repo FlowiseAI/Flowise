@@ -138,6 +138,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | DATABASE_NAME               | 数据库名称（当 DATABASE_TYPE 不是 sqlite 时）          | 字符串                                          |                                     |
 | SECRETKEY_PATH              | 保存加密密钥（用于加密/解密凭据）的位置                | 字符串                                          | `your-path/Flowise/packages/server` |
 | FLOWISE_SECRETKEY_OVERWRITE | 加密密钥用于替代存储在 SECRETKEY_PATH 中的密钥         | 字符串                                          |
+| DISABLE_FLOWISE_TELEMETRY   | 关闭遥测                                               | 字符串                                          |
 
 您也可以在使用 `npx` 时指定环境变量。例如：
 

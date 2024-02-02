@@ -29,6 +29,12 @@ export interface ICommonObject {
     [key: string]: any | CommonType | ICommonObject | CommonType[] | ICommonObject[]
 }
 
+export interface IVariable {
+    name: string
+    value: string
+    type: string
+}
+
 export type IDatabaseEntity = {
     [key: string]: any
 }
@@ -90,7 +96,7 @@ export interface INodeProperties {
     type: string
     icon: string
     version: number
-    category: string
+    category: string // TODO: use enum instead of string
     baseClasses: string[]
     description?: string
     filePath?: string
@@ -137,6 +143,18 @@ export interface IUsedTool {
     tool: string
     toolInput: object
     toolOutput: string | object
+}
+
+export interface IFileUpload {
+    data?: string
+    type: string
+    name: string
+    mime: string
+}
+
+export interface IMultiModalOption {
+    image?: Record<string, any>
+    audio?: Record<string, any>
 }
 
 /**
@@ -233,11 +251,4 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
-}
-
-export interface IFileUpload {
-    data: string
-    type: string
-    name: string
-    mime: string
 }

@@ -101,13 +101,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
         /**
-         * {isUploadAllowed: boolean, uploadFileSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
+         * {isImageUploadAllowed: boolean, imgUploadSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
          */
         let acceptFile = false
-        if (constraints.isUploadAllowed) {
+        if (constraints.isImageUploadAllowed) {
             const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            constraints.uploadFileSizeAndTypes.map((allowed) => {
+            constraints.imgUploadSizeAndTypes.map((allowed) => {
                 if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
                     acceptFile = true
                 }
@@ -473,7 +473,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     obj.fileUploads = JSON.parse(message.fileUploads)
                     obj.fileUploads.forEach((file) => {
                         if (file.type === 'stored-file') {
-                            file.data = `${baseURL}/api/v1/get-upload-file/${file.name}?chatId=${chatId}`
+                            file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${file.name}`
                         }
                     })
                 }
@@ -497,8 +497,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // Get chatflow uploads capability
     useEffect(() => {
         if (getAllowChatFlowUploads.data) {
-            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.isUploadAllowed ?? false)
-            setIsChatFlowAvailableForSpeech(getAllowChatFlowUploads.data?.allowSpeechToText ?? false)
+            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.isImageUploadAllowed ?? false)
+            setIsChatFlowAvailableForSpeech(getAllowChatFlowUploads.data?.isSpeechToTextEnabled ?? false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllowChatFlowUploads.data])
@@ -603,10 +603,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                     onDrop={handleDrop}
                 />
             )}
-            {isDragActive && getAllowChatFlowUploads.data?.isUploadAllowed && (
+            {isDragActive && getAllowChatFlowUploads.data?.isImageUploadAllowed && (
                 <Box className='drop-overlay'>
                     <Typography variant='h2'>Drop here to upload</Typography>
-                    {getAllowChatFlowUploads.data.uploadFileSizeAndTypes.map((allowed) => {
+                    {getAllowChatFlowUploads.data.imgUploadSizeAndTypes.map((allowed) => {
                         return (
                             <>
                                 <Typography variant='subtitle1'>{allowed.fileTypes?.join(', ')}</Typography>

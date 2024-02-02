@@ -1,11 +1,32 @@
-import { flatten } from 'lodash'
-import { createClient, SearchOptions } from 'redis'
+import { flatten, isEqual } from 'lodash'
+import { createClient, SearchOptions, RedisClientOptions } from 'redis'
 import { Embeddings } from 'langchain/embeddings/base'
 import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
 import { Document } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { escapeAllStrings, escapeSpecialChars, unEscapeSpecialChars } from './utils'
+
+let redisClientSingleton: ReturnType<typeof createClient>
+let redisClientOption: RedisClientOptions
+
+const getRedisClient = async (option: RedisClientOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 class Redis_VectorStores implements INode {
     label: string
@@ -149,8 +170,7 @@ class Redis_VectorStores implements INode {
             }
 
             try {
-                const redisClient = createClient({ url: redisUrl })
-                await redisClient.connect()
+                const redisClient = await getRedisClient({ url: redisUrl })
 
                 const storeConfig: RedisVectorStoreConfig = {
                     redisClient: redisClient,
@@ -210,8 +230,7 @@ class Redis_VectorStores implements INode {
             redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
         }
 
-        const redisClient = createClient({ url: redisUrl })
-        await redisClient.connect()
+        const redisClient = await getRedisClient({ url: redisUrl })
 
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: redisClient,

@@ -5,7 +5,7 @@ import { Tool } from 'langchain/tools'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { additionalCallbacks } from '../../../src/handler'
-import { injectChainNodeData } from '../../../src/MultiModalUtils'
+import { injectChainNodeData } from '../../../src/multiModalUtils'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
