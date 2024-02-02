@@ -1,0 +1,73 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Install Dependencies",
+      "command": "yarn install"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "build": {
+      "name": "build",
+      "command": "yarn build"
+    },
+    "build-force": {
+      "name": "build-force",
+      "command": "yarn build-force"
+    },
+    "dev": {
+      "name": "dev",
+      "command": "yarn dev",
+      "runAtStart": true,
+      "preview": {
+        "port": 3000
+      }
+    },
+    "start": {
+      "name": "start",
+      "command": "yarn start"
+    },
+    "start:windows": {
+      "name": "start:windows",
+      "command": "yarn start:windows"
+    },
+    "start:default": {
+      "name": "start:default",
+      "command": "yarn start:default"
+    },
+    "clean": {
+      "name": "clean",
+      "command": "yarn clean"
+    },
+    "format": {
+      "name": "format",
+      "command": "yarn format"
+    },
+    "test": {
+      "name": "test",
+      "command": "yarn test"
+    },
+    "lint": {
+      "name": "lint",
+      "command": "yarn lint"
+    },
+    "lint-fix": {
+      "name": "lint-fix",
+      "command": "yarn lint-fix"
+    },
+    "quick": {
+      "name": "quick",
+      "command": "yarn quick"
+    },
+    "postinstall": {
+      "name": "postinstall",
+      "command": "yarn postinstall"
+    },
+    "migration:create": {
+      "name": "migration:create",
+      "command": "yarn migration:create"
+    }
+  }
+}
