@@ -36,6 +36,18 @@ export const theme = (customization) => {
         case 'u5.start-ai.ru':
             color = colorsStartAI
             break
+        case 'u6.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u7.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u8.start-ai.ru':
+            color = colorsStartAI
+            break
+        case 'u9.start-ai.ru':
+            color = colorsStartAI
+            break
         case 'test.start-ai.ru':
             color = colorsStartAI
             break
