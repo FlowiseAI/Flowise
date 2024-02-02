@@ -70,3 +70,12 @@ switch (process.env.NODE_ENV) {
 ### - `pm2 start STARTAI_FIVE_ecosystem.config.js` - запуск приложения - port - 3025 имя STARTAI_FIVE
 
 ### - `pm2 start STARTAI_TEST_ecosystem.config.js` - запуск приложения - port - 3026 имя STARTAI_TEST
+
+## Фикс если возникают ошибки с типами в TS или в @oclif/core
+
+### - удалить node_modules в корне, в packages\server, packages\ui, packages\components
+### - удалить файлы yarn.lock, package.lock 
+### - сделать yarn clear cache
+### - при ошибки в @oclif/core сделать yarn add @oclif/core@1.26.2
+### - yarn install
+### - yarn build
