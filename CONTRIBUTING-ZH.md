@@ -124,6 +124,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | FLOWISE_USERNAME            | 登录用户名                                             | 字符串                                          |                                     |
 | FLOWISE_PASSWORD            | 登录密码                                               | 字符串                                          |                                     |
 | DEBUG                       | 打印组件的日志                                         | 布尔值                                          |                                     |
+| BLOB_STORAGE_PATH           | 存储位置                                               | 字符串                                          | `your-home-dir/.flowise/storage`    |
 | LOG_PATH                    | 存储日志文件的位置                                     | 字符串                                          | `your-path/Flowise/logs`            |
 | LOG_LEVEL                   | 日志的不同级别                                         | 枚举字符串: `error`, `info`, `verbose`, `debug` | `info`                              |
 | APIKEY_PATH                 | 存储 API 密钥的位置                                    | 字符串                                          | `your-path/Flowise/packages/server` |

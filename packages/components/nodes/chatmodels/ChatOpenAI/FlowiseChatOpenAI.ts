@@ -22,7 +22,7 @@ export class ChatOpenAI extends LangchainChatOpenAI {
         /** @deprecated */
         configuration?: ClientOptions & LegacyOpenAIInput
     ) {
-        super(fields)
+        super(fields, configuration)
         this.multiModalOption = fields?.multiModalOption
         this.configuredModel = fields?.modelName ?? 'gpt-3.5-turbo'
         this.configuredMaxToken = fields?.maxTokens
