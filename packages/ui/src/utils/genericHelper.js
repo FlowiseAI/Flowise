@@ -277,6 +277,7 @@ export const generateExportFlowData = (flowData) => {
             name: node.data.name,
             type: node.data.type,
             baseClasses: node.data.baseClasses,
+            tags: node.data.tags,
             category: node.data.category,
             description: node.data.description,
             inputParams: node.data.inputParams,

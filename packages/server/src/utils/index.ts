@@ -818,7 +818,16 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama', 'awsChatBedrock', 'chatMistralAI'],
+        'Chat Models': [
+            'azureChatOpenAI',
+            'chatOpenAI',
+            'chatOpenAI_LlamaIndex',
+            'chatAnthropic',
+            'chatAnthropic_LlamaIndex',
+            'chatOllama',
+            'awsChatBedrock',
+            'chatMistralAI'
+        ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
@@ -841,6 +850,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         // Agent that are available to stream
         const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+    } else if (endingNodeData.category === 'Engine') {
+        const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
+        isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
     }
 
     // If no output parser, flow is available to stream
