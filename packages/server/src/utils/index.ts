@@ -27,7 +27,8 @@ import {
     ICommonObject,
     IDatabaseEntity,
     IMessage,
-    FlowiseMemory
+    FlowiseMemory,
+    IFileUpload
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
@@ -279,7 +280,8 @@ export const buildLangchain = async (
     overrideConfig?: ICommonObject,
     cachePool?: CachePool,
     isUpsert?: boolean,
-    stopNodeId?: string
+    stopNodeId?: string,
+    uploads?: IFileUpload[]
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -325,7 +327,8 @@ export const buildLangchain = async (
                     appDataSource,
                     databaseEntities,
                     cachePool,
-                    dynamicVariables
+                    dynamicVariables,
+                    uploads
                 })
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
@@ -340,7 +343,8 @@ export const buildLangchain = async (
                     appDataSource,
                     databaseEntities,
                     cachePool,
-                    dynamicVariables
+                    dynamicVariables,
+                    uploads
                 })
 
                 // Save dynamic variables

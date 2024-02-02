@@ -1954,7 +1954,10 @@ export class App {
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
-                    this.cachePool
+                    this.cachePool,
+                    false,
+                    undefined,
+                    incomingInput.uploads
                 )
 
                 const nodeToExecute =
