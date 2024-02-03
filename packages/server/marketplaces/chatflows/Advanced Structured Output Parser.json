@@ -1,4 +1,6 @@
 {
+    "description": "Return response as a JSON structure as specified by a Zod schema",
+    "badge": "NEW",
     "nodes": [
         {
             "width": 300,
@@ -409,7 +411,7 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": "http://localhost:8901/v1",
+                    "basepath": "",
                     "baseOptions": ""
                 },
                 "outputAnchors": [
