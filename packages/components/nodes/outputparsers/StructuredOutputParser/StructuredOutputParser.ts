@@ -1,9 +1,8 @@
-import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
+import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
 import { z } from 'zod'
-import { jsonToZod } from 'json-to-zod'
 
 class StructuredOutputParser implements INode {
     label: string
@@ -35,31 +34,44 @@ class StructuredOutputParser implements INode {
                 description: 'In the event that the first call fails, will make another call to the model to fix any errors.'
             },
             {
-                label: 'Example JSON',
-                name: 'exampleJson',
-                type: 'string',
-                description: 'Example JSON structure for LLM to return',
-                rows: 10,
-                default: '{"answer": "the answer", "followupQuestions": ["question1", "question2"]}',
+                label: 'JSON Structure',
+                name: 'jsonStructure',
+                type: 'datagrid',
+                description: 'JSON structure for LLM to return',
+                datagrid: [
+                    { field: 'property', headerName: 'Property', editable: true },
+                    {
+                        field: 'type',
+                        headerName: 'Type',
+                        type: 'singleSelect',
+                        valueOptions: ['string', 'number', 'boolean'],
+                        editable: true
+                    },
+                    { field: 'description', headerName: 'Description', editable: true, flex: 1 }
+                ],
+                default: [
+                    {
+                        property: 'answer',
+                        type: 'string',
+                        description: `answer to the user's question`
+                    },
+                    {
+                        property: 'source',
+                        type: 'string',
+                        description: `sources used to answer the question, should be websites`
+                    }
+                ],
                 additionalParams: true
             }
         ]
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const exampleJson = nodeData.inputs?.exampleJson as string
+        const jsonStructure = nodeData.inputs?.jsonStructure as string
         const autoFix = nodeData.inputs?.autofixParser as boolean
 
-        const jsonToZodString = jsonToZod(JSON.parse(exampleJson))
-        const splitString = jsonToZodString.split('const schema = ')
-        const schemaString = splitString[1].trim()
-        
-        const fnString = `function proxyFn(z){ return ${schemaString} }`
-        const zodSchemaFunction = new Function('z', `return ${schemaString}`)
-        const zodSchema = zodSchemaFunction(z)
-
         try {
-            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(zodSchema)
+            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(z.object(convertSchemaToZod(jsonStructure)))
 
             // NOTE: When we change Flowise to return a json response, the following has to be changed to: JsonStructuredOutputParser
             Object.defineProperty(structuredOutputParser, 'autoFix', {
