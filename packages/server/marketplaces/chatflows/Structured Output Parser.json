@@ -4,7 +4,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 574,
+            "height": 576,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 845.3961479115309,
@@ -17,7 +17,12 @@
                 "version": 3,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "baseClasses": [
+                    "ChatOpenAI",
+                    "BaseChatModel",
+                    "BaseLanguageModel",
+                    "Runnable"
+                ],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -25,7 +30,9 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["openAIApi"],
+                        "credentialNames": [
+                            "openAIApi"
+                        ],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {
@@ -202,7 +209,7 @@
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 508,
             "id": "llmChain_0",
             "position": {
                 "x": 1229.1699649849293,
@@ -215,7 +222,11 @@
                 "version": 3,
                 "name": "llmChain",
                 "type": "LLMChain",
-                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "baseClasses": [
+                    "LLMChain",
+                    "BaseChain",
+                    "Runnable"
+                ],
                 "category": "Chains",
                 "description": "Chain to run queries against LLMs",
                 "inputParams": [
@@ -300,7 +311,7 @@
         },
         {
             "width": 300,
-            "height": 652,
+            "height": 690,
             "id": "chatPromptTemplate_0",
             "position": {
                 "x": 501.1597501123828,
@@ -313,7 +324,12 @@
                 "version": 1,
                 "name": "chatPromptTemplate",
                 "type": "ChatPromptTemplate",
-                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "baseClasses": [
+                    "ChatPromptTemplate",
+                    "BaseChatPromptTemplate",
+                    "BasePromptTemplate",
+                    "Runnable"
+                ],
                 "category": "Prompts",
                 "description": "Schema to represent a chat prompt",
                 "inputParams": [
@@ -369,11 +385,11 @@
         },
         {
             "width": 300,
-            "height": 328,
+            "height": 329,
             "id": "structuredOutputParser_0",
             "position": {
-                "x": 170.3869571939727,
-                "y": 343.9298288967859
+                "x": 498.2326128526694,
+                "y": 566.5473204649535
             },
             "type": "customNode",
             "data": {
@@ -382,7 +398,11 @@
                 "version": 1,
                 "name": "structuredOutputParser",
                 "type": "StructuredOutputParser",
-                "baseClasses": ["StructuredOutputParser", "BaseLLMOutputParser", "Runnable"],
+                "baseClasses": [
+                    "StructuredOutputParser",
+                    "BaseLLMOutputParser",
+                    "Runnable"
+                ],
                 "category": "Output Parsers",
                 "description": "Parse the output of an LLM call into a given (JSON) structure.",
                 "inputParams": [
@@ -395,61 +415,20 @@
                         "id": "structuredOutputParser_0-input-autofixParser-boolean"
                     },
                     {
-                        "label": "JSON Structure",
-                        "name": "jsonStructure",
-                        "type": "datagrid",
-                        "description": "JSON structure for LLM to return",
-                        "datagrid": [
-                            {
-                                "field": "property",
-                                "headerName": "Property",
-                                "editable": true
-                            },
-                            {
-                                "field": "type",
-                                "headerName": "Type",
-                                "type": "singleSelect",
-                                "valueOptions": ["string", "number", "boolean"],
-                                "editable": true
-                            },
-                            {
-                                "field": "description",
-                                "headerName": "Description",
-                                "editable": true,
-                                "flex": 1
-                            }
-                        ],
-                        "default": [
-                            {
-                                "property": "answer",
-                                "type": "string",
-                                "description": "answer to the user's question"
-                            },
-                            {
-                                "property": "source",
-                                "type": "string",
-                                "description": "sources used to answer the question, should be websites"
-                            }
-                        ],
+                        "label": "Example JSON",
+                        "name": "exampleJson",
+                        "type": "string",
+                        "description": "Example JSON structure for LLM to return",
+                        "rows": 10,
+                        "default": "{\"answer\": \"the answer\", \"followupQuestions\": [\"question1\", \"question2\"]}",
                         "additionalParams": true,
-                        "id": "structuredOutputParser_0-input-jsonStructure-datagrid"
+                        "id": "structuredOutputParser_0-input-exampleJson-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
                     "autofixParser": true,
-                    "jsonStructure": [
-                        {
-                            "property": "answer",
-                            "type": "string",
-                            "description": "answer to the user's question"
-                        },
-                        {
-                            "property": "source",
-                            "type": "string",
-                            "description": "sources used to answer the question, should be websites"
-                        }
-                    ]
+                    "exampleJson": "{\"answer\": \"the answer\", \"followupQuestions\": [\"question1\", \"question2\"]}"
                 },
                 "outputAnchors": [
                     {
@@ -463,11 +442,11 @@
                 "selected": false
             },
             "selected": false,
+            "dragging": false,
             "positionAbsolute": {
-                "x": 170.3869571939727,
-                "y": 343.9298288967859
-            },
-            "dragging": false
+                "x": 498.2326128526694,
+                "y": 566.5473204649535
+            }
         }
     ],
     "edges": [
@@ -499,10 +478,7 @@
             "target": "llmChain_0",
             "targetHandle": "llmChain_0-input-outputParser-BaseLLMOutputParser",
             "type": "buttonedge",
-            "id": "structuredOutputParser_0-structuredOutputParser_0-output-structuredOutputParser-StructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser",
-            "data": {
-                "label": ""
-            }
+            "id": "structuredOutputParser_0-structuredOutputParser_0-output-structuredOutputParser-StructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser"
         }
     ]
 }
