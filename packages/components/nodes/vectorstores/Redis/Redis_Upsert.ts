@@ -1,7 +1,6 @@
 import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-
 import { flatten } from 'lodash'
 import { RedisSearchBase } from './RedisSearchBase'
 import { VectorStore } from 'langchain/vectorstores/base'

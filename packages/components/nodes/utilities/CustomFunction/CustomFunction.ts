@@ -1,6 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { NodeVM } from 'vm2'
-import { availableDependencies, handleEscapeCharacters } from '../../../src/utils'
+import { DataSource } from 'typeorm'
+import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
 
 class CustomFunction_Utilities implements INode {
     label: string
@@ -51,13 +52,31 @@ class CustomFunction_Utilities implements INode {
                 label: 'Output',
                 name: 'output',
                 baseClasses: ['string', 'number', 'boolean', 'json', 'array']
+            },
+            {
+                label: 'Ending Node',
+                name: 'EndingNode',
+                baseClasses: [this.type]
             }
         ]
     }
 
-    async init(nodeData: INodeData, input: string): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+        const isEndingNode = nodeData?.outputs?.output === 'EndingNode'
+        if (isEndingNode && !options.isRun) return // prevent running both init and run twice
+
         const javascriptFunction = nodeData.inputs?.javascriptFunction as string
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+        const variables = await getVars(appDataSource, databaseEntities, nodeData)
+        const flow = {
+            chatflowId: options.chatflowid,
+            sessionId: options.sessionId,
+            chatId: options.chatId,
+            input
+        }
 
         let inputVars: ICommonObject = {}
         if (functionInputVariablesRaw) {
@@ -69,7 +88,20 @@ class CustomFunction_Utilities implements INode {
             }
         }
 
+        // Some values might be a stringified JSON, parse it
+        for (const key in inputVars) {
+            if (typeof inputVars[key] === 'string' && inputVars[key].startsWith('{') && inputVars[key].endsWith('}')) {
+                try {
+                    inputVars[key] = JSON.parse(inputVars[key])
+                } catch (e) {
+                    continue
+                }
+            }
+        }
+
         let sandbox: any = { $input: input }
+        sandbox['$vars'] = prepareSandboxVars(variables)
+        sandbox['$flow'] = flow
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
@@ -80,22 +112,6 @@ class CustomFunction_Utilities implements INode {
                 sandbox[`$${item}`] = value
             }
         }
-
-        const defaultAllowBuiltInDep = [
-            'assert',
-            'buffer',
-            'crypto',
-            'events',
-            'http',
-            'https',
-            'net',
-            'path',
-            'querystring',
-            'timers',
-            'tls',
-            'url',
-            'zlib'
-        ]
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
@@ -115,13 +131,18 @@ class CustomFunction_Utilities implements INode {
         const vm = new NodeVM(nodeVMOptions)
         try {
             const response = await vm.run(`module.exports = async function() {${javascriptFunction}}()`, __dirname)
-            if (typeof response === 'string') {
+
+            if (typeof response === 'string' && !isEndingNode) {
                 return handleEscapeCharacters(response, false)
             }
             return response
         } catch (e) {
             throw new Error(e)
         }
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+        return await this.init(nodeData, input, { ...options, isRun: true })
     }
 }
 

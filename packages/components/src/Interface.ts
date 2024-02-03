@@ -29,6 +29,12 @@ export interface ICommonObject {
     [key: string]: any | CommonType | ICommonObject | CommonType[] | ICommonObject[]
 }
 
+export interface IVariable {
+    name: string
+    value: string
+    type: string
+}
+
 export type IDatabaseEntity = {
     [key: string]: any
 }
@@ -92,6 +98,7 @@ export interface INodeProperties {
     version: number
     category: string // TODO: use enum instead of string
     baseClasses: string[]
+    tags?: string[]
     description?: string
     filePath?: string
     badge?: string

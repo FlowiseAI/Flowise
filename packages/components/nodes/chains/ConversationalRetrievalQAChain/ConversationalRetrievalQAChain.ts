@@ -13,6 +13,7 @@ import { applyPatch } from 'fast-json-patch'
 import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, additionalCallbacks } from '../../../src/handler'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
+import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 
 type RetrievalChainInput = {
     chat_history: string
@@ -176,11 +177,17 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const history = ((await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]) ?? []
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const callbacks = await additionalCallbacks(nodeData, options)
+        const additionalCallback = await additionalCallbacks(nodeData, options)
+
+        let callbacks = [loggerHandler, ...additionalCallback]
+
+        if (process.env.DEBUG === 'true') {
+            callbacks.push(new LCConsoleCallbackHandler())
+        }
 
         const stream = answerChain.streamLog(
             { question: input, chat_history: history },
-            { callbacks: [loggerHandler, ...callbacks] },
+            { callbacks },
             {
                 includeNames: [sourceRunnableName]
             }

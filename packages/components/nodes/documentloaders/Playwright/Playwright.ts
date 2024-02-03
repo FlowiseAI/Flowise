@@ -1,4 +1,4 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
@@ -61,6 +61,7 @@ class Playwright_DocumentLoaders implements INode {
                 name: 'limit',
                 type: 'number',
                 optional: true,
+                default: '10',
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
@@ -114,11 +115,12 @@ class Playwright_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
-        let limit = nodeData.inputs?.limit as string
+        const selectedLinks = nodeData.inputs?.selectedLinks as string[]
+        let limit = parseInt(nodeData.inputs?.limit as string)
         let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
         let waitForSelector = nodeData.inputs?.waitForSelector as string
 
@@ -158,23 +160,33 @@ class Playwright_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in PlaywrightWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true') options.logger.error(`error in PlaywrightWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
         let docs = []
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            if (!limit) limit = '10'
-            else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
+            if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
+            if (!limit) limit = 10
+            else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
-            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+                selectedLinks && selectedLinks.length > 0
+                    ? selectedLinks.slice(0, limit)
+                    : relativeLinksMethod === 'webCrawl'
+                    ? await webCrawl(url, limit)
+                    : await xmlScrape(url, limit)
+            if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await playwrightLoader(page)))
             }
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
+        } else if (selectedLinks && selectedLinks.length > 0) {
+            if (process.env.DEBUG === 'true')
+                options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+            for (const page of selectedLinks) {
+                docs.push(...(await playwrightLoader(page)))
+            }
         } else {
             docs = await playwrightLoader(url)
         }
