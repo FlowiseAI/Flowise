@@ -253,7 +253,8 @@ const similaritySearchVectorWithScore = async (
         port: postgresConnectionOptions.port,
         user: postgresConnectionOptions.username,
         password: postgresConnectionOptions.password,
-        database: postgresConnectionOptions.database
+        database: postgresConnectionOptions.database,
+        ssl: postgresConnectionOptions.extra?.ssl
     }
     const pool = new Pool(poolOptions)
     const conn = await pool.connect()
