@@ -1,5 +1,6 @@
 {
     "description": "Answer questions over a SQL database",
+    "categories": "ChatOpenAI,Sql Database Chain,Langchain",
     "nodes": [
         {
             "width": 300,

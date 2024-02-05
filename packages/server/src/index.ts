@@ -1237,6 +1237,7 @@ export class App {
                     templateName: file.split('.json')[0],
                     flowData: fileData.toString(),
                     badge: fileDataObj?.badge,
+                    categories: fileDataObj?.categories,
                     type: 'Chatflow',
                     description: fileDataObj?.description || ''
                 }
@@ -1253,6 +1254,7 @@ export class App {
                     ...fileDataObj,
                     id: index,
                     type: 'Tool',
+                    categories: '',
                     templateName: file.split('.json')[0]
                 }
                 templates.push(template)

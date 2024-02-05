@@ -129,6 +129,7 @@ const Marketplace = () => {
 
     function filterFlows(data) {
         return (
+            data.categories?.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             data.templateName.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.description && data.description.toLowerCase().indexOf(search.toLowerCase()) > -1)
         )

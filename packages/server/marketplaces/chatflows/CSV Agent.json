@@ -1,5 +1,6 @@
 {
     "description": "Analyse and summarize CSV data",
+    "categories": "CSV Agent,ChatOpenAI,Langchain",
     "nodes": [
         {
             "width": 300,

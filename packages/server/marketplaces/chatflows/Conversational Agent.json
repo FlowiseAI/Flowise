@@ -1,5 +1,6 @@
 {
     "description": "A conversational agent for a chat model which utilize chat specific prompts",
+    "categories": "Calculator Tool,Buffer Memory,SerpAPI,ChatOpenAI,Conversational Agent,Langchain",
     "nodes": [
         {
             "width": 300,

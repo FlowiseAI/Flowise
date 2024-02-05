@@ -1,5 +1,6 @@
 {
     "description": "OpenAI Assistant that has instructions and can leverage models, tools, and knowledge to respond to user queries",
+    "categories": "Custom Tool, SerpAPI,OpenAI Assistant,Calculator Tool,Langchain",
     "badge": "NEW",
     "nodes": [
         {

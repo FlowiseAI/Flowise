@@ -103,45 +103,27 @@ export const MarketplaceTable = ({ data, images, filterFunction, filterByBadge, 
                                         </Typography>
                                     </TableCell>
                                     <TableCell key='2'>
-                                        {row.type === 'Chatflow' && images[row.id] && (
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    flexWrap: 'wrap',
-                                                    marginTop: 5
-                                                }}
-                                            >
-                                                {images[row.id]
-                                                    .slice(0, images[row.id].length > 5 ? 5 : images[row.id].length)
-                                                    .map((img) => (
-                                                        <div
-                                                            key={img}
-                                                            style={{
-                                                                width: 35,
-                                                                height: 35,
-                                                                marginRight: 5,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: 'white',
-                                                                marginTop: 5
-                                                            }}
-                                                        >
-                                                            <img
-                                                                style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                                                alt=''
-                                                                src={img}
-                                                            />
-                                                        </div>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                flexWrap: 'wrap',
+                                                marginTop: 5
+                                            }}
+                                        >
+                                            {row.categories &&
+                                                row.categories
+                                                    .split(',')
+                                                    .map((tag, index) => (
+                                                        <Chip
+                                                            variant='outlined'
+                                                            key={index}
+                                                            size='small'
+                                                            label={tag.toUpperCase()}
+                                                            style={{ marginRight: 3, marginBottom: 3 }}
+                                                        />
                                                     ))}
-                                                {images[row.id].length > 5 && (
-                                                    <Typography
-                                                        sx={{ alignItems: 'center', display: 'flex', fontSize: '.8rem', fontWeight: 200 }}
-                                                    >
-                                                        + {images[row.id].length - 5} More
-                                                    </Typography>
-                                                )}
-                                            </div>
-                                        )}
+                                        </div>
                                     </TableCell>
                                     <TableCell key='3'>
                                         <Typography>

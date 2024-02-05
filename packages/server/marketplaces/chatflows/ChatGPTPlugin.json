@@ -1,5 +1,6 @@
 {
     "description": "Use ChatGPT Plugins within LangChain abstractions with GET and POST Tools",
+    "categories": "ChatGPT Plugin,HTTP GET/POST,ChatOpenAI,MRKL Agent,Langchain",
     "nodes": [
         {
             "width": 300,

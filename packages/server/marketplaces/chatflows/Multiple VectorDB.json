@@ -1,5 +1,6 @@
 {
     "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
+    "categories": "Buffer Memory,ChatOpenAI,Chain Tool,Retrieval QA Chain,Redis,Faiss,Conversational Agent,Langchain",
     "nodes": [
         {
             "width": 300,

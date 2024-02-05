@@ -1,5 +1,6 @@
 {
     "description": "Simple chat engine to handle back and forth conversations using LlamaIndex",
+    "categories": "BufferMemory,AzureChatOpenAI,LlamaIndex",
     "badge": "NEW",
     "nodes": [
         {

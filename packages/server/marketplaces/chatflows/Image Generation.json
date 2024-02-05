@@ -1,6 +1,7 @@
 {
     "description": "Generate image using Replicate Stability text-to-image generative AI model",
     "badge": "NEW",
+    "categories": "Replicate,ChatOpenAI,LLM Chain,Langchain",
     "nodes": [
         {
             "width": 300,
