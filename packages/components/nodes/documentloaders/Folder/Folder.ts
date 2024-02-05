@@ -70,6 +70,7 @@ class Folder_DocumentLoaders implements INode {
             '.css': (path) => new TextLoader(path),
             '.go': (path) => new TextLoader(path), // Go
             '.h': (path) => new TextLoader(path), // C++ Header files
+            '.kt': (path) => new TextLoader(path), // Kotlin
             '.java': (path) => new TextLoader(path), // Java
             '.js': (path) => new TextLoader(path), // JavaScript
             '.less': (path) => new TextLoader(path), // Less files
