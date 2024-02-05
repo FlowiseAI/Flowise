@@ -43,7 +43,8 @@ export default class Start extends Command {
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
-        DISABLE_FLOWISE_TELEMETRY: Flags.string()
+        DISABLE_FLOWISE_TELEMETRY: Flags.string(),
+        LOGI_SYMPHONY_URL: Flags.string()
     }
 
     async stopProcess() {
@@ -122,6 +123,9 @@ export default class Start extends Command {
 
         // Telemetry
         if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
+
+        // Symphony
+        if (flags.LOGI_SYMPHONY_URL) process.env.LOGI_SYMPHONY_URL = flags.LOGI_SYMPHONY_URL
 
         await (async () => {
             try {
