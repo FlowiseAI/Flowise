@@ -1237,6 +1237,7 @@ export class App {
                     templateName: file.split('.json')[0],
                     flowData: fileData.toString(),
                     badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
                     categories: fileDataObj?.categories,
                     type: 'Chatflow',
                     description: fileDataObj?.description || ''
@@ -1254,6 +1255,8 @@ export class App {
                     ...fileDataObj,
                     id: index,
                     type: 'Tool',
+                    framework: fileDataObj?.framework,
+                    badge: fileDataObj?.badge,
                     categories: '',
                     templateName: file.split('.json')[0]
                 }
