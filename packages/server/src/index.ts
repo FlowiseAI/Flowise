@@ -1445,7 +1445,7 @@ export class App {
                 chatType,
                 chatId,
                 memoryType: memoryType ?? (chatId ? IsNull() : undefined),
-                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
+                sessionId: sessionId ?? undefined,
                 createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
             },
             order: {
