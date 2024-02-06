@@ -62,7 +62,6 @@ class Folder_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const recursive = nodeData.inputs?.recursive as boolean
 
-        console.log('Recursive: ', recursive)
         const loader = new DirectoryLoader(
             folderPath,
             {
