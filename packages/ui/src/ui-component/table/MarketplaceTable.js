@@ -10,8 +10,6 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Chip from '@mui/material/Chip'
 import { Button, Typography } from '@mui/material'
-import langchainPNG from 'assets/images/langchain.png'
-import llamaIndexPNG from 'assets/images/llamaindex.png'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -63,9 +61,6 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
                     <TableHead>
                         <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
-                            <StyledTableCell component='th' scope='row' style={{ width: '5%' }} key='0'>
-                                {''}
-                            </StyledTableCell>
                             <StyledTableCell component='th' scope='row' style={{ width: '15%' }} key='0'>
                                 Name
                             </StyledTableCell>
@@ -92,16 +87,6 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                             .map((row, index) => (
                                 <StyledTableRow key={index}>
                                     <TableCell key='0'>
-                                        <Typography>
-                                            {row.framework === 'Langchain' && (
-                                                <img src={langchainPNG} alt='langchain' style={{ width: 30, height: 30 }} />
-                                            )}
-                                            {row.framework === 'LlamaIndex' && (
-                                                <img src={llamaIndexPNG} alt='llamaIndex' style={{ width: 30, height: 30 }} />
-                                            )}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell key='1'>
                                         <Typography
                                             sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                         >
@@ -110,15 +95,15 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                                             </Button>
                                         </Typography>
                                     </TableCell>
-                                    <TableCell key='2'>
+                                    <TableCell key='1'>
                                         <Typography>{row.type}</Typography>
                                     </TableCell>
-                                    <TableCell key='3'>
+                                    <TableCell key='2'>
                                         <Typography sx={{ overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
                                             {row.description || ''}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell key='4'>
+                                    <TableCell key='3'>
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -141,7 +126,7 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                                                     ))}
                                         </div>
                                     </TableCell>
-                                    <TableCell key='5'>
+                                    <TableCell key='4'>
                                         <Typography>
                                             {row.badge &&
                                                 row.badge
