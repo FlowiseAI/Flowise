@@ -11,6 +11,7 @@ import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedT
 import { AddCategoryToChatFlow1699900910291 } from './1699900910291-AddCategoryToChatFlow'
 import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-AddFileAnnotationsToChatMessage'
 import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
+import { AddFeedback1707213619308 } from './1707213619308-AddFeedback'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -25,5 +26,6 @@ export const sqliteMigrations = [
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
     AddFileAnnotationsToChatMessage1700271021237,
-    AddVariableEntity1699325775451
+    AddVariableEntity1699325775451,
+    AddFeedback1707213619308
 ]
