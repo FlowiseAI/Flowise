@@ -46,9 +46,8 @@ class AdvancedStructuredOutputParser implements INode {
         "Action", "Comedy", "Drama", "Fantasy", "Horror",
         "Mystery", "Romance", "Science Fiction", "Thriller", "Documentary"
     ]).array().max(2), // Array of genres, max of 2 from the defined enum
-    shortDescription: z.string().max(500) // Short description, max 150 characters
-})`,
-                additionalParams: true
+    shortDescription: z.string().max(500) // Short description, max 500 characters
+})`
             }
         ]
     }

@@ -171,67 +171,6 @@
         },
         {
             "width": 300,
-            "height": 329,
-            "id": "advancedStructuredOutputParser_0",
-            "position": {
-                "x": 494.20163170226266,
-                "y": 568.3420937517054
-            },
-            "type": "customNode",
-            "data": {
-                "id": "advancedStructuredOutputParser_0",
-                "label": "Advanced Structured Output Parser",
-                "version": 1,
-                "name": "advancedStructuredOutputParser",
-                "type": "AdvancedStructuredOutputParser",
-                "baseClasses": ["AdvancedStructuredOutputParser", "BaseLLMOutputParser", "Runnable"],
-                "category": "Output Parsers",
-                "description": "Parse the output of an LLM call into a given structure by providing a Zod schema.",
-                "inputParams": [
-                    {
-                        "label": "Autofix",
-                        "name": "autofixParser",
-                        "type": "boolean",
-                        "optional": true,
-                        "description": "In the event that the first call fails, will make another call to the model to fix any errors.",
-                        "id": "advancedStructuredOutputParser_0-input-autofixParser-boolean"
-                    },
-                    {
-                        "label": "Example JSON",
-                        "name": "exampleJson",
-                        "type": "string",
-                        "description": "Zod schema for the output of the model",
-                        "rows": 10,
-                        "default": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 150 characters\n})",
-                        "additionalParams": true,
-                        "id": "advancedStructuredOutputParser_0-input-exampleJson-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "autofixParser": true,
-                    "exampleJson": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 150 characters\n})"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
-                        "name": "advancedStructuredOutputParser",
-                        "label": "AdvancedStructuredOutputParser",
-                        "type": "AdvancedStructuredOutputParser | BaseLLMOutputParser | Runnable"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 494.20163170226266,
-                "y": 568.3420937517054
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 576,
             "id": "chatOpenAI_0",
             "position": {
@@ -431,6 +370,66 @@
                 "y": -355.71028569475095
             },
             "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 454,
+            "id": "advancedStructuredOutputParser_0",
+            "position": {
+                "x": 489.3637511211284,
+                "y": 580.0628053662244
+            },
+            "type": "customNode",
+            "data": {
+                "id": "advancedStructuredOutputParser_0",
+                "label": "Advanced Structured Output Parser",
+                "version": 1,
+                "name": "advancedStructuredOutputParser",
+                "type": "AdvancedStructuredOutputParser",
+                "baseClasses": ["AdvancedStructuredOutputParser", "BaseLLMOutputParser", "Runnable"],
+                "category": "Output Parsers",
+                "description": "Parse the output of an LLM call into a given structure by providing a Zod schema.",
+                "inputParams": [
+                    {
+                        "label": "Autofix",
+                        "name": "autofixParser",
+                        "type": "boolean",
+                        "optional": true,
+                        "description": "In the event that the first call fails, will make another call to the model to fix any errors.",
+                        "id": "advancedStructuredOutputParser_0-input-autofixParser-boolean"
+                    },
+                    {
+                        "label": "Example JSON",
+                        "name": "exampleJson",
+                        "type": "string",
+                        "description": "Zod schema for the output of the model",
+                        "rows": 10,
+                        "default": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 500 characters\n})",
+                        "id": "advancedStructuredOutputParser_0-input-exampleJson-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "autofixParser": "",
+                    "exampleJson": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 500 characters\n})"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
+                        "name": "advancedStructuredOutputParser",
+                        "label": "AdvancedStructuredOutputParser",
+                        "type": "AdvancedStructuredOutputParser | BaseLLMOutputParser | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 489.3637511211284,
+                "y": 580.0628053662244
+            }
         }
     ],
     "edges": [
@@ -446,20 +445,20 @@
             }
         },
         {
-            "source": "advancedStructuredOutputParser_0",
-            "sourceHandle": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
-            "target": "llmChain_0",
-            "targetHandle": "llmChain_0-input-outputParser-BaseLLMOutputParser",
-            "type": "buttonedge",
-            "id": "advancedStructuredOutputParser_0-advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser"
-        },
-        {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "llmChain_0",
             "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel"
+        },
+        {
+            "source": "advancedStructuredOutputParser_0",
+            "sourceHandle": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-outputParser-BaseLLMOutputParser",
+            "type": "buttonedge",
+            "id": "advancedStructuredOutputParser_0-advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser"
         }
     ]
 }
