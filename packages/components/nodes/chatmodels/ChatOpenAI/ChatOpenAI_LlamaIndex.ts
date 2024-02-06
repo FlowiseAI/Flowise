@@ -1,10 +1,8 @@
-import { ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
-import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
 
-class ChatOpenAI_ChatModels implements INode {
+class ChatOpenAI_LlamaIndex_LLMs implements INode {
     label: string
     name: string
     version: number
@@ -13,18 +11,20 @@ class ChatOpenAI_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
+    tags: string[]
     credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'ChatOpenAI'
-        this.name = 'chatOpenAI'
-        this.version = 3.0
+        this.name = 'chatOpenAI_LlamaIndex'
+        this.version = 1.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.description = 'Wrapper around OpenAI Chat LLM specific for LlamaIndex'
+        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(OpenAI)]
+        this.tags = ['LlamaIndex']
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -32,12 +32,6 @@ class ChatOpenAI_ChatModels implements INode {
             credentialNames: ['openAIApi']
         }
         this.inputs = [
-            {
-                label: 'Cache',
-                name: 'cache',
-                type: 'BaseCache',
-                optional: true
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -78,10 +72,6 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-0125',
-                        name: 'gpt-3.5-turbo-0125'
                     },
                     {
                         label: 'gpt-3.5-turbo-1106',
@@ -128,40 +118,10 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Frequency Penalty',
-                name: 'frequencyPenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Presence Penalty',
-                name: 'presencePenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
                 step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'BasePath',
-                name: 'basepath',
-                type: 'string',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'BaseOptions',
-                name: 'baseOptions',
-                type: 'json',
                 optional: true,
                 additionalParams: true
             }
@@ -170,50 +130,27 @@ class ChatOpenAI_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
+        const modelName = nodeData.inputs?.modelName as keyof typeof ALL_AVAILABLE_OPENAI_MODELS
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-        const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
-        const streaming = nodeData.inputs?.streaming as boolean
-        const basePath = nodeData.inputs?.basepath as string
-        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const cache = nodeData.inputs?.cache as BaseCache
-
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAI> = {
             temperature: parseFloat(temperature),
-            modelName,
-            openAIApiKey,
-            streaming: streaming ?? true
+            model: modelName,
+            apiKey: openAIApiKey
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
 
-        let parsedBaseOptions: any | undefined = undefined
-
-        if (baseOptions) {
-            try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
-            }
-        }
-        const model = new ChatOpenAI(obj, {
-            basePath,
-            baseOptions: parsedBaseOptions
-        })
+        const model = new OpenAI(obj)
         return model
     }
 }
 
-module.exports = { nodeClass: ChatOpenAI_ChatModels }
+module.exports = { nodeClass: ChatOpenAI_LlamaIndex_LLMs }

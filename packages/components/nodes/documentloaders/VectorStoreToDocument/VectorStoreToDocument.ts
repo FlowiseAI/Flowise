@@ -51,7 +51,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: this.baseClasses
+                baseClasses: [...this.baseClasses, 'json']
             },
             {
                 label: 'Text',

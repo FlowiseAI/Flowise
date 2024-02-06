@@ -482,7 +482,12 @@ export class App {
                 const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
                 if (!isEndingNode) {
-                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                    if (
+                        endingNodeData &&
+                        endingNodeData.category !== 'Chains' &&
+                        endingNodeData.category !== 'Agents' &&
+                        endingNodeData.category !== 'Engine'
+                    ) {
                         return res.status(500).send(`Ending node must be either a Chain or Agent`)
                     }
                 }
@@ -1440,7 +1445,7 @@ export class App {
                 chatType,
                 chatId,
                 memoryType: memoryType ?? (chatId ? IsNull() : undefined),
-                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
+                sessionId: sessionId ?? undefined,
                 createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
             },
             order: {
@@ -1690,7 +1695,12 @@ export class App {
                     const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
                     if (!isEndingNode) {
-                        if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
+                        if (
+                            endingNodeData &&
+                            endingNodeData.category !== 'Chains' &&
+                            endingNodeData.category !== 'Agents' &&
+                            endingNodeData.category !== 'Engine'
+                        ) {
                             return res.status(500).send(`Ending node must be either a Chain or Agent`)
                         }
 

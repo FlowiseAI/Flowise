@@ -190,10 +190,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "vectorStoreToDocument_0-output-document-Document",
+                                "id": "vectorStoreToDocument_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "vectorStoreToDocument_0-output-text-string|json",
