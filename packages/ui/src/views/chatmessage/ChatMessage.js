@@ -58,7 +58,7 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
-export const ChatMessage = ({ open, chatflowid, isDialog }) => {
+export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -90,7 +90,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     // drag & drop and file input
     const fileUploadRef = useRef(null)
     const [isChatFlowAvailableForUploads, setIsChatFlowAvailableForUploads] = useState(false)
-    const [previews, setPreviews] = useState([])
     const [isDragActive, setIsDragActive] = useState(false)
 
     // recording
@@ -353,7 +352,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (e) e.preventDefault()
 
         if (!promptStarterInput && userInput.trim() === '') {
-            if (!(previews.length === 1 && previews[0].type === 'audio')) {
+            const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
+            if (!(previews.length > 1 && containsAudio)) {
                 return
             }
         }
@@ -584,7 +584,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 
     useEffect(() => {
         // wait for audio recording to load and then send
-        if (previews.length === 1 && previews[0].type === 'audio') {
+        const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
+        if (previews.length > 1 && containsAudio) {
             setIsRecording(false)
             setRecordingNotSupported(false)
             handlePromptClick('')
@@ -669,7 +670,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                     display: 'flex',
                                                     flexWrap: 'wrap',
                                                     flexDirection: 'row',
-                                                    width: '100%'
+                                                    width: '100%',
+                                                    gap: '4px'
                                                 }}
                                             >
                                                 {message.fileUploads.map((item, index) => {
@@ -788,23 +790,22 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 </div>
             </div>
 
-            <div style={{ position: 'relative' }}>
-                {messages && messages.length === 1 && (
+            {messages && messages.length === 1 && starterPrompts.length > 0 && (
+                <div style={{ position: 'relative' }}>
                     <StarterPromptsCard
                         sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
                         starterPrompts={starterPrompts || []}
                         onPromptClick={handlePromptClick}
                         isGrid={isDialog}
                     />
-                )}
-                <Divider />
-            </div>
+                </div>
+            )}
 
             <Divider sx={{ width: '100%' }} />
 
             <div className='center'>
                 {previews && previews.length > 0 && (
-                    <Box sx={{ width: '100%', mb: 1.5 }}>
+                    <Box sx={{ width: '100%', mb: 1.5, display: 'flex', alignItems: 'center' }}>
                         {previews.map((item, index) => (
                             <Fragment key={index}>
                                 {item.mime.startsWith('image/') ? (
@@ -827,23 +828,18 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                 ) : (
                                     <Card
                                         sx={{
-                                            display: 'flex',
+                                            display: 'inline-flex',
                                             alignItems: 'center',
                                             height: '48px',
                                             width: isDialog ? ps?.current?.offsetWidth / 4 : ps?.current?.offsetWidth / 2,
-                                            pl: 0.5,
+                                            p: 0.5,
                                             mr: 1,
                                             backgroundColor: theme.palette.grey[500],
                                             flex: '0 0 auto'
                                         }}
                                         variant='outlined'
                                     >
-                                        <CardMedia
-                                            component='audio'
-                                            sx={{ height: '40px', color: 'transparent' }}
-                                            controls
-                                            src={item.data}
-                                        />
+                                        <CardMedia component='audio' sx={{ color: 'transparent' }} controls src={item.data} />
                                         <IconButton onClick={() => handleDeletePreview(item)} size='small'>
                                             <IconTrash size={20} color='white' />
                                         </IconButton>
@@ -993,5 +989,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
 ChatMessage.propTypes = {
     open: PropTypes.bool,
     chatflowid: PropTypes.string,
-    isDialog: PropTypes.bool
+    isDialog: PropTypes.bool,
+    previews: PropTypes.array,
+    setPreviews: PropTypes.func
 }

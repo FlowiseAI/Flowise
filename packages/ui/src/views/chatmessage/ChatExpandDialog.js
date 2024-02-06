@@ -7,7 +7,7 @@ import { ChatMessage } from './ChatMessage'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import { IconEraser } from '@tabler/icons'
 
-const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
+const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel, previews, setPreviews }) => {
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
 
@@ -47,7 +47,13 @@ const ChatExpandDialog = ({ show, dialogProps, onClear, onCancel }) => {
                 className='cloud-dialog-wrapper'
                 sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', p: 0 }}
             >
-                <ChatMessage isDialog={true} open={dialogProps.open} chatflowid={dialogProps.chatflowid} />
+                <ChatMessage
+                    isDialog={true}
+                    open={dialogProps.open}
+                    chatflowid={dialogProps.chatflowid}
+                    previews={previews}
+                    setPreviews={setPreviews}
+                />
             </DialogContent>
         </Dialog>
     ) : null
@@ -59,7 +65,9 @@ ChatExpandDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onClear: PropTypes.func,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    previews: PropTypes.array,
+    setPreviews: PropTypes.func
 }
 
 export default ChatExpandDialog

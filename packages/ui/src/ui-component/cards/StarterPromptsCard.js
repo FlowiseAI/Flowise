@@ -5,7 +5,10 @@ import './StarterPromptsCard.css'
 
 const StarterPromptsCard = ({ isGrid, starterPrompts, sx, onPromptClick }) => {
     return (
-        <Box className={'button-container'} sx={{ bottom: 0, maxWidth: isGrid ? 'inherit' : '400px', m: 1, ...sx }}>
+        <Box
+            className={'button-container'}
+            sx={{ width: '100%', maxWidth: isGrid ? 'inherit' : '400px', p: 1.5, display: 'flex', gap: 1, ...sx }}
+        >
             {starterPrompts.map((sp, index) => (
                 <Chip label={sp.prompt} className={'button'} key={index} onClick={(e) => onPromptClick(sp.prompt, e)} />
             ))}

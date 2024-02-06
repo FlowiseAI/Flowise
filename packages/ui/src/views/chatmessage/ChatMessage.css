@@ -115,14 +115,14 @@
     padding: 12px;
 }
 
-.cloud-wrapper,
-.cloud-dialog-wrapper {
+.cloud-wrapper {
     width: 400px;
-    height: calc(100vh - 260px);
+    height: calc(100vh - 180px);
 }
 
 .cloud-dialog-wrapper {
     width: 100%;
+    height: calc(100vh - 120px);
 }
 
 .cloud-wrapper > div,
@@ -197,4 +197,9 @@
     align-items: center;
     z-index: 2000; /* Ensure it's above other content */
     border: 2px dashed #0094ff; /* Example style */
+}
+
+.center audio {
+    height: 100%;
+    border-radius: 0;
 }
