@@ -143,7 +143,7 @@ class Cheerio_DocumentLoaders implements INode {
         } else if (selectedLinks && selectedLinks.length > 0) {
             if (process.env.DEBUG === 'true')
                 options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
-            for (const page of selectedLinks) {
+            for (const page of selectedLinks.slice(0, limit)) {
                 docs.push(...(await cheerioLoader(page)))
             }
         } else {
