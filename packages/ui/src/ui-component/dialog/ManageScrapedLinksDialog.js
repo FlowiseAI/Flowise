@@ -53,7 +53,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
 
     const handleFetchLinks = async () => {
         setLoading(true)
-        const fetchLinksResp = await scraperApi.fetchAllLinks(url, 'webCrawl')
+        const fetchLinksResp = await scraperApi.fetchLinks(url, dialogProps.relativeLinksMethod, dialogProps.limit)
         if (fetchLinksResp.data) {
             setSelectedLinks(fetchLinksResp.data.links)
         }
