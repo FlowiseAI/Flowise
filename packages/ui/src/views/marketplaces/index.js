@@ -423,6 +423,8 @@ const Marketplace = () => {
                         filterByType={filterByType}
                         filterByBadge={filterByBadge}
                         filterByFramework={filterByFramework}
+                        goToTool={goToTool}
+                        goToCanvas={goToCanvas}
                     />
                 )}
 

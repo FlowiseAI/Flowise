@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
@@ -31,28 +30,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     }
 }))
 
-export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterByType, filterByFramework }) => {
-    const navigate = useNavigate()
+export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterByType, filterByFramework, goToCanvas, goToTool }) => {
     const openTemplate = (selectedTemplate) => {
         if (selectedTemplate.flowData) {
             goToCanvas(selectedTemplate)
         } else {
             goToTool(selectedTemplate)
         }
-    }
-
-    const goToTool = (selectedTool) => {
-        const dialogProp = {
-            title: selectedTool.templateName,
-            type: 'TEMPLATE',
-            data: selectedTool
-        }
-        setToolDialogProps(dialogProp)
-        setShowToolDialog(true)
-    }
-
-    const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
     }
 
     return (
@@ -156,5 +140,7 @@ MarketplaceTable.propTypes = {
     filterFunction: PropTypes.func,
     filterByBadge: PropTypes.func,
     filterByType: PropTypes.func,
-    filterByFramework: PropTypes.func
+    filterByFramework: PropTypes.func,
+    goToTool: PropTypes.func,
+    goToCanvas: PropTypes.func
 }
