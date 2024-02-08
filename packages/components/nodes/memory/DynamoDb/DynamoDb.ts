@@ -142,18 +142,26 @@ interface DynamoDBSerializedChatMessage {
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
+    tableName = ''
     sessionId = ''
     dynamodbClient: DynamoDBClient
+    dynamoKey = ''
+    partitionKey = ''
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.sessionId = fields.sessionId
         this.dynamodbClient = fields.dynamodbClient
+
+        // These fields are coming in on chatHistory, but should they be on the dynamodbClient instead?
+        this.partitionKey = (fields?.chatHistory as unknown as { partitionKey: string }).partitionKey
+        this.dynamoKey = (fields?.chatHistory as unknown as { dynamoKey: string }).dynamoKey
+        this.tableName = (fields?.chatHistory as unknown as { tableName: string }).tableName
     }
 
     overrideDynamoKey(overrideSessionId = '') {
-        const existingDynamoKey = (this as any).dynamoKey
-        const partitionKey = (this as any).partitionKey
+        const existingDynamoKey = this.dynamoKey
+        const partitionKey = this.partitionKey
 
         let newDynamoKey: Record<string, AttributeValue> = {}
 
@@ -210,7 +218,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         if (!this.dynamodbClient) return []
 
         const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
-        const tableName = (this as any).tableName
+        const tableName = this.tableName
         const messageAttributeName = (this as any).messageAttributeName
 
         const params: GetItemCommandInput = {
