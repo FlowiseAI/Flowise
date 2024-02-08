@@ -117,7 +117,10 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: dynamoDb,
         sessionId,
-        dynamodbClient: client
+        dynamodbClient: client,
+        tableName,
+        partitionKey,
+        dynamoKey: { [partitionKey]: { S: sessionId } }
     })
     return memory
 }
@@ -125,6 +128,9 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
 interface BufferMemoryExtendedInput {
     dynamodbClient: DynamoDBClient
     sessionId: string
+    tableName: string
+    partitionKey: string
+    dynamoKey: Record<string, AttributeValue>
 }
 
 interface DynamoDBSerializedChatMessage {
@@ -143,10 +149,10 @@ interface DynamoDBSerializedChatMessage {
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     tableName = ''
+    partitionKey = ''
+    dynamoKey: Record<string, AttributeValue>
     sessionId = ''
     dynamodbClient: DynamoDBClient
-    dynamoKey = ''
-    partitionKey = ''
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
@@ -154,9 +160,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.dynamodbClient = fields.dynamodbClient
 
         // These fields are coming in on chatHistory, but should they be on the dynamodbClient instead?
-        this.partitionKey = (fields?.chatHistory as unknown as { partitionKey: string }).partitionKey
-        this.dynamoKey = (fields?.chatHistory as unknown as { dynamoKey: string }).dynamoKey
-        this.tableName = (fields?.chatHistory as unknown as { tableName: string }).tableName
+        this.tableName = fields.tableName
+        this.partitionKey = fields.partitionKey
+        this.dynamoKey = fields.dynamoKey
     }
 
     overrideDynamoKey(overrideSessionId = '') {
