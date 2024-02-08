@@ -134,7 +134,7 @@ class Postgres_VectorStores implements INode {
                 port: nodeData.inputs?.port as number,
                 username: user,
                 password: password,
-                database: nodeData.inputs?.database as string,
+                database: nodeData.inputs?.database as string
             }
 
             const args = {
