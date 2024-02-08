@@ -148,9 +148,10 @@ interface DynamoDBSerializedChatMessage {
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
-    tableName = ''
-    partitionKey = ''
-    dynamoKey: Record<string, AttributeValue>
+    private tableName = ''
+    private partitionKey = ''
+    private dynamoKey: Record<string, AttributeValue>
+    private messageAttributeName: string
     sessionId = ''
     dynamodbClient: DynamoDBClient
 
@@ -221,9 +222,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.dynamodbClient) return []
 
-        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
         const tableName = this.tableName
-        const messageAttributeName = (this as any).messageAttributeName
+        const messageAttributeName = this.messageAttributeName
 
         const params: GetItemCommandInput = {
             TableName: tableName,
@@ -248,9 +249,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.dynamodbClient) return
 
-        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
-        const tableName = (this as any).tableName
-        const messageAttributeName = (this as any).messageAttributeName
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
+        const tableName = this.tableName
+        const messageAttributeName = this.messageAttributeName
 
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
@@ -271,8 +272,8 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         if (!this.dynamodbClient) return
 
-        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : (this as any).dynamoKey
-        const tableName = (this as any).tableName
+        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
+        const tableName = this.tableName
 
         const params: DeleteItemCommandInput = {
             TableName: tableName,
