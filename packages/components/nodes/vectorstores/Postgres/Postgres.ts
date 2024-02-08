@@ -24,7 +24,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
