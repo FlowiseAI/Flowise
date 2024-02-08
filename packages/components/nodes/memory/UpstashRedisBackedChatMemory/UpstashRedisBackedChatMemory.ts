@@ -114,7 +114,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.redisClient) return []
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const rawStoredMessages: StoredMessage[] = await this.redisClient.lrange<StoredMessage>(id, 0, -1)
         const orderedMessages = rawStoredMessages.reverse()
         const previousMessages = orderedMessages.filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
@@ -125,7 +125,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.redisClient) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
 
@@ -145,7 +145,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         if (!this.redisClient) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.redisClient.del(id)
         await this.clear()
     }
