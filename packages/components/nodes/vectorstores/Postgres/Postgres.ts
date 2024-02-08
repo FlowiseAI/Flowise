@@ -61,13 +61,6 @@ class Postgres_VectorStores implements INode {
                 type: 'string'
             },
             {
-                label: 'SSL Connection',
-                name: 'sslConnection',
-                type: 'boolean',
-                default: false,
-                optional: false
-            },
-            {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
@@ -124,7 +117,6 @@ class Postgres_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const additionalConfig = nodeData.inputs?.additionalConfig as string
-            const sslConnection = nodeData.inputs?.sslConnection as boolean
 
             let additionalConfiguration = {}
             if (additionalConfig) {
@@ -143,7 +135,6 @@ class Postgres_VectorStores implements INode {
                 username: user,
                 password: password,
                 database: nodeData.inputs?.database as string,
-                ssl: sslConnection
             }
 
             const args = {
@@ -248,15 +239,7 @@ const similaritySearchVectorWithScore = async (
         ORDER BY "_distance" ASC
         LIMIT $3;`
 
-    const poolOptions = {
-        host: postgresConnectionOptions.host,
-        port: postgresConnectionOptions.port,
-        user: postgresConnectionOptions.username,
-        password: postgresConnectionOptions.password,
-        database: postgresConnectionOptions.database,
-        ssl: postgresConnectionOptions.extra?.ssl
-    }
-    const pool = new Pool(poolOptions)
+    const pool = new Pool(postgresConnectionOptions)
     const conn = await pool.connect()
 
     const documents = await conn.query(queryString, [embeddingString, _filter, k])
