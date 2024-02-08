@@ -1,6 +1,8 @@
 {
     "description": "Agent optimized for vector retrieval during conversation and answering questions based on previous dialogue.",
+    "categories": "Retriever Tool,Buffer Memory,ChatOpenAI,Conversational Retrieval Agent, Pinecone,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

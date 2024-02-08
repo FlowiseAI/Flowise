@@ -1,5 +1,7 @@
 {
     "description": "Engage with data sources such as YouTube Transcripts, Google, and more through intelligent Q&A interactions",
+    "categories": "Memory Vector Store,SearchAPI,ChatOpenAI,Conversational Retrieval QA Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

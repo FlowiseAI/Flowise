@@ -1,5 +1,7 @@
 {
     "description": "Manually construct prompts to query a SQL database",
+    "categories": "IfElse Function,Variable Set/Get,Custom JS Function,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "badge": "new",
     "nodes": [
         {

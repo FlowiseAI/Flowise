@@ -1,6 +1,8 @@
 {
     "description": "Text file QnA using conversational retrieval QA chain",
+    "categories": "TextFile,ChatOpenAI,Conversational Retrieval QA Chain,Pinecone,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

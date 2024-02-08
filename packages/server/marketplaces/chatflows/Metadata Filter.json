@@ -1,6 +1,8 @@
 {
     "description": "Upsert multiple files with metadata and filter by it using conversational retrieval QA chain",
+    "categories": "Text File,PDF File,ChatOpenAI,Conversational Retrieval QA Chain,Pinecone,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

@@ -1,5 +1,7 @@
 {
     "description": "A chain that automatically picks an appropriate retriever from multiple different vector databases",
+    "categories": "ChatOpenAI,Multi Retrieval QA Chain,Pinecone,Chroma,Supabase,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

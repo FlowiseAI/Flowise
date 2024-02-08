@@ -1,5 +1,7 @@
 {
     "description": "Conversational Agent with ability to visit a website and extract information",
+    "categories": "Buffer Memory,Web Browser,ChatOpenAI,Conversational Agent",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

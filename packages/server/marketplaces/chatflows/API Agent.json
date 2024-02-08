@@ -1,5 +1,7 @@
 {
     "description": "Given API docs, agent automatically decide which API to call, generating url and body request from conversation",
+    "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,Conversational Agent,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

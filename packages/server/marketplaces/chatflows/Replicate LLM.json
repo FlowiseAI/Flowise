@@ -1,5 +1,7 @@
 {
     "description": "Use Replicate API that runs Llama 13b v2 model with LLMChain",
+    "categories": "Replicate,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
