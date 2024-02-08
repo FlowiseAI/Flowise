@@ -158,8 +158,6 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         super(fields)
         this.sessionId = fields.sessionId
         this.dynamodbClient = fields.dynamodbClient
-
-        // These fields are coming in on chatHistory, but should they be on the dynamodbClient instead?
         this.tableName = fields.tableName
         this.partitionKey = fields.partitionKey
         this.dynamoKey = fields.dynamoKey
