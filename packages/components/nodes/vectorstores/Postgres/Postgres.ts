@@ -189,7 +189,8 @@ class Postgres_VectorStores implements INode {
             type: 'postgres',
             host: nodeData.inputs?.host as string,
             port: nodeData.inputs?.port as number,
-            username: user,
+            username: user, // Required by TypeORMVectorStore
+            user: user, // Required by Pool in similaritySearchVectorWithScore
             password: password,
             database: nodeData.inputs?.database as string
         }
