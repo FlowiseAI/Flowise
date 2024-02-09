@@ -51,11 +51,13 @@ class Text_DocumentLoaders implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: this.baseClasses
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]

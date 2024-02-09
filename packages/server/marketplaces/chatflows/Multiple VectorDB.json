@@ -966,10 +966,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_0-output-document-Document",
+                                "id": "plainText_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_0-output-text-string|json",
@@ -1503,10 +1503,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_1-output-document-Document",
+                                "id": "plainText_1-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_1-output-text-string|json",
@@ -1723,11 +1723,11 @@
         },
         {
             "source": "plainText_0",
-            "sourceHandle": "plainText_0-output-document-Document",
+            "sourceHandle": "plainText_0-output-document-Document|json",
             "target": "redis_0",
             "targetHandle": "redis_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_0-plainText_0-output-document-Document-redis_0-redis_0-input-document-Document",
+            "id": "plainText_0-plainText_0-output-document-Document|json-redis_0-redis_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -1778,11 +1778,11 @@
         },
         {
             "source": "plainText_1",
-            "sourceHandle": "plainText_1-output-document-Document",
+            "sourceHandle": "plainText_1-output-document-Document|json",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "id": "plainText_1-plainText_1-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }
