@@ -59,10 +59,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "textFile_0-output-document-Document",
+                                "id": "textFile_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "textFile_0-output-text-string|json",
@@ -851,11 +851,11 @@
         },
         {
             "source": "textFile_0",
-            "sourceHandle": "textFile_0-output-document-Document",
+            "sourceHandle": "textFile_0-output-document-Document|json",
             "target": "pineconeLlamaIndex_0",
             "targetHandle": "pineconeLlamaIndex_0-input-document-Document",
             "type": "buttonedge",
-            "id": "textFile_0-textFile_0-output-document-Document-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-document-Document",
+            "id": "textFile_0-textFile_0-output-document-Document|json-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-document-Document",
             "data": {
                 "label": ""
             }

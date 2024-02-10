@@ -99,6 +99,7 @@ export const initNode = (nodeData, newNodeId) => {
                     id: `${newNodeId}-output-${nodeData.outputs[j].name}-${baseClasses}`,
                     name: nodeData.outputs[j].name,
                     label: nodeData.outputs[j].label,
+                    description: nodeData.outputs[j].description ?? '',
                     type
                 }
                 options.push(newOutputOption)
@@ -107,6 +108,7 @@ export const initNode = (nodeData, newNodeId) => {
                 name: 'output',
                 label: 'Output',
                 type: 'options',
+                description: nodeData.outputs[0].description ?? '',
                 options,
                 default: nodeData.outputs[0].name
             }
@@ -116,6 +118,7 @@ export const initNode = (nodeData, newNodeId) => {
                 id: `${newNodeId}-output-${nodeData.name}-${nodeData.baseClasses.join('|')}`,
                 name: nodeData.name,
                 label: nodeData.type,
+                description: nodeData.description ?? '',
                 type: nodeData.baseClasses.join(' | ')
             }
             outputAnchors.push(newOutput)
