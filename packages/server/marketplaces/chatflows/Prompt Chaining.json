@@ -1,5 +1,7 @@
 {
     "description": "Use output from a chain as prompt for another chain",
+    "categories": "Custom Tool,OpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -488,13 +490,23 @@
                         "type": "BaseLLMOutputParser",
                         "optional": true,
                         "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
                     "model": "{{openAI_1.data.instance}}",
                     "prompt": "{{promptTemplate_0.data.instance}}",
                     "outputParser": "",
-                    "chainName": "FirstChain"
+                    "chainName": "FirstChain",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {
@@ -577,13 +589,23 @@
                         "type": "BaseLLMOutputParser",
                         "optional": true,
                         "id": "llmChain_1-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_1-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
                     "model": "{{openAI_2.data.instance}}",
                     "prompt": "{{promptTemplate_1.data.instance}}",
                     "outputParser": "",
-                    "chainName": "LastChain"
+                    "chainName": "LastChain",
+                    "inputModeration": ""
                 },
                 "outputAnchors": [
                     {

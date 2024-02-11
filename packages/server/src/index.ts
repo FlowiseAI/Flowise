@@ -20,7 +20,6 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
-    IReactFlowEdge,
     IDepthQueue,
     INodeDirectedGraph
 } from './Interface'
@@ -39,14 +38,16 @@ import {
     databaseEntities,
     transformToCredentialEntity,
     decryptCredentialData,
-    clearAllSessionMemory,
     replaceInputsWithConfig,
     getEncryptionKey,
-    checkMemorySessionId,
-    clearSessionMemoryFromViewMessageDialog,
+    getMemorySessionId,
     getUserHome,
-    replaceChatHistory,
-    getAllConnectedNodes
+    getSessionChatHistory,
+    getAllConnectedNodes,
+    clearSessionMemory,
+    findMemoryNode,
+    getTelemetryFlowObj,
+    getAppVersion
 } from './utils'
 import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
 import { getDataSource } from './DataSource'
@@ -58,13 +59,14 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware } from './utils/XSS'
+import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
+import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
 
 export class App {
@@ -72,6 +74,7 @@ export class App {
     nodesPool: NodesPool
     chatflowPool: ChatflowPool
     cachePool: CachePool
+    telemetry: Telemetry
     AppDataSource = getDataSource()
 
     constructor() {
@@ -106,6 +109,9 @@ export class App {
 
                 // Initialize cache pool
                 this.cachePool = new CachePool()
+
+                // Initialize telemetry
+                this.telemetry = new Telemetry()
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -120,8 +126,20 @@ export class App {
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
-        // Allow access from *
-        this.app.use(cors())
+        // Allow access from specified domains
+        this.app.use(cors(getCorsOptions()))
+
+        // Allow embedding from specified domains.
+        this.app.use((req, res, next) => {
+            const allowedOrigins = getAllowedIframeOrigins()
+            if (allowedOrigins == '*') {
+                next()
+            } else {
+                const csp = `frame-ancestors ${allowedOrigins}`
+                res.setHeader('Content-Security-Policy', csp)
+                next()
+            }
+        })
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -166,7 +184,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
+                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
             })
         })
 
@@ -295,7 +313,13 @@ export class App {
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newNodeInstance = new nodeModule.nodeClass()
 
-                    const returnData = await newNodeInstance.init(nodeData)
+                    const options: ICommonObject = {
+                        appDataSource: this.AppDataSource,
+                        databaseEntities,
+                        logger
+                    }
+
+                    const returnData = await newNodeInstance.init(nodeData, '', options)
                     const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
 
                     return res.json(result)
@@ -383,6 +407,12 @@ export class App {
             const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
+            await this.telemetry.sendTelemetry('chatflow_created', {
+                version: await getAppVersion(),
+                chatlowId: results.id,
+                flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
+            })
+
             return res.json(results)
         })
 
@@ -443,18 +473,30 @@ export class App {
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
             let isStreaming = false
+            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
                 if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
-                if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                    return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
+
+                if (!isEndingNode) {
+                    if (
+                        endingNodeData &&
+                        endingNodeData.category !== 'Chains' &&
+                        endingNodeData.category !== 'Agents' &&
+                        endingNodeData.category !== 'Engine'
+                    ) {
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    }
                 }
 
-                isStreaming = isFlowValidForStream(nodes, endingNodeData)
+                isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
             }
 
-            const obj = { isStreaming }
+            // Once custom function ending node exists, flow is always unavailable to stream
+            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
             return res.json(obj)
         })
 
@@ -523,7 +565,7 @@ export class App {
                 res.status(404).send(`Chatflow ${chatflowid} not found`)
                 return
             }
-            const chatId = (req.query?.chatId as string) ?? (await getChatId(chatflowid))
+            const chatId = req.query?.chatId as string
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
             const chatType = req.query?.chatType as string | undefined
@@ -533,20 +575,22 @@ export class App {
             const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
             const nodes = parsedFlowData.nodes
 
-            if (isClearFromViewMessageDialog) {
-                await clearSessionMemoryFromViewMessageDialog(
+            try {
+                await clearSessionMemory(
                     nodes,
                     this.nodesPool.componentNodes,
                     chatId,
                     this.AppDataSource,
                     sessionId,
-                    memoryType
+                    memoryType,
+                    isClearFromViewMessageDialog
                 )
-            } else {
-                await clearAllSessionMemory(nodes, this.nodesPool.componentNodes, chatId, this.AppDataSource, sessionId)
+            } catch (e) {
+                return res.status(500).send('Error clearing chat messages')
             }
 
-            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid, chatId }
+            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
+            if (chatId) deleteOptions.chatId = chatId
             if (memoryType) deleteOptions.memoryType = memoryType
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
@@ -634,7 +678,7 @@ export class App {
             return res.json(result)
         })
 
-        // Delete all chatmessages from chatflowid
+        // Delete all credentials from chatflowid
         this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Credential).delete({ id: req.params.id })
             return res.json(results)
@@ -666,6 +710,12 @@ export class App {
 
             const tool = this.AppDataSource.getRepository(Tool).create(newTool)
             const results = await this.AppDataSource.getRepository(Tool).save(tool)
+
+            await this.telemetry.sendTelemetry('tool_created', {
+                version: await getAppVersion(),
+                toolId: results.id,
+                toolName: results.name
+            })
 
             return res.json(results)
         })
@@ -872,6 +922,11 @@ export class App {
 
             const assistant = this.AppDataSource.getRepository(Assistant).create(newAssistant)
             const results = await this.AppDataSource.getRepository(Assistant).save(assistant)
+
+            await this.telemetry.sendTelemetry('assistant_created', {
+                version: await getAppVersion(),
+                assistantId: results.id
+            })
 
             return res.json(results)
         })
@@ -1087,6 +1142,19 @@ export class App {
         })
 
         // ----------------------------------------
+        // Scraper
+        // ----------------------------------------
+
+        this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
+            const url = decodeURIComponent(req.query.url as string)
+            const relativeLinksMethod = req.query.relativeLinksMethod as string
+            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, 0) : await xmlScrape(url, 0)
+
+            res.json({ status: 'OK', links })
+        })
+
+        // ----------------------------------------
         // Upsert
         // ----------------------------------------
 
@@ -1155,21 +1223,42 @@ export class App {
         // Marketplaces
         // ----------------------------------------
 
-        // Get all chatflows for marketplaces
-        this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
+        // Get all templates for marketplaces
+        this.app.get('/api/v1/marketplaces/templates', async (req: Request, res: Response) => {
+            let marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
+            let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            let templates: any[] = []
             jsonsInDir.forEach((file, index) => {
                 const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
                     id: index,
-                    name: file.split('.json')[0],
+                    templateName: file.split('.json')[0],
                     flowData: fileData.toString(),
                     badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
+                    categories: fileDataObj?.categories,
+                    type: 'Chatflow',
                     description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+
+            marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
+            jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: index,
+                    type: 'Tool',
+                    framework: fileDataObj?.framework,
+                    badge: fileDataObj?.badge,
+                    categories: '',
+                    templateName: file.split('.json')[0]
                 }
                 templates.push(template)
             })
@@ -1179,26 +1268,7 @@ export class App {
                 templates.splice(FlowiseDocsQnAIndex, 1)
                 templates.unshift(FlowiseDocsQnA)
             }
-            return res.json(templates)
-        })
-
-        // Get all tools for marketplaces
-        this.app.get('/api/v1/marketplaces/tools', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
-            jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
-                const fileData = fs.readFileSync(filePath)
-                const fileDataObj = JSON.parse(fileData.toString())
-                const template = {
-                    ...fileDataObj,
-                    id: index,
-                    templateName: file.split('.json')[0]
-                }
-                templates.push(template)
-            })
-            return res.json(templates)
+            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
         })
 
         // ----------------------------------------
@@ -1377,7 +1447,7 @@ export class App {
                 chatType,
                 chatId,
                 memoryType: memoryType ?? (chatId ? IsNull() : undefined),
-                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
+                sessionId: sessionId ?? undefined,
                 createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
             },
             order: {
@@ -1396,26 +1466,6 @@ export class App {
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-    }
-
-    /**
-     * Method that find memory label that is connected within chatflow
-     * In a chatflow, there should only be 1 memory node
-     * @param {IReactFlowNode[]} nodes
-     * @param {IReactFlowEdge[]} edges
-     * @returns {string | undefined}
-     */
-    findMemoryLabel(nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined {
-        const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
-        const memoryNodeIds = memoryNodes.map((mem) => mem.data.id)
-
-        for (const edge of edges) {
-            if (memoryNodeIds.includes(edge.source)) {
-                const memoryNode = nodes.find((node) => node.data.id === edge.source)
-                return memoryNode
-            }
-        }
-        return undefined
     }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
@@ -1467,6 +1517,11 @@ export class App {
             let chatId = incomingInput.chatId ?? ''
             let isUpsert = true
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             const vsNodes = nodes.filter(
                 (node) =>
                     node.data.category === 'Vector Stores' &&
@@ -1504,6 +1559,7 @@ export class App {
                 incomingInput.question,
                 chatHistory,
                 chatId,
+                sessionId ?? '',
                 chatflowid,
                 this.AppDataSource,
                 incomingInput?.overrideConfig,
@@ -1515,6 +1571,15 @@ export class App {
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
             this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+
+            await this.telemetry.sendTelemetry('vector_upserted', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                stopNodeId
+            })
+
             return res.status(201).send('Successfully Upserted')
         } catch (e: any) {
             logger.error('[server]: Error:', e)
@@ -1581,12 +1646,17 @@ export class App {
             const nodes = parsedFlowData.nodes
             const edges = parsedFlowData.edges
 
+            // Get session ID
+            const memoryNode = findMemoryNode(nodes, edges)
+            const memoryType = memoryNode?.data.label
+            let sessionId = undefined
+            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
              * - Existing overrideConfig and new overrideConfig are the same
              * - Flow doesn't start with/contain nodes that depend on incomingInput.question
-             * - Its not an Upsert request
              * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
              ***/
             const isFlowReusable = () => {
@@ -1617,45 +1687,66 @@ export class App {
                 if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
                 const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
-                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
-                    }
+                    const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
-                    if (
-                        endingNodeData.outputs &&
-                        Object.keys(endingNodeData.outputs).length &&
-                        !Object.values(endingNodeData.outputs).includes(endingNodeData.name)
-                    ) {
-                        return res
-                            .status(500)
-                            .send(
-                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                            )
+                    if (!isEndingNode) {
+                        if (
+                            endingNodeData &&
+                            endingNodeData.category !== 'Chains' &&
+                            endingNodeData.category !== 'Agents' &&
+                            endingNodeData.category !== 'Engine'
+                        ) {
+                            return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                        }
+
+                        if (
+                            endingNodeData.outputs &&
+                            Object.keys(endingNodeData.outputs).length &&
+                            !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
+                        ) {
+                            return res
+                                .status(500)
+                                .send(
+                                    `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                                )
+                        }
                     }
 
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
 
-                let chatHistory: IMessage[] | string = incomingInput.history
+                // Once custom function ending node exists, flow is always unavailable to stream
+                isStreamValid = isEndingNodeExists ? false : isStreamValid
 
-                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory
+                let chatHistory: IMessage[] = incomingInput.history ?? []
+
+                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
+
                     if (!endingNodeData.inputs?.memory) continue
-                    if (
-                        endingNodeData.inputs?.memory &&
-                        !incomingInput.history &&
-                        (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)
-                    ) {
-                        const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
-                        const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
-                        if (memoryNode) {
-                            chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-                        }
+
+                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
+                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+
+                    if (!memoryNode) continue
+
+                    if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
+                        chatHistory = await getSessionChatHistory(
+                            memoryNode,
+                            this.nodesPool.componentNodes,
+                            incomingInput,
+                            this.AppDataSource,
+                            databaseEntities,
+                            logger
+                        )
                     }
                 }
 
@@ -1685,6 +1776,7 @@ export class App {
                     incomingInput.question,
                     chatHistory,
                     chatId,
+                    sessionId ?? '',
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
@@ -1714,41 +1806,30 @@ export class App {
 
             logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
-            let sessionId = undefined
-            if (nodeToExecuteData.instance) sessionId = checkMemorySessionId(nodeToExecuteData.instance, chatId)
-
-            const memoryNode = this.findMemoryLabel(nodes, edges)
-            const memoryType = memoryNode?.data.label
-
-            let chatHistory: IMessage[] | string = incomingInput.history
-            if (memoryNode && !incomingInput.history && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                chatHistory = await replaceChatHistory(memoryNode, incomingInput, this.AppDataSource, databaseEntities, logger)
-            }
-
             const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
             const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
             let result = isStreamValid
                 ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
-                      socketIO,
-                      socketIOClientId: incomingInput.socketIOClientId,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
                       analytic: chatflow.analytic,
-                      chatId
+                      socketIO,
+                      socketIOClientId: incomingInput.socketIOClientId
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+                      chatId,
                       chatflowid,
-                      chatHistory,
+                      chatHistory: incomingInput.history,
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic,
-                      chatId
+                      analytic: chatflow.analytic
                   })
 
             result = typeof result === 'string' ? { text: result } : result
@@ -1787,12 +1868,22 @@ export class App {
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-            await this.addChatMessage(apiMessage)
+            const chatMessage = await this.addChatMessage(apiMessage)
+            result.chatMessageId = chatMessage.id
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
+            await this.telemetry.sendTelemetry('prediction_sent', {
+                version: await getAppVersion(),
+                chatlowId: chatflowid,
+                chatId,
+                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges)
+            })
 
-            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
-            if (incomingInput.chatId || isInternal) result.chatId = chatId
+            // Prepare response
+            result.chatId = chatId
+            if (sessionId) result.sessionId = sessionId
+            if (memoryType) result.memoryType = memoryType
 
             return res.json(result)
         } catch (e: any) {
@@ -1804,28 +1895,12 @@ export class App {
     async stopApp() {
         try {
             const removePromises: any[] = []
+            removePromises.push(this.telemetry.flush())
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
         }
     }
-}
-
-/**
- * Get first chat message id
- * @param {string} chatflowid
- * @returns {string}
- */
-export async function getChatId(chatflowid: string): Promise<string> {
-    // first chatmessage id as the unique chat id
-    const firstChatMessage = await getDataSource()
-        .getRepository(ChatMessage)
-        .createQueryBuilder('cm')
-        .select('cm.id')
-        .where('chatflowid = :chatflowid', { chatflowid })
-        .orderBy('cm.createdDate', 'ASC')
-        .getOne()
-    return firstChatMessage ? firstChatMessage.id : ''
 }
 
 let serverApp: App | undefined
@@ -1841,9 +1916,7 @@ export async function start(): Promise<void> {
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
-        cors: {
-            origin: '*'
-        }
+        cors: getCorsOptions()
     })
 
     await serverApp.initDatabase()

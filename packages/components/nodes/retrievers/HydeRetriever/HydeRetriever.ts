@@ -1,8 +1,9 @@
 import { VectorStore } from 'langchain/vectorstores/base'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { PromptTemplate } from 'langchain/prompts'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class HydeRetriever_Retrievers implements INode {
     label: string
@@ -14,11 +15,12 @@ class HydeRetriever_Retrievers implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Hyde Retriever'
+        this.label = 'HyDE Retriever'
         this.name = 'HydeRetriever'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'HydeRetriever'
         this.icon = 'hyderetriever.svg'
         this.category = 'Retrievers'
@@ -34,6 +36,14 @@ class HydeRetriever_Retrievers implements INode {
                 label: 'Vector Store',
                 name: 'vectorStore',
                 type: 'VectorStore'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Select Defined Prompt',
@@ -121,15 +131,36 @@ Passage:`
                 optional: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'HyDE Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            },
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: ['Document', 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string): Promise<any> {
         const llm = nodeData.inputs?.model as BaseLanguageModel
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const promptKey = nodeData.inputs?.promptKey as PromptKey
         const customPrompt = nodeData.inputs?.customPrompt as string
+        const query = nodeData.inputs?.query as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const output = nodeData.outputs?.output as string
 
         const obj: HydeRetrieverOptions<any> = {
             llm,
@@ -141,6 +172,19 @@ Passage:`
         else if (promptKey) obj.promptTemplate = promptKey
 
         const retriever = new HydeRetriever(obj)
+
+        if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'text') {
+            let finaltext = ''
+
+            const docs = await retriever.getRelevantDocuments(query ? query : input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
+        }
+
         return retriever
     }
 }

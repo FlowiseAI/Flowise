@@ -18,7 +18,7 @@ class AzureOpenAI_LLMs implements INode {
     constructor() {
         this.label = 'Azure OpenAI'
         this.name = 'azureOpenAI'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'AzureOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'LLMs'
@@ -89,6 +89,14 @@ class AzureOpenAI_LLMs implements INode {
                     {
                         label: 'gpt-35-turbo',
                         name: 'gpt-35-turbo'
+                    },
+                    {
+                        label: 'gpt-4',
+                        name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-32k',
+                        name: 'gpt-4-32k'
                     }
                 ],
                 default: 'text-davinci-003',
