@@ -1847,7 +1847,8 @@ export class App {
                 chatId,
                 memoryType,
                 sessionId,
-                createdDate: userMessageDateTime
+                createdDate: userMessageDateTime,
+                overrideConfig: incomingInput?.overrideConfig ? JSON.stringify(incomingInput?.overrideConfig) : undefined
             }
             await this.addChatMessage(userMessage)
 
@@ -1863,12 +1864,13 @@ export class App {
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
-                sessionId
+                sessionId,
+                overrideConfig: incomingInput?.overrideConfig ? JSON.stringify(incomingInput?.overrideConfig) : undefined
             }
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-            const chatMessage = await this.addChatMessage(apiMessage)
+                        const chatMessage = await this.addChatMessage(apiMessage)
             result.chatMessageId = chatMessage.id
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)

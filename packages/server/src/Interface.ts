@@ -36,6 +36,7 @@ export interface IChatMessage {
     memoryType?: string
     sessionId?: string
     createdDate: Date
+    overrideConfig?: string
 }
 
 export interface ITool {
