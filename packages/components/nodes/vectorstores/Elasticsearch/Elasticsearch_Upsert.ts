@@ -1,11 +1,10 @@
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
 import { flatten } from 'lodash'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
+import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 import { ElasticSearchBase } from './ElasticSearchBase'
-import { VectorStore } from 'langchain/vectorstores/base'
 
 class ElasicsearchUpsert_VectorStores extends ElasticSearchBase implements INode {
     constructor() {

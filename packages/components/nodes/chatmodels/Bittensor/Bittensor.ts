@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
+import { NIBittensorChatModel, BittensorInput } from 'langchain/experimental/chat_models/bittensor'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { NIBittensorChatModel, BittensorInput } from 'langchain/experimental/chat_models/bittensor'
-import { BaseCache } from 'langchain/schema'
 
 class Bittensor_ChatModels implements INode {
     label: string

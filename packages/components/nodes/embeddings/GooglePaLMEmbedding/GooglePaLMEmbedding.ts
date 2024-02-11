@@ -1,6 +1,6 @@
+import { GooglePaLMEmbeddings, GooglePaLMEmbeddingsParams } from '@langchain/community/embeddings/googlepalm'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GooglePaLMEmbeddings, GooglePaLMEmbeddingsParams } from 'langchain/embeddings/googlepalm'
 
 class GooglePaLMEmbedding_Embeddings implements INode {
     label: string

@@ -1,5 +1,5 @@
+import { AIPluginTool } from '@langchain/community/tools/aiplugin'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { AIPluginTool } from 'langchain/tools'
 import { getBaseClasses } from '../../../src/utils'
 
 class AIPlugin implements INode {
