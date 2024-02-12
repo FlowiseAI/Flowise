@@ -404,8 +404,9 @@ export class App {
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
             if (chatflow.chatbotConfig) {
                 try {
+                    const uploadsConfig = await this.areUploadsEnabled(req.params.id)
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    return res.json(parsedConfig)
+                    return res.json({ ...parsedConfig, ...uploadsConfig })
                 } catch (e) {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
@@ -521,66 +522,9 @@ export class App {
 
         // Check if chatflow valid for uploads
         this.app.get('/api/v1/chatflows-uploads/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-
-            const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-            const uploadProcessingNodes = ['chatOpenAI']
-
             try {
-                const flowObj = JSON.parse(chatflow.flowData)
-                const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
-
-                let isSpeechToTextEnabled = false
-                if (chatflow.speechToText) {
-                    const speechToTextProviders = JSON.parse(chatflow.speechToText)
-                    for (const provider in speechToTextProviders) {
-                        const providerObj = speechToTextProviders[provider]
-                        if (providerObj.status) {
-                            isSpeechToTextEnabled = true
-                            break
-                        }
-                    }
-                }
-
-                let isImageUploadAllowed = false
-                const nodes: IReactFlowNode[] = flowObj.nodes
-
-                /*
-                 * Condition for isImageUploadAllowed
-                 * 1.) one of the uploadAllowedNodes exists
-                 * 2.) one of the uploadProcessingNodes exists + allowImageUploads is ON
-                 */
-                if (!nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
-                    return res.json({
-                        isSpeechToTextEnabled,
-                        isImageUploadAllowed: false,
-                        imgUploadSizeAndTypes
-                    })
-                }
-
-                nodes.forEach((node: IReactFlowNode) => {
-                    if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
-                        // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
-                        node.data.inputParams.map((param: INodeParams) => {
-                            if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
-                                imgUploadSizeAndTypes.push({
-                                    fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
-                                    maxUploadSize: 5
-                                })
-                                isImageUploadAllowed = true
-                            }
-                        })
-                    }
-                })
-
-                return res.json({
-                    isSpeechToTextEnabled,
-                    isImageUploadAllowed,
-                    imgUploadSizeAndTypes
-                })
+                const uploadsConfig = await this.areUploadsEnabled(req.params.id)
+                return res.json(uploadsConfig)
             } catch (e) {
                 return res.status(500).send(e)
             }
@@ -1540,6 +1484,72 @@ export class App {
             return true
         }
         return false
+    }
+
+    /**
+     * Method that checks if uploads are enabled in the chatflow
+     * @param {string} chatflowid
+     */
+    async areUploadsEnabled(chatflowid: string): Promise<any> {
+        const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowid
+        })
+        if (!chatflow) return `Chatflow ${chatflowid} not found`
+
+        const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
+        const uploadProcessingNodes = ['chatOpenAI']
+
+        const flowObj = JSON.parse(chatflow.flowData)
+        const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
+
+        let isSpeechToTextEnabled = false
+        if (chatflow.speechToText) {
+            const speechToTextProviders = JSON.parse(chatflow.speechToText)
+            for (const provider in speechToTextProviders) {
+                const providerObj = speechToTextProviders[provider]
+                if (providerObj.status) {
+                    isSpeechToTextEnabled = true
+                    break
+                }
+            }
+        }
+
+        let isImageUploadAllowed = false
+        const nodes: IReactFlowNode[] = flowObj.nodes
+
+        /*
+         * Condition for isImageUploadAllowed
+         * 1.) one of the uploadAllowedNodes exists
+         * 2.) one of the uploadProcessingNodes exists + allowImageUploads is ON
+         */
+        if (!nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
+            return {
+                isSpeechToTextEnabled,
+                isImageUploadAllowed: false,
+                imgUploadSizeAndTypes
+            }
+        }
+
+        nodes.forEach((node: IReactFlowNode) => {
+            if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
+                // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
+                node.data.inputParams.map((param: INodeParams) => {
+                    if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
+                        imgUploadSizeAndTypes.push({
+                            fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                            maxUploadSize: 5
+                        })
+                        isImageUploadAllowed = true
+                    }
+                })
+            }
+        })
+
+        return {
+            isSpeechToTextEnabled,
+            isImageUploadAllowed,
+            imgUploadSizeAndTypes
+        }
     }
 
     /**
