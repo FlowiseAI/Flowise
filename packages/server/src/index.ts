@@ -1155,6 +1155,7 @@ export class App {
             const limit = parseInt(req.query.limit as string)
             if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
             const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
+            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
 
             res.json({ status: 'OK', links })
         })
