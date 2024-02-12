@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import { Between, IsNull, FindOptionsWhere, createQueryBuilder } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -20,6 +20,7 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
+    IChatMessageFeedback,
     IDepthQueue,
     INodeDirectedGraph
 } from './Interface'
@@ -54,6 +55,7 @@ import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
+import { ChatMessageFeedback } from './database/entities/ChatMessageFeedback'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
@@ -512,6 +514,7 @@ export class App {
             const sessionId = req.query?.sessionId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
             let chatTypeFilter = req.query?.chatType as chatType | undefined
 
             if (chatTypeFilter) {
@@ -537,7 +540,8 @@ export class App {
                 memoryType,
                 sessionId,
                 startDate,
-                endDate
+                endDate,
+                feedback
             )
             return res.json(chatmessages)
         })
@@ -596,6 +600,24 @@ export class App {
             if (chatType) deleteOptions.chatType = chatType
 
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
+            return res.json(results)
+        })
+
+        // ----------------------------------------
+        // Chat Message Feedback
+        // ----------------------------------------
+        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {})
+
+        this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const body = req.body
+            const results = await this.addChatMessageFeedback(body)
+            return res.json(results)
+        })
+
+        this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const body = req.body
+            const results = await this.addChatMessageFeedback(body)
             return res.json(results)
         })
 
@@ -1422,6 +1444,7 @@ export class App {
      * @param {string} sessionId
      * @param {string} startDate
      * @param {string} endDate
+     * @param {boolean} feedback
      */
     async getChatMessage(
         chatflowid: string,
@@ -1431,7 +1454,8 @@ export class App {
         memoryType?: string,
         sessionId?: string,
         startDate?: string,
-        endDate?: string
+        endDate?: string,
+        feedback?: boolean
     ): Promise<ChatMessage[]> {
         let fromDate
         if (startDate) fromDate = new Date(startDate)
@@ -1450,6 +1474,9 @@ export class App {
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            },
+            relations: {
+                feedback
             }
         })
     }
@@ -1464,6 +1491,18 @@ export class App {
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    }
+
+    /**
+     * Method that adds feedback for a chat message.
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
+        const newFeedback = new ChatMessageFeedback()
+        Object.assign(newFeedback, chatMessageFeedback)
+
+        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newFeedback)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
     }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
