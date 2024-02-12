@@ -406,7 +406,7 @@ export class App {
                 try {
                     const uploadsConfig = await this.areUploadsEnabled(req.params.id)
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    return res.json({ ...parsedConfig, ...uploadsConfig })
+                    return res.json({ ...parsedConfig, uploads: uploadsConfig })
                 } catch (e) {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
