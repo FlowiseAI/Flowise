@@ -1453,7 +1453,7 @@ export class App {
                 chatflowid,
                 chatType,
                 chatId,
-                memoryType: memoryType ?? (chatId ? IsNull() : undefined),
+                memoryType: memoryType ?? undefined,
                 sessionId: sessionId ?? undefined,
                 createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
             },
