@@ -127,6 +127,7 @@ Flowise support different environment variables to configure your instance. You 
 | IFRAME_ORIGINS              | The allowed origins for iframe src embedding                                 | String                                           |                                     |
 | FLOWISE_USERNAME            | Username to login                                                            | String                                           |                                     |
 | FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
+| FLOWISE_FILE_SIZE_LIMIT     | Upload File Size Limit                                                       | String                                           | 50mb                                |
 | DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |
 | LOG_PATH                    | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                   | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |

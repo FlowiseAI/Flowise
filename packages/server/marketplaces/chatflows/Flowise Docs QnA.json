@@ -1,6 +1,8 @@
 {
     "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
+    "categories": "Memory Vector Store,Github Loader,ChatOpenAI,Conversational Retrieval QA Chain,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

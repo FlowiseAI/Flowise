@@ -1,6 +1,8 @@
 {
     "description": "Use chat history to rephrase user question, and answer the rephrased question using retrieved docs from vector store",
+    "categories": "ChatOpenAI,LLM Chain,SingleStore,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -190,10 +192,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "vectorStoreToDocument_0-output-document-Document",
+                                "id": "vectorStoreToDocument_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "vectorStoreToDocument_0-output-text-string|json",

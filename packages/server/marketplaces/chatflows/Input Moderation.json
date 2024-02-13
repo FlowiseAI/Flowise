@@ -1,6 +1,8 @@
 {
     "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
     "badge": "NEW",
+    "categories": "Moderation,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

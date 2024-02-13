@@ -1,5 +1,7 @@
 {
     "description": "An agent that uses ReAct logic to decide what action to take",
+    "categories": "Calculator Tool,SerpAPI,ChatOpenAI,MRKL Agent,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

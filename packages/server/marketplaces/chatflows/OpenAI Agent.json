@@ -1,5 +1,7 @@
 {
     "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
+    "categories": "Buffer Memory,Custom Tool, SerpAPI,OpenAI Function,Calculator Tool,ChatOpenAI,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
