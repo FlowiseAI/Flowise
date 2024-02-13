@@ -186,7 +186,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
+                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
             })
         })
 
@@ -1245,21 +1245,42 @@ export class App {
         // Marketplaces
         // ----------------------------------------
 
-        // Get all chatflows for marketplaces
-        this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
+        // Get all templates for marketplaces
+        this.app.get('/api/v1/marketplaces/templates', async (req: Request, res: Response) => {
+            let marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
+            let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            let templates: any[] = []
             jsonsInDir.forEach((file, index) => {
                 const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
                     id: index,
-                    name: file.split('.json')[0],
+                    templateName: file.split('.json')[0],
                     flowData: fileData.toString(),
                     badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
+                    categories: fileDataObj?.categories,
+                    type: 'Chatflow',
                     description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+
+            marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
+            jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: index,
+                    type: 'Tool',
+                    framework: fileDataObj?.framework,
+                    badge: fileDataObj?.badge,
+                    categories: '',
+                    templateName: file.split('.json')[0]
                 }
                 templates.push(template)
             })
@@ -1269,26 +1290,7 @@ export class App {
                 templates.splice(FlowiseDocsQnAIndex, 1)
                 templates.unshift(FlowiseDocsQnA)
             }
-            return res.json(templates)
-        })
-
-        // Get all tools for marketplaces
-        this.app.get('/api/v1/marketplaces/tools', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
-            jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
-                const fileData = fs.readFileSync(filePath)
-                const fileDataObj = JSON.parse(fileData.toString())
-                const template = {
-                    ...fileDataObj,
-                    id: index,
-                    templateName: file.split('.json')[0]
-                }
-                templates.push(template)
-            })
-            return res.json(templates)
+            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
         })
 
         // ----------------------------------------
@@ -1469,7 +1471,7 @@ export class App {
                 chatType,
                 chatId,
                 memoryType: memoryType ?? (chatId ? IsNull() : undefined),
-                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
+                sessionId: sessionId ?? undefined,
                 createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
             },
             order: {

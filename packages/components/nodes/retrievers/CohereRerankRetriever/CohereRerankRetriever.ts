@@ -94,11 +94,13 @@ class CohereRerankRetriever_Retrievers implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: ['Document']
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: ['Document', 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]

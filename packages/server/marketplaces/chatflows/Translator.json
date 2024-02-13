@@ -1,5 +1,7 @@
 {
     "description": "Language translation using LLM Chain with a Chat Prompt Template and Chat Model",
+    "categories": "Chat Prompt Template,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

@@ -1,5 +1,7 @@
 {
     "description": "Use Anthropic Claude with 200k context window to ingest whole document for QnA",
+    "categories": "Buffer Memory,Prompt Template,Conversation Chain,ChatAnthropic,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -439,10 +441,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_0-output-document-Document",
+                                "id": "plainText_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_0-output-text-string|json",

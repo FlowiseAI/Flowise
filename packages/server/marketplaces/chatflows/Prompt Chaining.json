@@ -1,5 +1,7 @@
 {
     "description": "Use output from a chain as prompt for another chain",
+    "categories": "Custom Tool,OpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
