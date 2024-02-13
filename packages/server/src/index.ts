@@ -511,6 +511,7 @@ export class App {
             const chatId = req.query?.chatId as string | undefined
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
             let chatTypeFilter = req.query?.chatType as chatType | undefined
@@ -538,7 +539,8 @@ export class App {
                 memoryType,
                 sessionId,
                 startDate,
-                endDate
+                endDate,
+                messageId
             )
             return res.json(chatmessages)
         })
@@ -1440,7 +1442,8 @@ export class App {
         memoryType?: string,
         sessionId?: string,
         startDate?: string,
-        endDate?: string
+        endDate?: string,
+        messageId?: string
     ): Promise<ChatMessage[]> {
         const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
             const date = new Date(dateTimeStr)
@@ -1465,7 +1468,8 @@ export class App {
                 memoryType: memoryType ?? undefined,
                 sessionId: sessionId ?? undefined,
                 ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
-                ...(toDate && { createdDate: LessThanOrEqual(toDate) })
+                ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
+                id: messageId ?? undefined
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
