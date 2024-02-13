@@ -353,7 +353,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
         if (!promptStarterInput && userInput.trim() === '') {
             const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
-            if (!(previews.length > 1 && containsAudio)) {
+            if (!(previews.length >= 1 && containsAudio)) {
                 return
             }
         }
@@ -585,7 +585,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     useEffect(() => {
         // wait for audio recording to load and then send
         const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
-        if (previews.length > 1 && containsAudio) {
+        if (previews.length >= 1 && containsAudio) {
             setIsRecording(false)
             setRecordingNotSupported(false)
             handlePromptClick('')
