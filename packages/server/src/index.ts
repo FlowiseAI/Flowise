@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -1464,7 +1464,8 @@ export class App {
                 chatId,
                 memoryType: memoryType ?? undefined,
                 sessionId: sessionId ?? undefined,
-                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+                ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
+                ...(toDate && { createdDate: LessThanOrEqual(toDate) })
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
