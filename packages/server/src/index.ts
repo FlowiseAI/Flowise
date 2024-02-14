@@ -1150,6 +1150,12 @@ export class App {
             }
         })
 
+        this.app.get('/api/v1/get-upload-path', async (req: Request, res: Response) => {
+            return res.json({
+                storagePath: getStoragePath()
+            })
+        })
+
         // stream uploaded image
         this.app.get('/api/v1/get-upload-file', async (req: Request, res: Response) => {
             if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {

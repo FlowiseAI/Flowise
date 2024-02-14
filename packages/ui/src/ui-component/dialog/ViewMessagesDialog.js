@@ -49,7 +49,7 @@ import useApi from 'hooks/useApi'
 import useConfirm from 'hooks/useConfirm'
 
 // Utils
-import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
+import { getOS, isValidURL, removeDuplicateURL } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 import { baseURL } from 'store/constant'
 
@@ -100,6 +100,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const getChatmessageApi = useApi(chatmessageApi.getAllChatmessageFromChatflow)
     const getChatmessageFromPKApi = useApi(chatmessageApi.getChatmessageFromPK)
+    const getStoragePathFromServer = useApi(chatmessageApi.getStoragePath)
+    let storagePath = ''
 
     const onStartDateSelected = (date) => {
         setStartDate(date)
@@ -128,16 +130,35 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         })
     }
 
-    const exportMessages = () => {
+    const exportMessages = async () => {
+        if (!storagePath && getStoragePathFromServer.data) {
+            storagePath = getStoragePathFromServer.data.storagePath
+        }
         const obj = {}
+        let fileSeparator = '/'
+        if ('windows' === getOS()) {
+            fileSeparator = '\\'
+        }
         for (let i = 0; i < allChatlogs.length; i += 1) {
             const chatmsg = allChatlogs[i]
             const chatPK = getChatPK(chatmsg)
+            let filePaths = []
+            if (chatmsg.fileUploads) {
+                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+                chatmsg.fileUploads.forEach((file) => {
+                    if (file.type === 'stored-file') {
+                        filePaths.push(
+                            `${storagePath}${fileSeparator}${chatmsg.chatflowid}${fileSeparator}${chatmsg.chatId}${fileSeparator}${file.name}`
+                        )
+                    }
+                })
+            }
             const msg = {
                 content: chatmsg.content,
                 role: chatmsg.role === 'apiMessage' ? 'bot' : 'user',
                 time: chatmsg.createdDate
             }
+            if (filePaths.length) msg.filePaths = filePaths
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
@@ -373,6 +394,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     useEffect(() => {
         if (getChatmessageApi.data) {
+            getStoragePathFromServer.request()
+
             setAllChatLogs(getChatmessageApi.data)
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
