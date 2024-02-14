@@ -21,7 +21,9 @@ import {
     DialogTitle,
     ListItem,
     ListItemText,
-    Chip
+    Chip,
+    Card,
+    CardMedia
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -67,6 +69,12 @@ const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value,
 DatePickerCustomInput.propTypes = {
     value: PropTypes.string,
     onClick: PropTypes.func
+}
+
+const messageImageStyle = {
+    width: '128px',
+    height: '128px',
+    objectFit: 'cover'
 }
 
 const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
@@ -248,6 +256,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         type: 'timeMessage'
                     })
                 }
+            }
+            if (chatmsg.fileUploads) {
+                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+                chatmsg.fileUploads.forEach((file) => {
+                    if (file.type === 'stored-file') {
+                        file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${chatmsg.chatId}&fileName=${file.name}`
+                    }
+                })
             }
             const obj = {
                 ...chatmsg,
@@ -672,6 +688,51 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         {message.message}
                                                                     </MemoizedReactMarkdown>
                                                                 </div>
+                                                                {message.fileUploads && message.fileUploads.length > 0 && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexWrap: 'wrap',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%',
+                                                                            gap: '4px'
+                                                                        }}
+                                                                    >
+                                                                        {message.fileUploads.map((item, index) => {
+                                                                            return (
+                                                                                <>
+                                                                                    {item.mime.startsWith('image/') ? (
+                                                                                        <Card
+                                                                                            key={index}
+                                                                                            sx={{
+                                                                                                p: 0,
+                                                                                                m: 0,
+                                                                                                maxWidth: 128,
+                                                                                                marginRight: '10px',
+                                                                                                flex: '0 0 auto'
+                                                                                            }}
+                                                                                        >
+                                                                                            <CardMedia
+                                                                                                component='img'
+                                                                                                image={item.data}
+                                                                                                sx={{ height: 64 }}
+                                                                                                alt={'preview'}
+                                                                                                style={messageImageStyle}
+                                                                                            />
+                                                                                        </Card>
+                                                                                    ) : (
+                                                                                        // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                                        <audio controls='controls'>
+                                                                                            Your browser does not support the &lt;audio&gt;
+                                                                                            tag.
+                                                                                            <source src={item.data} type={item.mime} />
+                                                                                        </audio>
+                                                                                    )}
+                                                                                </>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                                 {message.fileAnnotations && (
                                                                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                                         {message.fileAnnotations.map((fileAnnotation, index) => {
