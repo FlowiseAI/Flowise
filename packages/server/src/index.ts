@@ -402,9 +402,9 @@ export class App {
                 id: req.params.id
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            const uploadsConfig = await this.getUploadsConfig(req.params.id)
             if (chatflow.chatbotConfig) {
                 try {
-                    const uploadsConfig = await this.areUploadsEnabled(req.params.id)
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     return res.json({ ...parsedConfig, uploads: uploadsConfig })
                 } catch (e) {
@@ -446,6 +446,14 @@ export class App {
             const body = req.body
             const updateChatFlow = new ChatFlow()
             Object.assign(updateChatFlow, body)
+
+            // check if image uploads or speech have been enabled and update chatbotConfig
+            const uploadsConfig = await this.getUploadsConfig(req.params.id)
+            if (uploadsConfig) {
+                // if there's existing chatbotConfig, merge uploadsConfig with it
+                // if not just add uploadsConfig to chatbotConfig
+                Object.assign(updateChatFlow, { chatbotConfig: { ...((chatflow.chatbotConfig ?? {}) as object), ...uploadsConfig } })
+            }
 
             updateChatFlow.id = chatflow.id
             createRateLimiter(updateChatFlow)
@@ -523,7 +531,7 @@ export class App {
         // Check if chatflow valid for uploads
         this.app.get('/api/v1/chatflows-uploads/:id', async (req: Request, res: Response) => {
             try {
-                const uploadsConfig = await this.areUploadsEnabled(req.params.id)
+                const uploadsConfig = await this.getUploadsConfig(req.params.id)
                 return res.json(uploadsConfig)
             } catch (e) {
                 return res.status(500).send(e)
@@ -1490,7 +1498,7 @@ export class App {
      * Method that checks if uploads are enabled in the chatflow
      * @param {string} chatflowid
      */
-    async areUploadsEnabled(chatflowid: string): Promise<any> {
+    async getUploadsConfig(chatflowid: string): Promise<any> {
         const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
