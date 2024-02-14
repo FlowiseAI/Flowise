@@ -403,9 +403,11 @@ export class App {
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
             const uploadsConfig = await this.getUploadsConfig(req.params.id)
-            if (chatflow.chatbotConfig) {
+            // even if chatbotConfig is not set but uploads are enabled
+            // send uploadsConfig to the chatbot
+            if (chatflow.chatbotConfig || uploadsConfig) {
                 try {
-                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    const parsedConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
                     return res.json({ ...parsedConfig, uploads: uploadsConfig })
                 } catch (e) {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
@@ -446,14 +448,6 @@ export class App {
             const body = req.body
             const updateChatFlow = new ChatFlow()
             Object.assign(updateChatFlow, body)
-
-            // check if image uploads or speech have been enabled and update chatbotConfig
-            const uploadsConfig = await this.getUploadsConfig(req.params.id)
-            if (uploadsConfig) {
-                // if there's existing chatbotConfig, merge uploadsConfig with it
-                // if not just add uploadsConfig to chatbotConfig
-                Object.assign(updateChatFlow, { chatbotConfig: { ...((chatflow.chatbotConfig ?? {}) as object), ...uploadsConfig } })
-            }
 
             updateChatFlow.id = chatflow.id
             createRateLimiter(updateChatFlow)
