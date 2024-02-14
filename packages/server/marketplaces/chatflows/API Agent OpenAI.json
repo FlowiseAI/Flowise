@@ -1,5 +1,7 @@
 {
     "description": "Use OpenAI Function Agent and Chain to automatically decide which API to call, generating url and body request from conversation",
+    "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,OpenAI Function Agent,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

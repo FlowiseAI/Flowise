@@ -1,5 +1,7 @@
 {
     "description": "Use long term memory like Zep to differentiate conversations between users with sessionId",
+    "categories": "ChatOpenAI,Conversational Retrieval QA Chain,Zep Memory,Qdrant,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

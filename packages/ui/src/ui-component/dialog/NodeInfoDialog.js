@@ -132,6 +132,35 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                         </span>
                                     </div>
                                 )}
+                                {dialogProps.data.tags &&
+                                    dialogProps.data.tags.length &&
+                                    dialogProps.data.tags.map((tag, index) => (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                width: 'max-content',
+                                                borderRadius: 15,
+                                                background: '#cae9ff',
+                                                padding: 5,
+                                                paddingLeft: 10,
+                                                paddingRight: 10,
+                                                marginTop: 5,
+                                                marginLeft: 10,
+                                                marginBottom: 5
+                                            }}
+                                            key={index}
+                                        >
+                                            <span
+                                                style={{
+                                                    color: '#023e7d',
+                                                    fontSize: '0.825rem'
+                                                }}
+                                            >
+                                                {tag.toLowerCase()}
+                                            </span>
+                                        </div>
+                                    ))}
                             </div>
                         </div>
                     </div>

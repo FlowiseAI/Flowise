@@ -1,6 +1,8 @@
 {
     "description": "Return response as a list (array) instead of a string/text",
     "badge": "NEW",
+    "categories": "CSV Output Parser,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

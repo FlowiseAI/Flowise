@@ -663,6 +663,28 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
 }
 
 /**
+ * Flatten nested object
+ * @param {ICommonObject} obj
+ * @param {string} parentKey
+ * @returns {ICommonObject}
+ */
+export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
+    let result: any = {}
+
+    Object.keys(obj).forEach((key) => {
+        const value = obj[key]
+        const _key = parentKey ? parentKey + '.' + key : key
+        if (typeof value === 'object') {
+            result = { ...result, ...flattenObject(value, _key) }
+        } else {
+            result[_key] = value
+        }
+    })
+
+    return result
+}
+
+/**
  * Convert BaseMessage to IMessage
  * @param {BaseMessage[]} messages
  * @returns {IMessage[]}
