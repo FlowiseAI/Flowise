@@ -1,10 +1,9 @@
-import { ICommonObject, IFileUpload, IMultiModalOption, INodeData } from './Interface'
+import { ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
 import { BaseChatModel } from 'langchain/chat_models/base'
 import { ChatOpenAI as LangchainChatOpenAI } from 'langchain/chat_models/openai'
 import path from 'path'
 import { getStoragePath } from './utils'
 import fs from 'fs'
-import { MessageContent } from '@langchain/core/dist/messages'
 import { ChatOpenAI } from '../nodes/chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 
 export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject) => {
@@ -16,8 +15,12 @@ export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject)
     }
 }
 
-export const addImagesToMessages = (nodeData: INodeData, options: ICommonObject, multiModalOption?: IMultiModalOption): MessageContent => {
-    const imageContent: MessageContent = []
+export const addImagesToMessages = (
+    nodeData: INodeData,
+    options: ICommonObject,
+    multiModalOption?: IMultiModalOption
+): MessageContentImageUrl[] => {
+    const imageContent: MessageContentImageUrl[] = []
     let model = nodeData.inputs?.model
 
     if (model instanceof LangchainChatOpenAI && multiModalOption) {
