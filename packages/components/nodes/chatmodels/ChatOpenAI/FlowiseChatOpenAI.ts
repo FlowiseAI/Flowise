@@ -45,17 +45,13 @@ export class ChatOpenAI extends LangchainChatOpenAI {
         const messageContent = addImagesToMessages(nodeData, optionsData, this.multiModalOption)
         if (messageContent?.length) {
             if (messages[0].length > 0 && messages[0][messages[0].length - 1] instanceof HumanMessage) {
-                const lastMessage = messages[0].pop()
-                if (lastMessage instanceof HumanMessage) {
-                    lastMessage.content = messageContent
+                // Change model to gpt-4-vision
+                this.modelName = 'gpt-4-vision-preview'
 
-                    // Change model to gpt-4-vision
-                    this.modelName = 'gpt-4-vision-preview'
+                // Change default max token to higher when using gpt-4-vision
+                this.maxTokens = 1024
 
-                    // Change default max token to higher when using gpt-4-vision
-                    this.maxTokens = 1024
-                }
-                messages[0].push(lastMessage as HumanMessage)
+                messages[0].push(new HumanMessage({ content: messageContent }))
             }
         } else {
             // revert to previous values if image upload is empty
