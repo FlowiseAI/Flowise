@@ -244,7 +244,7 @@ class ChatOpenAI_ChatModels implements INode {
             }
         }
 
-        const model = new ChatOpenAI(obj, {
+        const model = new ChatOpenAI(nodeData.id, obj, {
             baseURL: basePath,
             baseOptions: parsedBaseOptions
         })

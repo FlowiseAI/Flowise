@@ -12,8 +12,7 @@ export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject)
 
     if (model instanceof ChatOpenAI) {
         // TODO: this should not be static, need to figure out how to pass the nodeData and options to the invoke method
-        ChatOpenAI.chainNodeOptions = options
-        ChatOpenAI.chainNodeData = nodeData
+        ChatOpenAI.injectChainNodeData(nodeData, options)
     }
 }
 
