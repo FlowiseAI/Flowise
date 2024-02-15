@@ -18,9 +18,6 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     chatId: string
 
     @Column()
-    messageId: string
-
-    @Column()
     rating: ChatMessageRatingType
 
     @CreateDateColumn()

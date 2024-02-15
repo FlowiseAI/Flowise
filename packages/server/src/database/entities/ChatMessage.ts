@@ -1,7 +1,6 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, OneToOne, JoinColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { IChatMessage, MessageType } from '../../Interface'
-import { ChatMessageFeedback } from './ChatMessageFeedback'
 
 @Entity()
 export class ChatMessage implements IChatMessage {
@@ -42,7 +41,6 @@ export class ChatMessage implements IChatMessage {
     @CreateDateColumn()
     createdDate: Date
 
-    @OneToOne(() => ChatMessageFeedback)
-    @JoinColumn()
-    feedback?: ChatMessageFeedback
+    @Column({ nullable: true })
+    feedbackId?: string
 }

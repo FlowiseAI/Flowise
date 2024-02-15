@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere, createQueryBuilder } from 'typeorm'
+import { Between, IsNull, FindOptionsWhere } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -606,18 +606,31 @@ export class App {
         // ----------------------------------------
         // Chat Message Feedback
         // ----------------------------------------
-        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {})
 
+        // Create new feedback
         this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
             const body = req.body
             const results = await this.addChatMessageFeedback(body)
             return res.json(results)
         })
 
+        // Update feedback
         this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
-            const chatflowid = req.params.id
             const body = req.body
-            const results = await this.addChatMessageFeedback(body)
+            const chatMessageFeedback = await this.AppDataSource.getRepository(ChatMessageFeedback).findOneBy({
+                id: req.params.id
+            })
+
+            if (!chatMessageFeedback) {
+                res.status(404).send(`Feedback ${req.params.id} not found`)
+                return
+            }
+
+            const newChatMessageFeedback = new ChatMessageFeedback()
+            Object.assign(newChatMessageFeedback, body)
+
+            this.AppDataSource.getRepository(ChatMessageFeedback).merge(chatMessageFeedback, newChatMessageFeedback)
+            const results = await this.AppDataSource.getRepository(ChatMessageFeedback).save(chatMessageFeedback)
             return res.json(results)
         })
 
@@ -1476,9 +1489,6 @@ export class App {
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-            },
-            relations: {
-                feedback
             }
         })
     }
@@ -1495,17 +1505,39 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
+    async updateChatMessage(id: string, update: Partial<IChatMessage>) {
+        const chatMessage = await this.AppDataSource.getRepository(ChatMessage).findOneBy({
+            id
+        })
+
+        if (!chatMessage) return
+
+        const newChatMessage = new ChatMessage()
+        Object.assign(newChatMessage, update)
+
+        this.AppDataSource.getRepository(ChatMessage).merge(chatMessage, newChatMessage)
+        return await this.AppDataSource.getRepository(ChatMessage).save(chatMessage)
+    }
+
     /**
-     * Method that adds feedback for a chat message.
+     * Method that adds feedback for a chat message and updates the chat message with the feedback id.
      * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
      */
-    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
+    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback> & { messageId: string }): Promise<ChatMessageFeedback> {
+        const messageId = chatMessageFeedback.messageId
         const newFeedback = new ChatMessageFeedback()
         Object.assign(newFeedback, chatMessageFeedback)
 
         const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newFeedback)
-        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
+        const results = await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
+
+        // use the message id to update the chat message with feedback id
+        await this.updateChatMessage(messageId, { feedbackId: results.id })
+
+        return results
     }
+
+    async updateChatMessageFeedback(id: string, update: Partial<IChatMessageFeedback>) {}
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
