@@ -5,7 +5,7 @@ import { Tool } from 'langchain/tools'
 import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
 import { additionalCallbacks } from '../../../src/handler'
-import { injectChainNodeData } from '../../../src/multiModalUtils'
+import { injectLcAgentExecutorNodeData } from '../../../src/multiModalUtils'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -48,14 +48,14 @@ class MRKLAgentChat_Agents implements INode {
         tools = flatten(tools)
         const executor = await initializeAgentExecutorWithOptions(tools, model, {
             agentType: 'chat-zero-shot-react-description',
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true'
         })
         return executor
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const executor = nodeData.instance as AgentExecutor
-        injectChainNodeData(nodeData, options)
+        injectLcAgentExecutorNodeData(executor, nodeData, options)
 
         const callbacks = await additionalCallbacks(nodeData, options)
 

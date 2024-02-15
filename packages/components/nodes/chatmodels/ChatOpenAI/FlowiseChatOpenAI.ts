@@ -6,29 +6,14 @@ import { BaseLanguageModelInput } from 'langchain/base_language'
 import { ChatOpenAICallOptions } from '@langchain/openai/dist/chat_models'
 import { BaseMessageChunk, BaseMessageLike, HumanMessage, LLMResult } from 'langchain/schema'
 import { Callbacks } from '@langchain/core/callbacks/manager'
-import { ICommonObject, IMultiModalOption, INodeData } from '../../../src'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
-
-interface MultiModalOptions {
-    chainNodeData: INodeData
-    chainNodeOptions: ICommonObject
-}
+import { IMultiModalOption } from '../../../src'
+import { addImagesToMessages, MultiModalOptions } from '../../../src/multiModalUtils'
 
 export class ChatOpenAI extends LangchainChatOpenAI {
-    //TODO: Should be class variables and not static
-    // public static nodeData: INodeData
-    // public static nodeOptions: ICommonObject
-    private static chainNodeDataOptions: Map<string, MultiModalOptions> = new Map()
     configuredModel: string
     configuredMaxToken?: number
     multiModalOption?: IMultiModalOption
     id: string
-
-    public static injectChainNodeData(nodeData: INodeData, options: ICommonObject) {
-        if (nodeData.inputs?.model.id) {
-            ChatOpenAI.chainNodeDataOptions.set(nodeData.inputs?.model.id, { chainNodeData: nodeData, chainNodeOptions: options })
-        }
-    }
 
     constructor(
         id: string,
@@ -48,15 +33,15 @@ export class ChatOpenAI extends LangchainChatOpenAI {
     }
 
     async generate(messages: BaseMessageLike[][], options?: string[] | ChatOpenAICallOptions, callbacks?: Callbacks): Promise<LLMResult> {
-        if (ChatOpenAI.chainNodeDataOptions.has(this.id)) {
-            await this.injectMultiModalMessages(messages, ChatOpenAI.chainNodeDataOptions.get(this.id) as MultiModalOptions)
+        if (this.lc_kwargs.chainData) {
+            await this.injectMultiModalMessages(messages, this.lc_kwargs.chainData)
         }
         return super.generate(messages, options, callbacks)
     }
 
     private async injectMultiModalMessages(messages: BaseMessageLike[][], nodeOptions: MultiModalOptions) {
-        const nodeData = nodeOptions.chainNodeData
-        const optionsData = nodeOptions.chainNodeOptions
+        const nodeData = nodeOptions.nodeData
+        const optionsData = nodeOptions.nodeOptions
         const messageContent = addImagesToMessages(nodeData, optionsData, this.multiModalOption)
         if (messageContent?.length) {
             if (messages[0].length > 0 && messages[0][messages[0].length - 1] instanceof HumanMessage) {

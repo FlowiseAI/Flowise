@@ -1,18 +1,53 @@
 import { ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
-import { BaseChatModel } from 'langchain/chat_models/base'
 import { ChatOpenAI as LangchainChatOpenAI } from 'langchain/chat_models/openai'
 import path from 'path'
 import { getStoragePath } from './utils'
 import fs from 'fs'
 import { ChatOpenAI } from '../nodes/chatmodels/ChatOpenAI/FlowiseChatOpenAI'
+import { LLMChain } from 'langchain/chains'
+import { RunnableBinding, RunnableSequence } from 'langchain/schema/runnable'
+import { AgentExecutor as LcAgentExecutor, ChatAgent, RunnableAgent } from 'langchain/agents'
+import { AgentExecutor } from './agents'
 
-export const injectChainNodeData = (nodeData: INodeData, options: ICommonObject) => {
-    let model = nodeData.inputs?.model as BaseChatModel
+export interface MultiModalOptions {
+    nodeData: INodeData
+    nodeOptions: ICommonObject
+}
 
-    if (model instanceof ChatOpenAI) {
-        // TODO: this should not be static, need to figure out how to pass the nodeData and options to the invoke method
-        ChatOpenAI.injectChainNodeData(nodeData, options)
+export const injectLLMChainNodeData = (nodeData: INodeData, options: ICommonObject) => {
+    let llmChain = nodeData.instance as LLMChain
+    ;(llmChain.llm as ChatOpenAI).lc_kwargs.chainData = { nodeData: nodeData, nodeOptions: options }
+}
+
+export const injectAgentExecutorNodeData = (agentExecutor: AgentExecutor, nodeData: INodeData, options: ICommonObject) => {
+    if (agentExecutor.agent instanceof RunnableAgent && agentExecutor.agent.runnable instanceof RunnableSequence) {
+        let rs = agentExecutor.agent.runnable as RunnableSequence
+        injectRunnableNodeData(rs, nodeData, options)
     }
+}
+
+export const injectLcAgentExecutorNodeData = (agentExecutor: LcAgentExecutor, nodeData: INodeData, options: ICommonObject) => {
+    if (agentExecutor.agent instanceof ChatAgent) {
+        let llmChain = agentExecutor.agent.llmChain as LLMChain
+        ;(llmChain.llm as ChatOpenAI).lc_kwargs.chainData = { nodeData: nodeData, nodeOptions: options }
+    }
+}
+
+export const injectRunnableNodeData = (runnableSequence: RunnableSequence, nodeData: INodeData, options: ICommonObject) => {
+    runnableSequence.steps.forEach((step) => {
+        if (step instanceof ChatOpenAI) {
+            ;(step as ChatOpenAI).lc_kwargs.chainData = { nodeData: nodeData, nodeOptions: options }
+        }
+
+        if (step instanceof RunnableBinding) {
+            if ((step as RunnableBinding<any, any>).bound instanceof ChatOpenAI) {
+                ;((step as RunnableBinding<any, any>).bound as ChatOpenAI).lc_kwargs.chainData = {
+                    nodeData: nodeData,
+                    nodeOptions: options
+                }
+            }
+        }
+    })
 }
 
 export const addImagesToMessages = (

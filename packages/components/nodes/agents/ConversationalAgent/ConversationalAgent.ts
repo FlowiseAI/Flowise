@@ -9,7 +9,7 @@ import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams }
 import { AgentExecutor } from '../../../src/agents'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { renderTemplate } from '@langchain/core/prompts'
-import { injectChainNodeData } from '../../../src/multiModalUtils'
+import { injectAgentExecutorNodeData } from '../../../src/multiModalUtils'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -85,9 +85,9 @@ class ConversationalAgent_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
-        injectChainNodeData(nodeData, options)
 
         const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        injectAgentExecutorNodeData(executor, nodeData, options)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
