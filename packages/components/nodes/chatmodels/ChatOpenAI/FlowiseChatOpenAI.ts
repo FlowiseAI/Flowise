@@ -25,7 +25,9 @@ export class ChatOpenAI extends LangchainChatOpenAI {
     id: string
 
     public static injectChainNodeData(nodeData: INodeData, options: ICommonObject) {
-        ChatOpenAI.chainNodeDataOptions.set(nodeData.id, { chainNodeData: nodeData, chainNodeOptions: options })
+        if (nodeData.inputs?.model.id) {
+            ChatOpenAI.chainNodeDataOptions.set(nodeData.inputs?.model.id, { chainNodeData: nodeData, chainNodeOptions: options })
+        }
     }
 
     constructor(
