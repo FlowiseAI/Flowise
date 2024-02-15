@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -1445,20 +1445,30 @@ export class App {
         endDate?: string,
         messageId?: string
     ): Promise<ChatMessage[]> {
+        const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
+            const date = new Date(dateTimeStr)
+            if (isNaN(date.getTime())) {
+                return undefined
+            }
+            setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
+            return date
+        }
+
         let fromDate
-        if (startDate) fromDate = new Date(startDate)
+        if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
 
         let toDate
-        if (endDate) toDate = new Date(endDate)
+        if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
                 chatflowid,
                 chatType,
                 chatId,
-                memoryType: memoryType ?? (chatId ? IsNull() : undefined),
+                memoryType: memoryType ?? undefined,
                 sessionId: sessionId ?? undefined,
-                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined,
+                ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
+                ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
                 id: messageId ?? undefined
             },
             order: {
