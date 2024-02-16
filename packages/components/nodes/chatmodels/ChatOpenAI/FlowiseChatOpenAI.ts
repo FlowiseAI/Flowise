@@ -39,10 +39,9 @@ export class ChatOpenAI extends LangchainChatOpenAI {
         return super.generate(messages, options, callbacks)
     }
 
-    private async injectMultiModalMessages(messages: BaseMessageLike[][], nodeOptions: MultiModalOptions) {
-        const nodeData = nodeOptions.nodeData
-        const optionsData = nodeOptions.nodeOptions
-        const messageContent = addImagesToMessages(nodeData, optionsData, this.multiModalOption)
+    private async injectMultiModalMessages(messages: BaseMessageLike[][], options: MultiModalOptions) {
+        const optionsData = options.nodeOptions
+        const messageContent = addImagesToMessages(optionsData, this.multiModalOption)
         if (messageContent?.length) {
             if (messages[0].length > 0 && messages[0][messages[0].length - 1] instanceof HumanMessage) {
                 // Change model to gpt-4-vision
