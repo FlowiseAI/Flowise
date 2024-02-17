@@ -7,6 +7,8 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { RunnableSequence } from 'langchain/schema/runnable'
 import { StringOutputParser } from 'langchain/schema/output_parser'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -26,7 +28,7 @@ class ConversationChain_Chains implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversation Chain'
         this.name = 'conversationChain'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ConversationChain'
         this.icon = 'conv.svg'
         this.category = 'Chains'
@@ -61,6 +63,14 @@ class ConversationChain_Chains implements INode {
                 list: true
             },*/
             {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
+            },
+            {
                 label: 'System Message',
                 name: 'systemMessagePrompt',
                 type: 'string',
@@ -80,8 +90,21 @@ class ConversationChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const memory = nodeData.inputs?.memory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the LLM chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         const chain = prepareChain(nodeData, this.sessionId, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)

@@ -611,28 +611,35 @@ export const resolveVariables = (
 export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
     const types = 'inputs'
 
-    const getParamValues = (paramsObj: ICommonObject) => {
+    const getParamValues = (inputsObj: ICommonObject) => {
         for (const config in overrideConfig) {
             // If overrideConfig[key] is object
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
                 if (nodeIds.includes(flowNodeData.id)) {
-                    paramsObj[config] = overrideConfig[config][flowNodeData.id]
+                    inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                    continue
+                } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
+                    /*
+                     * "systemMessagePrompt": {
+                     *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
+                     * }
+                     */
                     continue
                 }
             }
 
-            let paramValue = overrideConfig[config] ?? paramsObj[config]
+            let paramValue = overrideConfig[config] ?? inputsObj[config]
             // Check if boolean
             if (paramValue === 'true') paramValue = true
             else if (paramValue === 'false') paramValue = false
-            paramsObj[config] = paramValue
+            inputsObj[config] = paramValue
         }
     }
 
-    const paramsObj = flowNodeData[types] ?? {}
+    const inputsObj = flowNodeData[types] ?? {}
 
-    getParamValues(paramsObj)
+    getParamValues(inputsObj)
 
     return flowNodeData
 }
@@ -811,7 +818,16 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
     const streamAvailableLLMs = {
-        'Chat Models': ['azureChatOpenAI', 'chatOpenAI', 'chatAnthropic', 'chatOllama', 'awsChatBedrock', 'chatMistralAI'],
+        'Chat Models': [
+            'azureChatOpenAI',
+            'chatOpenAI',
+            'chatOpenAI_LlamaIndex',
+            'chatAnthropic',
+            'chatAnthropic_LlamaIndex',
+            'chatOllama',
+            'awsChatBedrock',
+            'chatMistralAI'
+        ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
 
@@ -834,6 +850,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         // Agent that are available to stream
         const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+    } else if (endingNodeData.category === 'Engine') {
+        const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
+        isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
     }
 
     // If no output parser, flow is available to stream
@@ -1099,6 +1118,7 @@ export const getTelemetryFlowObj = (nodes: IReactFlowNode[], edges: IReactFlowEd
  * TODO: move env variables to settings json file, easier configuration
  */
 export const getUserSettingsFilePath = () => {
+    if (process.env.SECRETKEY_PATH) return path.join(process.env.SECRETKEY_PATH, 'settings.json')
     const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {

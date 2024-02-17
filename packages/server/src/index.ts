@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -59,10 +59,10 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters } from 'flowise-components'
+import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware } from './utils/XSS'
+import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
@@ -120,14 +120,27 @@ export class App {
 
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
-        this.app.use(express.json({ limit: '50mb' }))
-        this.app.use(express.urlencoded({ limit: '50mb', extended: true }))
+        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT ?? '50mb'
+        this.app.use(express.json({ limit: flowise_file_size_limit }))
+        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
 
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
 
-        // Allow access from *
-        this.app.use(cors())
+        // Allow access from specified domains
+        this.app.use(cors(getCorsOptions()))
+
+        // Allow embedding from specified domains.
+        this.app.use((req, res, next) => {
+            const allowedOrigins = getAllowedIframeOrigins()
+            if (allowedOrigins == '*') {
+                next()
+            } else {
+                const csp = `frame-ancestors ${allowedOrigins}`
+                res.setHeader('Content-Security-Policy', csp)
+                next()
+            }
+        })
 
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
@@ -172,7 +185,7 @@ export class App {
         this.app.get('/api/v1/ip', (request, response) => {
             response.send({
                 ip: request.ip,
-                msg: 'See the returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 until the IP address matches your own. Visit https://docs.flowiseai.com/deployment#rate-limit-setup-guide for more information.'
+                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
             })
         })
 
@@ -461,18 +474,30 @@ export class App {
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
             let isStreaming = false
+            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
                 if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
-                if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                    return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
+
+                if (!isEndingNode) {
+                    if (
+                        endingNodeData &&
+                        endingNodeData.category !== 'Chains' &&
+                        endingNodeData.category !== 'Agents' &&
+                        endingNodeData.category !== 'Engine'
+                    ) {
+                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                    }
                 }
 
-                isStreaming = isFlowValidForStream(nodes, endingNodeData)
+                isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
             }
 
-            const obj = { isStreaming }
+            // Once custom function ending node exists, flow is always unavailable to stream
+            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
             return res.json(obj)
         })
 
@@ -486,6 +511,7 @@ export class App {
             const chatId = req.query?.chatId as string | undefined
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
             let chatTypeFilter = req.query?.chatType as chatType | undefined
@@ -513,7 +539,8 @@ export class App {
                 memoryType,
                 sessionId,
                 startDate,
-                endDate
+                endDate,
+                messageId
             )
             return res.json(chatmessages)
         })
@@ -1118,6 +1145,25 @@ export class App {
         })
 
         // ----------------------------------------
+        // Scraper
+        // ----------------------------------------
+
+        this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
+            const url = decodeURIComponent(req.query.url as string)
+            const relativeLinksMethod = req.query.relativeLinksMethod as string
+            if (!relativeLinksMethod) {
+                return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+            }
+
+            const limit = parseInt(req.query.limit as string)
+            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
+            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+
+            res.json({ status: 'OK', links })
+        })
+
+        // ----------------------------------------
         // Upsert
         // ----------------------------------------
 
@@ -1186,21 +1232,42 @@ export class App {
         // Marketplaces
         // ----------------------------------------
 
-        // Get all chatflows for marketplaces
-        this.app.get('/api/v1/marketplaces/chatflows', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
+        // Get all templates for marketplaces
+        this.app.get('/api/v1/marketplaces/templates', async (req: Request, res: Response) => {
+            let marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
+            let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            let templates: any[] = []
             jsonsInDir.forEach((file, index) => {
                 const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
                 const fileData = fs.readFileSync(filePath)
                 const fileDataObj = JSON.parse(fileData.toString())
                 const template = {
                     id: index,
-                    name: file.split('.json')[0],
+                    templateName: file.split('.json')[0],
                     flowData: fileData.toString(),
                     badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
+                    categories: fileDataObj?.categories,
+                    type: 'Chatflow',
                     description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            })
+
+            marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
+            jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+            jsonsInDir.forEach((file, index) => {
+                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: index,
+                    type: 'Tool',
+                    framework: fileDataObj?.framework,
+                    badge: fileDataObj?.badge,
+                    categories: '',
+                    templateName: file.split('.json')[0]
                 }
                 templates.push(template)
             })
@@ -1210,26 +1277,7 @@ export class App {
                 templates.splice(FlowiseDocsQnAIndex, 1)
                 templates.unshift(FlowiseDocsQnA)
             }
-            return res.json(templates)
-        })
-
-        // Get all tools for marketplaces
-        this.app.get('/api/v1/marketplaces/tools', async (req: Request, res: Response) => {
-            const marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
-            const jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            const templates: any[] = []
-            jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
-                const fileData = fs.readFileSync(filePath)
-                const fileDataObj = JSON.parse(fileData.toString())
-                const template = {
-                    ...fileDataObj,
-                    id: index,
-                    templateName: file.split('.json')[0]
-                }
-                templates.push(template)
-            })
-            return res.json(templates)
+            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
         })
 
         // ----------------------------------------
@@ -1394,22 +1442,34 @@ export class App {
         memoryType?: string,
         sessionId?: string,
         startDate?: string,
-        endDate?: string
+        endDate?: string,
+        messageId?: string
     ): Promise<ChatMessage[]> {
+        const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
+            const date = new Date(dateTimeStr)
+            if (isNaN(date.getTime())) {
+                return undefined
+            }
+            setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
+            return date
+        }
+
         let fromDate
-        if (startDate) fromDate = new Date(startDate)
+        if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
 
         let toDate
-        if (endDate) toDate = new Date(endDate)
+        if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
                 chatflowid,
                 chatType,
                 chatId,
-                memoryType: memoryType ?? (chatId ? IsNull() : undefined),
-                sessionId: sessionId ?? (chatId ? IsNull() : undefined),
-                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+                memoryType: memoryType ?? undefined,
+                sessionId: sessionId ?? undefined,
+                ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
+                ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
+                id: messageId ?? undefined
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
@@ -1648,28 +1708,43 @@ export class App {
                 if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
 
                 const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
 
-                    if (endingNodeData && endingNodeData.category !== 'Chains' && endingNodeData.category !== 'Agents') {
-                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
-                    }
+                    const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
-                    if (
-                        endingNodeData.outputs &&
-                        Object.keys(endingNodeData.outputs).length &&
-                        !Object.values(endingNodeData.outputs).includes(endingNodeData.name)
-                    ) {
-                        return res
-                            .status(500)
-                            .send(
-                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                            )
+                    if (!isEndingNode) {
+                        if (
+                            endingNodeData &&
+                            endingNodeData.category !== 'Chains' &&
+                            endingNodeData.category !== 'Agents' &&
+                            endingNodeData.category !== 'Engine'
+                        ) {
+                            return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                        }
+
+                        if (
+                            endingNodeData.outputs &&
+                            Object.keys(endingNodeData.outputs).length &&
+                            !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
+                        ) {
+                            return res
+                                .status(500)
+                                .send(
+                                    `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                                )
+                        }
                     }
 
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
+
+                // Once custom function ending node exists, flow is always unavailable to stream
+                isStreamValid = isEndingNodeExists ? false : isStreamValid
 
                 let chatHistory: IMessage[] = incomingInput.history ?? []
 
@@ -1814,7 +1889,8 @@ export class App {
             if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-            await this.addChatMessage(apiMessage)
+            const chatMessage = await this.addChatMessage(apiMessage)
+            result.chatMessageId = chatMessage.id
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             await this.telemetry.sendTelemetry('prediction_sent', {
@@ -1825,8 +1901,10 @@ export class App {
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
 
-            // Only return ChatId when its Internal OR incoming input has ChatId, to avoid confusion when calling API
-            if (incomingInput.chatId || isInternal) result.chatId = chatId
+            // Prepare response
+            result.chatId = chatId
+            if (sessionId) result.sessionId = sessionId
+            if (memoryType) result.memoryType = memoryType
 
             return res.json(result)
         } catch (e: any) {
@@ -1859,9 +1937,7 @@ export async function start(): Promise<void> {
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
-        cors: {
-            origin: '*'
-        }
+        cors: getCorsOptions()
     })
 
     await serverApp.initDatabase()
