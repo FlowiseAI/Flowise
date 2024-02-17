@@ -60,6 +60,10 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'gpt-4-1106-preview'
                     },
                     {
+                        label: 'gpt-4-1106-vision-preview',
+                        name: 'gpt-4-1106-vision-preview'
+                    },
+                    {
                         label: 'gpt-4-vision-preview',
                         name: 'gpt-4-vision-preview'
                     },
