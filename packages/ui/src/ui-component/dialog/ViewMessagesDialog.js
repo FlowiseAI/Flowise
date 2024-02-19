@@ -688,9 +688,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         style={{
                                                                             display: 'flex',
                                                                             flexWrap: 'wrap',
-                                                                            flexDirection: 'row',
+                                                                            flexDirection: 'column',
                                                                             width: '100%',
-                                                                            gap: '4px'
+                                                                            gap: '8px'
                                                                         }}
                                                                     >
                                                                         {message.fileUploads.map((item, index) => {

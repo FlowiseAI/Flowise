@@ -1811,7 +1811,7 @@ export class App {
                     }
 
                     // Run Speech to Text conversion
-                    if (upload.mime === 'audio/webm' && incomingInput.uploads?.length === 1) {
+                    if (upload.mime === 'audio/webm') {
                         let speechToTextConfig: ICommonObject = {}
                         if (chatflow.speechToText) {
                             const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -2111,6 +2111,9 @@ export class App {
             })
 
             // Prepare response
+            // return the question in the response
+            // this is used when input text is empty but question is in audio format
+            result.question = incomingInput.question
             result.chatId = chatId
             result.chatMessageId = chatMessage.id
             if (sessionId) result.sessionId = sessionId

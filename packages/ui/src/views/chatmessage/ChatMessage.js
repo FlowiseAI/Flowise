@@ -391,6 +391,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
                 if (!chatId) setChatId(data.chatId)
 
+                if (input === '' && data.question) {
+                    // the response contains the question even if it was in an audio format
+                    // so if input is empty but the response contains the question, update the user message to show the question
+                    setMessages((prevMessages) => {
+                        let allMessages = [...cloneDeep(prevMessages)]
+                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                        allMessages[allMessages.length - 2].message = data.question
+                        return allMessages
+                    })
+                }
+
                 if (!isChatFlowAvailableToStream) {
                     let text = ''
                     if (data.text) text = data.text
@@ -669,9 +680,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 style={{
                                                     display: 'flex',
                                                     flexWrap: 'wrap',
-                                                    flexDirection: 'row',
+                                                    flexDirection: 'column',
                                                     width: '100%',
-                                                    gap: '4px'
+                                                    gap: '8px'
                                                 }}
                                             >
                                                 {message.fileUploads.map((item, index) => {
