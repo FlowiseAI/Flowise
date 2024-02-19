@@ -1,10 +1,10 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { DynamicTool } from 'langchain/tools'
+import { z } from 'zod'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
-import { BaseRetriever } from 'langchain/schema/retriever'
-import { z } from 'zod'
+import { DynamicTool } from '@langchain/core/tools'
+import { BaseRetriever } from '@langchain/core/retrievers'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 
 class Retriever_Tools implements INode {
