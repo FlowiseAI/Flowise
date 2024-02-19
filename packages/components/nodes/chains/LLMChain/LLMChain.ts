@@ -6,8 +6,11 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from 
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
-import { injectLLMChainNodeData } from '../../../src/multiModalUtils'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
+import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
+import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
+import { HumanMessage } from 'langchain/schema'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -107,7 +110,6 @@ class LLMChain_Chains implements INode {
                 verbose: process.env.DEBUG === 'true'
             })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
-            injectLLMChainNodeData(nodeData, options)
             promptValues = injectOutputParser(this.outputParser, chain, promptValues)
             const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
             // eslint-disable-next-line no-console
@@ -137,7 +139,6 @@ class LLMChain_Chains implements INode {
         if (!this.outputParser && outputParser) {
             this.outputParser = outputParser
         }
-        injectLLMChainNodeData(nodeData, options)
         promptValues = injectOutputParser(this.outputParser, chain, promptValues)
         const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
         // eslint-disable-next-line no-console
@@ -163,12 +164,7 @@ const runPrediction = async (
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
-    /**
-     * Apply string transformation to reverse converted special chars:
-     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
-     * TO: { "value": "hello i am ben\n\n\thow are you?" }
-     */
-    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+    let model = nodeData.inputs?.model as ChatOpenAI
 
     if (moderations && moderations.length > 0) {
         try {
@@ -178,6 +174,42 @@ const runPrediction = async (
             await new Promise((resolve) => setTimeout(resolve, 500))
             streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
             return formatResponse(e.message)
+        }
+    }
+
+    /**
+     * Apply string transformation to reverse converted special chars:
+     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
+     * TO: { "value": "hello i am ben\n\n\thow are you?" }
+     */
+    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+    const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+    if (chain.llm instanceof ChatOpenAI) {
+        const chatOpenAI = chain.llm as ChatOpenAI
+        if (messageContent?.length) {
+            // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
+            chatOpenAI.modelName = 'gpt-4-vision-preview'
+            chatOpenAI.maxTokens = 1024
+            // Add image to the message
+            if (chain.prompt instanceof PromptTemplate) {
+                const oldTemplate = chain.prompt.template as string
+                let cp2 = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
+                cp2.promptMessages = [new HumanMessage({ content: messageContent })]
+                chain.prompt = cp2
+            } else if (chain.prompt instanceof ChatPromptTemplate) {
+                chain.prompt.promptMessages.push(new HumanMessage({ content: messageContent }))
+            } else if (chain.prompt instanceof FewShotPromptTemplate) {
+                let currentPrompt = chain.prompt as FewShotPromptTemplate
+                const oldTemplate = currentPrompt.examplePrompt.template as string
+                let cp2 = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
+                cp2.promptMessages = [new HumanMessage({ content: messageContent })]
+                // @ts-ignore
+                currentPrompt.examplePrompt = cp2
+            }
+        } else {
+            // revert to previous values if image upload is empty
+            chatOpenAI.modelName = model.configuredModel
+            chatOpenAI.maxTokens = model.configuredMaxToken
         }
     }
 

@@ -7,7 +7,11 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { injectLcAgentExecutorNodeData } from '../../../src/multiModalUtils'
+import { ChatOpenAI } from "../../chatmodels/ChatOpenAI/FlowiseChatOpenAI";
+import { HumanMessage } from "@langchain/core/messages";
+import { addImagesToMessages } from "../../../src/multiModalUtils";
+import { ChatPromptTemplate, SystemMessagePromptTemplate } from "langchain/prompts";
+// import { injectLcAgentExecutorNodeData } from '../../../src/multiModalUtils'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -54,19 +58,39 @@ class MRKLAgentChat_Agents implements INode {
         tools = flatten(tools)
 
         const promptWithChat = await pull<PromptTemplate>('hwchase17/react-chat')
+        let chatPromptTemplate = undefined
+        if (model instanceof ChatOpenAI) {
+            const chatModel = model as ChatOpenAI
+            const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+
+            if (messageContent?.length) {
+                // Change model to gpt-4-vision
+                chatModel.modelName = 'gpt-4-vision-preview'
+
+                // Change default max token to higher when using gpt-4-vision
+                chatModel.maxTokens = 1024
+                const oldTemplate = promptWithChat.template as string
+                let chatPromptTemplate = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
+                chatPromptTemplate.promptMessages = [new HumanMessage({ content: messageContent })]
+            } else {
+                // revert to previous values if image upload is empty
+                chatModel.modelName = chatModel.configuredModel
+                chatModel.maxTokens = chatModel.configuredMaxToken
+            }
+        }
 
         const agent = await createReactAgent({
             llm: model,
             tools,
-            prompt: promptWithChat
+            prompt: chatPromptTemplate ?? promptWithChat
         })
 
         const executor = new AgentExecutor({
             agent,
             tools,
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true'
         })
-        injectLcAgentExecutorNodeData(executor, nodeData, options)
+        // injectLcAgentExecutorNodeData(executor, nodeData, options)
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
