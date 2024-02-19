@@ -632,8 +632,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             sx={{
                                                                 background:
                                                                     message.type === 'apiMessage' ? theme.palette.asyncSelect.main : '',
-                                                                pl: 1,
-                                                                pr: 1
+                                                                py: '1rem',
+                                                                px: '1.5rem'
                                                             }}
                                                             key={index}
                                                             style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
@@ -683,34 +683,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         })}
                                                                     </div>
                                                                 )}
-                                                                <div className='markdownanswer'>
-                                                                    {/* Messages are being rendered in Markdown format */}
-                                                                    <MemoizedReactMarkdown
-                                                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                                                        rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                                        components={{
-                                                                            code({ inline, className, children, ...props }) {
-                                                                                const match = /language-(\w+)/.exec(className || '')
-                                                                                return !inline ? (
-                                                                                    <CodeBlock
-                                                                                        key={Math.random()}
-                                                                                        chatflowid={dialogProps.chatflow.id}
-                                                                                        isDialog={true}
-                                                                                        language={(match && match[1]) || ''}
-                                                                                        value={String(children).replace(/\n$/, '')}
-                                                                                        {...props}
-                                                                                    />
-                                                                                ) : (
-                                                                                    <code className={className} {...props}>
-                                                                                        {children}
-                                                                                    </code>
-                                                                                )
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        {message.message}
-                                                                    </MemoizedReactMarkdown>
-                                                                </div>
                                                                 {message.fileUploads && message.fileUploads.length > 0 && (
                                                                     <div
                                                                         style={{
@@ -756,6 +728,34 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         })}
                                                                     </div>
                                                                 )}
+                                                                <div className='markdownanswer'>
+                                                                    {/* Messages are being rendered in Markdown format */}
+                                                                    <MemoizedReactMarkdown
+                                                                        remarkPlugins={[remarkGfm, remarkMath]}
+                                                                        rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                                        components={{
+                                                                            code({ inline, className, children, ...props }) {
+                                                                                const match = /language-(\w+)/.exec(className || '')
+                                                                                return !inline ? (
+                                                                                    <CodeBlock
+                                                                                        key={Math.random()}
+                                                                                        chatflowid={dialogProps.chatflow.id}
+                                                                                        isDialog={true}
+                                                                                        language={(match && match[1]) || ''}
+                                                                                        value={String(children).replace(/\n$/, '')}
+                                                                                        {...props}
+                                                                                    />
+                                                                                ) : (
+                                                                                    <code className={className} {...props}>
+                                                                                        {children}
+                                                                                    </code>
+                                                                                )
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {message.message}
+                                                                    </MemoizedReactMarkdown>
+                                                                </div>
                                                                 {message.fileAnnotations && (
                                                                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                                         {message.fileAnnotations.map((fileAnnotation, index) => {
