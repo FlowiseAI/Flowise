@@ -1,10 +1,15 @@
-import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseChatModelParams } from 'langchain/chat_models/base'
 import type { ClientOptions } from 'openai'
-import type { LegacyOpenAIInput } from '@langchain/openai/dist/types'
-import { BaseLanguageModelInput } from 'langchain/base_language'
-import { ChatOpenAICallOptions } from '@langchain/openai/dist/chat_models'
-import { BaseMessageChunk, BaseMessageLike, HumanMessage, LLMResult } from 'langchain/schema'
+import {
+    ChatOpenAI as LangchainChatOpenAI,
+    OpenAIChatInput,
+    LegacyOpenAIInput,
+    AzureOpenAIInput,
+    ChatOpenAICallOptions
+} from '@langchain/openai'
+import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
+import { BaseLanguageModelInput } from '@langchain/core/language_models/base'
+import { BaseMessageChunk, BaseMessageLike, HumanMessage } from '@langchain/core/messages'
+import { LLMResult } from '@langchain/core/outputs'
 import { Callbacks } from '@langchain/core/callbacks/manager'
 import { IMultiModalOption } from '../../../src'
 import { addImagesToMessages, MultiModalOptions } from '../../../src/multiModalUtils'
@@ -17,7 +22,9 @@ export class ChatOpenAI extends LangchainChatOpenAI {
 
     constructor(
         id: string,
-        fields?: Partial<OpenAIChatInput> & BaseChatModelParams & { openAIApiKey?: string; multiModalOption?: IMultiModalOption },
+        fields?: Partial<OpenAIChatInput> &
+            Partial<AzureOpenAIInput> &
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput; multiModalOption?: IMultiModalOption },
         /** @deprecated */
         configuration?: ClientOptions & LegacyOpenAIInput
     ) {

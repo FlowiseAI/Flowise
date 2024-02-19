@@ -1,9 +1,9 @@
 import { flatten } from 'lodash'
 import { QdrantClient } from '@qdrant/js-client-rest'
-import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
-import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
-import { Embeddings } from 'langchain/embeddings/base'
+import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
+import { QdrantVectorStore, QdrantLibArgs } from '@langchain/community/vectorstores/qdrant'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 

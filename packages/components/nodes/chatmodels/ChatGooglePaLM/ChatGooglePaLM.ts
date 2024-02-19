@@ -1,7 +1,7 @@
+import { ChatGooglePaLM, GooglePaLMChatInput } from '@langchain/community/chat_models/googlepalm'
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatGooglePaLM, GooglePaLMChatInput } from 'langchain/chat_models/googlepalm'
-import { BaseCache } from 'langchain/schema'
 
 class ChatGooglePaLM_ChatModels implements INode {
     label: string

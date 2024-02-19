@@ -1,8 +1,9 @@
+import type { ClientOptions } from 'openai'
+import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, AzureOpenAIInput, LegacyOpenAIInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 
 class ChatOpenAI_ChatModels implements INode {
@@ -59,6 +60,10 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-4-1106-preview',
                         name: 'gpt-4-1106-preview'
+                    },
+                    {
+                        label: 'gpt-4-1106-vision-preview',
+                        name: 'gpt-4-1106-vision-preview'
                     },
                     {
                         label: 'gpt-4-vision-preview',
@@ -220,7 +225,9 @@ class ChatOpenAI_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> &
+            Partial<AzureOpenAIInput> &
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput; multiModalOption?: IMultiModalOption } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -244,10 +251,12 @@ class ChatOpenAI_ChatModels implements INode {
             }
         }
 
-        const model = new ChatOpenAI(nodeData.id, obj, {
-            baseURL: basePath,
-            baseOptions: parsedBaseOptions
-        })
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                baseOptions: parsedBaseOptions
+            }
+        }
 
         const multiModalOption: IMultiModalOption = {
             image: {
@@ -255,7 +264,10 @@ class ChatOpenAI_ChatModels implements INode {
                 imageResolution
             }
         }
-        model.multiModalOption = multiModalOption
+        obj.multiModalOption = multiModalOption
+
+        const model = new ChatOpenAI(nodeData.id, obj)
+
         return model
     }
 }

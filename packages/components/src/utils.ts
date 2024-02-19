@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -49,7 +49,7 @@ export const availableDependencies = [
     'langfuse',
     'langsmith',
     'linkifyjs',
-    'llmonitor',
+    'lunary',
     'mammoth',
     'moment',
     'mongodb',

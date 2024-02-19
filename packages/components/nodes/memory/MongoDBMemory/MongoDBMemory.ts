@@ -1,7 +1,7 @@
 import { MongoClient, Collection, Document } from 'mongodb'
-import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
+import { MongoDBChatMessageHistory } from '@langchain/community/stores/message/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
