@@ -247,32 +247,6 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                                 </a>
                             }
                         />
-                        {speechToText[selectedProvider] && speechToText[selectedProvider].status && (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignContent: 'center',
-                                    alignItems: 'center',
-                                    background: '#d8f3dc',
-                                    borderRadius: 15,
-                                    padding: 5,
-                                    paddingLeft: 7,
-                                    paddingRight: 7,
-                                    marginRight: 10
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        width: 15,
-                                        height: 15,
-                                        borderRadius: '50%',
-                                        backgroundColor: '#70e000'
-                                    }}
-                                />
-                                <span style={{ color: '#006400', marginLeft: 10 }}>ON</span>
-                            </div>
-                        )}
                     </ListItem>
                     {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
                         <Box key={index} sx={{ p: 2 }}>
