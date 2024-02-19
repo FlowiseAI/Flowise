@@ -1,5 +1,7 @@
 {
     "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
+    "categories": "Buffer Memory,ChatOpenAI,Chain Tool,Retrieval QA Chain,Redis,Faiss,Conversational Agent,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -521,6 +523,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -539,6 +545,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -964,10 +974,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_0-output-document-Document",
+                                "id": "plainText_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_0-output-text-string|json",
@@ -1039,6 +1049,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -1057,6 +1071,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -1237,6 +1255,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -1255,6 +1277,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -1501,10 +1527,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_1-output-document-Document",
+                                "id": "plainText_1-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_1-output-text-string|json",
@@ -1721,11 +1747,11 @@
         },
         {
             "source": "plainText_0",
-            "sourceHandle": "plainText_0-output-document-Document",
+            "sourceHandle": "plainText_0-output-document-Document|json",
             "target": "redis_0",
             "targetHandle": "redis_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_0-plainText_0-output-document-Document-redis_0-redis_0-input-document-Document",
+            "id": "plainText_0-plainText_0-output-document-Document|json-redis_0-redis_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -1776,11 +1802,11 @@
         },
         {
             "source": "plainText_1",
-            "sourceHandle": "plainText_1-output-document-Document",
+            "sourceHandle": "plainText_1-output-document-Document|json",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "id": "plainText_1-plainText_1-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }

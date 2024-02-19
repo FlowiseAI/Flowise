@@ -1,5 +1,7 @@
 {
     "description": "Answer questions over a SQL database",
+    "categories": "ChatOpenAI,Sql Database Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -49,6 +51,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -67,6 +73,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",

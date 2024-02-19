@@ -1,6 +1,8 @@
 {
     "description": "Stateless query engine designed to answer question over your data using LlamaIndex",
+    "categories": "ChatAnthropic,Compact and Refine,Pinecone,LlamaIndex",
     "badge": "NEW",
+    "framework": "LlamaIndex",
     "nodes": [
         {
             "width": 300,
@@ -14,10 +16,10 @@
             "data": {
                 "id": "queryEngine_0",
                 "label": "Query Engine",
-                "version": 1,
+                "version": 2,
                 "name": "queryEngine",
                 "type": "QueryEngine",
-                "baseClasses": ["QueryEngine"],
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
                 "tags": ["LlamaIndex"],
                 "category": "Engine",
                 "description": "Simple query engine built to answer question over your data, without memory",
@@ -53,10 +55,10 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "queryEngine_0-output-queryEngine-QueryEngine",
+                        "id": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
                         "name": "queryEngine",
                         "label": "QueryEngine",
-                        "type": "QueryEngine"
+                        "type": "QueryEngine | BaseQueryEngine"
                     }
                 ],
                 "outputs": {},

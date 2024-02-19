@@ -1,5 +1,7 @@
 {
     "description": "Basic example of stateless (no memory) LLM Chain with a Prompt Template and LLM Model",
+    "categories": "OpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

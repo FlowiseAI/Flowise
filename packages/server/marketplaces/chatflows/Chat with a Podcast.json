@@ -1,5 +1,7 @@
 {
     "description": "Engage with data sources such as YouTube Transcripts, Google, and more through intelligent Q&A interactions",
+    "categories": "Memory Vector Store,SearchAPI,ChatOpenAI,Conversational Retrieval QA Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -230,6 +232,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -248,6 +254,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",

@@ -100,6 +100,7 @@ export class DynamicStructuredTool<
         return result
     }
 
+    // @ts-ignore
     protected async _call(
         arg: z.output<T>,
         _?: CallbackManagerForToolRun,

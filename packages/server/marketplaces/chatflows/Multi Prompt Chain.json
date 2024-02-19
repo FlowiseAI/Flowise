@@ -1,5 +1,7 @@
 {
     "description": "A chain that automatically picks an appropriate prompt from multiple prompts",
+    "categories": "ChatOpenAI,Multi Prompt Chain,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -313,6 +315,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -331,6 +337,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",

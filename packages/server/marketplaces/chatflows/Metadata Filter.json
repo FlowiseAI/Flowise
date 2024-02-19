@@ -1,6 +1,8 @@
 {
     "description": "Upsert multiple files with metadata and filter by it using conversational retrieval QA chain",
+    "categories": "Text File,PDF File,ChatOpenAI,Conversational Retrieval QA Chain,Pinecone,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -126,10 +128,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "textFile_0-output-document-Document",
+                                "id": "textFile_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "textFile_0-output-text-string|json",
@@ -489,6 +491,10 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -507,6 +513,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -836,11 +846,11 @@
         },
         {
             "source": "textFile_0",
-            "sourceHandle": "textFile_0-output-document-Document",
+            "sourceHandle": "textFile_0-output-document-Document|json",
             "target": "pinecone_0",
             "targetHandle": "pinecone_0-input-document-Document",
             "type": "buttonedge",
-            "id": "textFile_0-textFile_0-output-document-Document-pinecone_0-pinecone_0-input-document-Document",
+            "id": "textFile_0-textFile_0-output-document-Document|json-pinecone_0-pinecone_0-input-document-Document",
             "data": {
                 "label": ""
             }

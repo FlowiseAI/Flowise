@@ -1,5 +1,7 @@
 {
     "description": "Breaks down query into sub questions for each relevant data source, then combine into final response",
+    "categories": "Sub Question Query Engine,Sticky Note,QueryEngine Tool,Compact and Refine,ChatOpenAI,Pinecone,LlamaIndex",
+    "framework": "LlamaIndex",
     "badge": "NEW",
     "nodes": [
         {
@@ -7,8 +9,8 @@
             "height": 749,
             "id": "compactrefineLlamaIndex_0",
             "position": {
-                "x": -1214.7329938486841,
-                "y": 56.52482754447425
+                "x": -443.9012456561584,
+                "y": 826.6100190232154
             },
             "type": "customNode",
             "data": {
@@ -61,8 +63,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": -1214.7329938486841,
-                "y": 56.52482754447425
+                "x": -443.9012456561584,
+                "y": 826.6100190232154
             },
             "dragging": false
         },
@@ -71,8 +73,8 @@
             "height": 611,
             "id": "pineconeLlamaIndex_0",
             "position": {
-                "x": 37.23548045607484,
-                "y": -119.7364648743818
+                "x": 35.45798119088212,
+                "y": -132.1789597307308
             },
             "type": "customNode",
             "data": {
@@ -181,14 +183,14 @@
                     }
                 ],
                 "outputs": {
-                    "output": "vectorStore"
+                    "output": "retriever"
                 },
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 37.23548045607484,
-                "y": -119.7364648743818
+                "x": 35.45798119088212,
+                "y": -132.1789597307308
             },
             "dragging": false
         },
@@ -405,77 +407,11 @@
         },
         {
             "width": 300,
-            "height": 511,
-            "id": "queryEngineToolLlamaIndex_0",
-            "position": {
-                "x": 460.37559236135905,
-                "y": -565.6224030941121
-            },
-            "type": "customNode",
-            "data": {
-                "id": "queryEngineToolLlamaIndex_0",
-                "label": "QueryEngine Tool",
-                "version": 1,
-                "name": "queryEngineToolLlamaIndex",
-                "type": "QueryEngineTool",
-                "baseClasses": ["QueryEngineTool"],
-                "tags": ["LlamaIndex"],
-                "category": "Tools",
-                "description": "Execute actions using ChatGPT Plugin Url",
-                "inputParams": [
-                    {
-                        "label": "Tool Name",
-                        "name": "toolName",
-                        "type": "string",
-                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
-                        "id": "queryEngineToolLlamaIndex_0-input-toolName-string"
-                    },
-                    {
-                        "label": "Tool Description",
-                        "name": "toolDesc",
-                        "type": "string",
-                        "rows": 4,
-                        "id": "queryEngineToolLlamaIndex_0-input-toolDesc-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Vector Store Index",
-                        "name": "vectorStoreIndex",
-                        "type": "VectorStoreIndex",
-                        "id": "queryEngineToolLlamaIndex_0-input-vectorStoreIndex-VectorStoreIndex"
-                    }
-                ],
-                "inputs": {
-                    "vectorStoreIndex": "{{pineconeLlamaIndex_1.data.instance}}",
-                    "toolName": "apple_tool",
-                    "toolDesc": "A SEC Form 10K filing describing the financials of Apple Inc (APPL) for the 2022 time period."
-                },
-                "outputAnchors": [
-                    {
-                        "id": "queryEngineToolLlamaIndex_0-output-queryEngineToolLlamaIndex-QueryEngineTool",
-                        "name": "queryEngineToolLlamaIndex",
-                        "label": "QueryEngineTool",
-                        "type": "QueryEngineTool"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 460.37559236135905,
-                "y": -565.6224030941121
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
             "height": 611,
             "id": "pineconeLlamaIndex_1",
             "position": {
-                "x": 42.17855025460784,
-                "y": -839.8824444107056
+                "x": 43.95604951980056,
+                "y": -783.0024679245387
             },
             "type": "customNode",
             "data": {
@@ -584,162 +520,14 @@
                     }
                 ],
                 "outputs": {
-                    "output": "vectorStore"
+                    "output": "retriever"
                 },
                 "selected": false
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 42.17855025460784,
-                "y": -839.8824444107056
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 511,
-            "id": "queryEngineToolLlamaIndex_1",
-            "position": {
-                "x": 462.16721384216123,
-                "y": -17.750065363429798
-            },
-            "type": "customNode",
-            "data": {
-                "id": "queryEngineToolLlamaIndex_1",
-                "label": "QueryEngine Tool",
-                "version": 1,
-                "name": "queryEngineToolLlamaIndex",
-                "type": "QueryEngineTool",
-                "baseClasses": ["QueryEngineTool"],
-                "tags": ["LlamaIndex"],
-                "category": "Tools",
-                "description": "Execute actions using ChatGPT Plugin Url",
-                "inputParams": [
-                    {
-                        "label": "Tool Name",
-                        "name": "toolName",
-                        "type": "string",
-                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
-                        "id": "queryEngineToolLlamaIndex_1-input-toolName-string"
-                    },
-                    {
-                        "label": "Tool Description",
-                        "name": "toolDesc",
-                        "type": "string",
-                        "rows": 4,
-                        "id": "queryEngineToolLlamaIndex_1-input-toolDesc-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Vector Store Index",
-                        "name": "vectorStoreIndex",
-                        "type": "VectorStoreIndex",
-                        "id": "queryEngineToolLlamaIndex_1-input-vectorStoreIndex-VectorStoreIndex"
-                    }
-                ],
-                "inputs": {
-                    "vectorStoreIndex": "{{pineconeLlamaIndex_0.data.instance}}",
-                    "toolName": "tesla_tool",
-                    "toolDesc": "A SEC Form 10K filing describing the financials of Tesla Inc (TSLA) for the 2022 time period."
-                },
-                "outputAnchors": [
-                    {
-                        "id": "queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool",
-                        "name": "queryEngineToolLlamaIndex",
-                        "label": "QueryEngineTool",
-                        "type": "QueryEngineTool"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 462.16721384216123,
-                "y": -17.750065363429798
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 484,
-            "id": "subQuestionQueryEngine_0",
-            "position": {
-                "x": 982.7583030231563,
-                "y": 349.50858200305896
-            },
-            "type": "customNode",
-            "data": {
-                "id": "subQuestionQueryEngine_0",
-                "label": "Sub Question Query Engine",
-                "version": 1,
-                "name": "subQuestionQueryEngine",
-                "type": "SubQuestionQueryEngine",
-                "baseClasses": ["SubQuestionQueryEngine"],
-                "tags": ["LlamaIndex"],
-                "category": "Engine",
-                "description": "Simple query engine built to answer question over your data, without memory",
-                "inputParams": [
-                    {
-                        "label": "Return Source Documents",
-                        "name": "returnSourceDocuments",
-                        "type": "boolean",
-                        "optional": true,
-                        "id": "subQuestionQueryEngine_0-input-returnSourceDocuments-boolean"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "QueryEngine Tools",
-                        "name": "queryEngineTools",
-                        "type": "QueryEngineTool",
-                        "list": true,
-                        "id": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
-                    },
-                    {
-                        "label": "Chat Model",
-                        "name": "model",
-                        "type": "BaseChatModel_LlamaIndex",
-                        "id": "subQuestionQueryEngine_0-input-model-BaseChatModel_LlamaIndex"
-                    },
-                    {
-                        "label": "Embeddings",
-                        "name": "embeddings",
-                        "type": "BaseEmbedding_LlamaIndex",
-                        "id": "subQuestionQueryEngine_0-input-embeddings-BaseEmbedding_LlamaIndex"
-                    },
-                    {
-                        "label": "Response Synthesizer",
-                        "name": "responseSynthesizer",
-                        "type": "ResponseSynthesizer",
-                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
-                        "optional": true,
-                        "id": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
-                    }
-                ],
-                "inputs": {
-                    "queryEngineTools": ["{{queryEngineToolLlamaIndex_1.data.instance}}", "{{queryEngineToolLlamaIndex_0.data.instance}}"],
-                    "model": "{{chatOpenAI_LlamaIndex_1.data.instance}}",
-                    "embeddings": "{{openAIEmbedding_LlamaIndex_1.data.instance}}",
-                    "responseSynthesizer": "{{compactrefineLlamaIndex_0.data.instance}}",
-                    "returnSourceDocuments": true
-                },
-                "outputAnchors": [
-                    {
-                        "id": "subQuestionQueryEngine_0-output-subQuestionQueryEngine-SubQuestionQueryEngine",
-                        "name": "subQuestionQueryEngine",
-                        "label": "SubQuestionQueryEngine",
-                        "type": "SubQuestionQueryEngine"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 982.7583030231563,
-                "y": 349.50858200305896
+                "x": 43.95604951980056,
+                "y": -783.0024679245387
             },
             "dragging": false
         },
@@ -748,8 +536,8 @@
             "height": 529,
             "id": "chatOpenAI_LlamaIndex_1",
             "position": {
-                "x": -846.9087470244615,
-                "y": 23.446501495097493
+                "x": -446.80851289432655,
+                "y": 246.8790997755625
             },
             "type": "customNode",
             "data": {
@@ -882,8 +670,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": -846.9087470244615,
-                "y": 23.446501495097493
+                "x": -446.80851289432655,
+                "y": 246.8790997755625
             },
             "dragging": false
         },
@@ -892,8 +680,8 @@
             "height": 334,
             "id": "openAIEmbedding_LlamaIndex_1",
             "position": {
-                "x": -437.3136244622061,
-                "y": 329.99986619821175
+                "x": -37.812177549447284,
+                "y": 577.9112529482311
             },
             "type": "customNode",
             "data": {
@@ -950,17 +738,370 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": -437.3136244622061,
-                "y": 329.99986619821175
+                "x": -37.812177549447284,
+                "y": 577.9112529482311
             }
+        },
+        {
+            "width": 300,
+            "height": 382,
+            "id": "queryEngine_0",
+            "position": {
+                "x": 416.2466817793368,
+                "y": -600.1335182096643
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngine_0",
+                "label": "Query Engine",
+                "version": 2,
+                "name": "queryEngine",
+                "type": "QueryEngine",
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple query engine built to answer question over your data, without memory",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "queryEngine_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "queryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_1.data.instance}}",
+                    "responseSynthesizer": "",
+                    "returnSourceDocuments": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
+                        "name": "queryEngine",
+                        "label": "QueryEngine",
+                        "description": "Simple query engine built to answer question over your data, without memory",
+                        "type": "QueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 416.2466817793368,
+                "y": -600.1335182096643
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 511,
+            "id": "queryEngineToolLlamaIndex_2",
+            "position": {
+                "x": 766.9839000102993,
+                "y": -654.6926410455919
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngineToolLlamaIndex_2",
+                "label": "QueryEngine Tool",
+                "version": 2,
+                "name": "queryEngineToolLlamaIndex",
+                "type": "QueryEngineTool",
+                "baseClasses": ["QueryEngineTool"],
+                "tags": ["LlamaIndex"],
+                "category": "Tools",
+                "description": "Tool used to invoke query engine",
+                "inputParams": [
+                    {
+                        "label": "Tool Name",
+                        "name": "toolName",
+                        "type": "string",
+                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
+                        "id": "queryEngineToolLlamaIndex_2-input-toolName-string"
+                    },
+                    {
+                        "label": "Tool Description",
+                        "name": "toolDesc",
+                        "type": "string",
+                        "rows": 4,
+                        "id": "queryEngineToolLlamaIndex_2-input-toolDesc-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Base QueryEngine",
+                        "name": "baseQueryEngine",
+                        "type": "BaseQueryEngine",
+                        "id": "queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine"
+                    }
+                ],
+                "inputs": {
+                    "baseQueryEngine": "{{queryEngine_0.data.instance}}",
+                    "toolName": "apple_tool",
+                    "toolDesc": "A SEC Form 10K filing describing the financials of Apple Inc (APPL) for the 2022 time period."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool",
+                        "name": "queryEngineToolLlamaIndex",
+                        "label": "QueryEngineTool",
+                        "description": "Tool used to invoke query engine",
+                        "type": "QueryEngineTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 766.9839000102993,
+                "y": -654.6926410455919
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 511,
+            "id": "queryEngineToolLlamaIndex_1",
+            "position": {
+                "x": 771.5434180813253,
+                "y": -109.03650423344013
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngineToolLlamaIndex_1",
+                "label": "QueryEngine Tool",
+                "version": 2,
+                "name": "queryEngineToolLlamaIndex",
+                "type": "QueryEngineTool",
+                "baseClasses": ["QueryEngineTool"],
+                "tags": ["LlamaIndex"],
+                "category": "Tools",
+                "description": "Tool used to invoke query engine",
+                "inputParams": [
+                    {
+                        "label": "Tool Name",
+                        "name": "toolName",
+                        "type": "string",
+                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
+                        "id": "queryEngineToolLlamaIndex_1-input-toolName-string"
+                    },
+                    {
+                        "label": "Tool Description",
+                        "name": "toolDesc",
+                        "type": "string",
+                        "rows": 4,
+                        "id": "queryEngineToolLlamaIndex_1-input-toolDesc-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Base QueryEngine",
+                        "name": "baseQueryEngine",
+                        "type": "BaseQueryEngine",
+                        "id": "queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine"
+                    }
+                ],
+                "inputs": {
+                    "baseQueryEngine": "{{queryEngine_1.data.instance}}",
+                    "toolName": "tesla_tool",
+                    "toolDesc": "A SEC Form 10K filing describing the financials of Tesla Inc (TSLA) for the 2022 time period."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool",
+                        "name": "queryEngineToolLlamaIndex",
+                        "label": "QueryEngineTool",
+                        "description": "Tool used to invoke query engine",
+                        "type": "QueryEngineTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 771.5434180813253,
+                "y": -109.03650423344013
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 382,
+            "id": "queryEngine_1",
+            "position": {
+                "x": 411.8632262885343,
+                "y": -68.91392354277994
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngine_1",
+                "label": "Query Engine",
+                "version": 2,
+                "name": "queryEngine",
+                "type": "QueryEngine",
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple query engine built to answer question over your data, without memory",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "queryEngine_1-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "queryEngine_1-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_0.data.instance}}",
+                    "responseSynthesizer": "",
+                    "returnSourceDocuments": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine",
+                        "name": "queryEngine",
+                        "label": "QueryEngine",
+                        "description": "Simple query engine built to answer question over your data, without memory",
+                        "type": "QueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 411.8632262885343,
+                "y": -68.91392354277994
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 484,
+            "id": "subQuestionQueryEngine_0",
+            "position": {
+                "x": 1204.489328490966,
+                "y": 347.2090726754211
+            },
+            "type": "customNode",
+            "data": {
+                "id": "subQuestionQueryEngine_0",
+                "label": "Sub Question Query Engine",
+                "version": 2,
+                "name": "subQuestionQueryEngine",
+                "type": "SubQuestionQueryEngine",
+                "baseClasses": ["SubQuestionQueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Breaks complex query into sub questions for each relevant data source, then gather all the intermediate reponses and synthesizes a final response",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "subQuestionQueryEngine_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "QueryEngine Tools",
+                        "name": "queryEngineTools",
+                        "type": "QueryEngineTool",
+                        "list": true,
+                        "id": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "subQuestionQueryEngine_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "subQuestionQueryEngine_0-input-embeddings-BaseEmbedding_LlamaIndex"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "queryEngineTools": ["{{queryEngineToolLlamaIndex_2.data.instance}}", "{{queryEngineToolLlamaIndex_1.data.instance}}"],
+                    "model": "{{chatOpenAI_LlamaIndex_1.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_1.data.instance}}",
+                    "responseSynthesizer": "{{compactrefineLlamaIndex_0.data.instance}}",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "subQuestionQueryEngine_0-output-subQuestionQueryEngine-SubQuestionQueryEngine|BaseQueryEngine",
+                        "name": "subQuestionQueryEngine",
+                        "label": "SubQuestionQueryEngine",
+                        "description": "Breaks complex query into sub questions for each relevant data source, then gather all the intermediate reponses and synthesizes a final response",
+                        "type": "SubQuestionQueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1204.489328490966,
+                "y": 347.2090726754211
+            },
+            "dragging": false
         },
         {
             "width": 300,
             "height": 82,
             "id": "stickyNote_0",
             "position": {
-                "x": 35.90892935132143,
-                "y": -936.1282632923861
+                "x": 1208.1786832265154,
+                "y": 238.26647262900994
             },
             "type": "stickyNote",
             "data": {
@@ -985,13 +1126,14 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "note": "Query previously upserted documents with corresponding metadata key value pair - \n{ source: \"apple\"}"
+                    "note": "Break questions into subqueries, then retrieve corresponding context using queryengine tools"
                 },
                 "outputAnchors": [
                     {
                         "id": "stickyNote_0-output-stickyNote-StickyNote",
                         "name": "stickyNote",
                         "label": "StickyNote",
+                        "description": "Add a sticky note",
                         "type": "StickyNote"
                     }
                 ],
@@ -1000,8 +1142,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 35.90892935132143,
-                "y": -936.1282632923861
+                "x": 1208.1786832265154,
+                "y": 238.26647262900994
             },
             "dragging": false
         },
@@ -1010,8 +1152,8 @@
             "height": 82,
             "id": "stickyNote_1",
             "position": {
-                "x": 37.74909394815296,
-                "y": -215.17456133022054
+                "x": 416.8958270395809,
+                "y": -179.9680840754678
             },
             "type": "stickyNote",
             "data": {
@@ -1036,13 +1178,14 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "note": "Query previously upserted documents with corresponding metadata key value pair - \n{ source: \"tesla\"}"
+                    "note": "Query previously upserted documents with corresponding metadata key value pair - \n{ source: \"<company>\"}"
                 },
                 "outputAnchors": [
                     {
                         "id": "stickyNote_1-output-stickyNote-StickyNote",
                         "name": "stickyNote",
                         "label": "StickyNote",
+                        "description": "Add a sticky note",
                         "type": "StickyNote"
                     }
                 ],
@@ -1051,59 +1194,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 37.74909394815296,
-                "y": -215.17456133022054
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 163,
-            "id": "stickyNote_2",
-            "position": {
-                "x": 984.9543031068163,
-                "y": 171.04264459503852
-            },
-            "type": "stickyNote",
-            "data": {
-                "id": "stickyNote_2",
-                "label": "Sticky Note",
-                "version": 1,
-                "name": "stickyNote",
-                "type": "StickyNote",
-                "baseClasses": ["StickyNote"],
-                "category": "Utilities",
-                "description": "Add a sticky note",
-                "inputParams": [
-                    {
-                        "label": "",
-                        "name": "note",
-                        "type": "string",
-                        "rows": 1,
-                        "placeholder": "Type something here",
-                        "optional": true,
-                        "id": "stickyNote_2-input-note-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "note": "Break questions into subqueries, then retrieve corresponding context using queryengine tool.\n\nThis implementation does not contains memory, we can use OpenAI Agent to function call this flow"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "stickyNote_2-output-stickyNote-StickyNote",
-                        "name": "stickyNote",
-                        "label": "StickyNote",
-                        "type": "StickyNote"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 984.9543031068163,
-                "y": 171.04264459503852
+                "x": 416.8958270395809,
+                "y": -179.9680840754678
             },
             "dragging": false
         }
@@ -1126,20 +1218,60 @@
             "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_1-pineconeLlamaIndex_1-input-embeddings-BaseEmbedding_LlamaIndex"
         },
         {
-            "source": "pineconeLlamaIndex_1",
-            "sourceHandle": "pineconeLlamaIndex_1-output-vectorStore-Pinecone|VectorStoreIndex",
-            "target": "queryEngineToolLlamaIndex_0",
-            "targetHandle": "queryEngineToolLlamaIndex_0-input-vectorStoreIndex-VectorStoreIndex",
+            "source": "openAIEmbedding_LlamaIndex_0",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
             "type": "buttonedge",
-            "id": "pineconeLlamaIndex_1-pineconeLlamaIndex_1-output-vectorStore-Pinecone|VectorStoreIndex-queryEngineToolLlamaIndex_0-queryEngineToolLlamaIndex_0-input-vectorStoreIndex-VectorStoreIndex"
+            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
+        },
+        {
+            "source": "chatOpenAI_LlamaIndex_0",
+            "sourceHandle": "chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_0-chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
+        },
+        {
+            "source": "pineconeLlamaIndex_1",
+            "sourceHandle": "pineconeLlamaIndex_1-output-retriever-Pinecone|VectorIndexRetriever",
+            "target": "queryEngine_0",
+            "targetHandle": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "type": "buttonedge",
+            "id": "pineconeLlamaIndex_1-pineconeLlamaIndex_1-output-retriever-Pinecone|VectorIndexRetriever-queryEngine_0-queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+        },
+        {
+            "source": "queryEngine_0",
+            "sourceHandle": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
+            "target": "queryEngineToolLlamaIndex_2",
+            "targetHandle": "queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine",
+            "type": "buttonedge",
+            "id": "queryEngine_0-queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine-queryEngineToolLlamaIndex_2-queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine"
         },
         {
             "source": "pineconeLlamaIndex_0",
-            "sourceHandle": "pineconeLlamaIndex_0-output-vectorStore-Pinecone|VectorStoreIndex",
-            "target": "queryEngineToolLlamaIndex_1",
-            "targetHandle": "queryEngineToolLlamaIndex_1-input-vectorStoreIndex-VectorStoreIndex",
+            "sourceHandle": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+            "target": "queryEngine_1",
+            "targetHandle": "queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever",
             "type": "buttonedge",
-            "id": "pineconeLlamaIndex_0-pineconeLlamaIndex_0-output-vectorStore-Pinecone|VectorStoreIndex-queryEngineToolLlamaIndex_1-queryEngineToolLlamaIndex_1-input-vectorStoreIndex-VectorStoreIndex"
+            "id": "pineconeLlamaIndex_0-pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever-queryEngine_1-queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever"
+        },
+        {
+            "source": "queryEngine_1",
+            "sourceHandle": "queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine",
+            "target": "queryEngineToolLlamaIndex_1",
+            "targetHandle": "queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine",
+            "type": "buttonedge",
+            "id": "queryEngine_1-queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine-queryEngineToolLlamaIndex_1-queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine"
+        },
+        {
+            "source": "queryEngineToolLlamaIndex_2",
+            "sourceHandle": "queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool",
+            "type": "buttonedge",
+            "id": "queryEngineToolLlamaIndex_2-queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
         },
         {
             "source": "queryEngineToolLlamaIndex_1",
@@ -1148,14 +1280,6 @@
             "targetHandle": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool",
             "type": "buttonedge",
             "id": "queryEngineToolLlamaIndex_1-queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
-        },
-        {
-            "source": "queryEngineToolLlamaIndex_0",
-            "sourceHandle": "queryEngineToolLlamaIndex_0-output-queryEngineToolLlamaIndex-QueryEngineTool",
-            "target": "subQuestionQueryEngine_0",
-            "targetHandle": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool",
-            "type": "buttonedge",
-            "id": "queryEngineToolLlamaIndex_0-queryEngineToolLlamaIndex_0-output-queryEngineToolLlamaIndex-QueryEngineTool-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
         },
         {
             "source": "chatOpenAI_LlamaIndex_1",
@@ -1180,22 +1304,6 @@
             "targetHandle": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer",
             "type": "buttonedge",
             "id": "compactrefineLlamaIndex_0-compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
-        },
-        {
-            "source": "openAIEmbedding_LlamaIndex_0",
-            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
-            "target": "pineconeLlamaIndex_0",
-            "targetHandle": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
-            "type": "buttonedge",
-            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
-        },
-        {
-            "source": "chatOpenAI_LlamaIndex_0",
-            "sourceHandle": "chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
-            "target": "pineconeLlamaIndex_0",
-            "targetHandle": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
-            "type": "buttonedge",
-            "id": "chatOpenAI_LlamaIndex_0-chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
         }
     ]
 }
