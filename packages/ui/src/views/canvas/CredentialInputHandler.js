@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { IconButton } from '@mui/material'
@@ -87,6 +87,10 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
         setSpecificCredentialDialogProps(dialogProp)
         setShowSpecificCredentialDialog(true)
     }
+
+    useEffect(() => {
+        setCredentialId(data?.credential ?? '')
+    }, [data])
 
     return (
         <div ref={ref}>

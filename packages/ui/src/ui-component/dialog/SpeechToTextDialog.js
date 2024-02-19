@@ -13,14 +13,13 @@ import {
     DialogContent,
     DialogTitle,
     DialogActions,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
+    FormControl,
     ListItem,
     ListItemAvatar,
-    ListItemText
+    ListItemText,
+    MenuItem,
+    Select
 } from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconX } from '@tabler/icons'
 
 // Project import
@@ -40,8 +39,8 @@ import useNotifier from 'utils/useNotifier'
 // API
 import chatflowsApi from 'api/chatflows'
 
-const speechToTextProviders = [
-    {
+const speechToTextProviders = {
+    openAIWhisper: {
         label: 'OpenAI Whisper',
         name: 'openAIWhisper',
         icon: openAISVG,
@@ -77,16 +76,10 @@ const speechToTextProviders = [
                 step: 0.1,
                 description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true
-            },
-            {
-                label: 'On/Off',
-                name: 'status',
-                type: 'boolean',
-                optional: true
             }
         ]
     },
-    {
+    assemblyAiTranscribe: {
         label: 'Assembly AI',
         name: 'assemblyAiTranscribe',
         icon: assemblyAIPng,
@@ -97,16 +90,10 @@ const speechToTextProviders = [
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['assemblyAIApi']
-            },
-            {
-                label: 'On/Off',
-                name: 'status',
-                type: 'boolean',
-                optional: true
             }
         ]
     }
-]
+}
 
 const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
@@ -118,7 +105,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [speechToText, setSpeechToText] = useState({})
-    const [providerExpanded, setProviderExpanded] = useState({})
+    const [selectedProvider, setSelectedProvider] = useState('openAIWhisper')
 
     const onSave = async () => {
         try {
@@ -169,8 +156,9 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
 
         newVal[providerName][inputParamName] = value
         if (inputParamName === 'status' && value === true) {
-            //ensure that the others are turned off
-            speechToTextProviders.forEach((provider) => {
+            // ensure that the others are turned off
+            Object.keys(speechToTextProviders).forEach((key) => {
+                const provider = speechToTextProviders[key]
                 if (provider.name !== providerName) {
                     newVal[provider.name] = { ...speechToText[provider.name], status: false }
                 }
@@ -179,10 +167,9 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
         setSpeechToText(newVal)
     }
 
-    const handleAccordionChange = (providerName) => (event, isExpanded) => {
-        const accordionProviders = { ...providerExpanded }
-        accordionProviders[providerName] = isExpanded
-        setProviderExpanded(accordionProviders)
+    const handleProviderChange = (event) => {
+        setSelectedProvider(event.target.value)
+        setValue(true, event.target.value, 'status')
     }
 
     useEffect(() => {
@@ -197,7 +184,6 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
 
         return () => {
             setSpeechToText({})
-            setProviderExpanded({})
         }
     }, [dialogProps])
 
@@ -220,136 +206,129 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                 Speech To Text Configuration
             </DialogTitle>
             <DialogContent>
-                {speechToTextProviders.map((provider, index) => (
-                    <Accordion
-                        expanded={providerExpanded[provider.name] || false}
-                        onChange={handleAccordionChange(provider.name)}
-                        disableGutters
-                        key={index}
-                    >
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={provider.name} id={provider.name}>
-                            <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
-                                <ListItemAvatar>
-                                    <div
-                                        style={{
-                                            width: 50,
-                                            height: 50,
-                                            borderRadius: '50%',
-                                            backgroundColor: 'white'
-                                        }}
-                                    >
-                                        <img
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                padding: 10,
-                                                objectFit: 'contain'
-                                            }}
-                                            alt='AI'
-                                            src={provider.icon}
-                                        />
-                                    </div>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    sx={{ ml: 1 }}
-                                    primary={provider.label}
-                                    secondary={
-                                        <a target='_blank' rel='noreferrer' href={provider.url}>
-                                            {provider.url}
-                                        </a>
+                <Box fullWidth sx={{ my: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography>Speech To Text Providers</Typography>
+                    <FormControl fullWidth>
+                        <Select value={selectedProvider} onChange={handleProviderChange}>
+                            <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
+                            <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+                <>
+                    <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
+                        <ListItemAvatar>
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <img
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 10,
+                                        objectFit: 'contain'
+                                    }}
+                                    alt='AI'
+                                    src={speechToTextProviders[selectedProvider].icon}
+                                />
+                            </div>
+                        </ListItemAvatar>
+                        <ListItemText
+                            sx={{ ml: 1 }}
+                            primary={speechToTextProviders[selectedProvider].label}
+                            secondary={
+                                <a target='_blank' rel='noreferrer' href={speechToTextProviders[selectedProvider].url}>
+                                    {speechToTextProviders[selectedProvider].url}
+                                </a>
+                            }
+                        />
+                        {speechToText[selectedProvider] && speechToText[selectedProvider].status && (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignContent: 'center',
+                                    alignItems: 'center',
+                                    background: '#d8f3dc',
+                                    borderRadius: 15,
+                                    padding: 5,
+                                    paddingLeft: 7,
+                                    paddingRight: 7,
+                                    marginRight: 10
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 15,
+                                        height: 15,
+                                        borderRadius: '50%',
+                                        backgroundColor: '#70e000'
+                                    }}
+                                />
+                                <span style={{ color: '#006400', marginLeft: 10 }}>ON</span>
+                            </div>
+                        )}
+                    </ListItem>
+                    {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
+                        <Box key={index} sx={{ p: 2 }}>
+                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Typography>
+                                    {inputParam.label}
+                                    {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                    {inputParam.description && (
+                                        <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                    )}
+                                </Typography>
+                            </div>
+                            {inputParam.type === 'credential' && (
+                                <CredentialInputHandler
+                                    data={speechToText[selectedProvider] ? { credential: speechToText[selectedProvider].credentialId } : {}}
+                                    inputParam={inputParam}
+                                    onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
+                                />
+                            )}
+                            {inputParam.type === 'boolean' && (
+                                <SwitchInput
+                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? false
                                     }
                                 />
-                                {speechToText[provider.name] && speechToText[provider.name].status && (
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            alignContent: 'center',
-                                            alignItems: 'center',
-                                            background: '#d8f3dc',
-                                            borderRadius: 15,
-                                            padding: 5,
-                                            paddingLeft: 7,
-                                            paddingRight: 7,
-                                            marginRight: 10
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                width: 15,
-                                                height: 15,
-                                                borderRadius: '50%',
-                                                backgroundColor: '#70e000'
-                                            }}
-                                        />
-                                        <span style={{ color: '#006400', marginLeft: 10 }}>ON</span>
-                                    </div>
-                                )}
-                            </ListItem>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {provider.inputs.map((inputParam, index) => (
-                                <Box key={index} sx={{ p: 2 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                        <Typography>
-                                            {inputParam.label}
-                                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                            {inputParam.description && (
-                                                <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
-                                            )}
-                                        </Typography>
-                                    </div>
-                                    {providerExpanded[provider.name] && inputParam.type === 'credential' && (
-                                        <CredentialInputHandler
-                                            data={
-                                                speechToText[provider.name] ? { credential: speechToText[provider.name].credentialId } : {}
-                                            }
-                                            inputParam={inputParam}
-                                            onSelect={(newValue) => setValue(newValue, provider.name, 'credentialId')}
-                                        />
-                                    )}
-                                    {inputParam.type === 'boolean' && (
-                                        <SwitchInput
-                                            onChange={(newValue) => setValue(newValue, provider.name, inputParam.name)}
-                                            value={
-                                                speechToText[provider.name]
-                                                    ? speechToText[provider.name][inputParam.name]
-                                                    : inputParam.default ?? false
-                                            }
-                                        />
-                                    )}
-                                    {providerExpanded[provider.name] &&
-                                        (inputParam.type === 'string' ||
-                                            inputParam.type === 'password' ||
-                                            inputParam.type === 'number') && (
-                                            <Input
-                                                inputParam={inputParam}
-                                                onChange={(newValue) => setValue(newValue, provider.name, inputParam.name)}
-                                                value={
-                                                    speechToText[provider.name]
-                                                        ? speechToText[provider.name][inputParam.name]
-                                                        : inputParam.default ?? ''
-                                                }
-                                            />
-                                        )}
+                            )}
+                            {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+                                <Input
+                                    inputParam={inputParam}
+                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? ''
+                                    }
+                                />
+                            )}
 
-                                    {providerExpanded[provider.name] && inputParam.type === 'options' && (
-                                        <Dropdown
-                                            name={inputParam.name}
-                                            options={inputParam.options}
-                                            onSelect={(newValue) => setValue(newValue, provider.name, inputParam.name)}
-                                            value={
-                                                speechToText[provider.name]
-                                                    ? speechToText[provider.name][inputParam.name]
-                                                    : inputParam.default ?? 'choose an option'
-                                            }
-                                        />
-                                    )}
-                                </Box>
-                            ))}
-                        </AccordionDetails>
-                    </Accordion>
-                ))}
+                            {inputParam.type === 'options' && (
+                                <Dropdown
+                                    name={inputParam.name}
+                                    options={inputParam.options}
+                                    onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? 'choose an option'
+                                    }
+                                />
+                            )}
+                        </Box>
+                    ))}
+                </>
             </DialogContent>
             <DialogActions>
                 <StyledButton variant='contained' onClick={onSave}>
