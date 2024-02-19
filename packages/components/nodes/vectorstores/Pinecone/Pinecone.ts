@@ -148,6 +148,8 @@ class Pinecone_VectorStores implements INode {
             apiKey: pineconeApiKey
         })
 
+        await client.describeIndex(index)
+
         const pineconeIndex = client.Index(index)
 
         const flattenDocs = docs && docs.length ? flatten(docs) : []
