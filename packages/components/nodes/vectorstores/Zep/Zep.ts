@@ -22,8 +22,8 @@ class Zep_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep'
-        this.name = 'zep'
+        this.label = 'Zep Collection - Open Source'
+        this.name = 'Zep Collection (Open Source)'
         this.version = 2.0
         this.type = 'Zep'
         this.icon = 'zep.svg'

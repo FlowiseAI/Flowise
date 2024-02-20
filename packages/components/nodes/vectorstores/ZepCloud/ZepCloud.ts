@@ -23,7 +23,7 @@ class Zep_CloudVectorStores implements INode {
 
     constructor() {
         this.label = 'Zep Collection - Cloud'
-        this.name = 'zepCloud'
+        this.name = 'Zep Collection Cloud'
         this.version = 2.0
         this.type = 'Zep'
         this.icon = 'zep.svg'

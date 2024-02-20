@@ -20,7 +20,7 @@ class ZepMemoryCloud_Memory implements INode {
 
     constructor() {
         this.label = 'Zep Memory - Cloud'
-        this.name = 'ZepMemory (Cloud)'
+        this.name = 'Zep Memory (Cloud)'
         this.version = 2.0
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'
@@ -76,6 +76,13 @@ class ZepMemoryCloud_Memory implements INode {
                 additionalParams: true
             },
             {
+                label: 'Input Key',
+                name: 'inputKey',
+                type: 'string',
+                default: 'input',
+                additionalParams: true
+            },
+            {
                 label: 'Output Key',
                 name: 'outputKey',
                 type: 'string',
@@ -86,20 +93,21 @@ class ZepMemoryCloud_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return await initalizeZep(nodeData, options)
+        return await initializeZep(nodeData, options)
     }
 }
 
-const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
+const initializeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
     const aiPrefix = nodeData.inputs?.aiPrefix as string
     const humanPrefix = nodeData.inputs?.humanPrefix as string
     const memoryKey = nodeData.inputs?.memoryKey as string
+    const inputKey = nodeData.inputs?.inputKey as string
+
     const memoryType = nodeData.inputs?.memoryType as 'perpetual' | 'message_window'
     const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
-
     const obj: ZepMemoryInput & ZepMemoryExtendedInput = {
         apiKey,
         baseURL: 'https://api.development.getzep.com',
@@ -107,7 +115,9 @@ const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promis
         humanPrefix,
         memoryKey,
         sessionId,
-        memoryType: memoryType
+        inputKey,
+        memoryType: memoryType,
+        returnMessages: true
     }
 
     return new ZepMemoryExtended(obj)
@@ -157,7 +167,7 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
-        const inputValues = { ['input']: input?.text }
+        const inputValues = { [this.inputKey ?? 'input']: input?.text }
         const outputValues = { output: output?.text }
 
         await this.saveContext(inputValues, outputValues, id)
