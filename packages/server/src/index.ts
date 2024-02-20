@@ -1219,7 +1219,23 @@ export class App {
             upload.array('files'),
             (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
             async (req: Request, res: Response) => {
-                await this.buildChatflow(req, res, socketIO)
+                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                    id: req.params.id
+                })
+                if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+                let isDomainAllowed = true
+                if (chatflow.chatbotConfig) {
+                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    if (parsedConfig.allowedDomains && parsedConfig.allowedDomains.length > 0) {
+                        isDomainAllowed = parsedConfig.allowedDomains.includes(req.headers.host)
+                    }
+                }
+
+                if (isDomainAllowed) {
+                    await this.buildChatflow(req, res, socketIO)
+                } else {
+                    return res.status(401).send(`This domain is not allowed to access chatflow ${req.params.id}`)
+                }
             }
         )
 
