@@ -17,6 +17,7 @@ import APICodeDialog from 'views/chatflows/APICodeDialog'
 import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
 import ViewMessagesDialog from 'ui-component/dialog/ViewMessagesDialog'
 import StarterPromptsDialog from 'ui-component/dialog/StarterPromptsDialog'
+import ChatFeedbackDialog from 'ui-component/dialog/ChatFeedbackDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -50,6 +51,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
+    const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
+    const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -65,6 +68,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setConversationStartersDialogOpen(true)
+        } else if (setting === 'chatFeedback') {
+            setChatFeedbackDialogProps({
+                title: `Chat Feedback - ${chatflow.name}`,
+                chatflow: chatflow
+            })
+            setChatFeedbackDialogOpen(true)
         } else if (setting === 'analyseChatflow') {
             setAnalyseDialogProps({
                 title: 'Analyse Chatflow',
@@ -390,6 +399,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 dialogProps={conversationStartersDialogProps}
                 onConfirm={() => setConversationStartersDialogOpen(false)}
                 onCancel={() => setConversationStartersDialogOpen(false)}
+            />
+            <ChatFeedbackDialog
+                show={chatFeedbackDialogOpen}
+                dialogProps={chatFeedbackDialogProps}
+                onConfirm={() => setChatFeedbackDialogOpen(false)}
+                onCancel={() => setChatFeedbackDialogOpen(false)}
             />
             <ViewMessagesDialog
                 show={viewMessagesDialogOpen}
