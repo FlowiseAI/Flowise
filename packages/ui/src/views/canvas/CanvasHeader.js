@@ -70,7 +70,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             setConversationStartersDialogOpen(true)
         } else if (setting === 'allowedDomains') {
             setAllowedDomainsDialogProps({
-                title: 'Starter Prompts - ' + chatflow.name,
+                title: 'Allowed Domains - ' + chatflow.name,
                 chatflow: chatflow
             })
             setAllowedDomainsDialogOpen(true)
