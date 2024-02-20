@@ -1,8 +1,9 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { ChatMessageRatingType, IChatMessageFeedback } from '../../Interface'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, Unique } from 'typeorm'
+import { IChatMessageFeedback, ChatMessageRatingType } from '../../Interface'
 
 @Entity()
+@Unique(['messageId'])
 export class ChatMessageFeedback implements IChatMessageFeedback {
     @PrimaryGeneratedColumn('uuid')
     id: string
@@ -11,14 +12,18 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     @Column()
     chatflowid: string
 
-    @Column({ type: 'text' })
-    content?: string
-
+    @Index()
     @Column()
     chatId: string
 
     @Column()
+    messageId: string
+
+    @Column({ nullable: true })
     rating: ChatMessageRatingType
+
+    @Column({ nullable: true, type: 'text' })
+    content?: string
 
     @CreateDateColumn()
     createdDate: Date

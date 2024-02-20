@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, IsNull, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -22,7 +22,8 @@ import {
     IChatMessage,
     IChatMessageFeedback,
     IDepthQueue,
-    INodeDirectedGraph
+    INodeDirectedGraph,
+    ChatMessageRatingType
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -170,7 +171,8 @@ export class App {
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
                 '/api/v1/openai-assistants-file',
-                '/api/v1/ip'
+                '/api/v1/ip',
+                '/api/v1/feedback'
             ]
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
@@ -610,31 +612,62 @@ export class App {
         // Chat Message Feedback
         // ----------------------------------------
 
-        // Create new feedback
+        // Get all chatmessage feedback from chatflowid
+        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const chatId = req.query?.chatId as string | undefined
+            const sortOrder = req.query?.order as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            const feedback = await this.getChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate)
+
+            return res.json(feedback)
+        })
+
+        // Add chatmessage feedback for chatflowid
         this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
             const body = req.body
             const results = await this.addChatMessageFeedback(body)
             return res.json(results)
         })
 
-        // Update feedback
+        // Update chatmessage feedback for id
         this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const id = req.params.id
             const body = req.body
-            const chatMessageFeedback = await this.AppDataSource.getRepository(ChatMessageFeedback).findOneBy({
-                id: req.params.id
+            await this.updateChatMessageFeedback(id, body)
+            return res.json({ status: 'OK' })
+        })
+
+        // ----------------------------------------
+        // stats
+        // ----------------------------------------
+        //
+        // get stats for showing in chatflow
+        this.app.get('/api/v1/stats/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const chatTypeFilter = chatType.EXTERNAL
+
+            const totalMessages = await this.AppDataSource.getRepository(ChatMessage).count({
+                where: {
+                    chatflowid,
+                    chatType: chatTypeFilter
+                }
             })
 
-            if (!chatMessageFeedback) {
-                res.status(404).send(`Feedback ${req.params.id} not found`)
-                return
+            const chatMessageFeedbackRepo = this.AppDataSource.getRepository(ChatMessageFeedback)
+
+            const totalFeedback = await chatMessageFeedbackRepo.count()
+            const positiveFeedback = await chatMessageFeedbackRepo.countBy({ rating: ChatMessageRatingType.THUMBS_UP })
+
+            const results = {
+                totalMessages,
+                totalFeedback,
+                positiveFeedback
             }
 
-            const newChatMessageFeedback = new ChatMessageFeedback()
-            Object.assign(newChatMessageFeedback, body)
-
-            this.AppDataSource.getRepository(ChatMessageFeedback).merge(chatMessageFeedback, newChatMessageFeedback)
-            const results = await this.AppDataSource.getRepository(ChatMessageFeedback).save(chatMessageFeedback)
-            return res.json(results)
+            res.json(results)
         })
 
         // ----------------------------------------
@@ -1497,6 +1530,28 @@ export class App {
         let toDate
         if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
+        if (feedback) {
+            const messages = await this.AppDataSource.getRepository(ChatMessage)
+                .createQueryBuilder('chat_message')
+                .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
+                .where('chat_message.chatflowid = :chatflowid', { chatflowid })
+                .andWhere(chatType ? 'chat_message.chatType = :chatType' : 'TRUE', { chatType })
+                .andWhere(chatId ? 'chat_message.chatId = :chatId' : 'TRUE', { chatId })
+                .andWhere(memoryType ? 'chat_message.memoryType = :memoryType' : 'TRUE', {
+                    memoryType: memoryType ?? (chatId ? IsNull() : undefined)
+                })
+                .andWhere(sessionId ? 'chat_message.sessionId = :sessionId' : 'TRUE', {
+                    sessionId: sessionId ?? (chatId ? IsNull() : undefined)
+                })
+                .andWhere(fromDate && toDate ? 'chat_message.createdDate = :createdDate' : 'TRUE', {
+                    createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+                })
+                .orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+                .getMany()
+
+            return messages
+        }
+
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
                 chatflowid,
@@ -1526,39 +1581,61 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
-    async updateChatMessage(id: string, update: Partial<IChatMessage>) {
-        const chatMessage = await this.AppDataSource.getRepository(ChatMessage).findOneBy({
-            id
+    /**
+     * Method that get chat messages.
+     * @param {string} chatflowid
+     * @param {string} sortOrder
+     * @param {string} chatId
+     * @param {string} startDate
+     * @param {string} endDate
+     */
+    async getChatMessageFeedback(
+        chatflowid: string,
+        chatId?: string,
+        sortOrder: string = 'ASC',
+        startDate?: string,
+        endDate?: string
+    ): Promise<ChatMessageFeedback[]> {
+        let fromDate
+        if (startDate) fromDate = new Date(startDate)
+
+        let toDate
+        if (endDate) toDate = new Date(endDate)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).find({
+            where: {
+                chatflowid,
+                chatId,
+                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
         })
-
-        if (!chatMessage) return
-
-        const newChatMessage = new ChatMessage()
-        Object.assign(newChatMessage, update)
-
-        this.AppDataSource.getRepository(ChatMessage).merge(chatMessage, newChatMessage)
-        return await this.AppDataSource.getRepository(ChatMessage).save(chatMessage)
     }
 
     /**
-     * Method that adds feedback for a chat message and updates the chat message with the feedback id.
+     * Method that add chat message feedback.
      * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
      */
-    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback> & { messageId: string }): Promise<ChatMessageFeedback> {
-        const messageId = chatMessageFeedback.messageId
-        const newFeedback = new ChatMessageFeedback()
-        Object.assign(newFeedback, chatMessageFeedback)
+    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
 
-        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newFeedback)
-        const results = await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
-
-        // use the message id to update the chat message with feedback id
-        await this.updateChatMessage(messageId, { feedbackId: results.id })
-
-        return results
+        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
     }
 
-    async updateChatMessageFeedback(id: string, update: Partial<IChatMessageFeedback>) {}
+    /**
+     * Method that updates chat message feedback.
+     * @param {string} id
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async updateChatMessageFeedback(id: string, chatMessageFeedback: Partial<IChatMessageFeedback>) {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
+
+        await this.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
+    }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
@@ -1941,7 +2018,7 @@ export class App {
                 sessionId,
                 createdDate: userMessageDateTime
             }
-            await this.addChatMessage(userMessage)
+            const newMessage = await this.addChatMessage(userMessage)
 
             let resultText = ''
             if (result.text) resultText = result.text
@@ -1974,6 +2051,7 @@ export class App {
 
             // Prepare response
             result.chatId = chatId
+            if (newMessage.id && !isInternal) result.messageId = newMessage.id
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
 

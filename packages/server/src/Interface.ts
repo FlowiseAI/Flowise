@@ -41,7 +41,6 @@ export interface IChatMessage {
     memoryType?: string
     sessionId?: string
     createdDate: Date
-    feedbackId?: string
 }
 
 export interface IChatMessageFeedback {
@@ -49,6 +48,7 @@ export interface IChatMessageFeedback {
     content?: string
     chatflowid: string
     chatId: string
+    messageId: string
     rating: ChatMessageRatingType
     createdDate: Date
 }
