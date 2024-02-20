@@ -20,7 +20,7 @@ class ZepMemoryCloud_Memory implements INode {
 
     constructor() {
         this.label = 'Zep Memory - Cloud'
-        this.name = 'Zep Memory (Cloud)'
+        this.name = 'Zep Memory - Cloud'
         this.version = 2.0
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'
@@ -110,7 +110,6 @@ const initializeZep = async (nodeData: INodeData, options: ICommonObject): Promi
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
     const obj: ZepMemoryInput & ZepMemoryExtendedInput = {
         apiKey,
-        baseURL: 'https://api.development.getzep.com',
         aiPrefix,
         humanPrefix,
         memoryKey,

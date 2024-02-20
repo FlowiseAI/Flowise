@@ -23,7 +23,7 @@ class Zep_CloudVectorStores implements INode {
 
     constructor() {
         this.label = 'Zep Collection - Cloud'
-        this.name = 'Zep Collection Cloud'
+        this.name = 'Zep Collection - Cloud'
         this.version = 2.0
         this.type = 'Zep'
         this.icon = 'zep.svg'
@@ -121,7 +121,6 @@ class Zep_CloudVectorStores implements INode {
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
         const zepConfig: IZepConfig & Partial<ZepFilter> = {
-            apiUrl: 'https://api.development.getzep.com',
             apiKey,
             collectionName: zepCollection
         }
