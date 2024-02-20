@@ -264,7 +264,7 @@ export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INode
  * @param {ICommonObject} overrideConfig
  * @param {CachePool} cachePool
  */
-export const buildLangchain = async (
+export const buildFlow = async (
     startingNodeIds: string[],
     reactFlowNodes: IReactFlowNode[],
     reactFlowEdges: IReactFlowEdge[],

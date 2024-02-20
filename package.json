@@ -53,5 +53,8 @@
     },
     "engines": {
         "node": ">=18.15.0"
+    },
+    "resolutions": {
+        "@qdrant/openapi-typescript-fetch": "1.2.1"
     }
 }

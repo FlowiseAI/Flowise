@@ -30,7 +30,7 @@ Found an issue? [Report it](https://github.com/FlowiseAI/Flowise/issues/new/choo
 
 Not sure what to contribute? Some ideas:
 
--   Create new components from Langchain
+-   Create new components from `packages/components`
 -   Update existing components such as extending functionality, fixing bugs
 -   Add new chatflow ideas
 
@@ -40,7 +40,7 @@ Flowise has 3 different modules in a single mono repository.
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
--   `components`: Langchain components
+-   `components`: Third-party nodes integrations
 
 #### Prerequisite
 

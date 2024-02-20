@@ -30,7 +30,7 @@
 
 不确定要贡献什么？一些想法：
 
--   从 Langchain 创建新组件
+-   从 `packages/components` 创建新组件
 -   更新现有组件，如扩展功能、修复错误
 -   添加新的 Chatflow 想法
 
@@ -40,7 +40,7 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
 
 -   `server`：用于提供 API 逻辑的 Node 后端
 -   `ui`：React 前端
--   `components`：Langchain 组件
+-   `components`：Langchain/LlamaIndex 组件
 
 #### 先决条件
 
