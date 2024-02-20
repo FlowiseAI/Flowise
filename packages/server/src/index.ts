@@ -1530,10 +1530,12 @@ export class App {
         if (chatflow.speechToText) {
             const speechToTextProviders = JSON.parse(chatflow.speechToText)
             for (const provider in speechToTextProviders) {
-                const providerObj = speechToTextProviders[provider]
-                if (providerObj.status) {
-                    isSpeechToTextEnabled = true
-                    break
+                if (provider !== 'none') {
+                    const providerObj = speechToTextProviders[provider]
+                    if (providerObj.status) {
+                        isSpeechToTextEnabled = true
+                        break
+                    }
                 }
             }
         }
