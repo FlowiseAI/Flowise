@@ -167,7 +167,9 @@ class Playwright_DocumentLoaders implements INode {
         let docs = []
         if (relativeLinksMethod) {
             if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
-            if (!limit) limit = 10
+            // if limit is 0 we don't want it to default to 10 so we check explicitly for null or undefined
+            // so when limit is 0 we can fetch all the links
+            if (limit === null || limit === undefined) limit = 10
             else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
                 selectedLinks && selectedLinks.length > 0
@@ -184,7 +186,7 @@ class Playwright_DocumentLoaders implements INode {
         } else if (selectedLinks && selectedLinks.length > 0) {
             if (process.env.DEBUG === 'true')
                 options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
-            for (const page of selectedLinks) {
+            for (const page of selectedLinks.slice(0, limit)) {
                 docs.push(...(await playwrightLoader(page)))
             }
         } else {

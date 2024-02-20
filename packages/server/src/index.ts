@@ -10,7 +10,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { Between, IsNull, FindOptionsWhere } from 'typeorm'
+import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -27,7 +27,7 @@ import {
 import {
     getNodeModulesPackagePath,
     getStartingNodes,
-    buildLangchain,
+    buildFlow,
     getEndingNodes,
     constructGraphs,
     resolveVariables,
@@ -122,8 +122,9 @@ export class App {
 
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
-        this.app.use(express.json({ limit: '50mb' }))
-        this.app.use(express.urlencoded({ limit: '50mb', extended: true }))
+        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT ?? '50mb'
+        this.app.use(express.json({ limit: flowise_file_size_limit }))
+        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
 
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
             this.app.set('trust proxy', parseInt(process.env.NUMBER_OF_PROXIES))
@@ -442,7 +443,7 @@ export class App {
             // chatFlowPool is initialized only when a flow is opened
             // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
             if (this.chatflowPool) {
-                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
                 this.chatflowPool.updateInSync(chatflow.id, false)
             }
 
@@ -512,6 +513,7 @@ export class App {
             const chatId = req.query?.chatId as string | undefined
             const memoryType = req.query?.memoryType as string | undefined
             const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
             const feedback = req.query?.feedback as boolean | undefined
@@ -541,6 +543,7 @@ export class App {
                 sessionId,
                 startDate,
                 endDate,
+                messageId,
                 feedback
             )
             return res.json(chatmessages)
@@ -1183,8 +1186,14 @@ export class App {
         this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
             const url = decodeURIComponent(req.query.url as string)
             const relativeLinksMethod = req.query.relativeLinksMethod as string
+            if (!relativeLinksMethod) {
+                return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+            }
+
+            const limit = parseInt(req.query.limit as string)
             if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, 0) : await xmlScrape(url, 0)
+            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
+            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
 
             res.json({ status: 'OK', links })
         })
@@ -1470,22 +1479,34 @@ export class App {
         sessionId?: string,
         startDate?: string,
         endDate?: string,
+        messageId?: string,
         feedback?: boolean
     ): Promise<ChatMessage[]> {
+        const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
+            const date = new Date(dateTimeStr)
+            if (isNaN(date.getTime())) {
+                return undefined
+            }
+            setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
+            return date
+        }
+
         let fromDate
-        if (startDate) fromDate = new Date(startDate)
+        if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
 
         let toDate
-        if (endDate) toDate = new Date(endDate)
+        if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
                 chatflowid,
                 chatType,
                 chatId,
-                memoryType: memoryType ?? (chatId ? IsNull() : undefined),
+                memoryType: memoryType ?? undefined,
                 sessionId: sessionId ?? undefined,
-                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+                ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
+                ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
+                id: messageId ?? undefined
             },
             order: {
                 createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
@@ -1620,7 +1641,7 @@ export class App {
 
             const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
-            await buildLangchain(
+            await buildFlow(
                 startingNodeIds,
                 nodes,
                 edges,
@@ -1837,7 +1858,7 @@ export class App {
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                 /*** BFS to traverse from Starting Nodes to Ending Node ***/
-                const reactFlowNodes = await buildLangchain(
+                const reactFlowNodes = await buildFlow(
                     startingNodeIds,
                     nodes,
                     edges,

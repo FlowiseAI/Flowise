@@ -31,7 +31,7 @@ import { Input } from 'ui-component/input/Input'
 import { StyledButton } from 'ui-component/button/StyledButton'
 import langsmithPNG from 'assets/images/langchain.png'
 import langfuseSVG from 'assets/images/langfuse.svg'
-import llmonitorSVG from 'assets/images/lunary.svg'
+import lunarySVG from 'assets/images/lunary.svg'
 
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
@@ -97,16 +97,16 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'LLMonitor',
-        name: 'llmonitor',
-        icon: llmonitorSVG,
-        url: 'https://llmonitor.com',
+        label: 'Lunary',
+        name: 'lunary',
+        icon: lunarySVG,
+        url: 'https://lunary.ai',
         inputs: [
             {
                 label: 'Connect Credential',
                 name: 'credential',
                 type: 'credential',
-                credentialNames: ['llmonitorApi']
+                credentialNames: ['lunaryApi']
             },
             {
                 label: 'On/Off',

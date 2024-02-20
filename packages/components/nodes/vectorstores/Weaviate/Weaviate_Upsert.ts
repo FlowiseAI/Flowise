@@ -1,10 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { WeaviateLibArgs, WeaviateStore } from '@langchain/community/vectorstores/weaviate'
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
 import { flatten } from 'lodash'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class WeaviateUpsert_VectorStores implements INode {
     label: string

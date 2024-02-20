@@ -1,6 +1,6 @@
+import { MistralAIEmbeddings, MistralAIEmbeddingsParams } from '@langchain/mistralai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { MistralAIEmbeddings, MistralAIEmbeddingsParams } from '@langchain/mistralai'
 
 class MistralEmbedding_Embeddings implements INode {
     label: string

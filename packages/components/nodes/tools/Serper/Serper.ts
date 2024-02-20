@@ -1,6 +1,6 @@
+import { Serper } from '@langchain/community/tools/serper'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Serper } from 'langchain/tools'
 
 class Serper_Tools implements INode {
     label: string
