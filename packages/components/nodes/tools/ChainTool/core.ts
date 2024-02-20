@@ -1,4 +1,4 @@
-import { DynamicTool, DynamicToolInput } from 'langchain/tools'
+import { DynamicTool, DynamicToolInput } from '@langchain/core/tools'
 import { BaseChain } from 'langchain/chains'
 import { handleEscapeCharacters } from '../../../src/utils'
 

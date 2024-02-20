@@ -8,10 +8,10 @@ import {
     INodeParams
 } from '../../../src'
 import { Client, ClientOptions } from '@elastic/elasticsearch'
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
+import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export abstract class ElasticSearchBase {
     label: string

@@ -1,7 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { Moderation } from '../Moderation'
 import { OpenAIModerationRunner } from './OpenAIModerationRunner'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 
 class OpenAIModeration implements INode {
     label: string

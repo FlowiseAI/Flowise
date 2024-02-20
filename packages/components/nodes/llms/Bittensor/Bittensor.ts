@@ -1,8 +1,8 @@
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
+import { NIBittensorLLM, BittensorInput } from 'langchain/experimental/llms/bittensor'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { NIBittensorLLM, BittensorInput } from 'langchain/experimental/llms/bittensor'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class Bittensor_LLMs implements INode {
     label: string
