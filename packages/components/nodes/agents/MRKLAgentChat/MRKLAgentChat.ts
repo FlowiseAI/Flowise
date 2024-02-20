@@ -79,8 +79,8 @@ class MRKLAgentChat_Agents implements INode {
                 // Change default max token to higher when using gpt-4-vision
                 chatModel.maxTokens = 1024
                 const oldTemplate = promptWithChat.template as string
-                let chatPromptTemplate = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
-                chatPromptTemplate.promptMessages = [new HumanMessage({ content: messageContent })]
+                chatPromptTemplate = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
+                chatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
             } else {
                 // revert to previous values if image upload is empty
                 chatModel.modelName = chatModel.configuredModel
