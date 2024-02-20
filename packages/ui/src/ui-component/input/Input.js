@@ -48,6 +48,12 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
         }
     }, [myValue])
 
+    useEffect(() => {
+        if (value) {
+            setMyValue(value)
+        }
+    }, [value])
+
     return (
         <>
             {inputParam.name === 'note' ? (
