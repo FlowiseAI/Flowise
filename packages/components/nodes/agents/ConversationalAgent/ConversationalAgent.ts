@@ -4,7 +4,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
-import { renderTemplate } from '@langchain/core/prompts'
+import { renderTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
@@ -141,11 +141,6 @@ const prepareAgent = async (
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
-    /** Bind a stop token to the model */
-    const modelWithStop = model.bind({
-        stop: ['\nObservation']
-    })
-
     const outputParser = ChatConversationalAgent.getDefaultOutputParser({
         llm: model,
         toolNames: tools.map((tool) => tool.name)
@@ -158,29 +153,38 @@ const prepareAgent = async (
 
     if (model instanceof ChatOpenAI) {
         let humanImageMessages: HumanMessage[] = []
-        const chatModel = model as ChatOpenAI
         const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
             // Change model to gpt-4-vision
-            chatModel.modelName = 'gpt-4-vision-preview'
+            model.modelName = 'gpt-4-vision-preview'
 
             // Change default max token to higher when using gpt-4-vision
-            chatModel.maxTokens = 1024
+            model.maxTokens = 1024
 
             for (const msg of messageContent) {
                 humanImageMessages.push(new HumanMessage({ content: [msg] }))
             }
-            let messagePlaceholder = prompt.promptMessages.pop()
+
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+
+            // Add the HumanMessage for images
             prompt.promptMessages.push(...humanImageMessages)
-            // @ts-ignore
+
+            // Add the `agent_scratchpad` MessagePlaceHolder back
             prompt.promptMessages.push(messagePlaceholder)
         } else {
             // revert to previous values if image upload is empty
-            chatModel.modelName = chatModel.configuredModel
-            chatModel.maxTokens = chatModel.configuredMaxToken
+            model.modelName = model.configuredModel
+            model.maxTokens = model.configuredMaxToken
         }
     }
+
+    /** Bind a stop token to the model */
+    const modelWithStop = model.bind({
+        stop: ['\nObservation']
+    })
 
     const runnableAgent = RunnableSequence.from([
         {

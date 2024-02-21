@@ -1,5 +1,6 @@
 import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
+import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { LLMChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
@@ -9,7 +10,6 @@ import { checkInputs, Moderation, streamResponse } from '../../moderation/Modera
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { addImagesToMessages } from '../../../src/multiModalUtils'
-import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
 import { HumanMessage } from 'langchain/schema'
 
 class LLMChain_Chains implements INode {
@@ -184,6 +184,7 @@ const runPrediction = async (
      */
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
     const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+
     if (chain.llm instanceof ChatOpenAI) {
         const chatOpenAI = chain.llm as ChatOpenAI
         if (messageContent?.length) {
@@ -192,19 +193,22 @@ const runPrediction = async (
             chatOpenAI.maxTokens = 1024
             // Add image to the message
             if (chain.prompt instanceof PromptTemplate) {
-                const oldTemplate = chain.prompt.template as string
-                let cp2 = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
-                cp2.promptMessages = [new HumanMessage({ content: messageContent })]
-                chain.prompt = cp2
+                const existingPromptTemplate = chain.prompt.template as string
+                let newChatPromptTemplate = ChatPromptTemplate.fromMessages([
+                    HumanMessagePromptTemplate.fromTemplate(existingPromptTemplate)
+                ])
+                newChatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
+                chain.prompt = newChatPromptTemplate
             } else if (chain.prompt instanceof ChatPromptTemplate) {
                 chain.prompt.promptMessages.push(new HumanMessage({ content: messageContent }))
             } else if (chain.prompt instanceof FewShotPromptTemplate) {
-                let currentPrompt = chain.prompt as FewShotPromptTemplate
-                const oldTemplate = currentPrompt.examplePrompt.template as string
-                let cp2 = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
-                cp2.promptMessages = [new HumanMessage({ content: messageContent })]
+                let existingFewShotPromptTemplate = chain.prompt.examplePrompt.template as string
+                let newFewShotPromptTemplate = ChatPromptTemplate.fromMessages([
+                    HumanMessagePromptTemplate.fromTemplate(existingFewShotPromptTemplate)
+                ])
+                newFewShotPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
                 // @ts-ignore
-                currentPrompt.examplePrompt = cp2
+                chain.prompt.examplePrompt = newFewShotPromptTemplate
             }
         } else {
             // revert to previous values if image upload is empty

@@ -1,16 +1,16 @@
 import { ConversationChain } from 'langchain/chains'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from 'langchain/prompts'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { RunnableSequence } from 'langchain/schema/runnable'
-import { StringOutputParser } from 'langchain/schema/output_parser'
-import { HumanMessage } from 'langchain/schema'
+import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { RunnableSequence } from '@langchain/core/runnables'
+import { StringOutputParser } from '@langchain/core/output_parsers'
+import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -179,29 +179,28 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage
 
 const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
     const chatHistory = options.chatHistory
-    let model = nodeData.inputs?.model
+    let model = nodeData.inputs?.model as ChatOpenAI
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
 
     let humanImageMessages: HumanMessage[] = []
     if (model instanceof ChatOpenAI) {
-        const chatModel = model as ChatOpenAI
         const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
             // Change model to gpt-4-vision
-            chatModel.modelName = 'gpt-4-vision-preview'
+            model.modelName = 'gpt-4-vision-preview'
 
             // Change default max token to higher when using gpt-4-vision
-            chatModel.maxTokens = 1024
+            model.maxTokens = 1024
 
             for (const msg of messageContent) {
                 humanImageMessages.push(new HumanMessage({ content: [msg] }))
             }
         } else {
             // revert to previous values if image upload is empty
-            chatModel.modelName = chatModel.configuredModel
-            chatModel.maxTokens = chatModel.configuredMaxToken
+            model.modelName = model.configuredModel
+            model.maxTokens = model.configuredMaxToken
         }
     }
 

@@ -11,8 +11,7 @@ import { createReactAgent } from '../../../src/agents'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { HumanMessage } from '@langchain/core/messages'
 import { addImagesToMessages } from '../../../src/multiModalUtils'
-import { ChatPromptTemplate, SystemMessagePromptTemplate } from 'langchain/prompts'
-// import { injectLcAgentExecutorNodeData } from '../../../src/multiModalUtils'
+import { ChatPromptTemplate, HumanMessagePromptTemplate } from 'langchain/prompts'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -66,32 +65,33 @@ class MRKLAgentChat_Agents implements INode {
         let tools = nodeData.inputs?.tools as Tool[]
         tools = flatten(tools)
 
-        const promptWithChat = await pull<PromptTemplate>('hwchase17/react-chat')
+        const prompt = await pull<PromptTemplate>('hwchase17/react-chat')
         let chatPromptTemplate = undefined
+
         if (model instanceof ChatOpenAI) {
-            const chatModel = model as ChatOpenAI
             const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
                 // Change model to gpt-4-vision
-                chatModel.modelName = 'gpt-4-vision-preview'
+                model.modelName = 'gpt-4-vision-preview'
 
                 // Change default max token to higher when using gpt-4-vision
-                chatModel.maxTokens = 1024
-                const oldTemplate = promptWithChat.template as string
-                chatPromptTemplate = ChatPromptTemplate.fromMessages([SystemMessagePromptTemplate.fromTemplate(oldTemplate)])
+                model.maxTokens = 1024
+
+                const oldTemplate = prompt.template as string
+                chatPromptTemplate = ChatPromptTemplate.fromMessages([HumanMessagePromptTemplate.fromTemplate(oldTemplate)])
                 chatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
             } else {
                 // revert to previous values if image upload is empty
-                chatModel.modelName = chatModel.configuredModel
-                chatModel.maxTokens = chatModel.configuredMaxToken
+                model.modelName = model.configuredModel
+                model.maxTokens = model.configuredMaxToken
             }
         }
 
         const agent = await createReactAgent({
             llm: model,
             tools,
-            prompt: chatPromptTemplate ?? promptWithChat
+            prompt: chatPromptTemplate ?? prompt
         })
 
         const executor = new AgentExecutor({
