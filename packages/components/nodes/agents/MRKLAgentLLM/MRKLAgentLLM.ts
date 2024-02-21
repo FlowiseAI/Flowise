@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import { AgentExecutor, createReactAgent } from 'langchain/agents'
+import { AgentExecutor } from 'langchain/agents'
 import { pull } from 'langchain/hub'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
@@ -7,6 +7,7 @@ import { BaseLanguageModel } from 'langchain/base_language'
 import { additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { createReactAgent } from '../../../src/agents'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -68,10 +69,7 @@ class MRKLAgentLLM_Agents implements INode {
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const result = await executor.invoke({
-            input,
-            callbacks
-        })
+        const result = await executor.invoke({ input }, { callbacks })
 
         return result?.output
     }
