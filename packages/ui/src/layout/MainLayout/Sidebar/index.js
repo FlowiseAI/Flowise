@@ -11,7 +11,7 @@ import { BrowserView, MobileView } from 'react-device-detect'
 // project imports
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
-import { drawerWidth } from 'store/constant'
+import { drawerWidth, headerHeight } from 'store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
@@ -21,7 +21,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
 
     const drawer = (
         <>
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <Box sx={{ display: { xs: 'block', md: 'none' }, height: '80px' }}>
                 <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                     <LogoSection />
                 </Box>
@@ -30,7 +30,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                 <PerfectScrollbar
                     component='div'
                     style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : `calc(100vh - ${headerHeight}px)`,
                         paddingLeft: '16px',
                         paddingRight: '16px'
                     }}
@@ -63,8 +63,9 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                         color: theme.palette.text.primary,
                         borderRight: 'none',
                         [theme.breakpoints.up('md')]: {
-                            top: '66px'
-                        }
+                            top: `${headerHeight}px`
+                        },
+                        paddingTop: '20px'
                     }
                 }}
                 ModalProps={{ keepMounted: true }}
