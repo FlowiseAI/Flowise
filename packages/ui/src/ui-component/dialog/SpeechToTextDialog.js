@@ -105,7 +105,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [speechToText, setSpeechToText] = useState({})
-    const [selectedProvider, setSelectedProvider] = useState('openAIWhisper')
+    const [selectedProvider, setSelectedProvider] = useState('none')
 
     const onSave = async () => {
         try {
