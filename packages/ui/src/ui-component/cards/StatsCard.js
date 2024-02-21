@@ -10,10 +10,10 @@ const StatsCard = ({ title, stat }) => {
     return (
         <Card sx={{ border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
             <CardContent>
-                <Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
+                <Typography sx={{ fontSize: 14 }} color='text.primary' gutterBottom>
                     {title}
                 </Typography>
-                <Typography sx={{ fontSize: 30, fontWeight: 500 }} color='text.secondary'>
+                <Typography sx={{ fontSize: 30, fontWeight: 500 }} color='text.primary'>
                     {stat}
                 </Typography>
             </CardContent>
