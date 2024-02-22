@@ -21,7 +21,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -175,7 +175,8 @@ class ChatOpenAI_ChatModels implements INode {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description: 'Automatically uses gpt-4-vision-preview when image is being uploaded from chat',
+                description:
+                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
                 default: false,
                 optional: true
             },
