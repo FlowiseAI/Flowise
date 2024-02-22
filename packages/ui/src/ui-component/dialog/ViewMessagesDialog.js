@@ -214,6 +214,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     }
                 })
                 getChatmessageApi.request(chatflowid)
+                getStatsApi.request(chatflowid) // update stats
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({

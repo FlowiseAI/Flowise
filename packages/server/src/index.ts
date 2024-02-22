@@ -604,6 +604,10 @@ export class App {
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
 
+            // remove all related feedback records
+            const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
+            await this.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
+
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
         })
