@@ -224,9 +224,7 @@ class ZepExistingVS extends ZepVectorStore {
     }
 
     static async fromExistingIndex(embeddings: Embeddings, dbConfig: IZepConfig & Partial<ZepFilter>): Promise<ZepVectorStore> {
-        console.log('fromExistingIndex')
-        const instance = new this(embeddings, dbConfig)
-        return instance
+        return new this(embeddings, dbConfig)
     }
 }
 
