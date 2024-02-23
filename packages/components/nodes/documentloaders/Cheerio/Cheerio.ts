@@ -139,6 +139,7 @@ class Cheerio_DocumentLoaders implements INode {
             if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
+		if (process.env.DEBUG === 'true') console.info(`loading page: ${page}`)
                 docs.push(...(await cheerioLoader(page)))
             }
             if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
