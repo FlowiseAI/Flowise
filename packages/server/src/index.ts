@@ -5,6 +5,7 @@ import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
+import contentDisposition from 'content-disposition'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
@@ -1143,7 +1144,7 @@ export class App {
             if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
 
             if (fs.existsSync(filePath)) {
-                res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
+                res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
                 streamFileToUser(res, filePath)
             } else {
                 return res.status(404).send(`File ${req.body.fileName} not found`)
@@ -1158,26 +1159,30 @@ export class App {
 
         // stream uploaded image
         this.app.get('/api/v1/get-upload-file', async (req: Request, res: Response) => {
-            if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {
+            try {
+                if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {
+                    return res.status(500).send(`Invalid file path`)
+                }
+                const chatflowId = req.query.chatflowId as string
+                const chatId = req.query.chatId as string
+                const fileName = req.query.fileName as string
+
+                const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
+                //raise error if file path is not absolute
+                if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
+                //raise error if file path contains '..'
+                if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
+                //only return from the storage folder
+                if (!filePath.startsWith(getStoragePath())) return res.status(500).send(`Invalid file path`)
+
+                if (fs.existsSync(filePath)) {
+                    res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
+                    streamFileToUser(res, filePath)
+                } else {
+                    return res.status(404).send(`File ${fileName} not found`)
+                }
+            } catch (error) {
                 return res.status(500).send(`Invalid file path`)
-            }
-            const chatflowId = req.query.chatflowId as string
-            const chatId = req.query.chatId as string
-            const fileName = req.query.fileName as string
-
-            const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
-            //raise error if file path is not absolute
-            if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
-            //raise error if file path contains '..'
-            if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
-            //only return from the storage folder
-            if (!filePath.startsWith(getStoragePath())) return res.status(500).send(`Invalid file path`)
-
-            if (fs.existsSync(filePath)) {
-                res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
-                streamFileToUser(res, filePath)
-            } else {
-                return res.status(404).send(`File ${fileName} not found`)
             }
         })
 
