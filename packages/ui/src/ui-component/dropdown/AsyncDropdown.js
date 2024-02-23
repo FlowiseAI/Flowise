@@ -107,10 +107,6 @@ export const AsyncDropdown = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [credentialNames])
 
-    useEffect(() => {
-        setInternalValue(value)
-    }, [value])
-
     return (
         <>
             <Autocomplete
