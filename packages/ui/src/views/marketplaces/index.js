@@ -131,6 +131,7 @@ const Marketplace = () => {
     }
 
     const handleViewChange = (event, nextView) => {
+        if (nextView === null) return
         localStorage.setItem('mpDisplayStyle', nextView)
         setView(nextView)
     }

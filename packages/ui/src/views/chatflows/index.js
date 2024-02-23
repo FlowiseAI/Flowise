@@ -47,6 +47,8 @@ const Chatflows = () => {
     const [view, setView] = React.useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
     const handleChange = (event, nextView) => {
+        if (nextView === null) return
+        console.log('nextView == ' + nextView)
         localStorage.setItem('flowDisplayStyle', nextView)
         setView(nextView)
     }
