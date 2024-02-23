@@ -1570,7 +1570,7 @@ export class App {
 
             const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
-            await buildFlow(
+            const upsertedResult = await buildFlow(
                 startingNodeIds,
                 nodes,
                 edges,
@@ -1601,7 +1601,7 @@ export class App {
                 stopNodeId
             })
 
-            return res.status(201).send('Successfully Upserted')
+            return upsertedResult ? res.status(201).json(upsertedResult) : res.status(201).send('Successfully Upserted')
         } catch (e: any) {
             logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)

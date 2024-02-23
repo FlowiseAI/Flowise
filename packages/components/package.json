@@ -35,6 +35,7 @@
         "@langchain/mistralai": "^0.0.7",
         "@langchain/openai": "^0.0.14",
         "@langchain/pinecone": "^0.0.3",
+        "@langchain/weaviate": "^0.0.1",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
         "@pinecone-database/pinecone": "^2.0.1",

@@ -6,6 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { IndexingResult, index } from '../../../src/indexing'
 
 class Postgres_VectorStores implements INode {
     label: string
@@ -24,7 +25,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -49,6 +50,13 @@ class Postgres_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Host',
@@ -108,7 +116,7 @@ class Postgres_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const user = getCredentialParam('user', credentialData, nodeData)
             const password = getCredentialParam('password', credentialData, nodeData)
@@ -117,6 +125,7 @@ class Postgres_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const additionalConfig = nodeData.inputs?.additionalConfig as string
+            const recordManager = nodeData.inputs?.recordManager
 
             let additionalConfiguration = {}
             if (additionalConfig) {
@@ -151,11 +160,35 @@ class Postgres_VectorStores implements INode {
             }
 
             try {
-                const vectorStore = await TypeORMVectorStore.fromDocuments(finalDocs, embeddings, args)
+                if (recordManager) {
+                    const vectorStore = await TypeORMVectorStore.fromDataSource(embeddings, args)
 
-                // Avoid Illegal invocation error
-                vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-                    return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
+                    // Avoid Illegal invocation error
+                    vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
+                        return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
+                    }
+
+                    await recordManager.createSchema()
+
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: tableName
+                        }
+                    })
+
+                    return res
+                } else {
+                    const vectorStore = await TypeORMVectorStore.fromDocuments(finalDocs, embeddings, args)
+
+                    // Avoid Illegal invocation error
+                    vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
+                        return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
+                    }
                 }
             } catch (e) {
                 throw new Error(e)

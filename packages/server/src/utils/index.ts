@@ -283,6 +283,8 @@ export const buildFlow = async (
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
+    let upsertedResult = undefined
+
     // Create a Queue and add our initial node in it
     const nodeQueue = [] as INodeQueue[]
     const exploredNode = {} as IExploredNode
@@ -316,7 +318,7 @@ export const buildFlow = async (
             // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
+                upsertedResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
                     sessionId,
                     chatflowid,
@@ -426,7 +428,7 @@ export const buildFlow = async (
             flowNodes.push(flowNodes.splice(index, 1)[0])
         }
     }
-    return flowNodes
+    return isUpsert ? upsertedResult : flowNodes
 }
 
 /**

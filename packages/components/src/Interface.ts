@@ -111,7 +111,7 @@ export interface INode extends INodeProperties {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
     }
     vectorStoreMethods?: {
-        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
         delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
     }
@@ -205,6 +205,7 @@ export class VectorStoreRetriever {
  */
 import { BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
+import { IndexingResult } from './indexing'
 
 export interface MemoryMethods {
     getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean, prevHistory?: IMessage[]): Promise<IMessage[] | BaseMessage[]>

@@ -8,6 +8,7 @@ import { IconDatabaseImport, IconX } from '@tabler/icons'
 // project import
 import { StyledFab } from 'ui-component/button/StyledFab'
 import VectorStoreDialog from './VectorStoreDialog'
+import UpsertResultDialog from './UpsertResultDialog'
 
 // api
 import vectorstoreApi from 'api/vectorstore'
@@ -28,6 +29,8 @@ export const VectorStorePopUp = ({ chatflowid }) => {
     const [open, setOpen] = useState(false)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [showUpsertResultDialog, setShowUpsertResultDialog] = useState(false)
+    const [upsertResultDialogProps, setUpsertResultDialogProps] = useState({})
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -106,7 +109,20 @@ export const VectorStorePopUp = ({ chatflowid }) => {
                     setShowExpandDialog(false)
                     setOpen((prevopen) => !prevopen)
                 }}
+                onIndexResult={(indexRes) => {
+                    setShowExpandDialog(false)
+                    setShowUpsertResultDialog(true)
+                    setUpsertResultDialogProps({ ...indexRes })
+                }}
             ></VectorStoreDialog>
+            <UpsertResultDialog
+                show={showUpsertResultDialog}
+                dialogProps={upsertResultDialogProps}
+                onCancel={() => {
+                    setShowUpsertResultDialog(false)
+                    setOpen(false)
+                }}
+            ></UpsertResultDialog>
         </>
     )
 }
