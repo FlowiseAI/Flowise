@@ -85,7 +85,7 @@ export class App {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                logger.info('📦 [server]: Data Source has been initialized!')
+                logger.info('📦 [server]: Data Source is being initialized!')
 
                 // Run Migrations Scripts
                 await this.AppDataSource.runMigrations({ transaction: 'each' })
@@ -112,6 +112,7 @@ export class App {
 
                 // Initialize telemetry
                 this.telemetry = new Telemetry()
+                logger.info('📦 [server]: Data Source has been initialized!')
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
