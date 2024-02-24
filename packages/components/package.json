@@ -64,7 +64,7 @@
         "langchain": "^0.1.20",
         "langfuse": "3.1.0",
         "langfuse-langchain": "^3.1.0",
-        "langsmith": "0.0.63",
+        "langsmith": "0.1.6",
         "linkifyjs": "^4.1.1",
         "llamaindex": "^0.0.48",
         "lunary": "^0.6.16",
