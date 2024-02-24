@@ -28,12 +28,12 @@ class QueryEngine_LlamaIndex implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Query Engine'
         this.name = 'queryEngine'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'QueryEngine'
         this.icon = 'query-engine.png'
         this.category = 'Engine'
         this.description = 'Simple query engine built to answer question over your data, without memory'
-        this.baseClasses = [this.type]
+        this.baseClasses = [this.type, 'BaseQueryEngine']
         this.tags = ['LlamaIndex']
         this.inputs = [
             {
@@ -59,52 +59,13 @@ class QueryEngine_LlamaIndex implements INode {
         this.sessionId = fields?.sessionId
     }
 
-    async init(): Promise<any> {
-        return null
+    async init(nodeData: INodeData): Promise<any> {
+        return prepareEngine(nodeData)
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
-        const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
-        const responseSynthesizerObj = nodeData.inputs?.responseSynthesizer
-
-        let queryEngine = new RetrieverQueryEngine(vectorStoreRetriever)
-
-        if (responseSynthesizerObj) {
-            if (responseSynthesizerObj.type === 'TreeSummarize') {
-                const responseSynthesizer = new ResponseSynthesizer({
-                    responseBuilder: new TreeSummarize(vectorStoreRetriever.serviceContext, responseSynthesizerObj.textQAPromptTemplate),
-                    serviceContext: vectorStoreRetriever.serviceContext
-                })
-                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
-            } else if (responseSynthesizerObj.type === 'CompactAndRefine') {
-                const responseSynthesizer = new ResponseSynthesizer({
-                    responseBuilder: new CompactAndRefine(
-                        vectorStoreRetriever.serviceContext,
-                        responseSynthesizerObj.textQAPromptTemplate,
-                        responseSynthesizerObj.refinePromptTemplate
-                    ),
-                    serviceContext: vectorStoreRetriever.serviceContext
-                })
-                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
-            } else if (responseSynthesizerObj.type === 'Refine') {
-                const responseSynthesizer = new ResponseSynthesizer({
-                    responseBuilder: new Refine(
-                        vectorStoreRetriever.serviceContext,
-                        responseSynthesizerObj.textQAPromptTemplate,
-                        responseSynthesizerObj.refinePromptTemplate
-                    ),
-                    serviceContext: vectorStoreRetriever.serviceContext
-                })
-                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
-            } else if (responseSynthesizerObj.type === 'SimpleResponseBuilder') {
-                const responseSynthesizer = new ResponseSynthesizer({
-                    responseBuilder: new SimpleResponseBuilder(vectorStoreRetriever.serviceContext),
-                    serviceContext: vectorStoreRetriever.serviceContext
-                })
-                queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
-            }
-        }
+        const queryEngine = prepareEngine(nodeData)
 
         let text = ''
         let sourceDocuments: ICommonObject[] = []
@@ -138,6 +99,51 @@ class QueryEngine_LlamaIndex implements INode {
         if (returnSourceDocuments) return { text, sourceDocuments }
         else return { text }
     }
+}
+
+const prepareEngine = (nodeData: INodeData) => {
+    const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever
+    const responseSynthesizerObj = nodeData.inputs?.responseSynthesizer
+
+    let queryEngine = new RetrieverQueryEngine(vectorStoreRetriever)
+
+    if (responseSynthesizerObj) {
+        if (responseSynthesizerObj.type === 'TreeSummarize') {
+            const responseSynthesizer = new ResponseSynthesizer({
+                responseBuilder: new TreeSummarize(vectorStoreRetriever.serviceContext, responseSynthesizerObj.textQAPromptTemplate),
+                serviceContext: vectorStoreRetriever.serviceContext
+            })
+            queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+        } else if (responseSynthesizerObj.type === 'CompactAndRefine') {
+            const responseSynthesizer = new ResponseSynthesizer({
+                responseBuilder: new CompactAndRefine(
+                    vectorStoreRetriever.serviceContext,
+                    responseSynthesizerObj.textQAPromptTemplate,
+                    responseSynthesizerObj.refinePromptTemplate
+                ),
+                serviceContext: vectorStoreRetriever.serviceContext
+            })
+            queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+        } else if (responseSynthesizerObj.type === 'Refine') {
+            const responseSynthesizer = new ResponseSynthesizer({
+                responseBuilder: new Refine(
+                    vectorStoreRetriever.serviceContext,
+                    responseSynthesizerObj.textQAPromptTemplate,
+                    responseSynthesizerObj.refinePromptTemplate
+                ),
+                serviceContext: vectorStoreRetriever.serviceContext
+            })
+            queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+        } else if (responseSynthesizerObj.type === 'SimpleResponseBuilder') {
+            const responseSynthesizer = new ResponseSynthesizer({
+                responseBuilder: new SimpleResponseBuilder(vectorStoreRetriever.serviceContext),
+                serviceContext: vectorStoreRetriever.serviceContext
+            })
+            queryEngine = new RetrieverQueryEngine(vectorStoreRetriever, responseSynthesizer)
+        }
+    }
+
+    return queryEngine
 }
 
 module.exports = { nodeClass: QueryEngine_LlamaIndex }

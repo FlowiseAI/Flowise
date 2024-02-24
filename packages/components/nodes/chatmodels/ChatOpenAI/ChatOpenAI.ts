@@ -19,7 +19,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -58,6 +58,10 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-4-1106-preview',
                         name: 'gpt-4-1106-preview'
+                    },
+                    {
+                        label: 'gpt-4-1106-vision-preview',
+                        name: 'gpt-4-1106-vision-preview'
                     },
                     {
                         label: 'gpt-4-vision-preview',

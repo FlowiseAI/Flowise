@@ -1,12 +1,13 @@
 import { flatten } from 'lodash'
-import { AgentExecutor, createReactAgent } from 'langchain/agents'
+import { AgentExecutor } from 'langchain/agents'
 import { pull } from 'langchain/hub'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { additionalCallbacks } from '../../../src/handler'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { createReactAgent } from '../../../src/agents'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -18,11 +19,12 @@ class MRKLAgentChat_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    sessionId?: string
 
-    constructor() {
+    constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
         this.name = 'mrklAgentChat'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -39,8 +41,14 @@ class MRKLAgentChat_Agents implements INode {
                 label: 'Chat Model',
                 name: 'model',
                 type: 'BaseChatModel'
+            },
+            {
+                label: 'Memory',
+                name: 'memory',
+                type: 'BaseChatMemory'
             }
         ]
+        this.sessionId = fields?.sessionId
     }
 
     async init(): Promise<any> {
@@ -48,6 +56,7 @@ class MRKLAgentChat_Agents implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+        const memory = nodeData.inputs?.memory as FlowiseMemory
         const model = nodeData.inputs?.model as BaseChatModel
         let tools = nodeData.inputs?.tools as Tool[]
         tools = flatten(tools)
@@ -68,10 +77,25 @@ class MRKLAgentChat_Agents implements INode {
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const result = await executor.invoke({
-            input,
-            callbacks
-        })
+        const prevChatHistory = options.chatHistory
+        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prevChatHistory)) as IMessage[]) ?? []
+        const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
+
+        const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })
+
+        await memory.addChatMessages(
+            [
+                {
+                    text: input,
+                    type: 'userMessage'
+                },
+                {
+                    text: result?.output,
+                    type: 'apiMessage'
+                }
+            ],
+            this.sessionId
+        )
 
         return result?.output
     }

@@ -30,7 +30,7 @@
 
 不确定要贡献什么？一些想法：
 
--   从 Langchain 创建新组件
+-   从 `packages/components` 创建新组件
 -   更新现有组件，如扩展功能、修复错误
 -   添加新的 Chatflow 想法
 
@@ -40,7 +40,7 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
 
 -   `server`：用于提供 API 逻辑的 Node 后端
 -   `ui`：React 前端
--   `components`：Langchain 组件
+-   `components`：Langchain/LlamaIndex 组件
 
 #### 先决条件
 
@@ -123,6 +123,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | PORT                        | Flowise 运行的 HTTP 端口                               | 数字                                            | 3000                                |
 | FLOWISE_USERNAME            | 登录用户名                                             | 字符串                                          |                                     |
 | FLOWISE_PASSWORD            | 登录密码                                               | 字符串                                          |                                     |
+| FLOWISE_FILE_SIZE_LIMIT     | 上传文件大小限制                                       | 字符串                                          | 50mb                                |
 | DEBUG                       | 打印组件的日志                                         | 布尔值                                          |                                     |
 | LOG_PATH                    | 存储日志文件的位置                                     | 字符串                                          | `your-path/Flowise/logs`            |
 | LOG_LEVEL                   | 日志的不同级别                                         | 枚举字符串: `error`, `info`, `verbose`, `debug` | `info`                              |
