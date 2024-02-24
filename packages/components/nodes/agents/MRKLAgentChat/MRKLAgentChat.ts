@@ -99,7 +99,6 @@ class MRKLAgentChat_Agents implements INode {
             tools,
             verbose: process.env.DEBUG === 'true'
         })
-        // injectLcAgentExecutorNodeData(executor, nodeData, options)
 
         const callbacks = await additionalCallbacks(nodeData, options)
 

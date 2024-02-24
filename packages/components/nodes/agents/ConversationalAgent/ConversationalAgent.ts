@@ -95,7 +95,6 @@ class ConversationalAgent_Agents implements INode {
             { sessionId: this.sessionId, chatId: options.chatId, input },
             options.chatHistory
         )
-        // injectAgentExecutorNodeData(executor, nodeData, options)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)

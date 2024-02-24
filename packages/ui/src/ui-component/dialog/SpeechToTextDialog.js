@@ -272,8 +272,9 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                                 </div>
                                 {inputParam.type === 'credential' && (
                                     <CredentialInputHandler
+                                        key={speechToText[selectedProvider]?.credentialId}
                                         data={
-                                            speechToText[selectedProvider]
+                                            speechToText[selectedProvider]?.credentialId
                                                 ? { credential: speechToText[selectedProvider].credentialId }
                                                 : {}
                                         }
@@ -321,7 +322,11 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                 )}
             </DialogContent>
             <DialogActions>
-                <StyledButton variant='contained' onClick={onSave}>
+                <StyledButton
+                    disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
+                    variant='contained'
+                    onClick={onSave}
+                >
                     Save
                 </StyledButton>
             </DialogActions>
