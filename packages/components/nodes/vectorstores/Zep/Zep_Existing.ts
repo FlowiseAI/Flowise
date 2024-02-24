@@ -21,7 +21,7 @@ class Zep_Existing_VectorStores implements INode {
 
     constructor() {
         this.label = 'Zep Load Existing Index - Open Source'
-        this.name = 'Zep Existing Index - Open Source'
+        this.name = 'zepExistingIndex'
         this.version = 1.0
         this.type = 'Zep'
         this.icon = 'zep.svg'

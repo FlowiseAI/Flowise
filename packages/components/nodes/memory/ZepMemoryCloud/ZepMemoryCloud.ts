@@ -20,7 +20,7 @@ class ZepMemoryCloud_Memory implements INode {
 
     constructor() {
         this.label = 'Zep Memory - Cloud'
-        this.name = 'Zep Memory - Cloud'
+        this.name = 'ZepMemoryCloud'
         this.version = 2.0
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'

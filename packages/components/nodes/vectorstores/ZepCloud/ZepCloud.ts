@@ -7,6 +7,7 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { FakeEmbeddings } from 'langchain/embeddings/fake'
+
 class Zep_CloudVectorStores implements INode {
     label: string
     name: string
@@ -23,7 +24,7 @@ class Zep_CloudVectorStores implements INode {
 
     constructor() {
         this.label = 'Zep Collection - Cloud'
-        this.name = 'Zep Collection - Cloud'
+        this.name = 'zepCloud'
         this.version = 2.0
         this.type = 'Zep'
         this.icon = 'zep.svg'
@@ -100,7 +101,7 @@ class Zep_CloudVectorStores implements INode {
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
             }
-            const client = await ZepClient.init(apiKey, 'https://api.development.getzep.com')
+            const client = await ZepClient.init(apiKey)
             const zepConfig = {
                 apiKey: apiKey,
                 collectionName: zepCollection,
@@ -127,8 +128,7 @@ class Zep_CloudVectorStores implements INode {
         if (zepMetadataFilter) {
             zepConfig.filter = typeof zepMetadataFilter === 'object' ? zepMetadataFilter : JSON.parse(zepMetadataFilter)
         }
-        const client = await ZepClient.init(zepConfig.apiKey, zepConfig.apiUrl)
-        zepConfig.client = client
+        zepConfig.client = await ZepClient.init(zepConfig.apiKey)
         const vectorStore = await ZepExistingVS.init(zepConfig)
         return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }

@@ -18,7 +18,7 @@ class ZepMemory_Memory implements INode {
 
     constructor() {
         this.label = 'Zep Memory - Open Source'
-        this.name = 'Zep Memory - Open Source'
+        this.name = 'ZepMemory'
         this.version = 2.0
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'
