@@ -1,9 +1,8 @@
-import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
-import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
-import { ICommonObject } from '../../../src'
+import { ZepMemory, ZepMemoryInput } from '@langchain/community/memory/zep'
+import { BaseMessage } from '@langchain/core/messages'
 import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
-import { BaseMessage } from 'langchain/schema'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType, ICommonObject } from '../../../src/Interface'
+import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -163,14 +162,14 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     }
 
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const memoryVariables = await this.loadMemoryVariables({}, id)
         const baseMessages = memoryVariables[this.memoryKey]
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
         const inputValues = { [this.inputKey ?? 'input']: input?.text }
@@ -180,7 +179,7 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.clear(id)
     }
 }

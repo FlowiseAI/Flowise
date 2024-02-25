@@ -1,9 +1,9 @@
 import { flatten } from 'lodash'
 import { QdrantClient } from '@qdrant/js-client-rest'
-import { VectorStoreRetrieverInput } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
-import { QdrantVectorStore, QdrantLibArgs } from 'langchain/vectorstores/qdrant'
-import { Embeddings } from 'langchain/embeddings/base'
+import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
+import { QdrantVectorStore, QdrantLibArgs } from '@langchain/community/vectorstores/qdrant'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -194,7 +194,7 @@ class Qdrant_VectorStores implements INode {
         const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
-        let queryFilter = nodeData.inputs?.queryFilter
+        let queryFilter = nodeData.inputs?.qdrantFilter
 
         const k = topK ? parseFloat(topK) : 4
 

@@ -1,9 +1,9 @@
 import { flatten } from 'lodash'
 import { Collection } from 'mongodb'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
 import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 import { MongoDBSearchBase } from './MongoDBSearchBase'
 

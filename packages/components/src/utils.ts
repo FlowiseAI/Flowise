@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -49,7 +49,7 @@ export const availableDependencies = [
     'langfuse',
     'langsmith',
     'linkifyjs',
-    'llmonitor',
+    'lunary',
     'mammoth',
     'moment',
     'mongodb',
@@ -660,6 +660,28 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
     } catch (e) {
         throw new Error(e)
     }
+}
+
+/**
+ * Flatten nested object
+ * @param {ICommonObject} obj
+ * @param {string} parentKey
+ * @returns {ICommonObject}
+ */
+export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
+    let result: any = {}
+
+    Object.keys(obj).forEach((key) => {
+        const value = obj[key]
+        const _key = parentKey ? parentKey + '.' + key : key
+        if (typeof value === 'object') {
+            result = { ...result, ...flattenObject(value, _key) }
+        } else {
+            result[_key] = value
+        }
+    })
+
+    return result
 }
 
 /**

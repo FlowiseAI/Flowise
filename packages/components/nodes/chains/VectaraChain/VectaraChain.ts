@@ -1,9 +1,9 @@
+import fetch from 'node-fetch'
+import { Document } from '@langchain/core/documents'
+import { VectaraStore } from '@langchain/community/vectorstores/vectara'
+import { VectorDBQAChain } from 'langchain/chains'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { VectorDBQAChain } from 'langchain/chains'
-import { Document } from 'langchain/document'
-import { VectaraStore } from 'langchain/vectorstores/vectara'
-import fetch from 'node-fetch'
 
 // functionality based on https://github.com/vectara/vectara-answer
 const reorderCitations = (unorderedSummary: string) => {

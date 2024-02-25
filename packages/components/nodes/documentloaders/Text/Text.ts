@@ -1,7 +1,7 @@
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
-import { Document } from 'langchain/document'
+import { Document } from '@langchain/core/documents'
 import { handleEscapeCharacters } from '../../../src'
 
 class Text_DocumentLoaders implements INode {
@@ -51,11 +51,13 @@ class Text_DocumentLoaders implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: this.baseClasses
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]

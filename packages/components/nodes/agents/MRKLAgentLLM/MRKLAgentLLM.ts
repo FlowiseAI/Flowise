@@ -1,10 +1,13 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { Tool } from 'langchain/tools'
-import { getBaseClasses } from '../../../src/utils'
-import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
+import { AgentExecutor } from 'langchain/agents'
+import { pull } from 'langchain/hub'
+import { Tool } from '@langchain/core/tools'
+import type { PromptTemplate } from '@langchain/core/prompts'
+import { BaseLanguageModel } from 'langchain/base_language'
 import { additionalCallbacks } from '../../../src/handler'
+import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { createReactAgent } from '../../../src/agents'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -41,24 +44,32 @@ class MRKLAgentLLM_Agents implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(): Promise<any> {
+        return null
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
         tools = flatten(tools)
 
-        const executor = await initializeAgentExecutorWithOptions(tools, model, {
-            agentType: 'zero-shot-react-description',
+        const prompt = await pull<PromptTemplate>('hwchase17/react')
+
+        const agent = await createReactAgent({
+            llm: model,
+            tools,
+            prompt
+        })
+
+        const executor = new AgentExecutor({
+            agent,
+            tools,
             verbose: process.env.DEBUG === 'true' ? true : false
         })
-        return executor
-    }
-
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const executor = nodeData.instance as AgentExecutor
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const result = await executor.call({ input }, [...callbacks])
+        const result = await executor.invoke({ input }, { callbacks })
 
         return result?.output
     }

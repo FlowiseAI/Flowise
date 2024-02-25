@@ -13,6 +13,7 @@ import AdditionalParamsDialog from 'ui-component/dialog/AdditionalParamsDialog'
 
 // const
 import { baseURL } from 'store/constant'
+import LlamaindexPNG from 'assets/images/llamaindex.png'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -87,6 +88,23 @@ const MarketplaceCanvasNode = ({ data }) => {
                                 {data.label}
                             </Typography>
                         </Box>
+                        <div style={{ flexGrow: 1 }}></div>
+                        {data.tags && data.tags.includes('LlamaIndex') && (
+                            <>
+                                <div
+                                    style={{
+                                        borderRadius: '50%',
+                                        padding: 15
+                                    }}
+                                >
+                                    <img
+                                        style={{ width: '25px', height: '25px', borderRadius: '50%', objectFit: 'contain' }}
+                                        src={LlamaindexPNG}
+                                        alt='LlamaIndex'
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                     {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
                         <>

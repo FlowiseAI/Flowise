@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
-import { Embeddings } from 'langchain/embeddings/base'
-import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from '@langchain/community/vectorstores/singlestore'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 

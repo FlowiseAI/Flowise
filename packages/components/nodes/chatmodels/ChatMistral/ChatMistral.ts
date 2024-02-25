@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
+import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { BaseCache } from 'langchain/schema'
-import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
 
 class ChatMistral_ChatModels implements INode {
     label: string

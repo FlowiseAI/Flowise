@@ -98,6 +98,7 @@ export interface INodeProperties {
     version: number
     category: string // TODO: use enum instead of string
     baseClasses: string[]
+    tags?: string[]
     description?: string
     filePath?: string
     badge?: string
@@ -149,8 +150,8 @@ export interface IUsedTool {
  * Classes
  */
 
-import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
-import { VectorStore } from 'langchain/vectorstores/base'
+import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
+import { VectorStore } from '@langchain/core/vectorstores'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -202,7 +203,7 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from 'langchain/schema'
+import { BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
 
 export interface MemoryMethods {

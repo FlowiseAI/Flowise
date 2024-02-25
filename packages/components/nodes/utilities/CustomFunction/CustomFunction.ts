@@ -52,11 +52,19 @@ class CustomFunction_Utilities implements INode {
                 label: 'Output',
                 name: 'output',
                 baseClasses: ['string', 'number', 'boolean', 'json', 'array']
+            },
+            {
+                label: 'Ending Node',
+                name: 'EndingNode',
+                baseClasses: [this.type]
             }
         ]
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+        const isEndingNode = nodeData?.outputs?.output === 'EndingNode'
+        if (isEndingNode && !options.isRun) return // prevent running both init and run twice
+
         const javascriptFunction = nodeData.inputs?.javascriptFunction as string
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
         const appDataSource = options.appDataSource as DataSource
@@ -123,13 +131,18 @@ class CustomFunction_Utilities implements INode {
         const vm = new NodeVM(nodeVMOptions)
         try {
             const response = await vm.run(`module.exports = async function() {${javascriptFunction}}()`, __dirname)
-            if (typeof response === 'string') {
+
+            if (typeof response === 'string' && !isEndingNode) {
                 return handleEscapeCharacters(response, false)
             }
             return response
         } catch (e) {
             throw new Error(e)
         }
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+        return await this.init(nodeData, input, { ...options, isRun: true })
     }
 }
 

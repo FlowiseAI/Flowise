@@ -1,8 +1,8 @@
+import { Replicate, ReplicateInput } from '@langchain/community/llms/replicate'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Replicate, ReplicateInput } from 'langchain/llms/replicate'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class Replicate_LLMs implements INode {
     label: string
