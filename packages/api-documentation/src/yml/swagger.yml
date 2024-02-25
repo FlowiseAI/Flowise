@@ -1,0 +1,149 @@
+tags:
+    - name: chatflows
+      description: Everything related to chatflows
+      externalDocs:
+          description: Find out more
+          url: https://docs.flowiseai.com/using-flowise/api#prediction-api
+paths:
+    /apikeys:
+        get:
+            tags:
+                - apikeys
+            summary:
+    /assistants:
+        get:
+            tags:
+                - assistants
+            summary:
+    /chatflows:
+        get:
+            security:
+                - bearerAuth: []
+            tags:
+                - chatflows
+            summary: List all chatflows
+            description:
+            responses:
+                '200':
+                    $ref: '#/components/schemas/Chatflow'
+                '401':
+                    $ref: '#/components/responses/UnauthorizedError'
+    /chatflows/longRunning:
+        get:
+            security:
+                - bearerAuth: []
+            tags:
+                - chatflows
+            summary: An api endpoint with a CPU intensive task within
+            description:
+            responses:
+                '200':
+                    $ref: '#/components/schemas/Chatflow'
+    /chat_message:
+        get:
+            tags:
+                - chat_message
+            summary:
+    /credential:
+        get:
+            tags:
+                - credential
+            summary:
+    /documents:
+        get:
+            tags:
+                - documents
+            summary:
+    /encryption_key:
+        get:
+            tags:
+                - encryption_key
+            summary:
+    /log:
+        get:
+            tags:
+                - log
+            summary:
+    /migrations:
+        get:
+            tags:
+                - migrations
+            summary:
+    /profile:
+        get:
+            tags:
+                - profile
+            summary:
+    /tool:
+        get:
+            tags:
+                - tool
+            summary:
+    /upsertion_records:
+        get:
+            tags:
+                - upsertion_records
+            summary:
+    /variable:
+        get:
+            tags:
+                - variable
+            summary:
+components:
+    responses:
+        UnauthorizedError:
+            description: Access token is missing or invalid
+    schemas:
+        Chatflow:
+            description: Retrieval for all chatflows associated to a user id have succeded
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+                name:
+                    type: string
+                    format: varchar
+                    description: About public.chatflows.name column
+                flowData:
+                    type: string
+                    format: text
+                deployed:
+                    type: boolean
+                isPublic:
+                    type: boolean
+                apikeyid:
+                    type: string
+                    format: varcar
+                chatbotConfig:
+                    type: string
+                    format: text
+                createdDate:
+                    type: string
+                    format: date-time
+                updatedDate:
+                    type: string
+                    format: date-time
+                apiConfig:
+                    type: string
+                    format: text
+                analytic:
+                    type: string
+                    format: text
+                category:
+                    type: string
+                    format: text
+    requestBodies:
+        Chatflow:
+            description:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Chatflow'
+    # 1) Define the security scheme type (HTTP bearer)
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT # optional, for documentation purposes only
