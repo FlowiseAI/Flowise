@@ -41,7 +41,7 @@ class PostgresRecordManager_RecordManager implements INode {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                placeholder: '6432',
+                placeholder: '5432',
                 optional: true
             },
             {
