@@ -5,7 +5,7 @@ import { getRateLimiter } from '../../utils/rateLimit'
 import { buildChatflow } from '../../utils/buildChatflow'
 // import { Server } from 'socket.io'
 
-const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
+const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {

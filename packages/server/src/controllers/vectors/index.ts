@@ -4,7 +4,7 @@ import path from 'path'
 import vectorsService from '../../services/vectors'
 import { getRateLimiter } from '../../utils/rateLimit'
 
-const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
+const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 const uploadFilesMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
