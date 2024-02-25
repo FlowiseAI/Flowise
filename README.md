@@ -72,6 +72,7 @@ Flowise has 3 different modules in a single mono repository.
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
 -   `components`: Third-party nodes integrations
+-   `api-documentation`: Auto-generated swagger-ui API docs from express
 
 ### Prerequisite
 
