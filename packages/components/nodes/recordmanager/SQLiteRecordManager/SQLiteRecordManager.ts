@@ -232,8 +232,11 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
         VALUES (?, ?, ?, ?)
         ON CONFLICT (key, namespace) DO UPDATE SET updated_at = excluded.updated_at`
 
-        // Consider using a transaction for batch operations
-        await this.queryRunner.manager.query(query, recordsToUpsert.flat())
+        // To handle multiple files upsert
+        for (const record of recordsToUpsert) {
+            // Consider using a transaction for batch operations
+            await this.queryRunner.manager.query(query, record.flat())
+        }
     }
 
     async exists(keys: string[]): Promise<boolean[]> {
