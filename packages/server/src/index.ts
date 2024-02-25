@@ -4,7 +4,6 @@ import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
-//@ts-ignore
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
