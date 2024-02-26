@@ -108,6 +108,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
 
     const onSave = async () => {
+        const speechToText = setValue(true, selectedProvider, 'status')
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 speechToText: JSON.stringify(speechToText)
@@ -165,11 +166,11 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
             })
         }
         setSpeechToText(newVal)
+        return newVal
     }
 
     const handleProviderChange = (event) => {
         setSelectedProvider(event.target.value)
-        setValue(true, event.target.value, 'status')
     }
 
     useEffect(() => {
@@ -179,7 +180,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                 let selectedProvider = 'none'
                 Object.keys(speechToTextProviders).forEach((key) => {
                     const providerConfig = speechToText[key]
-                    if (providerConfig.status) {
+                    if (providerConfig && providerConfig.status) {
                         selectedProvider = key
                     }
                 })
@@ -187,12 +188,14 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                 setSpeechToText(speechToText)
             } catch (e) {
                 setSpeechToText({})
+                setSelectedProvider('none')
                 console.error(e)
             }
         }
 
         return () => {
             setSpeechToText({})
+            setSelectedProvider('none')
         }
     }, [dialogProps])
 
