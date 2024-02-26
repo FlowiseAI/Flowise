@@ -200,20 +200,14 @@ class MySQLRecordManager implements RecordManagerInterface {
 \`namespace\`));`)
             const columns = [`updated_at`, `key`, `namespace`, `group_id`]
             for (const column of columns) {
-                try {
-                    await this.queryRunner.manager.query(`CREATE UNIQUE INDEX \`${column}_index\`
+                // MySQL does not support 'IF NOT EXISTS' function for Index
+                const Check = await this.queryRunner.manager.query(
+                    `SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS 
+                        WHERE table_schema=DATABASE() AND table_name='${this.tableName}' AND index_name='${column}_index';`
+                )
+                if (Check[0].IndexIsThere === 0)
+                    await this.queryRunner.manager.query(`CREATE INDEX \`${column}_index\`
         ON \`${this.tableName}\` (\`${column}\`);`)
-                } catch (e: any) {
-                    // This error indicates that index already exists
-                    // MySQL does not support 'IF NOT EXISTS' function for Index
-                    // An alternative approach is to use this query to check whether the count is 0 before inserting
-                    // Only proceed with the insertion when the count is 0
-                    // query: `SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='upsertion_records' AND index_name='updated_at_index';`
-                    if ('code' in e && e.code === 'ER_DUP_KEYNAME') {
-                        continue
-                    }
-                    throw e
-                }
             }
         } catch (e: any) {
             // This error indicates that the table already exists
