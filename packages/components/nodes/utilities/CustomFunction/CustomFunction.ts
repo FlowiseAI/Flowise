@@ -90,13 +90,15 @@ class CustomFunction_Utilities implements INode {
 
         // Some values might be a stringified JSON, parse it
         for (const key in inputVars) {
-            if (typeof inputVars[key] === 'string' && inputVars[key].startsWith('{') && inputVars[key].endsWith('}')) {
+            value = handleEscapeCharacters(value, true)
+            if (value.startsWith('{') && value.endsWith('}')) {
                 try {
-                    inputVars[key] = JSON.parse(inputVars[key])
+                    value = JSON.parse(value)
                 } catch (e) {
-                    continue
+                    // ignore
                 }
             }
+            inputVars[key] = value
         }
 
         let sandbox: any = { $input: input }
@@ -105,11 +107,7 @@ class CustomFunction_Utilities implements INode {
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                let value = inputVars[item]
-                if (typeof value === 'string') {
-                    value = handleEscapeCharacters(value, true)
-                }
-                sandbox[`$${item}`] = value
+                sandbox[`$${item}`] = inputVars[item]
             }
         }
 
