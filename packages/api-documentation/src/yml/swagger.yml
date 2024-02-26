@@ -1,94 +1,98 @@
 tags:
+    - name: apikey
+    - name: assistants
+    - name: chatmessage
+    - name: chatflows-streaming
     - name: chatflows
-      description: Everything related to chatflows
-      externalDocs:
-          description: Find out more
-          url: https://docs.flowiseai.com/using-flowise/api#prediction-api
+    - name: components-credentials-icon
+    - name: components-credentials
+    - name: credentials
+    - name: fetch-links
+    - name: flow-config
+    - name: internal-chatmessage
+    - name: internal-prediction
+    - name: ip
+    - name: load-prompt
+    - name: marketplaces
+    - name: node-config
+    - name: node-custom-function
+    - name: node-icon
+    - name: node-load-method
+    - name: nodes
+    - name: openai-assistants
+    - name: openai-assistants-file
+    - name: prediction
+    - name: prompts-list
+    - name: public-chatbotConfig
+    - name: public-chatflows
+    - name: tools
+    - name: variables
+    - name: vector
+    - name: verify
+    - name: version
 paths:
-    /apikeys:
+    /apikey:
+        post:
+            tags:
+                - apikey
         get:
             tags:
-                - apikeys
-            summary:
+                - apikey
+        put:
+            tags:
+                - apikey
+        delete:
+            tags:
+                - apikey
     /assistants:
+        post:
+            tags:
+                - assistants
         get:
             tags:
                 - assistants
-            summary:
+        put:
+            tags:
+                - assistants
+        delete:
+            tags:
+                - assistants
+    /assistants/{id}:
+        get:
+            tags:
+                - assistants
+    /chatmessage/{chatflowId}:
+        post:
+            tags:
+                - chatmessage
+        get:
+            tags:
+                - chatmessage
+        delete:
+            tags:
+                - chatmessage
+    /chatflows-streaming/{id}:
+        get:
+            tags:
+                - chatflows-streaming
     /chatflows:
-        get:
-            security:
-                - bearerAuth: []
+        post:
             tags:
                 - chatflows
-            summary: List all chatflows
-            description:
-            responses:
-                '200':
-                    $ref: '#/components/schemas/Chatflow'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-    /chatflows/longRunning:
         get:
-            security:
-                - bearerAuth: []
             tags:
                 - chatflows
-            summary: An api endpoint with a CPU intensive task within
-            description:
-            responses:
-                '200':
-                    $ref: '#/components/schemas/Chatflow'
-    /chat_message:
+    /chatflows/{id}:
         get:
             tags:
-                - chat_message
-            summary:
-    /credential:
-        get:
+                - chatflows
+        put:
             tags:
-                - credential
-            summary:
-    /documents:
-        get:
+                - chatflows
+        delete:
             tags:
-                - documents
-            summary:
-    /encryption_key:
-        get:
-            tags:
-                - encryption_key
-            summary:
-    /log:
-        get:
-            tags:
-                - log
-            summary:
-    /migrations:
-        get:
-            tags:
-                - migrations
-            summary:
-    /profile:
-        get:
-            tags:
-                - profile
-            summary:
-    /tool:
-        get:
-            tags:
-                - tool
-            summary:
-    /upsertion_records:
-        get:
-            tags:
-                - upsertion_records
-            summary:
-    /variable:
-        get:
-            tags:
-                - variable
-            summary:
+                - chatflows
+    /chatflows/apikey/{apiKey}:
 components:
     responses:
         UnauthorizedError:
