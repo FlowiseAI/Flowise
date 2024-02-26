@@ -629,7 +629,33 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
                 }
             }
 
-            let paramValue = overrideConfig[config] ?? inputsObj[config]
+            let paramValue = inputsObj[config]
+            const overrideConfigValue = overrideConfig[config]
+            if (overrideConfigValue) {
+                if (typeof overrideConfigValue === 'object') {
+                    switch (typeof paramValue) {
+                        case 'string':
+                            if (paramValue.startsWith('{') && paramValue.endsWith('}')) {
+                                try {
+                                    paramValue = Object.assign({}, JSON.parse(paramValue), overrideConfigValue)
+                                    break
+                                } catch (e) {
+                                    // ignore
+                                }
+                            }
+                            paramValue = overrideConfigValue
+                            break
+                        case 'object':
+                            paramValue = Object.assign({}, paramValue, overrideConfigValue)
+                            break
+                        default:
+                            paramValue = overrideConfigValue
+                            break
+                    }
+                } else {
+                    paramValue = overrideConfigValue
+                }
+            }
             // Check if boolean
             if (paramValue === 'true') paramValue = true
             else if (paramValue === 'false') paramValue = false

@@ -1,10 +1,12 @@
-import { ZepMemory, ZepMemoryInput } from '@langchain/community/memory/zep'
-import { BaseMessage } from '@langchain/core/messages'
-import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
-import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType, ICommonObject } from '../../../src/Interface'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ZepMemory, ZepMemoryInput } from '@getzep/zep-cloud/langchain'
 
-class ZepMemory_Memory implements INode {
+import { ICommonObject } from '../../../src'
+import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
+import { BaseMessage } from 'langchain/schema'
+
+class ZepMemoryCloud_Memory implements INode {
     label: string
     name: string
     version: number
@@ -17,8 +19,8 @@ class ZepMemory_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Zep Memory - Open Source'
-        this.name = 'ZepMemory'
+        this.label = 'Zep Memory - Cloud'
+        this.name = 'ZepMemoryCloud'
         this.version = 2.0
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'
@@ -35,12 +37,6 @@ class ZepMemory_Memory implements INode {
         }
         this.inputs = [
             {
-                label: 'Base URL',
-                name: 'baseURL',
-                type: 'string',
-                default: 'http://127.0.0.1:8000'
-            },
-            {
                 label: 'Session Id',
                 name: 'sessionId',
                 type: 'string',
@@ -51,11 +47,11 @@ class ZepMemory_Memory implements INode {
                 optional: true
             },
             {
-                label: 'Size',
-                name: 'k',
-                type: 'number',
-                default: '10',
-                description: 'Window of size k to surface the last k back-and-forth to use as memory.',
+                label: 'Memory Type',
+                name: 'memoryType',
+                type: 'string',
+                default: 'perpetual',
+                description: 'Zep Memory Type, can be perpetual or message_window',
                 additionalParams: true
             },
             {
@@ -102,49 +98,47 @@ class ZepMemory_Memory implements INode {
 }
 
 const initializeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
-    const baseURL = nodeData.inputs?.baseURL as string
     const aiPrefix = nodeData.inputs?.aiPrefix as string
     const humanPrefix = nodeData.inputs?.humanPrefix as string
     const memoryKey = nodeData.inputs?.memoryKey as string
     const inputKey = nodeData.inputs?.inputKey as string
-    const k = nodeData.inputs?.k as string
+
+    const memoryType = nodeData.inputs?.memoryType as 'perpetual' | 'message_window'
     const sessionId = nodeData.inputs?.sessionId as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
-
     const obj: ZepMemoryInput & ZepMemoryExtendedInput = {
-        baseURL,
+        apiKey,
         aiPrefix,
         humanPrefix,
-        returnMessages: true,
         memoryKey,
-        inputKey,
         sessionId,
-        k: k ? parseInt(k, 10) : undefined
+        inputKey,
+        memoryType: memoryType,
+        returnMessages: true
     }
-    if (apiKey) obj.apiKey = apiKey
 
     return new ZepMemoryExtended(obj)
 }
 
 interface ZepMemoryExtendedInput {
-    k?: number
+    memoryType?: 'perpetual' | 'message_window'
 }
 
 class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
-    lastN?: number
+    memoryType: 'perpetual' | 'message_window'
 
     constructor(fields: ZepMemoryInput & ZepMemoryExtendedInput) {
         super(fields)
-        this.lastN = fields.k
+        this.memoryType = fields.memoryType ?? 'perpetual'
     }
 
     async loadMemoryVariables(values: InputValues, overrideSessionId = ''): Promise<MemoryVariables> {
         if (overrideSessionId) {
             this.sessionId = overrideSessionId
         }
-        return super.loadMemoryVariables({ ...values, lastN: this.lastN })
+        return super.loadMemoryVariables({ ...values, memoryType: this.memoryType })
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideSessionId = ''): Promise<void> {
@@ -184,4 +178,4 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
     }
 }
 
-module.exports = { nodeClass: ZepMemory_Memory }
+module.exports = { nodeClass: ZepMemoryCloud_Memory }
