@@ -1,11 +1,14 @@
-import { IDocument, ZepClient } from '@getzep/zep-js'
-import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/zep'
-import { Embeddings } from '@langchain/core/embeddings'
-import { Document } from '@langchain/core/documents'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { flatten } from 'lodash'
+import { IDocument, ZepClient } from '@getzep/zep-cloud'
+import { IZepConfig, ZepVectorStore } from '@getzep/zep-cloud/langchain'
+import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { FakeEmbeddings } from 'langchain/embeddings/fake'
 
-class Zep_Existing_VectorStores implements INode {
+class Zep_CloudVectorStores implements INode {
     label: string
     name: string
     version: number
@@ -20,34 +23,31 @@ class Zep_Existing_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep Load Existing Index - Open Source'
-        this.name = 'zepExistingIndex'
-        this.version = 1.0
+        this.label = 'Zep Collection - Cloud'
+        this.name = 'zepCloud'
+        this.version = 2.0
         this.type = 'Zep'
         this.icon = 'zep.svg'
         this.category = 'Vector Stores'
-        this.description = 'Load existing index from Zep (i.e: Document has been upserted)'
+        this.description =
+            'Upsert embedded data and perform similarity or mmr search upon query using Zep, a fast and scalable building block for LLM apps'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'DEPRECATING'
+        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            optional: true,
+            optional: false,
             description: 'Configure JWT authentication on your Zep instance (Optional)',
             credentialNames: ['zepMemoryApi']
         }
         this.inputs = [
             {
-                label: 'Embeddings',
-                name: 'embeddings',
-                type: 'Embeddings'
-            },
-            {
-                label: 'Base URL',
-                name: 'baseURL',
-                type: 'string',
-                default: 'http://127.0.0.1:8000'
+                label: 'Document',
+                name: 'document',
+                type: 'Document',
+                list: true,
+                optional: true
             },
             {
                 label: 'Zep Collection',
@@ -63,13 +63,6 @@ class Zep_Existing_VectorStores implements INode {
                 additionalParams: true
             },
             {
-                label: 'Embedding Dimension',
-                name: 'dimension',
-                type: 'number',
-                default: 1536,
-                additionalParams: true
-            },
-            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -79,6 +72,7 @@ class Zep_Existing_VectorStores implements INode {
                 optional: true
             }
         ]
+        addMMRInputParams(this.inputs)
         this.outputs = [
             {
                 label: 'Zep Retriever',
@@ -93,41 +87,50 @@ class Zep_Existing_VectorStores implements INode {
         ]
     }
 
+    //@ts-ignore
+    vectorStoreMethods = {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const zepCollection = nodeData.inputs?.zepCollection as string
+            const docs = nodeData.inputs?.document as Document[]
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+            const flattenDocs = docs && docs.length ? flatten(docs) : []
+            const finalDocs = []
+            for (let i = 0; i < flattenDocs.length; i += 1) {
+                if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    finalDocs.push(new Document(flattenDocs[i]))
+                }
+            }
+            const client = await ZepClient.init(apiKey)
+            const zepConfig = {
+                apiKey: apiKey,
+                collectionName: zepCollection,
+                client
+            }
+            try {
+                await ZepVectorStore.fromDocuments(finalDocs, new FakeEmbeddings(), zepConfig)
+            } catch (e) {
+                throw new Error(e)
+            }
+        }
+    }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const baseURL = nodeData.inputs?.baseURL as string
         const zepCollection = nodeData.inputs?.zepCollection as string
         const zepMetadataFilter = nodeData.inputs?.zepMetadataFilter
-        const dimension = nodeData.inputs?.dimension as number
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
-
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
         const zepConfig: IZepConfig & Partial<ZepFilter> = {
-            apiUrl: baseURL,
-            collectionName: zepCollection,
-            embeddingDimensions: dimension,
-            isAutoEmbedded: false
+            apiKey,
+            collectionName: zepCollection
         }
-        if (apiKey) zepConfig.apiKey = apiKey
         if (zepMetadataFilter) {
-            const metadatafilter = typeof zepMetadataFilter === 'object' ? zepMetadataFilter : JSON.parse(zepMetadataFilter)
-            zepConfig.filter = metadatafilter
+            zepConfig.filter = typeof zepMetadataFilter === 'object' ? zepMetadataFilter : JSON.parse(zepMetadataFilter)
         }
-
-        const vectorStore = await ZepExistingVS.fromExistingIndex(embeddings, zepConfig)
-
-        if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
-        } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
-        }
-        return vectorStore
+        zepConfig.client = await ZepClient.init(zepConfig.apiKey)
+        const vectorStore = await ZepExistingVS.init(zepConfig)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }
 }
 
@@ -165,8 +168,8 @@ class ZepExistingVS extends ZepVectorStore {
         this.args = args
     }
 
-    async initalizeCollection(args: IZepConfig & Partial<ZepFilter>) {
-        this.client = await ZepClient.init(args.apiUrl, args.apiKey)
+    async initializeCollection(args: IZepConfig & Partial<ZepFilter>) {
+        this.client = await ZepClient.init(args.apiKey, args.apiUrl)
         try {
             this.collection = await this.client.document.getCollection(args.collectionName)
         } catch (err) {
@@ -181,18 +184,10 @@ class ZepExistingVS extends ZepVectorStore {
     }
 
     async createNewCollection(args: IZepConfig & Partial<ZepFilter>) {
-        if (!args.embeddingDimensions) {
-            throw new Error(
-                `Collection ${args.collectionName} not found. You can create a new Collection by providing embeddingDimensions.`
-            )
-        }
-
         this.collection = await this.client.document.addCollection({
             name: args.collectionName,
             description: args.description,
-            metadata: args.metadata,
-            embeddingDimensions: args.embeddingDimensions,
-            isAutoEmbedded: false
+            metadata: args.metadata
         })
     }
 
@@ -214,7 +209,7 @@ class ZepExistingVS extends ZepVectorStore {
         const newfilter = {
             where: { and: ANDFilters }
         }
-        await this.initalizeCollection(this.args!).catch((err) => {
+        await this.initializeCollection(this.args!).catch((err) => {
             console.error('Error initializing collection:', err)
             throw err
         })
@@ -229,9 +224,8 @@ class ZepExistingVS extends ZepVectorStore {
     }
 
     static async fromExistingIndex(embeddings: Embeddings, dbConfig: IZepConfig & Partial<ZepFilter>): Promise<ZepVectorStore> {
-        const instance = new this(embeddings, dbConfig)
-        return instance
+        return new this(embeddings, dbConfig)
     }
 }
 
-module.exports = { nodeClass: Zep_Existing_VectorStores }
+module.exports = { nodeClass: Zep_CloudVectorStores }
