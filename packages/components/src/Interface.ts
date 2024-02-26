@@ -146,6 +146,33 @@ export interface IUsedTool {
     toolOutput: string | object
 }
 
+export interface ILangGraphNode {
+    node: any
+    name: string
+    type: 'supervisor' | 'worker'
+    llm?: any
+    parentSupervisorName?: string
+    workers?: string[]
+    recursionLimit?: number
+}
+
+export interface ITeamState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
+    team_members: string[]
+    next: string
+    instructions: string
+}
+
+export interface IAgentReasoning {
+    agentName: string
+    messages: string[]
+    next: string
+    instructions: string
+}
+
 /**
  * Classes
  */

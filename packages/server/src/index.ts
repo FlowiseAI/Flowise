@@ -59,7 +59,15 @@ import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeOptionsValue, handleEscapeCharacters, webCrawl, xmlScrape } from 'flowise-components'
+import {
+    IAgentReasoning,
+    ICommonObject,
+    IMessage,
+    INodeOptionsValue,
+    handleEscapeCharacters,
+    webCrawl,
+    xmlScrape
+} from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
@@ -68,6 +76,7 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { compileGraph } from './utils/langGraph'
 
 export class App {
     app: express.Application
@@ -475,7 +484,16 @@ export class App {
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
             let isStreaming = false
-            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
+            // If last node is a custom function node, disable streaming
+            if (endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')) {
+                return res.json({ isStreaming: false })
+            }
+
+            // If it is a langgraph, always enable streaming
+            if (endingNodes.filter((node) => node.data.category === 'LangGraph').length > 0) {
+                return res.json({ isStreaming: true })
+            }
 
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
@@ -488,7 +506,8 @@ export class App {
                         endingNodeData &&
                         endingNodeData.category !== 'Chains' &&
                         endingNodeData.category !== 'Agents' &&
-                        endingNodeData.category !== 'Engine'
+                        endingNodeData.category !== 'Engine' &&
+                        endingNodeData.category !== 'LangGraph'
                     ) {
                         return res.status(500).send(`Ending node must be either a Chain or Agent`)
                     }
@@ -498,7 +517,7 @@ export class App {
             }
 
             // Once custom function ending node exists, flow is always unavailable to stream
-            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
+            const obj = { isStreaming }
             return res.json(obj)
         })
 
@@ -1490,6 +1509,100 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
+    async buildAgentGraph(chatflow: IChatFlow, incomingInput: ICommonObject, socketIO?: Server) {
+        try {
+            const chatflowid = chatflow.id
+
+            /*** Get chatflows and prepare data  ***/
+            const flowData = chatflow.flowData
+            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+            const nodes = parsedFlowData.nodes
+            const edges = parsedFlowData.edges
+
+            /*** Get Ending Node with Directed Graph  ***/
+            const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+            const directedGraph = graph
+            const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
+            if (!endingNodeIds.length) throw new Error(`Ending nodes not found`)
+
+            /*** Get Starting Node with Reversed Directed Graph  ***/
+            const constructedObj = constructGraphs(nodes, edges, { isReversed: true })
+            const nonDirectedGraph = constructedObj.graph
+            let startingNodeIds: string[] = []
+            let depthQueue: IDepthQueue = {}
+            for (const endingNodeId of endingNodeIds) {
+                const res = getStartingNodes(nonDirectedGraph, endingNodeId)
+                startingNodeIds.push(...res.startingNodeIds)
+                depthQueue = Object.assign(depthQueue, res.depthQueue)
+            }
+            startingNodeIds = [...new Set(startingNodeIds)]
+
+            let chatHistory = incomingInput?.history
+            let chatId = incomingInput.chatId ?? ''
+
+            const reactFlowNodes = await buildFlow(
+                startingNodeIds,
+                nodes,
+                edges,
+                graph,
+                depthQueue,
+                this.nodesPool.componentNodes,
+                incomingInput.question,
+                chatHistory,
+                chatId,
+                '',
+                chatflowid,
+                this.AppDataSource,
+                incomingInput?.overrideConfig,
+                this.cachePool
+            )
+
+            const streamResults = await compileGraph(
+                reactFlowNodes,
+                endingNodeIds,
+                this.nodesPool.componentNodes,
+                incomingInput.question,
+                incomingInput?.overrideConfig
+            )
+            if (streamResults) {
+                let finalResult = ''
+                let agentReasoning: IAgentReasoning[] = []
+                let isStreamingStarted = false
+                for await (const output of await streamResults) {
+                    if (!output?.__end__) {
+                        const agentName = Object.keys(output)[0]
+                        const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
+                        const reasoning = {
+                            agentName,
+                            messages,
+                            next: output[agentName]?.next,
+                            instructions: output[agentName]?.instructions
+                        }
+                        agentReasoning.push(reasoning)
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            if (!isStreamingStarted) {
+                                isStreamingStarted = true
+                                socketIO.to(incomingInput.socketIOClientId).emit('start', JSON.stringify(agentReasoning))
+                            }
+                            socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', JSON.stringify(agentReasoning))
+                        }
+                    } else {
+                        finalResult = output.__end__.messages.length ? output.__end__.messages.pop()?.content : ''
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        }
+                    }
+                }
+
+                return { finalResult, agentReasoning }
+            }
+            return streamResults
+        } catch (e: any) {
+            logger.error('[server]: Error:', e)
+            throw new Error(e.message)
+        }
+    }
+
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
             const chatflowid = req.params.id
@@ -1674,6 +1787,72 @@ export class App {
             let sessionId = undefined
             if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
+            /*** Get Ending Node with Directed Graph  ***/
+            const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+            const directedGraph = graph
+            const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
+            if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
+            const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+            if (endingNodes.filter((node) => node.data.category === 'LangGraph').length) {
+                try {
+                    const streamResults = await this.buildAgentGraph(chatflow, incomingInput, socketIO)
+                    if (streamResults) {
+                        const { finalResult, agentReasoning } = streamResults
+                        const userMessage: Omit<IChatMessage, 'id'> = {
+                            role: 'userMessage',
+                            content: incomingInput.question,
+                            chatflowid,
+                            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                            chatId,
+                            memoryType,
+                            sessionId,
+                            createdDate: userMessageDateTime
+                        }
+                        await this.addChatMessage(userMessage)
+
+                        const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+                            role: 'apiMessage',
+                            content: finalResult,
+                            chatflowid,
+                            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                            chatId,
+                            memoryType,
+                            sessionId
+                        }
+                        if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
+                        const chatMessage = await this.addChatMessage(apiMessage)
+
+                        await this.telemetry.sendTelemetry('prediction_sent', {
+                            version: await getAppVersion(),
+                            chatlowId: chatflowid,
+                            chatId,
+                            type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                            flowGraph: getTelemetryFlowObj(nodes, edges)
+                        })
+
+                        // Prepare response
+                        let result: ICommonObject = {}
+                        result.chatId = chatId
+                        result.chatMessageId = chatMessage.id
+                        if (sessionId) result.sessionId = sessionId
+                        if (memoryType) result.memoryType = memoryType
+
+                        await this.telemetry.sendTelemetry('graph_compiled', {
+                            version: await getAppVersion(),
+                            chatlowId: chatflowid,
+                            type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                            flowGraph: getTelemetryFlowObj(nodes, edges)
+                        })
+
+                        return res.json(result)
+                    }
+                    return res.status(500).send('Error building agent graph')
+                } catch (e) {
+                    return res.status(500).send(e)
+                }
+            }
+
             /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
              * - Node Data already exists in pool
              * - Still in sync (i.e the flow has not been modified since)
@@ -1702,16 +1881,6 @@ export class App {
                     `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
                 )
             } else {
-                /*** Get Ending Node with Directed Graph  ***/
-                const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-                const directedGraph = graph
-                const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
-                if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
-
-                const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
-
-                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
-
                 for (const endingNode of endingNodes) {
                     const endingNodeData = endingNode.data
                     if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
@@ -1723,7 +1892,8 @@ export class App {
                             endingNodeData &&
                             endingNodeData.category !== 'Chains' &&
                             endingNodeData.category !== 'Agents' &&
-                            endingNodeData.category !== 'Engine'
+                            endingNodeData.category !== 'Engine' &&
+                            endingNodeData.category !== 'LangGraph'
                         ) {
                             return res.status(500).send(`Ending node must be either a Chain or Agent`)
                         }
@@ -1740,12 +1910,11 @@ export class App {
                                 )
                         }
                     }
-
                     isStreamValid = isFlowValidForStream(nodes, endingNodeData)
                 }
 
                 // Once custom function ending node exists, flow is always unavailable to stream
-                isStreamValid = isEndingNodeExists ? false : isStreamValid
+                isStreamValid = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode') ? false : isStreamValid
 
                 let chatHistory: IMessage[] = incomingInput.history ?? []
 

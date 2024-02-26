@@ -27,7 +27,6 @@ type AgentFinish = {
     log: string
 }
 type AgentExecutorOutput = ChainValues
-
 interface AgentExecutorIteratorInput {
     agentExecutor: AgentExecutor
     inputs: Record<string, string>

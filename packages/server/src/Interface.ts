@@ -31,6 +31,7 @@ export interface IChatMessage {
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
+    agentReasoning?: string
     chatType: string
     chatId: string
     memoryType?: string

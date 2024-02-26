@@ -9,7 +9,19 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
 
-import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip, Button } from '@mui/material'
+import {
+    Card,
+    CardContent,
+    Stack,
+    CircularProgress,
+    OutlinedInput,
+    Divider,
+    InputAdornment,
+    IconButton,
+    Box,
+    Chip,
+    Button
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconSend, IconDownload } from '@tabler/icons'
 
@@ -32,6 +44,7 @@ import { baseURL, maxScroll } from 'store/constant'
 
 import robotPNG from 'assets/images/robot.png'
 import userPNG from 'assets/images/account.png'
+import agentPNG from 'assets/images/agentgraph.png'
 import StarterPromptsCard from '../../ui-component/cards/StarterPromptsCard'
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
 
@@ -97,6 +110,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         })
     }
 
+    const updateLastMessageAgentReasoning = (agentReasoning) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].agentReasoning = JSON.parse(agentReasoning)
+            return allMessages
+        })
+    }
+
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
@@ -157,6 +179,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             sourceDocuments: data?.sourceDocuments,
                             usedTools: data?.usedTools,
                             fileAnnotations: data?.fileAnnotations,
+                            agentReasoning: data?.agentReasoning,
                             type: 'apiMessage'
                         }
                     ])
@@ -222,6 +245,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
+                if (message.agentReasoning) obj.agentReasoning = JSON.parse(message.agentReasoning)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -291,6 +315,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
             socket.on('sourceDocuments', updateLastMessageSourceDocuments)
 
             socket.on('token', updateLastMessage)
+
+            socket.on('agentReasoning', updateLastMessageAgentReasoning)
         }
 
         return () => {
@@ -357,6 +383,77 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                                                                 clickable
                                                                 onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                             />
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                            {message.agentReasoning && (
+                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                    {message.agentReasoning.map((agent, index) => {
+                                                        return (
+                                                            <Card
+                                                                key={index}
+                                                                sx={{
+                                                                    border: '1px solid #e0e0e0',
+                                                                    borderRadius: `${customization.borderRadius}px`,
+                                                                    mb: 1
+                                                                }}
+                                                            >
+                                                                <CardContent>
+                                                                    <Stack
+                                                                        sx={{
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'flex-start',
+                                                                            width: '100%'
+                                                                        }}
+                                                                        flexDirection='row'
+                                                                    >
+                                                                        <Box sx={{ height: 'auto', pr: 1 }}>
+                                                                            <img
+                                                                                style={{
+                                                                                    objectFit: 'cover',
+                                                                                    height: '25px',
+                                                                                    width: 'auto'
+                                                                                }}
+                                                                                src={agentPNG}
+                                                                                alt='agentPNG'
+                                                                            />
+                                                                        </Box>
+                                                                        <div>{agent.agentName}</div>
+                                                                    </Stack>
+                                                                    {agent.messages.length > 0 && (
+                                                                        <MemoizedReactMarkdown
+                                                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                                                            rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                                            components={{
+                                                                                code({ inline, className, children, ...props }) {
+                                                                                    const match = /language-(\w+)/.exec(className || '')
+                                                                                    return !inline ? (
+                                                                                        <CodeBlock
+                                                                                            key={Math.random()}
+                                                                                            chatflowid={chatflowid}
+                                                                                            isDialog={isDialog}
+                                                                                            language={(match && match[1]) || ''}
+                                                                                            value={String(children).replace(/\n$/, '')}
+                                                                                            {...props}
+                                                                                        />
+                                                                                    ) : (
+                                                                                        <code className={className} {...props}>
+                                                                                            {children}
+                                                                                        </code>
+                                                                                    )
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {agent.messages.length > 1
+                                                                                ? agent.messages.join('\\n')
+                                                                                : agent.messages[0]}
+                                                                        </MemoizedReactMarkdown>
+                                                                    )}
+                                                                    {agent.instructions && <p>{agent.instructions}</p>}
+                                                                    {agent.messages.length === 0 && !agent.instructions && <p>Finished</p>}
+                                                                </CardContent>
+                                                            </Card>
                                                         )
                                                     })}
                                                 </div>
