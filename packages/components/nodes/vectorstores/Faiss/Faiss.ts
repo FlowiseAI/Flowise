@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
-import { Document } from 'langchain/document'
-import { FaissStore } from 'langchain/vectorstores/faiss'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
+import { Embeddings } from '@langchain/core/embeddings'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 

@@ -1,10 +1,13 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
-import { getBaseClasses } from '../../../src/utils'
-import { Tool } from 'langchain/tools'
-import { BaseLanguageModel } from 'langchain/base_language'
 import { flatten } from 'lodash'
+import { AgentExecutor } from 'langchain/agents'
+import { pull } from 'langchain/hub'
+import { Tool } from '@langchain/core/tools'
+import type { PromptTemplate } from '@langchain/core/prompts'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { additionalCallbacks } from '../../../src/handler'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
+import { createReactAgent } from '../../../src/agents'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -16,11 +19,12 @@ class MRKLAgentChat_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    sessionId?: string
 
-    constructor() {
+    constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
         this.name = 'mrklAgentChat'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -34,30 +38,64 @@ class MRKLAgentChat_Agents implements INode {
                 list: true
             },
             {
-                label: 'Language Model',
+                label: 'Chat Model',
                 name: 'model',
-                type: 'BaseLanguageModel'
+                type: 'BaseChatModel'
+            },
+            {
+                label: 'Memory',
+                name: 'memory',
+                type: 'BaseChatMemory'
             }
         ]
+        this.sessionId = fields?.sessionId
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const model = nodeData.inputs?.model as BaseLanguageModel
-        let tools = nodeData.inputs?.tools as Tool[]
-        tools = flatten(tools)
-        const executor = await initializeAgentExecutorWithOptions(tools, model, {
-            agentType: 'chat-zero-shot-react-description',
-            verbose: process.env.DEBUG === 'true' ? true : false
-        })
-        return executor
+    async init(): Promise<any> {
+        return null
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const executor = nodeData.instance as AgentExecutor
+        const memory = nodeData.inputs?.memory as FlowiseMemory
+        const model = nodeData.inputs?.model as BaseChatModel
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = flatten(tools)
+
+        const promptWithChat = await pull<PromptTemplate>('hwchase17/react-chat')
+
+        const agent = await createReactAgent({
+            llm: model,
+            tools,
+            prompt: promptWithChat
+        })
+
+        const executor = new AgentExecutor({
+            agent,
+            tools,
+            verbose: process.env.DEBUG === 'true' ? true : false
+        })
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const result = await executor.call({ input }, [...callbacks])
+        const prevChatHistory = options.chatHistory
+        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prevChatHistory)) as IMessage[]) ?? []
+        const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
+
+        const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })
+
+        await memory.addChatMessages(
+            [
+                {
+                    text: input,
+                    type: 'userMessage'
+                },
+                {
+                    text: result?.output,
+                    type: 'apiMessage'
+                }
+            ],
+            this.sessionId
+        )
 
         return result?.output
     }

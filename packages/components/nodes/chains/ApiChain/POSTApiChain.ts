@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate } from 'langchain/prompts'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { PromptTemplate } from '@langchain/core/prompts'
 import { API_RESPONSE_RAW_PROMPT_TEMPLATE, API_URL_RAW_PROMPT_TEMPLATE, APIChain } from './postCore'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
 
 class POSTApiChain_Chains implements INode {
     label: string

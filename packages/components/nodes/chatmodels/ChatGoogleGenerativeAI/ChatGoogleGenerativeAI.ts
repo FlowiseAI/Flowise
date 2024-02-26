@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { BaseCache } from 'langchain/schema'
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import type { SafetySetting } from '@google/generative-ai'
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from '@langchain/google-genai'
+import { BaseCache } from '@langchain/core/caches'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class GoogleGenerativeAI_ChatModels implements INode {
     label: string

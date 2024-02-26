@@ -1,8 +1,8 @@
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { FaissStore } from 'langchain/vectorstores/faiss'
-import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses } from '../../../src/utils'
-import { Document } from 'langchain/document'
 
 class Faiss_Existing_VectorStores implements INode {
     label: string

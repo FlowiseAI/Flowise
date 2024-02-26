@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { NodeVM } from 'vm2'
-import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
+import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
 
 class ToolInputParsingException extends Error {
     output?: string
@@ -100,6 +100,7 @@ export class DynamicStructuredTool<
         return result
     }
 
+    // @ts-ignore
     protected async _call(
         arg: z.output<T>,
         _?: CallbackManagerForToolRun,
