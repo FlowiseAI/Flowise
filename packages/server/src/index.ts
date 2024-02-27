@@ -662,8 +662,8 @@ export class App {
 
             const chatMessageFeedbackRepo = this.AppDataSource.getRepository(ChatMessageFeedback)
 
-            const totalFeedback = await chatMessageFeedbackRepo.count()
-            const positiveFeedback = await chatMessageFeedbackRepo.countBy({ rating: ChatMessageRatingType.THUMBS_UP })
+            const totalFeedback = await chatMessageFeedbackRepo.count({ where: { chatflowid } })
+            const positiveFeedback = await chatMessageFeedbackRepo.countBy({ chatflowid, rating: ChatMessageRatingType.THUMBS_UP })
 
             const results = {
                 totalMessages,
