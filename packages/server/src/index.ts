@@ -1542,14 +1542,11 @@ export class App {
                 .where('chat_message.chatflowid = :chatflowid', { chatflowid })
                 .andWhere(chatType ? 'chat_message.chatType = :chatType' : 'TRUE', { chatType })
                 .andWhere(chatId ? 'chat_message.chatId = :chatId' : 'TRUE', { chatId })
-                .andWhere(memoryType ? 'chat_message.memoryType = :memoryType' : 'TRUE', {
-                    memoryType: memoryType ?? (chatId ? IsNull() : undefined)
-                })
-                .andWhere(sessionId ? 'chat_message.sessionId = :sessionId' : 'TRUE', {
-                    sessionId: sessionId ?? (chatId ? IsNull() : undefined)
-                })
-                .andWhere(fromDate && toDate ? 'chat_message.createdDate = :createdDate' : 'TRUE', {
-                    createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+                .andWhere(memoryType ? 'chat_message.memoryType = :memoryType' : 'TRUE', { memoryType })
+                .andWhere(sessionId ? 'chat_message.sessionId = :sessionId' : 'TRUE', { sessionId })
+                .andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
+                    fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                    toDate: toDate ?? new Date()
                 })
                 .orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
                 .getMany()
