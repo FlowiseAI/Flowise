@@ -1227,7 +1227,9 @@ export class App {
                 logger.info(`[server]: Request originated from ${req.headers.origin}`)
                 if (chatflow.chatbotConfig) {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    if (parsedConfig.allowedOrigins && parsedConfig.allowedOrigins.length > 0) {
+                    // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
+                    const isValidAllowedOrigins = parsedConfig.allowedOrigins[0] !== ''
+                    if (parsedConfig.allowedOrigins && parsedConfig.allowedOrigins.length > 0 && isValidAllowedOrigins) {
                         const originHeader = req.headers.origin as string
                         const origin = new URL(originHeader).host
                         isDomainAllowed = parsedConfig.allowedOrigins.includes(origin)
