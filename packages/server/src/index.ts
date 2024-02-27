@@ -1245,18 +1245,22 @@ export class App {
         // ----------------------------------------
 
         this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
-            const url = decodeURIComponent(req.query.url as string)
-            const relativeLinksMethod = req.query.relativeLinksMethod as string
-            if (!relativeLinksMethod) {
-                return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+            try {
+                const url = decodeURIComponent(req.query.url as string)
+                const relativeLinksMethod = req.query.relativeLinksMethod as string
+                if (!relativeLinksMethod) {
+                    return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+                }
+
+                const limit = parseInt(req.query.limit as string)
+                if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+                const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
+                if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+
+                res.json({ status: 'OK', links })
+            } catch (e: any) {
+                return res.status(500).send('Could not fetch links from the URL.')
             }
-
-            const limit = parseInt(req.query.limit as string)
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
-
-            res.json({ status: 'OK', links })
         })
 
         // ----------------------------------------
