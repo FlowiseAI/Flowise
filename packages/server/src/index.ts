@@ -1224,8 +1224,10 @@ export class App {
                 })
                 if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
                 let isDomainAllowed = true
+                logger.debug(`[server]: Request originated from ${req.headers.host}`)
                 if (chatflow.chatbotConfig) {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    logger.debug(`[server]: Chatflow ${req.params.id} has config ${chatflow.chatbotConfig}`)
                     if (parsedConfig.allowedDomains && parsedConfig.allowedDomains.length > 0) {
                         isDomainAllowed = parsedConfig.allowedDomains.includes(req.headers.host)
                     }
