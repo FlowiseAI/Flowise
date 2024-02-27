@@ -1,5 +1,6 @@
 import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
+import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { LLMChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
@@ -7,6 +8,9 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
+import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
+import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { HumanMessage } from 'langchain/schema'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -160,12 +164,7 @@ const runPrediction = async (
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
-    /**
-     * Apply string transformation to reverse converted special chars:
-     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
-     * TO: { "value": "hello i am ben\n\n\thow are you?" }
-     */
-    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+    let model = nodeData.inputs?.model as ChatOpenAI
 
     if (moderations && moderations.length > 0) {
         try {
@@ -175,6 +174,46 @@ const runPrediction = async (
             await new Promise((resolve) => setTimeout(resolve, 500))
             streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
             return formatResponse(e.message)
+        }
+    }
+
+    /**
+     * Apply string transformation to reverse converted special chars:
+     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
+     * TO: { "value": "hello i am ben\n\n\thow are you?" }
+     */
+    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+    const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+
+    if (chain.llm instanceof ChatOpenAI) {
+        const chatOpenAI = chain.llm as ChatOpenAI
+        if (messageContent?.length) {
+            // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
+            chatOpenAI.modelName = 'gpt-4-vision-preview'
+            chatOpenAI.maxTokens = 1024
+            // Add image to the message
+            if (chain.prompt instanceof PromptTemplate) {
+                const existingPromptTemplate = chain.prompt.template as string
+                let newChatPromptTemplate = ChatPromptTemplate.fromMessages([
+                    HumanMessagePromptTemplate.fromTemplate(existingPromptTemplate)
+                ])
+                newChatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
+                chain.prompt = newChatPromptTemplate
+            } else if (chain.prompt instanceof ChatPromptTemplate) {
+                chain.prompt.promptMessages.push(new HumanMessage({ content: messageContent }))
+            } else if (chain.prompt instanceof FewShotPromptTemplate) {
+                let existingFewShotPromptTemplate = chain.prompt.examplePrompt.template as string
+                let newFewShotPromptTemplate = ChatPromptTemplate.fromMessages([
+                    HumanMessagePromptTemplate.fromTemplate(existingFewShotPromptTemplate)
+                ])
+                newFewShotPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
+                // @ts-ignore
+                chain.prompt.examplePrompt = newFewShotPromptTemplate
+            }
+        } else {
+            // revert to previous values if image upload is empty
+            chatOpenAI.modelName = model.configuredModel
+            chatOpenAI.maxTokens = model.configuredMaxToken
         }
     }
 

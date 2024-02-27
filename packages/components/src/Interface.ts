@@ -21,6 +21,8 @@ export type CommonType = string | number | boolean | undefined | null
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
+export type ImageDetail = 'auto' | 'low' | 'high'
+
 /**
  * Others
  */
@@ -144,6 +146,33 @@ export interface IUsedTool {
     tool: string
     toolInput: object
     toolOutput: string | object
+}
+
+export interface IFileUpload {
+    data?: string
+    type: string
+    name: string
+    mime: string
+}
+
+export interface IMultiModalOption {
+    image?: Record<string, any>
+    audio?: Record<string, any>
+}
+
+export type MessageContentText = {
+    type: 'text'
+    text: string
+}
+
+export type MessageContentImageUrl = {
+    type: 'image_url'
+    image_url:
+        | string
+        | {
+              url: string
+              detail?: ImageDetail
+          }
 }
 
 /**

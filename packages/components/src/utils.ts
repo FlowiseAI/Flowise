@@ -770,3 +770,10 @@ export const prepareSandboxVars = (variables: IVariable[]) => {
     }
     return vars
 }
+
+/**
+ * Prepare storage path
+ */
+export const getStoragePath = (): string => {
+    return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
+}
