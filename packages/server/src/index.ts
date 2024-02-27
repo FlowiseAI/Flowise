@@ -324,7 +324,10 @@ export class App {
         // execute custom function node
         this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
             const body = req.body
-            const nodeData = { inputs: body }
+            const functionInputVariables = Object.fromEntries(
+                [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
+            )
+            const nodeData = { inputs: { functionInputVariables, ...body } }
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
                 try {
                     const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
