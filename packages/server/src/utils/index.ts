@@ -541,7 +541,7 @@ export const getVariableValue = (
                 if (variableFullPathParts.length > 3) {
                     let variableObj = null
                     switch (typeof variableValue) {
-                        case 'string':
+                        case 'string': {
                             const unEscapedVariableValue = handleEscapeCharacters(variableValue, true)
                             if (unEscapedVariableValue.startsWith('{') && unEscapedVariableValue.endsWith('}')) {
                                 try {
@@ -551,9 +551,11 @@ export const getVariableValue = (
                                 }
                             }
                             break
-                        case 'object':
+                        }
+                        case 'object': {
                             variableObj = variableValue
                             break
+                        }
                         default:
                             break
                     }
