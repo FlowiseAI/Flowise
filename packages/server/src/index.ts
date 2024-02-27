@@ -1536,21 +1536,36 @@ export class App {
         if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
         if (feedback) {
-            const messages = await this.AppDataSource.getRepository(ChatMessage)
-                .createQueryBuilder('chat_message')
+            const query = this.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
+
+            // do the join with chat message feedback based on messageId for each chat message in the chatflow
+            query
                 .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
                 .where('chat_message.chatflowid = :chatflowid', { chatflowid })
-                .andWhere(chatType ? 'chat_message.chatType = :chatType' : 'TRUE', { chatType })
-                .andWhere(chatId ? 'chat_message.chatId = :chatId' : 'TRUE', { chatId })
-                .andWhere(memoryType ? 'chat_message.memoryType = :memoryType' : 'TRUE', { memoryType })
-                .andWhere(sessionId ? 'chat_message.sessionId = :sessionId' : 'TRUE', { sessionId })
-                .andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                    fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
-                    toDate: toDate ?? new Date()
-                })
-                .orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
-                .getMany()
 
+            // based on which parameters are available add `andWhere` clauses to the query
+            if (chatType) {
+                query.andWhere('chat_message.chatType = :chatType', { chatType })
+            }
+            if (chatId) {
+                query.andWhere('chat_message.chatId = :chatId', { chatId })
+            }
+            if (memoryType) {
+                query.andWhere('chat_message.memoryType = :memoryType', { memoryType })
+            }
+            if (sessionId) {
+                query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
+            }
+
+            // set date range
+            query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
+                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                toDate: toDate ?? new Date()
+            })
+            // sort
+            query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+
+            const messages = await query.getMany()
             return messages
         }
 
