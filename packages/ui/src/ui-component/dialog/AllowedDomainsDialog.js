@@ -38,21 +38,12 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [inputFields, setInputFields] = useState([
-        {
-            origin: ''
-        }
-    ])
+    const [inputFields, setInputFields] = useState([''])
 
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const addInputField = () => {
-        setInputFields([
-            ...inputFields,
-            {
-                origin: ''
-            }
-        ])
+        setInputFields([...inputFields, ''])
     }
     const removeInputFields = (index) => {
         const rows = [...inputFields]
@@ -61,18 +52,16 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     }
 
     const handleChange = (index, evnt) => {
-        const { name, value } = evnt.target
+        const { value } = evnt.target
         const list = [...inputFields]
-        list[index][name] = value
+        list[index] = value
         setInputFields(list)
     }
 
     const onSave = async () => {
         try {
             let value = {
-                allowedOrigins: {
-                    ...inputFields
-                }
+                allowedOrigins: [...inputFields]
             }
             chatbotConfig.allowedOrigins = value.allowedOrigins
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
@@ -118,26 +107,13 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
                 setChatbotConfig(chatbotConfig || {})
                 if (chatbotConfig.allowedOrigins) {
-                    let inputFields = []
-                    Object.getOwnPropertyNames(chatbotConfig.allowedOrigins).forEach((key) => {
-                        if (chatbotConfig.allowedOrigins[key]) {
-                            inputFields.push(chatbotConfig.allowedOrigins[key])
-                        }
-                    })
+                    let inputFields = [...chatbotConfig.allowedOrigins]
                     setInputFields(inputFields)
                 } else {
-                    setInputFields([
-                        {
-                            origin: ''
-                        }
-                    ])
+                    setInputFields([''])
                 }
             } catch (e) {
-                setInputFields([
-                    {
-                        origin: ''
-                    }
-                ])
+                setInputFields([''])
             }
         }
 
@@ -176,7 +152,7 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </div>
                 <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
                     <List>
-                        {inputFields.map((data, index) => {
+                        {inputFields.map((origin, index) => {
                             return (
                                 <div key={index} style={{ display: 'flex', width: '100%' }}>
                                     <Box sx={{ width: '100%', mb: 1 }}>
@@ -186,8 +162,8 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             type='text'
                                             onChange={(e) => handleChange(index, e)}
                                             size='small'
-                                            value={data.prompt}
-                                            name='prompt'
+                                            value={origin}
+                                            name='origin'
                                             endAdornment={
                                                 <InputAdornment position='end' sx={{ padding: '2px' }}>
                                                     {inputFields.length > 1 && (
