@@ -138,6 +138,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
+            if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {

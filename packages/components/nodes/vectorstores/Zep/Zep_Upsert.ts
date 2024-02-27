@@ -20,7 +20,7 @@ class Zep_Upsert_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep Upsert Document'
+        this.label = 'Zep Upsert Document - Open Source'
         this.name = 'zepUpsert'
         this.version = 1.0
         this.type = 'Zep'
