@@ -561,7 +561,10 @@ export const getVariableValue = (
                     }
                     if (variableObj) {
                         variableObj = get(variableObj, variableFullPathParts.slice(3))
-                        variableValue = handleEscapeCharacters(JSON.stringify(variableObj), false)
+                        variableValue = handleEscapeCharacters(
+                            typeof variableObj === 'object' ? JSON.stringify(variableObj) : variableObj,
+                            false
+                        )
                     }
                 }
                 if (isAcceptVariable) {
