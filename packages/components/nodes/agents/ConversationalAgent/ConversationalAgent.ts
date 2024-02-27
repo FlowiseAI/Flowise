@@ -4,13 +4,15 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
-import { renderTemplate } from '@langchain/core/prompts'
+import { renderTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
+import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
+import { addImagesToMessages } from '../../../src/multiModalUtils'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -81,12 +83,18 @@ class ConversationalAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
-        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+
+        const executor = await prepareAgent(
+            nodeData,
+            options,
+            { sessionId: this.sessionId, chatId: options.chatId, input },
+            options.chatHistory
+        )
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -120,6 +128,7 @@ class ConversationalAgent_Agents implements INode {
 
 const prepareAgent = async (
     nodeData: INodeData,
+    options: ICommonObject,
     flowObj: { sessionId?: string; chatId?: string; input?: string },
     chatHistory: IMessage[] = []
 ) => {
@@ -131,11 +140,6 @@ const prepareAgent = async (
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
-    /** Bind a stop token to the model */
-    const modelWithStop = model.bind({
-        stop: ['\nObservation']
-    })
-
     const outputParser = ChatConversationalAgent.getDefaultOutputParser({
         llm: model,
         toolNames: tools.map((tool) => tool.name)
@@ -144,6 +148,41 @@ const prepareAgent = async (
     const prompt = ChatConversationalAgent.createPrompt(tools, {
         systemMessage: systemMessage ? systemMessage : DEFAULT_PREFIX,
         outputParser
+    })
+
+    if (model instanceof ChatOpenAI) {
+        let humanImageMessages: HumanMessage[] = []
+        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+
+        if (messageContent?.length) {
+            // Change model to gpt-4-vision
+            model.modelName = 'gpt-4-vision-preview'
+
+            // Change default max token to higher when using gpt-4-vision
+            model.maxTokens = 1024
+
+            for (const msg of messageContent) {
+                humanImageMessages.push(new HumanMessage({ content: [msg] }))
+            }
+
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+
+            // Add the HumanMessage for images
+            prompt.promptMessages.push(...humanImageMessages)
+
+            // Add the `agent_scratchpad` MessagePlaceHolder back
+            prompt.promptMessages.push(messagePlaceholder)
+        } else {
+            // revert to previous values if image upload is empty
+            model.modelName = model.configuredModel
+            model.maxTokens = model.configuredMaxToken
+        }
+    }
+
+    /** Bind a stop token to the model */
+    const modelWithStop = model.bind({
+        stop: ['\nObservation']
     })
 
     const runnableAgent = RunnableSequence.from([
@@ -166,7 +205,7 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true'
     })
 
     return executor
