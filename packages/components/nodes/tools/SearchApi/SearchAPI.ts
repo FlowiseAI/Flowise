@@ -1,6 +1,6 @@
+import { SearchApi } from '@langchain/community/tools/searchapi'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SearchApi } from 'langchain/tools'
 
 class SearchAPI_Tools implements INode {
     label: string

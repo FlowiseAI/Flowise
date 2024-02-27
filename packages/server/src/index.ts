@@ -26,7 +26,7 @@ import {
 import {
     getNodeModulesPackagePath,
     getStartingNodes,
-    buildLangchain,
+    buildFlow,
     getEndingNodes,
     constructGraphs,
     resolveVariables,
@@ -85,7 +85,7 @@ export class App {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                logger.info('📦 [server]: Data Source has been initialized!')
+                logger.info('📦 [server]: Data Source is being initialized!')
 
                 // Run Migrations Scripts
                 await this.AppDataSource.runMigrations({ transaction: 'each' })
@@ -112,6 +112,7 @@ export class App {
 
                 // Initialize telemetry
                 this.telemetry = new Telemetry()
+                logger.info('📦 [server]: Data Source has been initialized!')
             })
             .catch((err) => {
                 logger.error('❌ [server]: Error during Data Source initialization:', err)
@@ -441,7 +442,7 @@ export class App {
             // chatFlowPool is initialized only when a flow is opened
             // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
             if (this.chatflowPool) {
-                // Update chatflowpool inSync to false, to build Langchain again because data has been changed
+                // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
                 this.chatflowPool.updateInSync(chatflow.id, false)
             }
 
@@ -1570,7 +1571,7 @@ export class App {
 
             const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
-            await buildLangchain(
+            await buildFlow(
                 startingNodeIds,
                 nodes,
                 edges,
@@ -1787,7 +1788,7 @@ export class App {
 
                 logger.debug(`[server]: Start building chatflow ${chatflowid}`)
                 /*** BFS to traverse from Starting Nodes to Ending Node ***/
-                const reactFlowNodes = await buildLangchain(
+                const reactFlowNodes = await buildFlow(
                     startingNodeIds,
                     nodes,
                     edges,

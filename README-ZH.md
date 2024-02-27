@@ -71,7 +71,7 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
 
 -   `server`：用于提供 API 逻辑的 Node 后端
 -   `ui`：React 前端
--   `components`：Langchain 组件
+-   `components`：第三方节点集成
 
 ### 先决条件
 

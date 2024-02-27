@@ -127,6 +127,9 @@ export default class Start extends Command {
         // Telemetry
         if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
 
+        // Disable langchain warnings
+        process.env.LANGCHAIN_SUPPRESS_MIGRATION_WARNINGS = 'true'
+
         await (async () => {
             try {
                 logger.info('Starting Flowise...')
