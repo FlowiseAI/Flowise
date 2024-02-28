@@ -298,7 +298,7 @@ export const buildFlow = async (
         nodeQueue.push({ nodeId: startingNodeIds[i], depth: 0 })
         exploredNode[startingNodeIds[i]] = { remainingLoop: maxLoop, lastSeenDepth: 0 }
     }
-    
+
     const initializedNode: Set<string> = new Set()
     const nonDirectedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
     while (nodeQueue.length) {
