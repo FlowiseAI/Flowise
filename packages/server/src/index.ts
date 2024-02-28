@@ -1339,7 +1339,7 @@ export class App {
                 if (isDomainAllowed) {
                     await this.buildChatflow(req, res, socketIO)
                 } else {
-                    return res.status(401).send(`This domain is not allowed to access chatflow ${req.params.id}`)
+                    return res.status(401).send(`This site is not allowed to access this chatbot`)
                 }
             }
         )
