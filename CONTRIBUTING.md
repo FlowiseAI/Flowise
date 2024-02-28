@@ -129,6 +129,7 @@ Flowise support different environment variables to configure your instance. You 
 | FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
 | FLOWISE_FILE_SIZE_LIMIT     | Upload File Size Limit                                                       | String                                           | 50mb                                |
 | DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |
+| BLOB_STORAGE_PATH           | Location where uploaded files are stored                                     | String                                           | `your-home-dir/.flowise/storage`    |
 | LOG_PATH                    | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                   | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | APIKEY_PATH                 | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |

@@ -21,7 +21,9 @@ import {
     DialogTitle,
     ListItem,
     ListItemText,
-    Chip
+    Chip,
+    Card,
+    CardMedia
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -50,7 +52,7 @@ import useApi from 'hooks/useApi'
 import useConfirm from 'hooks/useConfirm'
 
 // Utils
-import { isValidURL, removeDuplicateURL } from 'utils/genericHelper'
+import { getOS, isValidURL, removeDuplicateURL } from 'utils/genericHelper'
 import useNotifier from 'utils/useNotifier'
 import { baseURL } from 'store/constant'
 
@@ -70,6 +72,12 @@ const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value,
 DatePickerCustomInput.propTypes = {
     value: PropTypes.string,
     onClick: PropTypes.func
+}
+
+const messageImageStyle = {
+    width: '128px',
+    height: '128px',
+    objectFit: 'cover'
 }
 
 const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
@@ -97,6 +105,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const getChatmessageApi = useApi(chatmessageApi.getAllChatmessageFromChatflow)
     const getChatmessageFromPKApi = useApi(chatmessageApi.getChatmessageFromPK)
     const getStatsApi = useApi(feedbackApi.getStatsFromChatflow)
+    const getStoragePathFromServer = useApi(chatmessageApi.getStoragePath)
+    let storagePath = ''
 
     const onStartDateSelected = (date) => {
         setStartDate(date)
@@ -125,16 +135,35 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         })
     }
 
-    const exportMessages = () => {
+    const exportMessages = async () => {
+        if (!storagePath && getStoragePathFromServer.data) {
+            storagePath = getStoragePathFromServer.data.storagePath
+        }
         const obj = {}
+        let fileSeparator = '/'
+        if ('windows' === getOS()) {
+            fileSeparator = '\\'
+        }
         for (let i = 0; i < allChatlogs.length; i += 1) {
             const chatmsg = allChatlogs[i]
             const chatPK = getChatPK(chatmsg)
+            let filePaths = []
+            if (chatmsg.fileUploads) {
+                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+                chatmsg.fileUploads.forEach((file) => {
+                    if (file.type === 'stored-file') {
+                        filePaths.push(
+                            `${storagePath}${fileSeparator}${chatmsg.chatflowid}${fileSeparator}${chatmsg.chatId}${fileSeparator}${file.name}`
+                        )
+                    }
+                })
+            }
             const msg = {
                 content: chatmsg.content,
                 role: chatmsg.role === 'apiMessage' ? 'bot' : 'user',
                 time: chatmsg.createdDate
             }
+            if (filePaths.length) msg.filePaths = filePaths
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
@@ -256,6 +285,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     })
                 }
             }
+            if (chatmsg.fileUploads) {
+                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+                chatmsg.fileUploads.forEach((file) => {
+                    if (file.type === 'stored-file') {
+                        file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${chatmsg.chatId}&fileName=${file.name}`
+                    }
+                })
+            }
             const obj = {
                 ...chatmsg,
                 message: chatmsg.content,
@@ -364,6 +401,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     useEffect(() => {
         if (getChatmessageApi.data) {
+            getStoragePathFromServer.request()
+
             setAllChatLogs(getChatmessageApi.data)
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
@@ -633,8 +672,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             sx={{
                                                                 background:
                                                                     message.type === 'apiMessage' ? theme.palette.asyncSelect.main : '',
-                                                                pl: 1,
-                                                                pr: 1
+                                                                py: '1rem',
+                                                                px: '1.5rem'
                                                             }}
                                                             key={index}
                                                             style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
@@ -680,6 +719,51 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                     clickable
                                                                                     onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                                                 />
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {message.fileUploads && message.fileUploads.length > 0 && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexWrap: 'wrap',
+                                                                            flexDirection: 'column',
+                                                                            width: '100%',
+                                                                            gap: '8px'
+                                                                        }}
+                                                                    >
+                                                                        {message.fileUploads.map((item, index) => {
+                                                                            return (
+                                                                                <>
+                                                                                    {item.mime.startsWith('image/') ? (
+                                                                                        <Card
+                                                                                            key={index}
+                                                                                            sx={{
+                                                                                                p: 0,
+                                                                                                m: 0,
+                                                                                                maxWidth: 128,
+                                                                                                marginRight: '10px',
+                                                                                                flex: '0 0 auto'
+                                                                                            }}
+                                                                                        >
+                                                                                            <CardMedia
+                                                                                                component='img'
+                                                                                                image={item.data}
+                                                                                                sx={{ height: 64 }}
+                                                                                                alt={'preview'}
+                                                                                                style={messageImageStyle}
+                                                                                            />
+                                                                                        </Card>
+                                                                                    ) : (
+                                                                                        // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                                        <audio controls='controls'>
+                                                                                            Your browser does not support the &lt;audio&gt;
+                                                                                            tag.
+                                                                                            <source src={item.data} type={item.mime} />
+                                                                                        </audio>
+                                                                                    )}
+                                                                                </>
                                                                             )
                                                                         })}
                                                                     </div>
