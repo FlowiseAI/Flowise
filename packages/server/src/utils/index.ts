@@ -162,45 +162,32 @@ export const constructGraphs = (
  * @param {string} endNodeId
  */
 export const getStartingNodes = (graph: INodeDirectedGraph, endNodeId: string) => {
-    const visited = new Set<string>()
-    const queue: Array<[string, number]> = [[endNodeId, 0]]
     const depthQueue: IDepthQueue = {
         [endNodeId]: 0
     }
 
-    let maxDepth = 0
-    let startingNodeIds: string[] = []
-
-    while (queue.length > 0) {
-        const [currentNode, depth] = queue.shift()!
-
-        if (visited.has(currentNode)) {
-            continue
-        }
-
-        visited.add(currentNode)
-
-        if (depth > maxDepth) {
-            maxDepth = depth
-            startingNodeIds = [currentNode]
-        } else if (depth === maxDepth) {
-            startingNodeIds.push(currentNode)
-        }
-
-        for (const neighbor of graph[currentNode]) {
-            if (!visited.has(neighbor)) {
-                queue.push([neighbor, depth + 1])
-                depthQueue[neighbor] = depth + 1
-            }
-        }
+    // Assuming that this is a directed acyclic graph, there will be no infinite loop problem.
+    const walkGraph = (nodeId: string) => {
+        const depth = depthQueue[nodeId]
+        graph[nodeId].flatMap((id) => {
+            depthQueue[id] = Math.max(depthQueue[id] ?? 0, depth + 1)
+            walkGraph(id)
+        })
     }
 
+    walkGraph(endNodeId)
+
+    const maxDepth = Math.max(...Object.values(depthQueue))
     const depthQueueReversed: IDepthQueue = {}
     for (const nodeId in depthQueue) {
         if (Object.prototype.hasOwnProperty.call(depthQueue, nodeId)) {
             depthQueueReversed[nodeId] = Math.abs(depthQueue[nodeId] - maxDepth)
         }
     }
+
+    const startingNodeIds = Object.entries(depthQueueReversed)
+        .filter(([_, depth]) => depth === 0)
+        .map(([id, _]) => id)
 
     return { startingNodeIds, depthQueue: depthQueueReversed }
 }
