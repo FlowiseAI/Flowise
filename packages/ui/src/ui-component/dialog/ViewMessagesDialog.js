@@ -473,7 +473,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             marginRight: 8
                         }}
                     >
-                        <StatsCard title='Total Messages (External)' stat={`${stats.totalMessages}`} />
+                        <StatsCard title='Total Messages (API/Embed)' stat={`${stats.totalMessages}`} />
                         <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
                         <StatsCard
                             title='Positive Feedback'
