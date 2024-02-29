@@ -33,6 +33,7 @@
         "@langchain/cohere": "^0.0.5",
         "@langchain/community": "^0.0.30",
         "@langchain/google-genai": "^0.0.10",
+        "@langchain/groq": "^0.0.2",
         "@langchain/mistralai": "^0.0.7",
         "@langchain/openai": "^0.0.14",
         "@langchain/pinecone": "^0.0.3",
