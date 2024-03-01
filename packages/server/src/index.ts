@@ -1786,6 +1786,7 @@ export class App {
      */
     async buildChatflow(req: Request, res: Response, socketIO?: Server, isInternal: boolean = false) {
         try {
+            req.headers['X-Request-ID'] = req.headers['X-Request-ID'] ?? req.headers['x-request-id'] ?? uuidv4()
             const chatflowid = req.params.id
             let incomingInput: IncomingInput = req.body
 
@@ -2023,7 +2024,9 @@ export class App {
                     this.cachePool,
                     false,
                     undefined,
-                    incomingInput.uploads
+                    incomingInput.uploads,
+                    chatflow.analytic,
+                    req.headers['X-Request-ID'] as string // correlationId
                 )
 
                 const nodeToExecute =
@@ -2064,7 +2067,8 @@ export class App {
                       analytic: chatflow.analytic,
                       uploads: incomingInput.uploads,
                       socketIO,
-                      socketIOClientId: incomingInput.socketIOClientId
+                      socketIOClientId: incomingInput.socketIOClientId,
+                      corelationId: req.headers['X-Request-ID'] as string
                   })
                 : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                       chatId,
@@ -2074,7 +2078,8 @@ export class App {
                       appDataSource: this.AppDataSource,
                       databaseEntities,
                       analytic: chatflow.analytic,
-                      uploads: incomingInput.uploads
+                      uploads: incomingInput.uploads,
+                      corelationId: req.headers['X-Request-ID'] as string
                   })
 
             result = typeof result === 'string' ? { text: result } : result
@@ -2138,6 +2143,8 @@ export class App {
         } catch (e: any) {
             logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)
+        } finally {
+            console.log('finally')
         }
     }
 

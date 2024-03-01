@@ -281,7 +281,9 @@ export const buildFlow = async (
     cachePool?: CachePool,
     isUpsert?: boolean,
     stopNodeId?: string,
-    uploads?: IFileUpload[]
+    uploads?: IFileUpload[],
+    analytic?: string,
+    corelationId?: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -328,7 +330,8 @@ export const buildFlow = async (
                     databaseEntities,
                     cachePool,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    analytic: analytic
                 })
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
@@ -344,7 +347,9 @@ export const buildFlow = async (
                     databaseEntities,
                     cachePool,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    analytic: analytic,
+                    corelationId: corelationId
                 })
 
                 // Save dynamic variables
