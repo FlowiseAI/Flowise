@@ -532,11 +532,45 @@ export const getVariableValue = (
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(convertChatHistoryToText(chatHistory), false)
             }
 
-            // Split by first occurrence of '.' to get just nodeId
-            const [variableNodeId, _] = variableFullPath.split('.')
+            // Resolve values with following case.
+            // 1: <variableNodeId>.data.instance
+            // 2: <variableNodeId>.data.instance.pathtokey
+            const variableFullPathParts = variableFullPath.split('.')
+            const variableNodeId = variableFullPathParts[0]
             const executedNode = reactFlowNodes.find((nd) => nd.id === variableNodeId)
             if (executedNode) {
-                const variableValue = get(executedNode.data, 'instance')
+                let variableValue = get(executedNode.data, 'instance')
+
+                // Handle path such as `<variableNodeId>.data.instance.key`
+                if (variableFullPathParts.length > 3) {
+                    let variableObj = null
+                    switch (typeof variableValue) {
+                        case 'string': {
+                            const unEscapedVariableValue = handleEscapeCharacters(variableValue, true)
+                            if (unEscapedVariableValue.startsWith('{') && unEscapedVariableValue.endsWith('}')) {
+                                try {
+                                    variableObj = JSON.parse(unEscapedVariableValue)
+                                } catch (e) {
+                                    // ignore
+                                }
+                            }
+                            break
+                        }
+                        case 'object': {
+                            variableObj = variableValue
+                            break
+                        }
+                        default:
+                            break
+                    }
+                    if (variableObj) {
+                        variableObj = get(variableObj, variableFullPathParts.slice(3))
+                        variableValue = handleEscapeCharacters(
+                            typeof variableObj === 'object' ? JSON.stringify(variableObj) : variableObj,
+                            false
+                        )
+                    }
+                }
                 if (isAcceptVariable) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                 } else {
