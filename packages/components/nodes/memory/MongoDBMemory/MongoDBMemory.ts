@@ -118,7 +118,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
         await collection.updateOne(
             { sessionId: (mongoDBChatMessageHistory as any).sessionId },
             {
-                $push: { messages: { $each: messages } }
+                $push: { messages: { $each: messages } } as any
             },
             { upsert: true }
         )
@@ -174,7 +174,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             await this.collection.updateOne(
                 { sessionId: id },
                 {
-                    $push: { messages: { $each: messageToAdd } }
+                    $push: { messages: { $each: messageToAdd } } as any
                 },
                 { upsert: true }
             )
@@ -186,7 +186,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             await this.collection.updateOne(
                 { sessionId: id },
                 {
-                    $push: { messages: { $each: messageToAdd } }
+                    $push: { messages: { $each: messageToAdd } } as any
                 },
                 { upsert: true }
             )
