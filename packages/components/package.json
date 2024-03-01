@@ -73,7 +73,7 @@
         "lunary": "^0.6.16",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
-        "mongodb": "^6.2.0",
+        "mongodb": "6.2.0",
         "mysql2": "^3.5.1",
         "node-fetch": "^2.6.11",
         "node-html-markdown": "^1.3.0",
