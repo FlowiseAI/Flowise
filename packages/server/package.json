@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -48,6 +48,7 @@
         "@oclif/core": "^1.13.10",
         "async-mutex": "^0.4.0",
         "axios": "1.6.2",
+        "content-disposition": "0.5.4",
         "cors": "^2.8.5",
         "crypto-js": "^4.1.1",
         "dotenv": "^16.0.0",
@@ -70,6 +71,7 @@
         "winston": "^3.9.0"
     },
     "devDependencies": {
+        "@types/content-disposition": "0.5.8",
         "@types/cors": "^2.8.12",
         "@types/crypto-js": "^4.1.1",
         "@types/multer": "^1.4.7",

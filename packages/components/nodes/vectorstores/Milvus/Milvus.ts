@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { DataType, ErrorCode, MetricType, IndexType } from '@zilliz/milvus2-sdk-node'
-import { Document } from 'langchain/document'
-import { MilvusLibArgs, Milvus } from 'langchain/vectorstores/milvus'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 

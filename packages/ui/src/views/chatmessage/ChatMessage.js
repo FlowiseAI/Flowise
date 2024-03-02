@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
@@ -9,15 +9,34 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
 
-import { CircularProgress, OutlinedInput, Divider, InputAdornment, IconButton, Box, Chip, Button } from '@mui/material'
+import {
+    Box,
+    Button,
+    Card,
+    CardMedia,
+    Chip,
+    CircularProgress,
+    Divider,
+    IconButton,
+    InputAdornment,
+    OutlinedInput,
+    Typography
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconSend, IconDownload } from '@tabler/icons'
+import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX } from '@tabler/icons'
+import robotPNG from 'assets/images/robot.png'
+import userPNG from 'assets/images/account.png'
+import audioUploadSVG from 'assets/images/wave-sound.jpg'
 
 // project import
 import { CodeBlock } from 'ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
 import SourceDocDialog from 'ui-component/dialog/SourceDocDialog'
+import StarterPromptsCard from 'ui-component/cards/StarterPromptsCard'
+import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
+import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from 'ui-component/button/ImageButton'
 import './ChatMessage.css'
+import './audio-recording.css'
 
 // api
 import chatmessageApi from 'api/chatmessage'
@@ -30,12 +49,16 @@ import useApi from 'hooks/useApi'
 // Const
 import { baseURL, maxScroll } from 'store/constant'
 
-import robotPNG from 'assets/images/robot.png'
-import userPNG from 'assets/images/account.png'
-import StarterPromptsCard from '../../ui-component/cards/StarterPromptsCard'
+// Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from 'utils/genericHelper'
 
-export const ChatMessage = ({ open, chatflowid, isDialog }) => {
+const messageImageStyle = {
+    width: '128px',
+    height: '128px',
+    objectFit: 'cover'
+}
+
+export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -51,6 +74,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     ])
     const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
+    const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatId, setChatId] = useState(undefined)
@@ -58,9 +82,219 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
+    const getAllowChatFlowUploads = useApi(chatflowsApi.getAllowChatflowUploads)
     const getChatflowConfig = useApi(chatflowsApi.getSpecificChatflow)
 
     const [starterPrompts, setStarterPrompts] = useState([])
+
+    // drag & drop and file input
+    const fileUploadRef = useRef(null)
+    const [isChatFlowAvailableForUploads, setIsChatFlowAvailableForUploads] = useState(false)
+    const [isDragActive, setIsDragActive] = useState(false)
+
+    // recording
+    const [isRecording, setIsRecording] = useState(false)
+    const [recordingNotSupported, setRecordingNotSupported] = useState(false)
+    const [isLoadingRecording, setIsLoadingRecording] = useState(false)
+
+    const isFileAllowedForUpload = (file) => {
+        const constraints = getAllowChatFlowUploads.data
+        /**
+         * {isImageUploadAllowed: boolean, imgUploadSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
+         */
+        let acceptFile = false
+        if (constraints.isImageUploadAllowed) {
+            const fileType = file.type
+            const sizeInMB = file.size / 1024 / 1024
+            constraints.imgUploadSizeAndTypes.map((allowed) => {
+                if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+                    acceptFile = true
+                }
+            })
+        }
+        if (!acceptFile) {
+            alert(`Cannot upload file. Kindly check the allowed file types and maximum allowed size.`)
+        }
+        return acceptFile
+    }
+
+    const handleDrop = async (e) => {
+        if (!isChatFlowAvailableForUploads) {
+            return
+        }
+        e.preventDefault()
+        setIsDragActive(false)
+        let files = []
+        if (e.dataTransfer.files.length > 0) {
+            for (const file of e.dataTransfer.files) {
+                if (isFileAllowedForUpload(file) === false) {
+                    return
+                }
+                const reader = new FileReader()
+                const { name } = file
+                files.push(
+                    new Promise((resolve) => {
+                        reader.onload = (evt) => {
+                            if (!evt?.target?.result) {
+                                return
+                            }
+                            const { result } = evt.target
+                            let previewUrl
+                            if (file.type.startsWith('audio/')) {
+                                previewUrl = audioUploadSVG
+                            } else if (file.type.startsWith('image/')) {
+                                previewUrl = URL.createObjectURL(file)
+                            }
+                            resolve({
+                                data: result,
+                                preview: previewUrl,
+                                type: 'file',
+                                name: name,
+                                mime: file.type
+                            })
+                        }
+                        reader.readAsDataURL(file)
+                    })
+                )
+            }
+
+            const newFiles = await Promise.all(files)
+            setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        }
+
+        if (e.dataTransfer.items) {
+            for (const item of e.dataTransfer.items) {
+                if (item.kind === 'string' && item.type.match('^text/uri-list')) {
+                    item.getAsString((s) => {
+                        let upload = {
+                            data: s,
+                            preview: s,
+                            type: 'url',
+                            name: s.substring(s.lastIndexOf('/') + 1)
+                        }
+                        setPreviews((prevPreviews) => [...prevPreviews, upload])
+                    })
+                } else if (item.kind === 'string' && item.type.match('^text/html')) {
+                    item.getAsString((s) => {
+                        if (s.indexOf('href') === -1) return
+                        //extract href
+                        let start = s.substring(s.indexOf('href') + 6)
+                        let hrefStr = start.substring(0, start.indexOf('"'))
+
+                        let upload = {
+                            data: hrefStr,
+                            preview: hrefStr,
+                            type: 'url',
+                            name: hrefStr.substring(hrefStr.lastIndexOf('/') + 1)
+                        }
+                        setPreviews((prevPreviews) => [...prevPreviews, upload])
+                    })
+                }
+            }
+        }
+    }
+
+    const handleFileChange = async (event) => {
+        const fileObj = event.target.files && event.target.files[0]
+        if (!fileObj) {
+            return
+        }
+        let files = []
+        for (const file of event.target.files) {
+            if (isFileAllowedForUpload(file) === false) {
+                return
+            }
+            const reader = new FileReader()
+            const { name } = file
+            files.push(
+                new Promise((resolve) => {
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) {
+                            return
+                        }
+                        const { result } = evt.target
+                        resolve({
+                            data: result,
+                            preview: URL.createObjectURL(file),
+                            type: 'file',
+                            name: name,
+                            mime: file.type
+                        })
+                    }
+                    reader.readAsDataURL(file)
+                })
+            )
+        }
+
+        const newFiles = await Promise.all(files)
+        setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        // 👇️ reset file input
+        event.target.value = null
+    }
+
+    const addRecordingToPreviews = (blob) => {
+        const mimeType = blob.type.substring(0, blob.type.indexOf(';'))
+        // read blob and add to previews
+        const reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = () => {
+            const base64data = reader.result
+            const upload = {
+                data: base64data,
+                preview: audioUploadSVG,
+                type: 'audio',
+                name: 'audio.wav',
+                mime: mimeType
+            }
+            setPreviews((prevPreviews) => [...prevPreviews, upload])
+        }
+    }
+
+    const handleDrag = (e) => {
+        if (isChatFlowAvailableForUploads) {
+            e.preventDefault()
+            e.stopPropagation()
+            if (e.type === 'dragenter' || e.type === 'dragover') {
+                setIsDragActive(true)
+            } else if (e.type === 'dragleave') {
+                setIsDragActive(false)
+            }
+        }
+    }
+
+    const handleDeletePreview = (itemToDelete) => {
+        if (itemToDelete.type === 'file') {
+            URL.revokeObjectURL(itemToDelete.preview) // Clean up for file
+        }
+        setPreviews(previews.filter((item) => item !== itemToDelete))
+    }
+
+    const handleUploadClick = () => {
+        // 👇️ open file input box on click of another element
+        fileUploadRef.current.click()
+    }
+
+    const clearPreviews = () => {
+        // Revoke the data uris to avoid memory leaks
+        previews.forEach((file) => URL.revokeObjectURL(file.preview))
+        setPreviews([])
+    }
+
+    const onMicrophonePressed = () => {
+        setIsRecording(true)
+        startAudioRecording(setIsRecording, setRecordingNotSupported)
+    }
+
+    const onRecordingCancelled = () => {
+        if (!recordingNotSupported) cancelAudioRecording()
+        setIsRecording(false)
+        setRecordingNotSupported(false)
+    }
+
+    const onRecordingStopped = async () => {
+        setIsLoadingRecording(true)
+        stopAudioRecording(addRecordingToPreviews)
+    }
 
     const onSourceDialogClick = (data, title) => {
         setSourceDialogProps({ data, title })
@@ -118,7 +352,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (e) e.preventDefault()
 
         if (!promptStarterInput && userInput.trim() === '') {
-            return
+            const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
+            if (!(previews.length >= 1 && containsAudio)) {
+                return
+            }
         }
 
         let input = userInput
@@ -126,7 +363,16 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         if (promptStarterInput !== undefined && promptStarterInput.trim() !== '') input = promptStarterInput
 
         setLoading(true)
-        setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage' }])
+        const urls = previews.map((item) => {
+            return {
+                data: item.data,
+                type: item.type,
+                name: item.name,
+                mime: item.mime
+            }
+        })
+        clearPreviews()
+        setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
 
         // Send user question and history to API
         try {
@@ -135,6 +381,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
+            if (urls && urls.length > 0) params.uploads = urls
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
@@ -143,6 +390,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 const data = response.data
 
                 if (!chatId) setChatId(data.chatId)
+
+                if (input === '' && data.question) {
+                    // the response contains the question even if it was in an audio format
+                    // so if input is empty but the response contains the question, update the user message to show the question
+                    setMessages((prevMessages) => {
+                        let allMessages = [...cloneDeep(prevMessages)]
+                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                        allMessages[allMessages.length - 2].message = data.question
+                        return allMessages
+                    })
+                }
 
                 if (!isChatFlowAvailableToStream) {
                     let text = ''
@@ -222,6 +480,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
+                if (message.fileUploads) {
+                    obj.fileUploads = JSON.parse(message.fileUploads)
+                    obj.fileUploads.forEach((file) => {
+                        if (file.type === 'stored-file') {
+                            file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${file.name}`
+                        }
+                    })
+                }
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -238,6 +504,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getIsChatflowStreamingApi.data])
+
+    // Get chatflow uploads capability
+    useEffect(() => {
+        if (getAllowChatFlowUploads.data) {
+            setIsChatFlowAvailableForUploads(getAllowChatFlowUploads.data?.isImageUploadAllowed ?? false)
+            setIsChatFlowAvailableForSpeech(getAllowChatFlowUploads.data?.isSpeechToTextEnabled ?? false)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAllowChatFlowUploads.data])
 
     useEffect(() => {
         if (getChatflowConfig.data) {
@@ -273,11 +548,18 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
     useEffect(() => {
         let socket
         if (open && chatflowid) {
+            // API request
             getChatmessageApi.request(chatflowid)
             getIsChatflowStreamingApi.request(chatflowid)
+            getAllowChatFlowUploads.request(chatflowid)
             getChatflowConfig.request(chatflowid)
+
+            // Scroll to bottom
             scrollToBottom()
 
+            setIsRecording(false)
+
+            // SocketIO
             socket = socketIOClient(baseURL)
 
             socket.on('connect', () => {
@@ -311,147 +593,330 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, chatflowid])
 
+    useEffect(() => {
+        // wait for audio recording to load and then send
+        const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
+        if (previews.length >= 1 && containsAudio) {
+            setIsRecording(false)
+            setRecordingNotSupported(false)
+            handlePromptClick('')
+        }
+        // eslint-disable-next-line
+    }, [previews])
+
     return (
-        <>
-            <div className={isDialog ? 'cloud-dialog' : 'cloud'}>
-                <div ref={ps} className='messagelist'>
+        <div onDragEnter={handleDrag}>
+            {isDragActive && (
+                <div
+                    className='image-dropzone'
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragEnd={handleDrag}
+                    onDrop={handleDrop}
+                />
+            )}
+            {isDragActive && getAllowChatFlowUploads.data?.isImageUploadAllowed && (
+                <Box className='drop-overlay'>
+                    <Typography variant='h2'>Drop here to upload</Typography>
+                    {getAllowChatFlowUploads.data.imgUploadSizeAndTypes.map((allowed) => {
+                        return (
+                            <>
+                                <Typography variant='subtitle1'>{allowed.fileTypes?.join(', ')}</Typography>
+                                <Typography variant='subtitle1'>Max Allowed Size: {allowed.maxUploadSize} MB</Typography>
+                            </>
+                        )
+                    })}
+                </Box>
+            )}
+            <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
+                <div id='messagelist' className={'messagelist'}>
                     {messages &&
                         messages.map((message, index) => {
                             return (
                                 // The latest message sent by the user will be animated while waiting for a response
-                                <>
-                                    <Box
-                                        sx={{
-                                            background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
-                                        }}
-                                        key={index}
-                                        style={{ display: 'flex' }}
-                                        className={
-                                            message.type === 'userMessage' && loading && index === messages.length - 1
-                                                ? customization.isDarkMode
-                                                    ? 'usermessagewaiting-dark'
-                                                    : 'usermessagewaiting-light'
-                                                : message.type === 'usermessagewaiting'
-                                                ? 'apimessage'
-                                                : 'usermessage'
-                                        }
-                                    >
-                                        {/* Display the correct icon depending on the message type */}
-                                        {message.type === 'apiMessage' ? (
-                                            <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
-                                        ) : (
-                                            <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
-                                        )}
-                                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                            {message.usedTools && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.usedTools.map((tool, index) => {
-                                                        return (
-                                                            <Chip
-                                                                size='small'
-                                                                key={index}
-                                                                label={tool.tool}
-                                                                component='a'
-                                                                sx={{ mr: 1, mt: 1 }}
-                                                                variant='outlined'
-                                                                clickable
-                                                                onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                            />
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            <div className='markdownanswer'>
-                                                {/* Messages are being rendered in Markdown format */}
-                                                <MemoizedReactMarkdown
-                                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                    components={{
-                                                        code({ inline, className, children, ...props }) {
-                                                            const match = /language-(\w+)/.exec(className || '')
-                                                            return !inline ? (
-                                                                <CodeBlock
-                                                                    key={Math.random()}
-                                                                    chatflowid={chatflowid}
-                                                                    isDialog={isDialog}
-                                                                    language={(match && match[1]) || ''}
-                                                                    value={String(children).replace(/\n$/, '')}
-                                                                    {...props}
-                                                                />
-                                                            ) : (
-                                                                <code className={className} {...props}>
-                                                                    {children}
-                                                                </code>
-                                                            )
-                                                        }
-                                                    }}
-                                                >
-                                                    {message.message}
-                                                </MemoizedReactMarkdown>
+                                <Box
+                                    sx={{
+                                        background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
+                                    }}
+                                    key={index}
+                                    style={{ display: 'flex' }}
+                                    className={
+                                        message.type === 'userMessage' && loading && index === messages.length - 1
+                                            ? customization.isDarkMode
+                                                ? 'usermessagewaiting-dark'
+                                                : 'usermessagewaiting-light'
+                                            : message.type === 'usermessagewaiting'
+                                            ? 'apimessage'
+                                            : 'usermessage'
+                                    }
+                                >
+                                    {/* Display the correct icon depending on the message type */}
+                                    {message.type === 'apiMessage' ? (
+                                        <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
+                                    ) : (
+                                        <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
+                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                        {message.usedTools && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {message.usedTools.map((tool, index) => {
+                                                    return (
+                                                        <Chip
+                                                            size='small'
+                                                            key={index}
+                                                            label={tool.tool}
+                                                            component='a'
+                                                            sx={{ mr: 1, mt: 1 }}
+                                                            variant='outlined'
+                                                            clickable
+                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                        />
+                                                    )
+                                                })}
                                             </div>
-                                            {message.fileAnnotations && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {message.fileAnnotations.map((fileAnnotation, index) => {
-                                                        return (
-                                                            <Button
-                                                                sx={{ fontSize: '0.85rem', textTransform: 'none', mb: 1 }}
-                                                                key={index}
-                                                                variant='outlined'
-                                                                onClick={() => downloadFile(fileAnnotation)}
-                                                                endIcon={<IconDownload color={theme.palette.primary.main} />}
-                                                            >
-                                                                {fileAnnotation.fileName}
-                                                            </Button>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                            {message.sourceDocuments && (
-                                                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                    {removeDuplicateURL(message).map((source, index) => {
-                                                        const URL =
-                                                            source.metadata && source.metadata.source
-                                                                ? isValidURL(source.metadata.source)
-                                                                : undefined
-                                                        return (
-                                                            <Chip
-                                                                size='small'
-                                                                key={index}
-                                                                label={
-                                                                    URL
-                                                                        ? URL.pathname.substring(0, 15) === '/'
-                                                                            ? URL.host
-                                                                            : `${URL.pathname.substring(0, 15)}...`
-                                                                        : `${source.pageContent.substring(0, 15)}...`
-                                                                }
-                                                                component='a'
-                                                                sx={{ mr: 1, mb: 1 }}
-                                                                variant='outlined'
-                                                                clickable
-                                                                onClick={() =>
-                                                                    URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
-                                                                }
+                                        )}
+                                        {message.fileUploads && message.fileUploads.length > 0 && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    flexDirection: 'column',
+                                                    width: '100%',
+                                                    gap: '8px'
+                                                }}
+                                            >
+                                                {message.fileUploads.map((item, index) => {
+                                                    return (
+                                                        <>
+                                                            {item.mime.startsWith('image/') ? (
+                                                                <Card
+                                                                    key={index}
+                                                                    sx={{
+                                                                        p: 0,
+                                                                        m: 0,
+                                                                        maxWidth: 128,
+                                                                        marginRight: '10px',
+                                                                        flex: '0 0 auto'
+                                                                    }}
+                                                                >
+                                                                    <CardMedia
+                                                                        component='img'
+                                                                        image={item.data}
+                                                                        sx={{ height: 64 }}
+                                                                        alt={'preview'}
+                                                                        style={messageImageStyle}
+                                                                    />
+                                                                </Card>
+                                                            ) : (
+                                                                // eslint-disable-next-line jsx-a11y/media-has-caption
+                                                                <audio controls='controls'>
+                                                                    Your browser does not support the &lt;audio&gt; tag.
+                                                                    <source src={item.data} type={item.mime} />
+                                                                </audio>
+                                                            )}
+                                                        </>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                        <div className='markdownanswer'>
+                                            {/* Messages are being rendered in Markdown format */}
+                                            <MemoizedReactMarkdown
+                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                components={{
+                                                    code({ inline, className, children, ...props }) {
+                                                        const match = /language-(\w+)/.exec(className || '')
+                                                        return !inline ? (
+                                                            <CodeBlock
+                                                                key={Math.random()}
+                                                                chatflowid={chatflowid}
+                                                                isDialog={isDialog}
+                                                                language={(match && match[1]) || ''}
+                                                                value={String(children).replace(/\n$/, '')}
+                                                                {...props}
                                                             />
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
                                                         )
-                                                    })}
-                                                </div>
-                                            )}
+                                                    }
+                                                }}
+                                            >
+                                                {message.message}
+                                            </MemoizedReactMarkdown>
                                         </div>
-                                    </Box>
-                                </>
+                                        {message.fileAnnotations && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {message.fileAnnotations.map((fileAnnotation, index) => {
+                                                    return (
+                                                        <Button
+                                                            sx={{ fontSize: '0.85rem', textTransform: 'none', mb: 1 }}
+                                                            key={index}
+                                                            variant='outlined'
+                                                            onClick={() => downloadFile(fileAnnotation)}
+                                                            endIcon={<IconDownload color={theme.palette.primary.main} />}
+                                                        >
+                                                            {fileAnnotation.fileName}
+                                                        </Button>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                        {message.sourceDocuments && (
+                                            <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                {removeDuplicateURL(message).map((source, index) => {
+                                                    const URL =
+                                                        source.metadata && source.metadata.source
+                                                            ? isValidURL(source.metadata.source)
+                                                            : undefined
+                                                    return (
+                                                        <Chip
+                                                            size='small'
+                                                            key={index}
+                                                            label={
+                                                                URL
+                                                                    ? URL.pathname.substring(0, 15) === '/'
+                                                                        ? URL.host
+                                                                        : `${URL.pathname.substring(0, 15)}...`
+                                                                    : `${source.pageContent.substring(0, 15)}...`
+                                                            }
+                                                            component='a'
+                                                            sx={{ mr: 1, mb: 1 }}
+                                                            variant='outlined'
+                                                            clickable
+                                                            onClick={() =>
+                                                                URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source)
+                                                            }
+                                                        />
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                </Box>
                             )
                         })}
                 </div>
             </div>
 
-            <div style={{ position: 'relative' }}>
-                {messages && messages.length === 1 && (
-                    <StarterPromptsCard starterPrompts={starterPrompts || []} onPromptClick={handlePromptClick} isGrid={isDialog} />
-                )}
-                <Divider />
-            </div>
+            {messages && messages.length === 1 && starterPrompts.length > 0 && (
+                <div style={{ position: 'relative' }}>
+                    <StarterPromptsCard
+                        sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
+                        starterPrompts={starterPrompts || []}
+                        onPromptClick={handlePromptClick}
+                        isGrid={isDialog}
+                    />
+                </div>
+            )}
+
+            <Divider sx={{ width: '100%' }} />
+
             <div className='center'>
-                <div style={{ width: '100%' }}>
+                {previews && previews.length > 0 && (
+                    <Box sx={{ width: '100%', mb: 1.5, display: 'flex', alignItems: 'center' }}>
+                        {previews.map((item, index) => (
+                            <Fragment key={index}>
+                                {item.mime.startsWith('image/') ? (
+                                    <ImageButton
+                                        focusRipple
+                                        style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            marginRight: '10px',
+                                            flex: '0 0 auto'
+                                        }}
+                                        onClick={() => handleDeletePreview(item)}
+                                    >
+                                        <ImageSrc style={{ backgroundImage: `url(${item.data})` }} />
+                                        <ImageBackdrop className='MuiImageBackdrop-root' />
+                                        <ImageMarked className='MuiImageMarked-root'>
+                                            <IconTrash size={20} color='white' />
+                                        </ImageMarked>
+                                    </ImageButton>
+                                ) : (
+                                    <Card
+                                        sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            height: '48px',
+                                            width: isDialog ? ps?.current?.offsetWidth / 4 : ps?.current?.offsetWidth / 2,
+                                            p: 0.5,
+                                            mr: 1,
+                                            backgroundColor: theme.palette.grey[500],
+                                            flex: '0 0 auto'
+                                        }}
+                                        variant='outlined'
+                                    >
+                                        <CardMedia component='audio' sx={{ color: 'transparent' }} controls src={item.data} />
+                                        <IconButton onClick={() => handleDeletePreview(item)} size='small'>
+                                            <IconTrash size={20} color='white' />
+                                        </IconButton>
+                                    </Card>
+                                )}
+                            </Fragment>
+                        ))}
+                    </Box>
+                )}
+                {isRecording ? (
+                    <>
+                        {recordingNotSupported ? (
+                            <div className='overlay'>
+                                <div className='browser-not-supporting-audio-recording-box'>
+                                    <Typography variant='body1'>
+                                        To record audio, use modern browsers like Chrome or Firefox that support audio recording.
+                                    </Typography>
+                                    <Button
+                                        variant='contained'
+                                        color='error'
+                                        size='small'
+                                        type='button'
+                                        onClick={() => onRecordingCancelled()}
+                                    >
+                                        Okay
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '54px',
+                                    px: 2,
+                                    border: '1px solid',
+                                    borderRadius: 3,
+                                    backgroundColor: customization.isDarkMode ? '#32353b' : '#fafafa',
+                                    borderColor: 'rgba(0, 0, 0, 0.23)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}
+                            >
+                                <div className='recording-elapsed-time'>
+                                    <span className='red-recording-dot'>
+                                        <IconCircleDot />
+                                    </span>
+                                    <Typography id='elapsed-time'>00:00</Typography>
+                                    {isLoadingRecording && <Typography ml={1.5}>Sending...</Typography>}
+                                </div>
+                                <div className='recording-control-buttons-container'>
+                                    <IconButton onClick={onRecordingCancelled} size='small'>
+                                        <IconX
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                        />
+                                    </IconButton>
+                                    <IconButton onClick={onRecordingStopped} size='small'>
+                                        <IconSend
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                        />
+                                    </IconButton>
+                                </div>
+                            </Box>
+                        )}
+                    </>
+                ) : (
                     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
                         <OutlinedInput
                             inputRef={inputRef}
@@ -467,33 +932,75 @@ export const ChatMessage = ({ open, chatflowid, isDialog }) => {
                             onChange={onChange}
                             multiline={true}
                             maxRows={isDialog ? 7 : 2}
-                            endAdornment={
-                                <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                    <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
-                                        {loading ? (
-                                            <div>
-                                                <CircularProgress color='inherit' size={20} />
-                                            </div>
-                                        ) : (
-                                            // Send icon SVG in input field
-                                            <IconSend
+                            startAdornment={
+                                isChatFlowAvailableForUploads && (
+                                    <InputAdornment position='start' sx={{ pl: 2 }}>
+                                        <IconButton
+                                            onClick={handleUploadClick}
+                                            type='button'
+                                            disabled={loading || !chatflowid}
+                                            edge='start'
+                                        >
+                                            <IconPhotoPlus
                                                 color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
                                             />
-                                        )}
-                                    </IconButton>
-                                </InputAdornment>
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
+                            endAdornment={
+                                <>
+                                    {isChatFlowAvailableForSpeech && (
+                                        <InputAdornment position='end'>
+                                            <IconButton
+                                                onClick={() => onMicrophonePressed()}
+                                                type='button'
+                                                disabled={loading || !chatflowid}
+                                                edge='end'
+                                            >
+                                                <IconMicrophone
+                                                    className={'start-recording-button'}
+                                                    color={
+                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                    }
+                                                />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )}
+                                    <InputAdornment position='end' sx={{ padding: '15px' }}>
+                                        <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
+                                            {loading ? (
+                                                <div>
+                                                    <CircularProgress color='inherit' size={20} />
+                                                </div>
+                                            ) : (
+                                                // Send icon SVG in input field
+                                                <IconSend
+                                                    color={
+                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                    }
+                                                />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                </>
                             }
                         />
+                        {isChatFlowAvailableForUploads && (
+                            <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleFileChange} />
+                        )}
                     </form>
-                </div>
+                )}
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
-        </>
+        </div>
     )
 }
 
 ChatMessage.propTypes = {
     open: PropTypes.bool,
     chatflowid: PropTypes.string,
-    isDialog: PropTypes.bool
+    isDialog: PropTypes.bool,
+    previews: PropTypes.array,
+    setPreviews: PropTypes.func
 }

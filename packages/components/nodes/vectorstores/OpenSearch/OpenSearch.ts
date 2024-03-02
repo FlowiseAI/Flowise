@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { Client } from '@opensearch-project/opensearch'
-import { Document } from 'langchain/document'
-import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
+import { Embeddings } from '@langchain/core/embeddings'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 

@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Cohere, CohereInput } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class Cohere_LLMs implements INode {
     label: string

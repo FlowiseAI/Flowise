@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
+import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { BaseCache } from 'langchain/schema'
-import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
 
 class ChatMistral_ChatModels implements INode {
     label: string
@@ -18,7 +18,7 @@ class ChatMistral_ChatModels implements INode {
     constructor() {
         this.label = 'ChatMistralAI'
         this.name = 'chatMistralAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatMistralAI'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
@@ -40,21 +40,9 @@ class ChatMistral_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'mistral-tiny',
-                        name: 'mistral-tiny'
-                    },
-                    {
-                        label: 'mistral-small',
-                        name: 'mistral-small'
-                    },
-                    {
-                        label: 'mistral-medium',
-                        name: 'mistral-medium'
-                    }
-                ],
+                type: 'string',
+                description:
+                    'Refer to <a target="_blank" href="https://docs.mistral.ai/guides/model-selection/">Model Selection</a> for more available models',
                 default: 'mistral-tiny'
             },
             {
