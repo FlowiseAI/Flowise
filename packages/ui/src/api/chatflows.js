@@ -14,6 +14,8 @@ const deleteChatflow = (id) => client.delete(`/chatflows/${id}`)
 
 const getIsChatflowStreaming = (id) => client.get(`/chatflows-streaming/${id}`)
 
+const getAllowChatflowUploads = (id) => client.get(`/chatflows-uploads/${id}`)
+
 export default {
     getAllChatflows,
     getSpecificChatflow,
@@ -21,5 +23,6 @@ export default {
     createNewChatflow,
     updateChatflow,
     deleteChatflow,
-    getIsChatflowStreaming
+    getIsChatflowStreaming,
+    getAllowChatflowUploads
 }

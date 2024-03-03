@@ -5,12 +5,10 @@
     "badge": "NEW",
     "nodes": [
         {
-            "width": 300,
-            "height": 327,
             "id": "openAIAssistant_0",
             "position": {
-                "x": 895.3722263184736,
-                "y": 118.50795801755544
+                "x": 1237.914576178543,
+                "y": 140
             },
             "type": "customNode",
             "data": {
@@ -60,33 +58,36 @@
                 ],
                 "inputs": {
                     "selectedAssistant": "",
-                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"]
+                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"],
+                    "inputModeration": "",
+                    "disableFileDownload": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIAssistant_0-output-openAIAssistant-OpenAIAssistant",
                         "name": "openAIAssistant",
                         "label": "OpenAIAssistant",
+                        "description": "An agent that uses OpenAI Assistant API to pick the tool and args to call",
                         "type": "OpenAIAssistant"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
+            "width": 300,
+            "height": 419,
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 895.3722263184736,
-                "y": 118.50795801755544
+                "x": 1237.914576178543,
+                "y": 140
             }
         },
         {
-            "width": 300,
-            "height": 143,
             "id": "calculator_0",
             "position": {
-                "x": 454.74423492660145,
-                "y": -56.08375600705064
+                "x": 854.0341531341463,
+                "y": 48.134746169036475
             },
             "type": "customNode",
             "data": {
@@ -106,26 +107,75 @@
                         "id": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable",
                         "name": "calculator",
                         "label": "Calculator",
+                        "description": "Perform calculations on response",
                         "type": "Calculator | Tool | StructuredTool | Runnable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
+            "width": 300,
+            "height": 142,
             "selected": false,
             "positionAbsolute": {
-                "x": 454.74423492660145,
-                "y": -56.08375600705064
+                "x": 854.0341531341463,
+                "y": 48.134746169036475
             },
             "dragging": false
         },
         {
+            "id": "serper_0",
+            "position": {
+                "x": 852.623106275503,
+                "y": 205.46647090775525
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serper_0",
+                "label": "Serper",
+                "version": 1,
+                "name": "serper",
+                "type": "Serper",
+                "baseClasses": ["Serper", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Wrapper around Serper.dev - Google Search API",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["serperApi"],
+                        "id": "serper_0-input-credential-credential"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
+                        "name": "serper",
+                        "label": "Serper",
+                        "description": "Wrapper around Serper.dev - Google Search API",
+                        "type": "Serper | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
             "width": 300,
-            "height": 277,
+            "height": 276,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 852.623106275503,
+                "y": 205.46647090775525
+            },
+            "dragging": false
+        },
+        {
             "id": "customTool_0",
             "position": {
-                "x": 454.43871855431365,
-                "y": 401.2171774551178
+                "x": 850.6759101766447,
+                "y": 496.68759375469654
             },
             "type": "customNode",
             "data": {
@@ -155,63 +205,19 @@
                         "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
                         "name": "customTool",
                         "label": "CustomTool",
+                        "description": "Use custom tool you've created in Flowise within chatflow",
                         "type": "CustomTool | Tool | StructuredTool | Runnable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 454.43871855431365,
-                "y": 401.2171774551178
-            },
-            "dragging": false
-        },
-        {
             "width": 300,
-            "height": 277,
-            "id": "serper_0",
-            "position": {
-                "x": 452.2514874331948,
-                "y": 99.6087116015905
-            },
-            "type": "customNode",
-            "data": {
-                "id": "serper_0",
-                "label": "Serper",
-                "version": 1,
-                "name": "serper",
-                "type": "Serper",
-                "baseClasses": ["Serper", "Tool", "StructuredTool", "Runnable"],
-                "category": "Tools",
-                "description": "Wrapper around Serper.dev - Google Search API",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["serperApi"],
-                        "id": "serper_0-input-credential-credential"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
-                        "name": "serper",
-                        "label": "Serper",
-                        "type": "Serper | Tool | StructuredTool | Runnable"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
+            "height": 276,
             "selected": false,
             "positionAbsolute": {
-                "x": 452.2514874331948,
-                "y": 99.6087116015905
+                "x": 850.6759101766447,
+                "y": 496.68759375469654
             },
             "dragging": false
         }
@@ -223,10 +229,7 @@
             "target": "openAIAssistant_0",
             "targetHandle": "openAIAssistant_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
         },
         {
             "source": "serper_0",
@@ -234,10 +237,7 @@
             "target": "openAIAssistant_0",
             "targetHandle": "openAIAssistant_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
         },
         {
             "source": "customTool_0",
@@ -245,10 +245,7 @@
             "target": "openAIAssistant_0",
             "targetHandle": "openAIAssistant_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
         }
     ]
 }
