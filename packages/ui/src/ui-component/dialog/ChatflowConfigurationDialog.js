@@ -5,6 +5,7 @@ import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/materia
 import SpeechToText from './SpeechToTextDialog'
 import Configuration from 'views/chatflows/Configuration'
 import AllowedDomains from './AllowedDomainsDialog'
+import ChatFeedback from './ChatFeedbackDialog'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -86,6 +87,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <Configuration />}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
+                        {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
