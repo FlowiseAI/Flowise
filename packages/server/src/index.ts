@@ -440,6 +440,27 @@ export class App {
             return res.json(results)
         })
 
+        // Save chatflow via api key
+        this.app.post('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
+            const apiKey = await getApiKey(req.params.apiKey)
+            if (!apiKey) return res.status(401).send('Unauthorized')
+
+            const body = req.body
+            const newChatFlow = new ChatFlow()
+            Object.assign(newChatFlow, body)
+
+            const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            await this.telemetry.sendTelemetry('chatflow_created', {
+                version: await getAppVersion(),
+                chatlowId: results.id,
+                flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
+            })
+
+            return res.json(results)
+        })
+
         // Update chatflow
         this.app.put('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -471,8 +492,60 @@ export class App {
             return res.json(result)
         })
 
+        // Update chatflow via id and api key
+        this.app.put('/api/v1/chatflows/apikey/:apiKey/:id', async (req: Request, res: Response) => {
+            const apiKey = await getApiKey(req.params.apiKey)
+            if (!apiKey) return res.status(401).send('Unauthorized')
+
+            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                id: req.params.id
+            })
+
+            if (!chatflow) {
+                res.status(404).send(`Chatflow ${req.params.id} not found`)
+                return
+            }
+
+            const body = req.body
+            const updateChatFlow = new ChatFlow()
+            Object.assign(updateChatFlow, body)
+
+            updateChatFlow.id = chatflow.id
+            createRateLimiter(updateChatFlow)
+
+            this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+            const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            // chatFlowPool is initialized only when a flow is opened
+            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+            if (this.chatflowPool) {
+                // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
+                this.chatflowPool.updateInSync(chatflow.id, false)
+            }
+
+            return res.json(result)
+        })
+
         // Delete chatflow via id
         this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
+            const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
+
+            try {
+                // Delete all  uploads corresponding to this chatflow
+                const directory = path.join(getStoragePath(), req.params.id)
+                deleteFolderRecursive(directory)
+            } catch (e) {
+                logger.error(`[server]: Error deleting file storage for chatflow ${req.params.id}: ${e}`)
+            }
+
+            return res.json(results)
+        })
+
+        // Delete chatflow via id and api key
+        this.app.delete('/api/v1/chatflows/apikey/:apiKey/:id', async (req: Request, res: Response) => {
+            const apiKey = await getApiKey(req.params.apiKey)
+            if (!apiKey) return res.status(401).send('Unauthorized')
+
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
 
             try {
