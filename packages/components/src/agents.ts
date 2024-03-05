@@ -257,6 +257,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
 
     input?: string
 
+    isXML?: boolean
+
     /**
      * How to handle errors raised by the agent's output parser.
         Defaults to `False`, which raises the error.
@@ -277,7 +279,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         return this.agent.returnValues
     }
 
-    constructor(input: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string }) {
+    constructor(input: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; isXML?: boolean }) {
         let agent: BaseSingleActionAgent | BaseMultiActionAgent
         if (Runnable.isRunnable(input.agent)) {
             agent = new RunnableAgent({ runnable: input.agent })
@@ -305,13 +307,17 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         this.sessionId = input.sessionId
         this.chatId = input.chatId
         this.input = input.input
+        this.isXML = input.isXML
     }
 
-    static fromAgentAndTools(fields: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string }): AgentExecutor {
+    static fromAgentAndTools(
+        fields: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; isXML?: boolean }
+    ): AgentExecutor {
         const newInstance = new AgentExecutor(fields)
         if (fields.sessionId) newInstance.sessionId = fields.sessionId
         if (fields.chatId) newInstance.chatId = fields.chatId
         if (fields.input) newInstance.input = fields.input
+        if (fields.isXML) newInstance.isXML = fields.isXML
         return newInstance
     }
 
@@ -405,12 +411,16 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
                         observation = tool
-                            ? // @ts-ignore
-                              await tool.call(action.toolInput, runManager?.getChild(), undefined, {
-                                  sessionId: this.sessionId,
-                                  chatId: this.chatId,
-                                  input: this.input
-                              })
+                            ? await (tool as any).call(
+                                  this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
+                                  runManager?.getChild(),
+                                  undefined,
+                                  {
+                                      sessionId: this.sessionId,
+                                      chatId: this.chatId,
+                                      input: this.input
+                                  }
+                              )
                             : `${action.tool} is not a valid tool, try another one.`
                     } catch (e) {
                         if (e instanceof ToolInputParsingException) {
@@ -526,12 +536,16 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                      * - tags?: string[]
                      * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                      */
-                    // @ts-ignore
-                    observation = await tool.call(agentAction.toolInput, runManager?.getChild(), undefined, {
-                        sessionId: this.sessionId,
-                        chatId: this.chatId,
-                        input: this.input
-                    })
+                    observation = await (tool as any).call(
+                        this.isXML && typeof agentAction.toolInput === 'string' ? { input: agentAction.toolInput } : agentAction.toolInput,
+                        runManager?.getChild(),
+                        undefined,
+                        {
+                            sessionId: this.sessionId,
+                            chatId: this.chatId,
+                            input: this.input
+                        }
+                    )
                     if (observation?.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
