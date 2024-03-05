@@ -145,10 +145,7 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         flexDirection: 'column'
                     }}
                 >
-                    <span>
-                        Your chatbot will only work when used from the following domains. When adding domains, exclude the{' '}
-                        <pre style={{ display: 'inline' }}>http://</pre> or <pre style={{ display: 'inline' }}>https://</pre> part.
-                    </span>
+                    <span>Your chatbot will only work when used from the following domains.</span>
                 </div>
                 <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
                     <List>

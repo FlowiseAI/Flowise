@@ -1332,7 +1332,11 @@ export class App {
                     if (parsedConfig.allowedOrigins && parsedConfig.allowedOrigins.length > 0 && isValidAllowedOrigins) {
                         const originHeader = req.headers.origin as string
                         const origin = new URL(originHeader).host
-                        isDomainAllowed = parsedConfig.allowedOrigins.includes(origin)
+                        isDomainAllowed =
+                            parsedConfig.allowedOrigins.filter((domain: string) => {
+                                const allowedOrigin = new URL(domain).host
+                                return origin === allowedOrigin
+                            }).length > 0
                     }
                 }
 
