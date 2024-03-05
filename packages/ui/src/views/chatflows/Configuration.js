@@ -131,7 +131,7 @@ const Configuration = () => {
     return (
         <>
             {/*Rate Limit*/}
-            <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
+            <Typography variant='h4' sx={{ mb: 1 }}>
                 Rate Limit{' '}
                 <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}

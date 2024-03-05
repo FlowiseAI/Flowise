@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import SpeechToText from './SpeechToTextDialog'
 import Configuration from 'views/chatflows/Configuration'
+import AllowedDomains from './AllowedDomainsDialog'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -32,6 +33,7 @@ function TabPanel(props) {
             hidden={value !== index}
             id={`chatflow-config-tabpanel-${index}`}
             aria-labelledby={`chatflow-config-tab-${index}`}
+            style={{ paddingTop: '1rem' }}
             {...other}
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
@@ -84,6 +86,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <Configuration />}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
+                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
