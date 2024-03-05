@@ -65,7 +65,7 @@ const Settings = ({ chatflow, isSettingsOpen, anchorEl, onSettingsItemClick, onU
                     width: customization.isOpen.findIndex((id) => id === menu?.id) > -1 ? 8 : 6,
                     height: customization.isOpen.findIndex((id) => id === menu?.id) > -1 ? 8 : 6
                 }}
-                fontSize={level > 0 ? 'inherit' : 'medium'}
+                fontSize={'inherit'}
             />
         )
         return (

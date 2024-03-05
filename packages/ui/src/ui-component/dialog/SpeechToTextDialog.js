@@ -1,25 +1,10 @@
-import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 
 // material-ui
-import {
-    Typography,
-    Box,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    DialogActions,
-    FormControl,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    MenuItem,
-    Select
-} from '@mui/material'
+import { Typography, Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select } from '@mui/material'
 import { IconX } from '@tabler/icons'
 
 // Project import
@@ -33,7 +18,6 @@ import openAISVG from 'assets/images/openai.svg'
 import assemblyAIPng from 'assets/images/assemblyai.png'
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import useNotifier from 'utils/useNotifier'
 
 // API
@@ -95,8 +79,7 @@ const speechToTextProviders = {
     }
 }
 
-const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+const SpeechToText = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -128,7 +111,6 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
-            onCancel()
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
@@ -199,150 +181,126 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
         }
     }, [dialogProps])
 
-    useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
-
-    const component = (
-        <Dialog
-            onClose={onCancel}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Speech To Text Configuration
-            </DialogTitle>
-            <DialogContent>
-                <Box fullWidth sx={{ my: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography>Speech To Text Providers</Typography>
-                    <FormControl fullWidth>
-                        <Select value={selectedProvider} onChange={handleProviderChange}>
-                            <MenuItem value='none'>None</MenuItem>
-                            <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
-                            <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
-                {selectedProvider !== 'none' && (
-                    <>
-                        <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
-                            <ListItemAvatar>
-                                <div
+    return (
+        <>
+            <Box fullWidth sx={{ my: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography>Speech To Text Providers</Typography>
+                <FormControl fullWidth>
+                    <Select value={selectedProvider} onChange={handleProviderChange}>
+                        <MenuItem value='none'>None</MenuItem>
+                        <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
+                        <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
+            {selectedProvider !== 'none' && (
+                <>
+                    <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
+                        <ListItemAvatar>
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <img
                                     style={{
-                                        width: 50,
-                                        height: 50,
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white'
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 10,
+                                        objectFit: 'contain'
                                     }}
-                                >
-                                    <img
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            padding: 10,
-                                            objectFit: 'contain'
-                                        }}
-                                        alt='AI'
-                                        src={speechToTextProviders[selectedProvider].icon}
-                                    />
-                                </div>
-                            </ListItemAvatar>
-                            <ListItemText
-                                sx={{ ml: 1 }}
-                                primary={speechToTextProviders[selectedProvider].label}
-                                secondary={
-                                    <a target='_blank' rel='noreferrer' href={speechToTextProviders[selectedProvider].url}>
-                                        {speechToTextProviders[selectedProvider].url}
-                                    </a>
-                                }
-                            />
-                        </ListItem>
-                        {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
-                            <Box key={index} sx={{ p: 2 }}>
-                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <Typography>
-                                        {inputParam.label}
-                                        {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                        {inputParam.description && (
-                                            <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
-                                        )}
-                                    </Typography>
-                                </div>
-                                {inputParam.type === 'credential' && (
-                                    <CredentialInputHandler
-                                        key={speechToText[selectedProvider]?.credentialId}
-                                        data={
-                                            speechToText[selectedProvider]?.credentialId
-                                                ? { credential: speechToText[selectedProvider].credentialId }
-                                                : {}
-                                        }
-                                        inputParam={inputParam}
-                                        onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
-                                    />
-                                )}
-                                {inputParam.type === 'boolean' && (
-                                    <SwitchInput
-                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                        value={
-                                            speechToText[selectedProvider]
-                                                ? speechToText[selectedProvider][inputParam.name]
-                                                : inputParam.default ?? false
-                                        }
-                                    />
-                                )}
-                                {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                                    <Input
-                                        inputParam={inputParam}
-                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                        value={
-                                            speechToText[selectedProvider]
-                                                ? speechToText[selectedProvider][inputParam.name]
-                                                : inputParam.default ?? ''
-                                        }
-                                    />
-                                )}
+                                    alt='AI'
+                                    src={speechToTextProviders[selectedProvider].icon}
+                                />
+                            </div>
+                        </ListItemAvatar>
+                        <ListItemText
+                            sx={{ ml: 1 }}
+                            primary={speechToTextProviders[selectedProvider].label}
+                            secondary={
+                                <a target='_blank' rel='noreferrer' href={speechToTextProviders[selectedProvider].url}>
+                                    {speechToTextProviders[selectedProvider].url}
+                                </a>
+                            }
+                        />
+                    </ListItem>
+                    {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
+                        <Box key={index} sx={{ p: 2 }}>
+                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Typography>
+                                    {inputParam.label}
+                                    {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                    {inputParam.description && (
+                                        <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                    )}
+                                </Typography>
+                            </div>
+                            {inputParam.type === 'credential' && (
+                                <CredentialInputHandler
+                                    key={speechToText[selectedProvider]?.credentialId}
+                                    data={
+                                        speechToText[selectedProvider]?.credentialId
+                                            ? { credential: speechToText[selectedProvider].credentialId }
+                                            : {}
+                                    }
+                                    inputParam={inputParam}
+                                    onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
+                                />
+                            )}
+                            {inputParam.type === 'boolean' && (
+                                <SwitchInput
+                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? false
+                                    }
+                                />
+                            )}
+                            {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+                                <Input
+                                    inputParam={inputParam}
+                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? ''
+                                    }
+                                />
+                            )}
 
-                                {inputParam.type === 'options' && (
-                                    <Dropdown
-                                        name={inputParam.name}
-                                        options={inputParam.options}
-                                        onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                        value={
-                                            speechToText[selectedProvider]
-                                                ? speechToText[selectedProvider][inputParam.name]
-                                                : inputParam.default ?? 'choose an option'
-                                        }
-                                    />
-                                )}
-                            </Box>
-                        ))}
-                    </>
-                )}
-            </DialogContent>
-            <DialogActions>
-                <StyledButton
-                    disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
-                    variant='contained'
-                    onClick={onSave}
-                >
-                    Save
-                </StyledButton>
-            </DialogActions>
-        </Dialog>
+                            {inputParam.type === 'options' && (
+                                <Dropdown
+                                    name={inputParam.name}
+                                    options={inputParam.options}
+                                    onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                    value={
+                                        speechToText[selectedProvider]
+                                            ? speechToText[selectedProvider][inputParam.name]
+                                            : inputParam.default ?? 'choose an option'
+                                    }
+                                />
+                            )}
+                        </Box>
+                    ))}
+                </>
+            )}
+            <StyledButton
+                disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
+                variant='contained'
+                onClick={onSave}
+            >
+                Save
+            </StyledButton>
+        </>
     )
-
-    return createPortal(component, portalElement)
 }
 
-SpeechToTextDialog.propTypes = {
-    show: PropTypes.bool,
-    dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+SpeechToText.propTypes = {
+    dialogProps: PropTypes.object
 }
 
-export default SpeechToTextDialog
+export default SpeechToText

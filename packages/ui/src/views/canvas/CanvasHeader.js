@@ -28,7 +28,7 @@ import useApi from 'hooks/useApi'
 import { generateExportFlowData } from 'utils/genericHelper'
 import { uiBaseURL } from 'store/constant'
 import { SET_CHATFLOW } from 'store/actions'
-import SpeechToTextDialog from '../../ui-component/dialog/SpeechToTextDialog'
+import ChatflowConfigurationDialog from 'ui-component/dialog/ChatflowConfigurationDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -47,12 +47,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [apiDialogProps, setAPIDialogProps] = useState({})
     const [analyseDialogOpen, setAnalyseDialogOpen] = useState(false)
     const [analyseDialogProps, setAnalyseDialogProps] = useState({})
-    const [speechToAudioDialogOpen, setSpeechToAudioDialogOpen] = useState(false)
-    const [speechToAudioDialogProps, setSpeechToAudioialogProps] = useState({})
     const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
+    const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
+    const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -74,18 +74,18 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setAnalyseDialogOpen(true)
-        } else if (setting === 'enableSpeechToText') {
-            setSpeechToAudioialogProps({
-                title: 'Speech to Text',
-                chatflow: chatflow
-            })
-            setSpeechToAudioDialogOpen(true)
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
                 title: 'View Messages',
                 chatflow: chatflow
             })
             setViewMessagesDialogOpen(true)
+        } else if (setting === 'chatflowConfiguration') {
+            setChatflowConfigurationDialogProps({
+                title: 'Chatflow Configuration',
+                chatflow: chatflow
+            })
+            setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
                 localStorage.setItem('duplicatedFlowData', chatflow.flowData)
@@ -394,11 +394,6 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
             <AnalyseFlowDialog show={analyseDialogOpen} dialogProps={analyseDialogProps} onCancel={() => setAnalyseDialogOpen(false)} />
-            <SpeechToTextDialog
-                show={speechToAudioDialogOpen}
-                dialogProps={speechToAudioDialogProps}
-                onCancel={() => setSpeechToAudioDialogOpen(false)}
-            />
             <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
@@ -409,6 +404,11 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 show={viewMessagesDialogOpen}
                 dialogProps={viewMessagesDialogProps}
                 onCancel={() => setViewMessagesDialogOpen(false)}
+            />
+            <ChatflowConfigurationDialog
+                show={chatflowConfigurationDialogOpen}
+                dialogProps={chatflowConfigurationDialogProps}
+                onCancel={() => setChatflowConfigurationDialogOpen(false)}
             />
         </>
     )

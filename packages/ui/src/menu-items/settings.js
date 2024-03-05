@@ -7,11 +7,20 @@ import {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
-    IconMicrophone
+    IconAdjustmentsHorizontal
 } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff, IconMicrophone }
+const icons = {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconSearch,
+    IconMessage,
+    IconPictureInPictureOff,
+    IconAdjustmentsHorizontal
+}
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -35,11 +44,11 @@ const settings = {
             icon: icons.IconMessage
         },
         {
-            id: 'enableSpeechToText',
-            title: 'Speech to Text',
+            id: 'chatflowConfiguration',
+            title: 'Configuration',
             type: 'item',
             url: '',
-            icon: icons.IconMicrophone
+            icon: icons.IconAdjustmentsHorizontal
         },
         {
             id: 'duplicateChatflow',
