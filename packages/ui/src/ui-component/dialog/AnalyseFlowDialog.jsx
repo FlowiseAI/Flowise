@@ -30,6 +30,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { Input } from '@/ui-component/input/Input'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import langsmithPNG from '@/assets/images/langchain.png'
+import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
 
 // store
