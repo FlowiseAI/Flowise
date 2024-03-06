@@ -23,9 +23,9 @@ import useConfirm from '@/hooks/useConfirm'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
-import SaveChatflowDialog from '@/dialog/SaveChatflowDialog'
-import TagDialog from '@/dialog/TagDialog'
-import StarterPromptsDialog from '@/dialog/StarterPromptsDialog'
+import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
+import TagDialog from '@/ui-component/dialog/TagDialog'
+import StarterPromptsDialog from '@/ui-component/dialog/StarterPromptsDialog'
 
 import { generateExportFlowData } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'

@@ -52,7 +52,7 @@
         "turbo": "1.10.16",
         "typescript": "^4.8.4"
     },
-    "packageManager": "pnpm@8.10.5",
+    "packageManager": "pnpm@8.14.0",
     "pnpm": {
         "onlyBuiltDependencies": [
             "sqlite3"

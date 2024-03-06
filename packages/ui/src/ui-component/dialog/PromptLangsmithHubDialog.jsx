@@ -42,14 +42,14 @@ import ClearIcon from '@mui/icons-material/Clear'
 import { styled } from '@mui/material/styles'
 
 //Project Import
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { MemoizedReactMarkdown } from 'ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from 'ui-component/markdown/CodeBlock'
-import promptEmptySVG from 'assets/images/prompt_empty.svg'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
+import promptEmptySVG from '@/assets/images/prompt_empty.svg'
 
-import useApi from 'hooks/useApi'
-import promptApi from 'api/prompt'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useApi from '@/hooks/useApi'
+import promptApi from '@/api/prompt'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const NewLineToBr = ({ children = '' }) => {
     return children.split('\n').reduce(function (arr, line) {

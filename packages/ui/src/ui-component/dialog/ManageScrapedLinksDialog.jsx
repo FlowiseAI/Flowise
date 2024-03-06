@@ -19,19 +19,19 @@ import {
 import { IconEraser, IconTrash, IconX } from '@tabler/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
-import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
-import scraperApi from 'api/scraper'
+import scraperApi from '@/api/scraper'
 
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 import {
     HIDE_CANVAS_DIALOG,
     SHOW_CANVAS_DIALOG,
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
-} from 'store/actions'
+} from '@/store/actions'
 
 const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
     const portalElement = document.getElementById('portal')

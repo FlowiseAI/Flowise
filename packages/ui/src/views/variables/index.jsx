@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
 
 // material-ui
@@ -25,23 +25,23 @@ import {
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from 'ui-component/cards/MainCard'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import MainCard from '@/ui-component/cards/MainCard'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
-import variablesApi from 'api/variables'
+import variablesApi from '@/api/variables'
 
 // Hooks
-import useApi from 'hooks/useApi'
-import useConfirm from 'hooks/useConfirm'
+import useApi from '@/hooks/useApi'
+import useConfirm from '@/hooks/useConfirm'
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconSearch, IconVariable } from '@tabler/icons'
-import VariablesEmptySVG from 'assets/images/variables_empty.svg'
+import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 
 // const
 import AddEditVariableDialog from './AddEditVariableDialog'

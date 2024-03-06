@@ -2,29 +2,29 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Material
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, OutlinedInput } from '@mui/material'
 
 // Project imports
-import { StyledButton } from 'ui-component/button/StyledButton'
-import ConfirmDialog from 'ui-component/dialog/ConfirmDialog'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
 import { IconX, IconVariable } from '@tabler/icons'
 
 // API
-import variablesApi from 'api/variables'
+import variablesApi from '@/api/variables'
 
 // Hooks
 
 // utils
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // const
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import { Dropdown } from '../../ui-component/dropdown/Dropdown'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
 const variableTypes = [
     {

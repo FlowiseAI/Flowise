@@ -23,7 +23,7 @@ const Assistants = Loadable(lazy(() => import('@/views/assistants')))
 const Credentials = Loadable(lazy(() => import('@/views/credentials')))
 
 // variables routing
-const Variables = Loadable(lazy(() => import('views/variables')))
+const Variables = Loadable(lazy(() => import('@/views/variables')))
 
 // ==============================|| MAIN ROUTING ||============================== //
 

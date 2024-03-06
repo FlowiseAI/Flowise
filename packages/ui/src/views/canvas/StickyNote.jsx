@@ -6,14 +6,14 @@ import { useSelector } from 'react-redux'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import NodeCardWrapper from '../../ui-component/cards/NodeCardWrapper'
-import NodeTooltip from '../../ui-component/tooltip/NodeTooltip'
+import NodeCardWrapper from '@/ui-component/cards/NodeCardWrapper'
+import NodeTooltip from '@/ui-component/tooltip/NodeTooltip'
 import { IconButton, Box } from '@mui/material'
 import { IconCopy, IconTrash } from '@tabler/icons'
-import { Input } from 'ui-component/input/Input'
+import { Input } from '@/ui-component/input/Input'
 
 // const
-import { flowContext } from '../../store/context/ReactFlowContext'
+import { flowContext } from '@/store/context/ReactFlowContext'
 
 const StickyNote = ({ data }) => {
     const theme = useTheme()

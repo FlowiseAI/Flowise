@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
-import { CodeEditor } from 'ui-component/editor/CodeEditor'
+import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 
 const overrideConfig = `{
     overrideConfig: {

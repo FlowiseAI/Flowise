@@ -38,8 +38,8 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
 import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons'
-import LlamaindexPNG from 'assets/images/llamaindex.png'
-import LangChainPNG from 'assets/images/langchain.png'
+import LlamaindexPNG from '@/assets/images/llamaindex.png'
+import LangChainPNG from '@/assets/images/langchain.png'
 
 // const
 import { baseURL } from '@/store/constant'
