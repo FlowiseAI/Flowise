@@ -1,7 +1,8 @@
+import { GooglePaLM, GooglePaLMTextInput } from '@langchain/community/llms/googlepalm'
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GooglePaLM, GooglePaLMTextInput } from 'langchain/llms/googlepalm'
-import { BaseCache } from 'langchain/schema'
+
 class GooglePaLM_LLMs implements INode {
     label: string
     name: string
@@ -19,7 +20,7 @@ class GooglePaLM_LLMs implements INode {
         this.name = 'GooglePaLM'
         this.version = 2.0
         this.type = 'GooglePaLM'
-        this.icon = 'Google_PaLM_Logo.svg'
+        this.icon = 'GooglePaLM.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Google MakerSuite PaLM large language models'
         this.baseClasses = [this.type, ...getBaseClasses(GooglePaLM)]

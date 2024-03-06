@@ -1,5 +1,5 @@
+import { LLM, BaseLLMParams } from '@langchain/core/language_models/llms'
 import { getEnvironmentVariable } from '../../../src/utils'
-import { LLM, BaseLLMParams } from 'langchain/llms/base'
 
 export interface HFInput {
     /** Model to use */

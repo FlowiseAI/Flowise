@@ -1,8 +1,8 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
-import { Embeddings } from 'langchain/embeddings/base'
+import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
+import { Embeddings } from '@langchain/core/embeddings'
 import { Client } from '@opensearch-project/opensearch'
 import { getBaseClasses } from '../../../src/utils'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class OpenSearch_Existing_VectorStores implements INode {
     label: string
@@ -22,7 +22,7 @@ class OpenSearch_Existing_VectorStores implements INode {
         this.name = 'openSearchExistingIndex'
         this.version = 1.0
         this.type = 'OpenSearch'
-        this.icon = 'opensearch.png'
+        this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from OpenSearch (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']

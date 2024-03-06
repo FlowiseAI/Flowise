@@ -1,7 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { Moderation } from '../Moderation'
 import { OpenAIModerationRunner } from './OpenAIModerationRunner'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 
 class OpenAIModeration implements INode {
     label: string
@@ -20,7 +20,7 @@ class OpenAIModeration implements INode {
         this.name = 'inputModerationOpenAI'
         this.version = 1.0
         this.type = 'Moderation'
-        this.icon = 'openai.png'
+        this.icon = 'openai.svg'
         this.category = 'Moderation'
         this.description = 'Check whether content complies with OpenAI usage policies.'
         this.baseClasses = [this.type, ...getBaseClasses(Moderation)]

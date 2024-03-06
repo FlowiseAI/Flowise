@@ -1,4 +1,4 @@
-import { LLM, BaseLLMParams } from 'langchain/llms/base'
+import { LLM, BaseLLMParams } from '@langchain/core/language_models/llms'
 
 export interface CohereInput extends BaseLLMParams {
     /** Sampling temperature to use */

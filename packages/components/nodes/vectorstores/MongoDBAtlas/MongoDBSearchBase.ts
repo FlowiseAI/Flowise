@@ -7,11 +7,10 @@ import {
     INodeOutputsValue,
     INodeParams
 } from '../../../src'
-
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
+import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
 import { Collection, MongoClient } from 'mongodb'
 
 export abstract class MongoDBSearchBase {
@@ -31,7 +30,7 @@ export abstract class MongoDBSearchBase {
 
     protected constructor() {
         this.type = 'MongoDB Atlas'
-        this.icon = 'mongodb.png'
+        this.icon = 'mongodb.svg'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'DEPRECATING'

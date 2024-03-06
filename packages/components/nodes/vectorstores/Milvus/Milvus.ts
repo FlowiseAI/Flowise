@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { DataType, ErrorCode, MetricType, IndexType } from '@zilliz/milvus2-sdk-node'
-import { Document } from 'langchain/document'
-import { MilvusLibArgs, Milvus } from 'langchain/vectorstores/milvus'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -64,6 +64,14 @@ class Milvus_VectorStores implements INode {
                 label: 'Milvus Collection Name',
                 name: 'milvusCollection',
                 type: 'string'
+            },
+            {
+                label: 'Milvus Text Field',
+                name: 'milvusTextField',
+                type: 'string',
+                placeholder: 'langchain_text',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Milvus Filter',
@@ -150,6 +158,7 @@ class Milvus_VectorStores implements INode {
         const address = nodeData.inputs?.milvusServerUrl as string
         const collectionName = nodeData.inputs?.milvusCollection as string
         const milvusFilter = nodeData.inputs?.milvusFilter as string
+        const textField = nodeData.inputs?.milvusTextField as string
 
         // embeddings
         const embeddings = nodeData.inputs?.embeddings as Embeddings
@@ -169,7 +178,8 @@ class Milvus_VectorStores implements INode {
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
-            collectionName: collectionName
+            collectionName: collectionName,
+            textField: textField
         }
 
         if (milvusUser) milVusArgs.username = milvusUser

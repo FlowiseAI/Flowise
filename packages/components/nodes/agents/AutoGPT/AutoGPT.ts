@@ -1,13 +1,12 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseChatModel } from 'langchain/chat_models/base'
-import { AutoGPT } from 'langchain/experimental/autogpt'
-import { Tool } from 'langchain/tools'
-import { AIMessage, HumanMessage, SystemMessage } from 'langchain/schema'
-import { VectorStoreRetriever } from 'langchain/vectorstores/base'
 import { flatten } from 'lodash'
-import { StructuredTool } from 'langchain/tools'
+import { Tool, StructuredTool } from '@langchain/core/tools'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { AutoGPT } from 'langchain/experimental/autogpt'
 import { LLMChain } from 'langchain/chains'
-import { PromptTemplate } from 'langchain/prompts'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 
 type ObjectTool = StructuredTool
 const FINISH_NAME = 'finish'
@@ -29,7 +28,7 @@ class AutoGPT_Agents implements INode {
         this.version = 1.0
         this.type = 'AutoGPT'
         this.category = 'Agents'
-        this.icon = 'autogpt.png'
+        this.icon = 'autogpt.svg'
         this.description = 'Autonomous agent with chain of thoughts for self-guided task completion'
         this.baseClasses = ['AutoGPT']
         this.inputs = [

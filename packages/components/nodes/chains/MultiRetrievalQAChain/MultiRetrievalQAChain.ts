@@ -1,7 +1,7 @@
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { MultiRetrievalQAChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeParams, VectorStoreRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { MultiRetrievalQAChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class MultiRetrievalQAChain_Chains implements INode {
@@ -20,7 +20,7 @@ class MultiRetrievalQAChain_Chains implements INode {
         this.name = 'multiRetrievalQAChain'
         this.version = 1.0
         this.type = 'MultiRetrievalQAChain'
-        this.icon = 'chain.svg'
+        this.icon = 'qa.svg'
         this.category = 'Chains'
         this.description = 'QA Chain that automatically picks an appropriate vector store from multiple retrievers'
         this.baseClasses = [this.type, ...getBaseClasses(MultiRetrievalQAChain)]

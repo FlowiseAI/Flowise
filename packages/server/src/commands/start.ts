@@ -18,8 +18,12 @@ export default class Start extends Command {
     static flags = {
         FLOWISE_USERNAME: Flags.string(),
         FLOWISE_PASSWORD: Flags.string(),
+        FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
         PORT: Flags.string(),
+        CORS_ORIGINS: Flags.string(),
+        IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
+        BLOB_STORAGE_PATH: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
         FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
@@ -35,10 +39,13 @@ export default class Start extends Command {
         DATABASE_NAME: Flags.string(),
         DATABASE_USER: Flags.string(),
         DATABASE_PASSWORD: Flags.string(),
+        DATABASE_SSL: Flags.string(),
+        DATABASE_SSL_KEY_BASE64: Flags.string(),
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
-        LANGCHAIN_PROJECT: Flags.string()
+        LANGCHAIN_PROJECT: Flags.string(),
+        DISABLE_FLOWISE_TELEMETRY: Flags.string()
     }
 
     async stopProcess() {
@@ -76,6 +83,8 @@ export default class Start extends Command {
         const { flags } = await this.parse(Start)
 
         if (flags.PORT) process.env.PORT = flags.PORT
+        if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
+        if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
 
@@ -83,6 +92,12 @@ export default class Start extends Command {
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
+
+        // Storage
+        if (flags.BLOB_STORAGE_PATH) process.env.BLOB_STORAGE_PATH = flags.BLOB_STORAGE_PATH
+
+        //API Configuration
+        if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
         if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
@@ -104,12 +119,20 @@ export default class Start extends Command {
         if (flags.DATABASE_NAME) process.env.DATABASE_NAME = flags.DATABASE_NAME
         if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
+        if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
+        if (flags.DATABASE_SSL_KEY_BASE64) process.env.DATABASE_SSL_KEY_BASE64 = flags.DATABASE_SSL_KEY_BASE64
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2
         if (flags.LANGCHAIN_ENDPOINT) process.env.LANGCHAIN_ENDPOINT = flags.LANGCHAIN_ENDPOINT
         if (flags.LANGCHAIN_API_KEY) process.env.LANGCHAIN_API_KEY = flags.LANGCHAIN_API_KEY
         if (flags.LANGCHAIN_PROJECT) process.env.LANGCHAIN_PROJECT = flags.LANGCHAIN_PROJECT
+
+        // Telemetry
+        if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
+
+        // Disable langchain warnings
+        process.env.LANGCHAIN_SUPPRESS_MIGRATION_WARNINGS = 'true'
 
         await (async () => {
             try {

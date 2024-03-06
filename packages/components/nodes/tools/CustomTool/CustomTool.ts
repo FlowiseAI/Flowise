@@ -1,5 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { convertSchemaToZod, getBaseClasses } from '../../../src/utils'
+import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
@@ -80,7 +80,16 @@ class CustomTool_Tools implements INode {
                 code: tool.func
             }
             if (customToolFunc) obj.code = customToolFunc
-            return new DynamicStructuredTool(obj)
+
+            const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
+            const flow = { chatflowId: options.chatflowid }
+
+            let dynamicStructuredTool = new DynamicStructuredTool(obj)
+            dynamicStructuredTool.setVariables(variables)
+            dynamicStructuredTool.setFlowObject(flow)
+
+            return dynamicStructuredTool
         } catch (e) {
             throw new Error(e)
         }

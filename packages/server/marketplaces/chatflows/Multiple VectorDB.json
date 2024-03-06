@@ -1,5 +1,7 @@
 {
     "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
+    "categories": "Buffer Memory,ChatOpenAI,Chain Tool,Retrieval QA Chain,Redis,Faiss,Conversational Agent,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -54,7 +56,7 @@
                 "inputs": {
                     "name": "ai-paper-qa",
                     "description": "AI Paper QA - useful for when you need to ask questions about the AI-Generated Content paper.",
-                    "returnDirect": "",
+                    "returnDirect": true,
                     "baseChain": "{{retrievalQAChain_0.data.instance}}"
                 },
                 "outputAnchors": [
@@ -128,7 +130,7 @@
                 "inputs": {
                     "name": "state-of-union-qa",
                     "description": "State of the Union QA - useful for when you need to ask questions about the president speech and most recent state of the union address.",
-                    "returnDirect": "",
+                    "returnDirect": true,
                     "baseChain": "{{retrievalQAChain_1.data.instance}}"
                 },
                 "outputAnchors": [
@@ -271,7 +273,7 @@
             "data": {
                 "id": "openAIEmbeddings_1",
                 "label": "OpenAI Embeddings",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -284,6 +286,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_1-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -323,7 +347,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -355,7 +380,7 @@
             "data": {
                 "id": "openAIEmbeddings_2",
                 "label": "OpenAI Embeddings",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -368,6 +393,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_2-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_2-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -407,7 +454,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -439,7 +487,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 5,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -463,8 +511,20 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
                                 "label": "gpt-4-1106-preview",
                                 "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
                             },
                             {
                                 "label": "gpt-4-vision-preview",
@@ -485,6 +545,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -576,6 +640,39 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -597,7 +694,9 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": ""
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -910,10 +1009,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_0-output-document-Document",
+                                "id": "plainText_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_0-output-text-string|json",
@@ -949,7 +1048,7 @@
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 5,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -973,8 +1072,20 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
                                 "label": "gpt-4-1106-preview",
                                 "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
                             },
                             {
                                 "label": "gpt-4-vision-preview",
@@ -995,6 +1106,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -1086,6 +1201,39 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -1107,7 +1255,9 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": ""
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -1139,7 +1289,7 @@
             "data": {
                 "id": "chatOpenAI_2",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 5,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -1163,8 +1313,20 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
                                 "label": "gpt-4-1106-preview",
                                 "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
                             },
                             {
                                 "label": "gpt-4-vision-preview",
@@ -1185,6 +1347,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -1276,6 +1442,39 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_2-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_2-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_2-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -1297,7 +1496,9 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": ""
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -1431,10 +1632,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "plainText_1-output-document-Document",
+                                "id": "plainText_1-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "plainText_1-output-text-string|json",
@@ -1567,7 +1768,7 @@
                         "id": "conversationalAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "conversationalAgent_0-input-model-BaseChatModel"
@@ -1651,11 +1852,11 @@
         },
         {
             "source": "plainText_0",
-            "sourceHandle": "plainText_0-output-document-Document",
+            "sourceHandle": "plainText_0-output-document-Document|json",
             "target": "redis_0",
             "targetHandle": "redis_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_0-plainText_0-output-document-Document-redis_0-redis_0-input-document-Document",
+            "id": "plainText_0-plainText_0-output-document-Document|json-redis_0-redis_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -1706,11 +1907,11 @@
         },
         {
             "source": "plainText_1",
-            "sourceHandle": "plainText_1-output-document-Document",
+            "sourceHandle": "plainText_1-output-document-Document|json",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "plainText_1-plainText_1-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "id": "plainText_1-plainText_1-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }

@@ -1,7 +1,7 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { VectorStore } from '@langchain/core/vectorstores'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { BabyAGI } from './core'
-import { BaseChatModel } from 'langchain/chat_models/base'
-import { VectorStore } from 'langchain/vectorstores/base'
 
 class BabyAGI_Agents implements INode {
     label: string
@@ -20,7 +20,7 @@ class BabyAGI_Agents implements INode {
         this.version = 1.0
         this.type = 'BabyAGI'
         this.category = 'Agents'
-        this.icon = 'babyagi.jpg'
+        this.icon = 'babyagi.svg'
         this.description = 'Task Driven Autonomous Agent which creates new task and reprioritizes task list based on objective'
         this.baseClasses = ['BabyAGI']
         this.inputs = [

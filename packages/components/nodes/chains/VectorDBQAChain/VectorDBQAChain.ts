@@ -1,9 +1,9 @@
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { VectorDBQAChain } from 'langchain/chains'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { VectorDBQAChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class VectorDBQAChain_Chains implements INode {
     label: string
@@ -21,7 +21,7 @@ class VectorDBQAChain_Chains implements INode {
         this.name = 'vectorDBQAChain'
         this.version = 1.0
         this.type = 'VectorDBQAChain'
-        this.icon = 'chain.svg'
+        this.icon = 'vectordb.svg'
         this.category = 'Chains'
         this.description = 'QA chain for vector databases'
         this.baseClasses = [this.type, ...getBaseClasses(VectorDBQAChain)]

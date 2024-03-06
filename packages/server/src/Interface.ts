@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -31,6 +31,7 @@ export interface IChatMessage {
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
+    fileUploads?: string
     chatType: string
     chatId: string
     memoryType?: string
@@ -64,6 +65,15 @@ export interface ICredential {
     name: string
     credentialName: string
     encryptedData: string
+    updatedDate: Date
+    createdDate: Date
+}
+
+export interface IVariable {
+    id: string
+    name: string
+    value: string
+    type: string
     updatedDate: Date
     createdDate: Date
 }
@@ -167,12 +177,13 @@ export interface IncomingInput {
     socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
+    uploads?: IFileUpload[]
 }
 
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }
@@ -202,4 +213,9 @@ export interface ICredentialReqBody {
 // Decrypted credential object sent back to client
 export interface ICredentialReturnResponse extends ICredential {
     plainDataObj: ICredentialDataDecrypted
+}
+
+export interface IUploadFileSizeAndTypes {
+    fileTypes: string[]
+    maxUploadSize: number
 }

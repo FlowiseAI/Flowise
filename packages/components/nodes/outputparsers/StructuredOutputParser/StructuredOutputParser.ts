@@ -1,8 +1,8 @@
-import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
+import { z } from 'zod'
+import { BaseOutputParser } from '@langchain/core/output_parsers'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
-import { z } from 'zod'
+import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 
 class StructuredOutputParser implements INode {
     label: string
@@ -22,7 +22,7 @@ class StructuredOutputParser implements INode {
         this.version = 1.0
         this.type = 'StructuredOutputParser'
         this.description = 'Parse the output of an LLM call into a given (JSON) structure.'
-        this.icon = 'structure.png'
+        this.icon = 'structure.svg'
         this.category = CATEGORY
         this.baseClasses = [this.type, ...getBaseClasses(BaseOutputParser)]
         this.inputs = [

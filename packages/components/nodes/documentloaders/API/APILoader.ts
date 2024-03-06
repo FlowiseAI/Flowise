@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import axios, { AxiosRequestConfig } from 'axios'
+import { Document } from '@langchain/core/documents'
 import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { Document } from 'langchain/document'
-import axios, { AxiosRequestConfig } from 'axios'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class API_DocumentLoaders implements INode {
     label: string
@@ -20,7 +20,7 @@ class API_DocumentLoaders implements INode {
         this.name = 'apiLoader'
         this.version = 1.0
         this.type = 'Document'
-        this.icon = 'api-loader.png'
+        this.icon = 'api.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from an API`
         this.baseClasses = [this.type]

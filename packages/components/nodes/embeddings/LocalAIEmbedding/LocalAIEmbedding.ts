@@ -1,5 +1,6 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from 'langchain/embeddings/openai'
+import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class LocalAIEmbedding_Embeddings implements INode {
     label: string
@@ -10,6 +11,7 @@ class LocalAIEmbedding_Embeddings implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -21,6 +23,13 @@ class LocalAIEmbedding_Embeddings implements INode {
         this.category = 'Embeddings'
         this.description = 'Use local embeddings models like llama.cpp'
         this.baseClasses = [this.type, 'Embeddings']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['localAIApi'],
+            optional: true
+        }
         this.inputs = [
             {
                 label: 'Base Path',
@@ -37,14 +46,19 @@ class LocalAIEmbedding_Embeddings implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
         const basePath = nodeData.inputs?.basePath as string
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const localAIApiKey = getCredentialParam('localAIApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
             modelName,
             openAIApiKey: 'sk-'
         }
+
+        if (localAIApiKey) obj.openAIApiKey = localAIApiKey
 
         const model = new OpenAIEmbeddings(obj, { basePath })
 

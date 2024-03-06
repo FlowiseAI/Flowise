@@ -1,8 +1,8 @@
+import { ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatOpenAICustom_ChatModels implements INode {
     label: string
@@ -21,7 +21,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         this.name = 'chatOpenAICustom'
         this.version = 2.0
         this.type = 'ChatOpenAI-Custom'
-        this.icon = 'openai.png'
+        this.icon = 'openai.svg'
         this.category = 'Chat Models'
         this.description = 'Custom/FineTuned model using OpenAI Chat compatible API'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]

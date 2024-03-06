@@ -1,10 +1,11 @@
 import { flatten } from 'lodash'
 import { MongoClient } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class MongoDBAtlas_VectorStores implements INode {
     label: string
@@ -24,9 +25,9 @@ class MongoDBAtlas_VectorStores implements INode {
         this.label = 'MongoDB Atlas'
         this.name = 'mongoDBAtlas'
         this.version = 1.0
-        this.description = `Upsert embedded data and perform similarity search upon query using MongoDB Atlas, a managed cloud mongodb database`
+        this.description = `Upsert embedded data and perform similarity or mmr search upon query using MongoDB Atlas, a managed cloud mongodb database`
         this.type = 'MongoDB Atlas'
-        this.icon = 'mongodb.png'
+        this.icon = 'mongodb.svg'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.badge = 'NEW'
@@ -95,6 +96,7 @@ class MongoDBAtlas_VectorStores implements INode {
                 optional: true
             }
         ]
+        addMMRInputParams(this.inputs)
         this.outputs = [
             {
                 label: 'MongoDB Retriever',
@@ -162,9 +164,6 @@ class MongoDBAtlas_VectorStores implements INode {
         let textKey = nodeData.inputs?.textKey as string
         let embeddingKey = nodeData.inputs?.embeddingKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
-        const output = nodeData.outputs?.output as string
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
@@ -181,13 +180,7 @@ class MongoDBAtlas_VectorStores implements INode {
             embeddingKey
         })
 
-        if (output === 'retriever') {
-            return vectorStore.asRetriever(k)
-        } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
-            return vectorStore
-        }
-        return vectorStore
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
     }
 }
 

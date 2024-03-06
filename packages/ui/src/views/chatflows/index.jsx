@@ -47,6 +47,7 @@ const Chatflows = () => {
     const [view, setView] = React.useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
     const handleChange = (event, nextView) => {
+        if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
         setView(nextView)
     }
@@ -161,7 +162,6 @@ const Chatflows = () => {
                                         variant='contained'
                                         value='card'
                                         title='Card View'
-                                        selectedColor='#00abc0'
                                     >
                                         <IconLayoutGrid />
                                     </ToggleButton>

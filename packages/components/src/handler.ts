@@ -1,13 +1,21 @@
-import { BaseTracer, Run, BaseCallbackHandler } from 'langchain/callbacks'
-import { AgentAction, ChainValues } from 'langchain/schema'
 import { Logger } from 'winston'
+import { v4 as uuidv4 } from 'uuid'
 import { Server } from 'socket.io'
 import { Client } from 'langsmith'
-import { LangChainTracer } from 'langchain/callbacks'
-import { LLMonitorHandler } from 'langchain/callbacks/handlers/llmonitor'
+import CallbackHandler from 'langfuse-langchain'
+import lunary from 'lunary'
+import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
+import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
+
+import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
+import { LangChainTracer, LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
+import { BaseTracer, Run } from '@langchain/core/tracers/base'
+import { ChainValues } from '@langchain/core/utils/types'
+import { AgentAction } from '@langchain/core/agents'
+import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
+
 import { getCredentialData, getCredentialParam } from './utils'
 import { ICommonObject, INodeData } from './Interface'
-import CallbackHandler from 'langfuse-langchain'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -231,11 +239,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         apiKey: langSmithApiKey
                     })
 
-                    const tracer = new LangChainTracer({
+                    let langSmithField: LangChainTracerFields = {
                         projectName: langSmithProject ?? 'default',
                         //@ts-ignore
                         client
-                    })
+                    }
+
+                    if (nodeData?.inputs?.analytics?.langSmith) {
+                        langSmithField = { ...langSmithField, ...nodeData?.inputs?.analytics?.langSmith }
+                    }
+
+                    const tracer = new LangChainTracer(langSmithField)
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
                     const release = analytic[provider].release as string
@@ -244,26 +258,34 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
                     const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
 
-                    const langFuseOptions: any = {
+                    let langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
                     if (release) langFuseOptions.release = release
-                    if (options.chatId) langFuseOptions.userId = options.chatId
+                    if (options.chatId) langFuseOptions.sessionId = options.chatId
+
+                    if (nodeData?.inputs?.analytics?.langFuse) {
+                        langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
+                    }
 
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)
-                } else if (provider === 'llmonitor') {
-                    const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, nodeData)
-                    const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, nodeData)
+                } else if (provider === 'lunary') {
+                    const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, nodeData)
+                    const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeData)
 
-                    const llmonitorFields: ICommonObject = {
-                        appId: llmonitorAppId,
-                        apiUrl: llmonitorEndpoint ?? 'https://app.llmonitor.com'
+                    let lunaryFields = {
+                        appId: lunaryAppId,
+                        apiUrl: lunaryEndpoint ?? 'https://app.lunary.ai'
                     }
 
-                    const handler = new LLMonitorHandler(llmonitorFields)
+                    if (nodeData?.inputs?.analytics?.lunary) {
+                        lunaryFields = { ...lunaryFields, ...nodeData?.inputs?.analytics?.lunary }
+                    }
+
+                    const handler = new LunaryHandler(lunaryFields)
                     callbacks.push(handler)
                 }
             }
@@ -271,5 +293,493 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
         return callbacks
     } catch (e) {
         throw new Error(e)
+    }
+}
+
+export class AnalyticHandler {
+    nodeData: INodeData
+    options: ICommonObject = {}
+    handlers: ICommonObject = {}
+
+    constructor(nodeData: INodeData, options: ICommonObject) {
+        this.options = options
+        this.nodeData = nodeData
+        this.init()
+    }
+
+    async init() {
+        try {
+            if (!this.options.analytic) return
+
+            const analytic = JSON.parse(this.options.analytic)
+
+            for (const provider in analytic) {
+                const providerStatus = analytic[provider].status as boolean
+
+                if (providerStatus) {
+                    const credentialId = analytic[provider].credentialId as string
+                    const credentialData = await getCredentialData(credentialId ?? '', this.options)
+                    if (provider === 'langSmith') {
+                        const langSmithProject = analytic[provider].projectName as string
+                        const langSmithApiKey = getCredentialParam('langSmithApiKey', credentialData, this.nodeData)
+                        const langSmithEndpoint = getCredentialParam('langSmithEndpoint', credentialData, this.nodeData)
+
+                        const client = new LangsmithClient({
+                            apiUrl: langSmithEndpoint ?? 'https://api.smith.langchain.com',
+                            apiKey: langSmithApiKey
+                        })
+
+                        this.handlers['langSmith'] = { client, langSmithProject }
+                    } else if (provider === 'langFuse') {
+                        const release = analytic[provider].release as string
+                        const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, this.nodeData)
+                        const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, this.nodeData)
+                        const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, this.nodeData)
+
+                        const langfuse = new Langfuse({
+                            secretKey: langFuseSecretKey,
+                            publicKey: langFusePublicKey,
+                            baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+                            release
+                        })
+                        this.handlers['langFuse'] = { client: langfuse }
+                    } else if (provider === 'lunary') {
+                        const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
+                        const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, this.nodeData)
+
+                        lunary.init({
+                            appId: lunaryAppId,
+                            apiUrl: lunaryEndpoint
+                        })
+
+                        this.handlers['lunary'] = { client: lunary }
+                    }
+                }
+            }
+        } catch (e) {
+            throw new Error(e)
+        }
+    }
+
+    async onChainStart(name: string, input: string, parentIds?: ICommonObject) {
+        const returnIds: ICommonObject = {
+            langSmith: {},
+            langFuse: {},
+            lunary: {}
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            if (!parentIds || !Object.keys(parentIds).length) {
+                const parentRunConfig: RunTreeConfig = {
+                    name,
+                    run_type: 'chain',
+                    inputs: {
+                        text: input
+                    },
+                    serialized: {},
+                    project_name: this.handlers['langSmith'].langSmithProject,
+                    client: this.handlers['langSmith'].client,
+                    ...this.nodeData?.inputs?.analytics?.langSmith
+                }
+                const parentRun = new RunTree(parentRunConfig)
+                await parentRun.postRun()
+                this.handlers['langSmith'].chainRun = { [parentRun.id]: parentRun }
+                returnIds['langSmith'].chainRun = parentRun.id
+            } else {
+                const parentRun: RunTree | undefined = this.handlers['langSmith'].chainRun[parentIds['langSmith'].chainRun]
+                if (parentRun) {
+                    const childChainRun = await parentRun.createChild({
+                        name,
+                        run_type: 'chain',
+                        inputs: {
+                            text: input
+                        }
+                    })
+                    await childChainRun.postRun()
+                    this.handlers['langSmith'].chainRun = { [childChainRun.id]: childChainRun }
+                    returnIds['langSmith'].chainRun = childChainRun.id
+                }
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            let langfuseTraceClient: LangfuseTraceClient
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                const langfuse: Langfuse = this.handlers['langFuse'].client
+                langfuseTraceClient = langfuse.trace({
+                    name,
+                    sessionId: this.options.chatId,
+                    metadata: { tags: ['openai-assistant'] },
+                    ...this.nodeData?.inputs?.analytics?.langFuse
+                })
+            } else {
+                langfuseTraceClient = this.handlers['langFuse'].trace[parentIds['langFuse']]
+            }
+
+            if (langfuseTraceClient) {
+                const span = langfuseTraceClient.span({
+                    name,
+                    input: {
+                        text: input
+                    }
+                })
+                this.handlers['langFuse'].trace = { [langfuseTraceClient.id]: langfuseTraceClient }
+                this.handlers['langFuse'].span = { [span.id]: span }
+                returnIds['langFuse'].trace = langfuseTraceClient.id
+                returnIds['langFuse'].span = span.id
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor) {
+                const runId = uuidv4()
+                await monitor.trackEvent('chain', 'start', {
+                    runId,
+                    name,
+                    userId: this.options.chatId,
+                    input,
+                    ...this.nodeData?.inputs?.analytics?.lunary
+                })
+                this.handlers['lunary'].chainEvent = { [runId]: runId }
+                returnIds['lunary'].chainEvent = runId
+            }
+        }
+
+        return returnIds
+    }
+
+    async onChainEnd(returnIds: ICommonObject, output: string | object, shutdown = false) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const chainRun: RunTree | undefined = this.handlers['langSmith'].chainRun[returnIds['langSmith'].chainRun]
+            if (chainRun) {
+                await chainRun.end({
+                    outputs: {
+                        output
+                    }
+                })
+                await chainRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const span: LangfuseSpanClient | undefined = this.handlers['langFuse'].span[returnIds['langFuse'].span]
+            if (span) {
+                span.end({
+                    output
+                })
+                if (shutdown) {
+                    const langfuse: Langfuse = this.handlers['langFuse'].client
+                    await langfuse.shutdownAsync()
+                }
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const chainEventId = returnIds['lunary'].chainEvent
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && chainEventId) {
+                await monitor.trackEvent('chain', 'end', {
+                    runId: chainEventId,
+                    output
+                })
+            }
+        }
+    }
+
+    async onChainError(returnIds: ICommonObject, error: string | object, shutdown = false) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const chainRun: RunTree | undefined = this.handlers['langSmith'].chainRun[returnIds['langSmith'].chainRun]
+            if (chainRun) {
+                await chainRun.end({
+                    error: {
+                        error
+                    }
+                })
+                await chainRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const span: LangfuseSpanClient | undefined = this.handlers['langFuse'].span[returnIds['langFuse'].span]
+            if (span) {
+                span.end({
+                    output: {
+                        error
+                    }
+                })
+                if (shutdown) {
+                    const langfuse: Langfuse = this.handlers['langFuse'].client
+                    await langfuse.shutdownAsync()
+                }
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const chainEventId = returnIds['lunary'].chainEvent
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && chainEventId) {
+                await monitor.trackEvent('chain', 'end', {
+                    runId: chainEventId,
+                    output: error
+                })
+            }
+        }
+    }
+
+    async onLLMStart(name: string, input: string, parentIds: ICommonObject) {
+        const returnIds: ICommonObject = {
+            langSmith: {},
+            langFuse: {},
+            lunary: {}
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const parentRun: RunTree | undefined = this.handlers['langSmith'].chainRun[parentIds['langSmith'].chainRun]
+            if (parentRun) {
+                const childLLMRun = await parentRun.createChild({
+                    name,
+                    run_type: 'llm',
+                    inputs: {
+                        prompts: [input]
+                    }
+                })
+                await childLLMRun.postRun()
+                this.handlers['langSmith'].llmRun = { [childLLMRun.id]: childLLMRun }
+                returnIds['langSmith'].llmRun = childLLMRun.id
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const trace: LangfuseTraceClient | undefined = this.handlers['langFuse'].trace[parentIds['langFuse'].trace]
+            if (trace) {
+                const generation = trace.generation({
+                    name,
+                    input: input
+                })
+                this.handlers['langFuse'].generation = { [generation.id]: generation }
+                returnIds['langFuse'].generation = generation.id
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
+            const chainEventId: string = this.handlers['lunary'].chainEvent[parentIds['lunary'].chainEvent]
+
+            if (monitor && chainEventId) {
+                const runId = uuidv4()
+                await monitor.trackEvent('llm', 'start', {
+                    runId,
+                    parentRunId: chainEventId,
+                    name,
+                    userId: this.options.chatId,
+                    input
+                })
+                this.handlers['lunary'].llmEvent = { [runId]: runId }
+                returnIds['lunary'].llmEvent = runId
+            }
+        }
+
+        return returnIds
+    }
+
+    async onLLMEnd(returnIds: ICommonObject, output: string) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
+            if (llmRun) {
+                await llmRun.end({
+                    outputs: {
+                        generations: [output]
+                    }
+                })
+                await llmRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
+            if (generation) {
+                generation.end({
+                    output: output
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const llmEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].llmEvent]
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && llmEventId) {
+                await monitor.trackEvent('llm', 'end', {
+                    runId: llmEventId,
+                    output
+                })
+            }
+        }
+    }
+
+    async onLLMError(returnIds: ICommonObject, error: string | object) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
+            if (llmRun) {
+                await llmRun.end({
+                    error: {
+                        error
+                    }
+                })
+                await llmRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
+            if (generation) {
+                generation.end({
+                    output: error
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const llmEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].llmEvent]
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && llmEventId) {
+                await monitor.trackEvent('llm', 'end', {
+                    runId: llmEventId,
+                    output: error
+                })
+            }
+        }
+    }
+
+    async onToolStart(name: string, input: string | object, parentIds: ICommonObject) {
+        const returnIds: ICommonObject = {
+            langSmith: {},
+            langFuse: {},
+            lunary: {}
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const parentRun: RunTree | undefined = this.handlers['langSmith'].chainRun[parentIds['langSmith'].chainRun]
+            if (parentRun) {
+                const childToolRun = await parentRun.createChild({
+                    name,
+                    run_type: 'tool',
+                    inputs: {
+                        input
+                    }
+                })
+                await childToolRun.postRun()
+                this.handlers['langSmith'].toolRun = { [childToolRun.id]: childToolRun }
+                returnIds['langSmith'].toolRun = childToolRun.id
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const trace: LangfuseTraceClient | undefined = this.handlers['langFuse'].trace[parentIds['langFuse'].trace]
+            if (trace) {
+                const toolSpan = trace.span({
+                    name,
+                    input
+                })
+                this.handlers['langFuse'].toolSpan = { [toolSpan.id]: toolSpan }
+                returnIds['langFuse'].toolSpan = toolSpan.id
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
+            const chainEventId: string = this.handlers['lunary'].chainEvent[parentIds['lunary'].chainEvent]
+
+            if (monitor && chainEventId) {
+                const runId = uuidv4()
+                await monitor.trackEvent('tool', 'start', {
+                    runId,
+                    parentRunId: chainEventId,
+                    name,
+                    userId: this.options.chatId,
+                    input
+                })
+                this.handlers['lunary'].toolEvent = { [runId]: runId }
+                returnIds['lunary'].toolEvent = runId
+            }
+        }
+
+        return returnIds
+    }
+
+    async onToolEnd(returnIds: ICommonObject, output: string | object) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const toolRun: RunTree | undefined = this.handlers['langSmith'].toolRun[returnIds['langSmith'].toolRun]
+            if (toolRun) {
+                await toolRun.end({
+                    outputs: {
+                        output
+                    }
+                })
+                await toolRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const toolSpan: LangfuseSpanClient | undefined = this.handlers['langFuse'].toolSpan[returnIds['langFuse'].toolSpan]
+            if (toolSpan) {
+                toolSpan.end({
+                    output
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const toolEventId: string = this.handlers['lunary'].toolEvent[returnIds['lunary'].toolEvent]
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && toolEventId) {
+                await monitor.trackEvent('tool', 'end', {
+                    runId: toolEventId,
+                    output
+                })
+            }
+        }
+    }
+
+    async onToolError(returnIds: ICommonObject, error: string | object) {
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
+            const toolRun: RunTree | undefined = this.handlers['langSmith'].toolRun[returnIds['langSmith'].toolRun]
+            if (toolRun) {
+                await toolRun.end({
+                    error: {
+                        error
+                    }
+                })
+                await toolRun.patchRun()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
+            const toolSpan: LangfuseSpanClient | undefined = this.handlers['langFuse'].toolSpan[returnIds['langFuse'].toolSpan]
+            if (toolSpan) {
+                toolSpan.end({
+                    output: error
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const toolEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].toolEvent]
+            const monitor = this.handlers['lunary'].client
+
+            if (monitor && toolEventId) {
+                await monitor.trackEvent('tool', 'end', {
+                    runId: toolEventId,
+                    output: error
+                })
+            }
+        }
     }
 }

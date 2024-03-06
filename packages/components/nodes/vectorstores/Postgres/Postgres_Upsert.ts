@@ -1,11 +1,11 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
 import { DataSourceOptions } from 'typeorm'
-import { TypeORMVectorStore, TypeORMVectorStoreDocument } from 'langchain/vectorstores/typeorm'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
 import { Pool } from 'pg'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class PostgresUpsert_VectorStores implements INode {
     label: string
@@ -24,7 +24,7 @@ class PostgresUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres Upsert Document'
         this.name = 'postgresUpsert'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -58,6 +58,13 @@ class PostgresUpsert_VectorStores implements INode {
                 label: 'Database',
                 name: 'database',
                 type: 'string'
+            },
+            {
+                label: 'SSL Connection',
+                name: 'sslConnection',
+                type: 'boolean',
+                default: false,
+                optional: false
             },
             {
                 label: 'Port',
@@ -117,6 +124,7 @@ class PostgresUpsert_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const sslConnection = nodeData.inputs?.sslConnection as boolean
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -134,7 +142,8 @@ class PostgresUpsert_VectorStores implements INode {
             port: nodeData.inputs?.port as number,
             username: user,
             password: password,
-            database: nodeData.inputs?.database as string
+            database: nodeData.inputs?.database as string,
+            ssl: sslConnection
         }
 
         const args = {

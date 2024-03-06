@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
-import { Embeddings } from 'langchain/embeddings/base'
+import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
+import { Embeddings } from '@langchain/core/embeddings'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Pinecone_Existing_VectorStores implements INode {
     label: string
@@ -23,7 +23,7 @@ class Pinecone_Existing_VectorStores implements INode {
         this.name = 'pineconeExistingIndex'
         this.version = 1.0
         this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Pinecone (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
@@ -95,16 +95,14 @@ class Pinecone_Existing_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         })
 
         const pineconeIndex = client.Index(index)
 
-        const obj: PineconeLibArgs = {
+        const obj: PineconeStoreParams = {
             pineconeIndex
         }
 

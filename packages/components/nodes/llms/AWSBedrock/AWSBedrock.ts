@@ -1,9 +1,9 @@
+import { Bedrock } from '@langchain/community/llms/bedrock'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
+import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Bedrock } from 'langchain/llms/bedrock'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 /**
  * I had to run the following to build the component
@@ -27,9 +27,9 @@ class AWSBedrock_LLMs implements INode {
     constructor() {
         this.label = 'AWS Bedrock'
         this.name = 'awsBedrock'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AWSBedrock'
-        this.icon = 'awsBedrock.png'
+        this.icon = 'aws.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around AWS Bedrock large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Bedrock)]
@@ -106,12 +106,20 @@ class AWSBedrock_LLMs implements INode {
                 ]
             },
             {
+                label: 'Custom Model Name',
+                name: 'customModel',
+                description: 'If provided, will override model selected from Model Name option',
+                type: 'string',
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
                 description: 'Temperature parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
+                additionalParams: true,
                 default: 0.7
             },
             {
@@ -121,6 +129,7 @@ class AWSBedrock_LLMs implements INode {
                 step: 10,
                 description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
+                additionalParams: true,
                 default: 200
             }
         ]
@@ -129,11 +138,12 @@ class AWSBedrock_LLMs implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const iRegion = nodeData.inputs?.region as string
         const iModel = nodeData.inputs?.model as string
+        const customModel = nodeData.inputs?.customModel as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
         const obj: Partial<BaseBedrockInput> & BaseLLMParams = {
-            model: iModel,
+            model: customModel ? customModel : iModel,
             region: iRegion,
             temperature: parseFloat(iTemperature),
             maxTokens: parseInt(iMax_tokens_to_sample, 10)

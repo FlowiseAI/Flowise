@@ -1,10 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
+import { LLMChain } from 'langchain/chains'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class CSV_Agents implements INode {
     label: string
@@ -23,7 +23,7 @@ class CSV_Agents implements INode {
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.icon = 'csvagent.png'
+        this.icon = 'CSVagent.svg'
         this.description = 'Agent used to to answer queries on CSV data'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [

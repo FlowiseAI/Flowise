@@ -1,9 +1,9 @@
 import { Pool } from 'pg'
 import { flatten } from 'lodash'
 import { DataSourceOptions } from 'typeorm'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { TypeORMVectorStore, TypeORMVectorStoreDocument } from 'langchain/vectorstores/typeorm'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -24,7 +24,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -189,7 +189,8 @@ class Postgres_VectorStores implements INode {
             type: 'postgres',
             host: nodeData.inputs?.host as string,
             port: nodeData.inputs?.port as number,
-            username: user,
+            username: user, // Required by TypeORMVectorStore
+            user: user, // Required by Pool in similaritySearchVectorWithScore
             password: password,
             database: nodeData.inputs?.database as string
         }
@@ -239,14 +240,7 @@ const similaritySearchVectorWithScore = async (
         ORDER BY "_distance" ASC
         LIMIT $3;`
 
-    const poolOptions = {
-        host: postgresConnectionOptions.host,
-        port: postgresConnectionOptions.port,
-        user: postgresConnectionOptions.username,
-        password: postgresConnectionOptions.password,
-        database: postgresConnectionOptions.database
-    }
-    const pool = new Pool(poolOptions)
+    const pool = new Pool(postgresConnectionOptions)
     const conn = await pool.connect()
 
     const documents = await conn.query(queryString, [embeddingString, _filter, k])

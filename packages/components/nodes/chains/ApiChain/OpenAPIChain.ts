@@ -1,7 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ChatOpenAI } from '@langchain/openai'
 import { APIChain, createOpenAPIChain } from 'langchain/chains'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { ChatOpenAI } from 'langchain/chat_models/openai'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class OpenApiChain_Chains implements INode {
@@ -20,7 +20,7 @@ class OpenApiChain_Chains implements INode {
         this.name = 'openApiChain'
         this.version = 1.0
         this.type = 'OpenAPIChain'
-        this.icon = 'openapi.png'
+        this.icon = 'openapi.svg'
         this.category = 'Chains'
         this.description = 'Chain that automatically select and call APIs based only on an OpenAPI spec'
         this.baseClasses = [this.type, ...getBaseClasses(APIChain)]

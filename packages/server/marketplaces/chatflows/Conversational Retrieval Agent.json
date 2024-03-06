@@ -1,6 +1,8 @@
 {
     "description": "Agent optimized for vector retrieval during conversation and answering questions based on previous dialogue.",
+    "categories": "Retriever Tool,Buffer Memory,ChatOpenAI,Conversational Retrieval Agent, Pinecone,Langchain",
     "badge": "POPULAR",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -14,7 +16,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -27,6 +29,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_0-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -66,7 +90,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -194,6 +219,13 @@
                         "rows": 3,
                         "placeholder": "Searches and returns documents regarding the state-of-the-union.",
                         "id": "retrieverTool_0-input-description-string"
+                    },
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "retrieverTool_0-input-returnSourceDocuments-boolean"
                     }
                 ],
                 "inputAnchors": [
@@ -207,7 +239,8 @@
                 "inputs": {
                     "name": "search_website",
                     "description": "Searches and return documents regarding Jane - a culinary institution that offers top quality coffee, pastries, breakfast, lunch, and a variety of baked goods. They have multiple locations, including Jane on Fillmore, Jane on Larkin, Jane the Bakery, Toy Boat By Jane, and Little Jane on Grant. They emphasize healthy eating with a focus on flavor and quality ingredients. They bake everything in-house and work with local suppliers to source ingredients directly from farmers. They also offer catering services and delivery options.",
-                    "retriever": "{{pinecone_0.data.instance}}"
+                    "retriever": "{{pinecone_0.data.instance}}",
+                    "returnSourceDocuments": true
                 },
                 "outputAnchors": [
                     {
@@ -296,12 +329,12 @@
             "data": {
                 "id": "pinecone_0",
                 "label": "Pinecone",
-                "version": 1,
+                "version": 2,
                 "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "description": "Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -342,6 +375,45 @@
                         "additionalParams": true,
                         "optional": true,
                         "id": "pinecone_0-input-topK-number"
+                    },
+                    {
+                        "label": "Search Type",
+                        "name": "searchType",
+                        "type": "options",
+                        "default": "similarity",
+                        "options": [
+                            {
+                                "label": "Similarity",
+                                "name": "similarity"
+                            },
+                            {
+                                "label": "Max Marginal Relevance",
+                                "name": "mmr"
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-searchType-options"
+                    },
+                    {
+                        "label": "Fetch K (for MMR Search)",
+                        "name": "fetchK",
+                        "description": "Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR",
+                        "placeholder": "20",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-fetchK-number"
+                    },
+                    {
+                        "label": "Lambda (for MMR Search)",
+                        "name": "lambda",
+                        "description": "Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR",
+                        "placeholder": "0.5",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-lambda-number"
                     }
                 ],
                 "inputAnchors": [
@@ -366,7 +438,10 @@
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
                     "pineconeMetadataFilter": "",
-                    "topK": ""
+                    "topK": "",
+                    "searchType": "similarity",
+                    "fetchK": "",
+                    "lambda": ""
                 },
                 "outputAnchors": [
                     {
@@ -414,7 +489,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 2,
+                "version": 5,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -438,8 +513,20 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
                                 "label": "gpt-4-1106-preview",
                                 "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
                             },
                             {
                                 "label": "gpt-4-vision-preview",
@@ -460,6 +547,10 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -551,6 +642,39 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -572,7 +696,9 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": ""
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
