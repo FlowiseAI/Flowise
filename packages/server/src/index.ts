@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -89,7 +89,7 @@ export class App {
     chatflowPool: ChatflowPool
     cachePool: CachePool
     telemetry: Telemetry
-    AppDataSource = getDataSource()
+    AppDataSource: DataSource = getDataSource()
 
     constructor() {
         this.app = express()
