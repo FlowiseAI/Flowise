@@ -1,6 +1,5 @@
 import { flatten } from 'lodash'
 import { AgentExecutor } from 'langchain/agents'
-import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
@@ -10,8 +9,8 @@ import { additionalCallbacks } from '../../../src/handler'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { createReactAgent } from '../../../src/agents'
-import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { IVisionChatModal } from '../../../src/IVisionChatModal'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -68,23 +67,26 @@ class MRKLAgentChat_Agents implements INode {
         const prompt = await pull<PromptTemplate>('hwchase17/react-chat')
         let chatPromptTemplate = undefined
 
-        if (model instanceof ChatOpenAI) {
+        if (llmSupportsVision(model)) {
+            const visionChatModel = model as IVisionChatModal
             const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
-                // Change model to gpt-4-vision
-                model.modelName = 'gpt-4-vision-preview'
-
-                // Change default max token to higher when using gpt-4-vision
-                model.maxTokens = 1024
-
+                // Change model to vision supported
+                visionChatModel.setVisionModel()
                 const oldTemplate = prompt.template as string
-                chatPromptTemplate = ChatPromptTemplate.fromMessages([HumanMessagePromptTemplate.fromTemplate(oldTemplate)])
-                chatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
+
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: oldTemplate
+                    }
+                ])
+                msg.inputVariables = prompt.inputVariables
+                chatPromptTemplate = ChatPromptTemplate.fromMessages([msg])
             } else {
                 // revert to previous values if image upload is empty
-                model.modelName = model.configuredModel
-                model.maxTokens = model.configuredMaxToken
+                visionChatModel.revertToOriginalModel()
             }
         }
 

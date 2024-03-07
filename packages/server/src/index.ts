@@ -1534,7 +1534,7 @@ export class App {
         if (!chatflow) return `Chatflow ${chatflowid} not found`
 
         const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-        const uploadProcessingNodes = ['chatOpenAI', 'azureChatOpenAI']
+        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic']
 
         const flowObj = JSON.parse(chatflow.flowData)
         const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []

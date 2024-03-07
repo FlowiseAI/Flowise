@@ -2,15 +2,16 @@ import { ConversationChain } from 'langchain/chains'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { StringOutputParser } from '@langchain/core/output_parsers'
-import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, MessageContentImageUrl } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
+import { IVisionChatModal } from '../../../src/IVisionChatModal'
+import { MessageContent } from 'llamaindex'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -145,7 +146,7 @@ class ConversationChain_Chains implements INode {
     }
 }
 
-const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage[]) => {
+const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageContentImageUrl[]) => {
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const prompt = nodeData.inputs?.systemMessagePrompt as string
     const chatPromptTemplate = nodeData.inputs?.chatPromptTemplate as ChatPromptTemplate
@@ -154,7 +155,6 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage
         const sysPrompt = chatPromptTemplate.promptMessages[0]
         const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
         const messages = [sysPrompt, new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'), humanPrompt]
-        if (humanImageMessages.length) messages.push(...humanImageMessages)
 
         const chatPrompt = ChatPromptTemplate.fromMessages(messages)
         if ((chatPromptTemplate as any).promptValues) {
@@ -168,9 +168,8 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage
     const messages = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? prompt : systemMessage),
         new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
-        HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
+        HumanMessagePromptTemplate.fromTemplate([`{${inputKey}}`, ...humanImageMessages])
     ]
-    if (humanImageMessages.length) messages.push(...(humanImageMessages as any[]))
 
     const chatPrompt = ChatPromptTemplate.fromMessages(messages)
 
@@ -183,28 +182,19 @@ const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: s
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
 
-    let humanImageMessages: HumanMessage[] = []
-    if (model instanceof ChatOpenAI) {
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
-
+    let messageContent: MessageContentImageUrl[] = []
+    if (llmSupportsVision(model)) {
+        messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+        const visionChatModel = model as IVisionChatModal
         if (messageContent?.length) {
-            // Change model to gpt-4-vision
-            model.modelName = 'gpt-4-vision-preview'
-
-            // Change default max token to higher when using gpt-4-vision
-            model.maxTokens = 1024
-
-            for (const msg of messageContent) {
-                humanImageMessages.push(new HumanMessage({ content: [msg] }))
-            }
+            visionChatModel.setVisionModel()
         } else {
             // revert to previous values if image upload is empty
-            model.modelName = model.configuredModel
-            model.maxTokens = model.configuredMaxToken
+            visionChatModel.revertToOriginalModel()
         }
     }
 
-    const chatPrompt = prepareChatPrompt(nodeData, humanImageMessages)
+    const chatPrompt = prepareChatPrompt(nodeData, messageContent)
     let promptVariables = {}
     const promptValuesRaw = (chatPrompt as any).promptValues
     if (promptValuesRaw) {
@@ -228,7 +218,7 @@ const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: s
             },
             ...promptVariables
         },
-        prepareChatPrompt(nodeData, humanImageMessages),
+        prepareChatPrompt(nodeData, messageContent),
         model,
         new StringOutputParser()
     ])

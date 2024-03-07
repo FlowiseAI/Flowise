@@ -4,7 +4,12 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
-import { renderTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import {
+    renderTemplate,
+    MessagesPlaceholder,
+    HumanMessagePromptTemplate,
+    PromptTemplate
+} from "@langchain/core/prompts";
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
@@ -12,7 +17,8 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { addImagesToMessages, llmSupportsVision } from "../../../src/multiModalUtils";
+import { IVisionChatModal } from "../../../src/IVisionChatModal";
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -150,33 +156,39 @@ const prepareAgent = async (
         outputParser
     })
 
-    if (model instanceof ChatOpenAI) {
-        let humanImageMessages: HumanMessage[] = []
+    if (llmSupportsVision(model)) {
+        const visionChatModel = model as IVisionChatModal
+        // let humanImageMessages: HumanMessage[] = []
         const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
-            // Change model to gpt-4-vision
-            model.modelName = 'gpt-4-vision-preview'
+            visionChatModel.setVisionModel()
 
-            // Change default max token to higher when using gpt-4-vision
-            model.maxTokens = 1024
-
-            for (const msg of messageContent) {
-                humanImageMessages.push(new HumanMessage({ content: [msg] }))
-            }
+            // for (const msg of messageContent) {
+            //     humanImageMessages.push(new HumanMessage({ content: [msg] }))
+            // }
 
             // Pop the `agent_scratchpad` MessagePlaceHolder
             let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
-
+            if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
+                const template = (lastMessage.prompt as PromptTemplate).template as string
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: template
+                    }
+                ])
+                msg.inputVariables = lastMessage.inputVariables
+                prompt.promptMessages.push(msg)
+            }
             // Add the HumanMessage for images
-            prompt.promptMessages.push(...humanImageMessages)
+            //prompt.promptMessages.push(...humanImageMessages)
 
             // Add the `agent_scratchpad` MessagePlaceHolder back
             prompt.promptMessages.push(messagePlaceholder)
         } else {
-            // revert to previous values if image upload is empty
-            model.modelName = model.configuredModel
-            model.maxTokens = model.configuredMaxToken
+            visionChatModel.revertToOriginalModel()
         }
     }
 
