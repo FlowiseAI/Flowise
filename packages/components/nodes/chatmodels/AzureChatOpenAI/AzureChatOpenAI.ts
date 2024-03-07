@@ -1,7 +1,7 @@
 import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from "../../../src/Interface";
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 
@@ -103,38 +103,38 @@ class AzureChatOpenAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
-                default: false,
-                optional: true
-            },
-            {
-                label: 'Image Resolution',
-                description: 'This parameter controls the resolution in which the model views the image.',
-                name: 'imageResolution',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Low',
-                        name: 'low'
-                    },
-                    {
-                        label: 'High',
-                        name: 'high'
-                    },
-                    {
-                        label: 'Auto',
-                        name: 'auto'
-                    }
-                ],
-                default: 'low',
-                optional: false,
-                additionalParams: true
+            // },
+            // {
+            //     label: 'Allow Image Uploads',
+            //     name: 'allowImageUploads',
+            //     type: 'boolean',
+            //     description:
+            //         'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+            //     default: false,
+            //     optional: true
+            // },
+            // {
+            //     label: 'Image Resolution',
+            //     description: 'This parameter controls the resolution in which the model views the image.',
+            //     name: 'imageResolution',
+            //     type: 'options',
+            //     options: [
+            //         {
+            //             label: 'Low',
+            //             name: 'low'
+            //         },
+            //         {
+            //             label: 'High',
+            //             name: 'high'
+            //         },
+            //         {
+            //             label: 'Auto',
+            //             name: 'auto'
+            //         }
+            //     ],
+            //     default: 'low',
+            //     optional: false,
+            //     additionalParams: true
             }
         ]
     }
@@ -155,10 +155,10 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const imageResolution = nodeData.inputs?.imageResolution as string
+        // const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        // const imageResolution = nodeData.inputs?.imageResolution as string
 
-        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIChatInput> & { multiModalOption?: IMultiModalOption }  = {
+        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIChatInput> = {
             temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
@@ -176,13 +176,12 @@ class AzureChatOpenAI_ChatModels implements INode {
 
         const multiModalOption: IMultiModalOption = {
             image: {
-                allowImageUploads: allowImageUploads ?? false,
-                imageResolution
+                allowImageUploads: false,
             }
         }
-        obj.multiModalOption = multiModalOption
 
         const model = new ChatOpenAI(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }
