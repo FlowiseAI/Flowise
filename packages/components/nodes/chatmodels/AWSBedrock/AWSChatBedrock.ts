@@ -95,6 +95,8 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'model',
                 type: 'options',
                 options: [
+                    { label: 'anthropic.claude-3-sonnet', name: 'anthropic.claude-3-sonnet-20240229-v1:0' },
+                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
                     { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
                     { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
                     { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' },
