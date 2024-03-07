@@ -11,7 +11,6 @@ import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, MessageCon
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { IVisionChatModal } from '../../../src/IVisionChatModal'
-import { MessageContent } from 'llamaindex'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'

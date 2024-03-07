@@ -4,21 +4,15 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
-import {
-    renderTemplate,
-    MessagesPlaceholder,
-    HumanMessagePromptTemplate,
-    PromptTemplate
-} from "@langchain/core/prompts";
+import { renderTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
-import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { addImagesToMessages, llmSupportsVision } from "../../../src/multiModalUtils";
-import { IVisionChatModal } from "../../../src/IVisionChatModal";
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { IVisionChatModal } from '../../../src/IVisionChatModal'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
