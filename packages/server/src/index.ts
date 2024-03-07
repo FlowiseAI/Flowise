@@ -1328,14 +1328,18 @@ export class App {
                 if (chatflow.chatbotConfig) {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
                     // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
-                    const isValidAllowedOrigins = parsedConfig.allowedOrigins[0] !== ''
-                    if (parsedConfig.allowedOrigins && parsedConfig.allowedOrigins.length > 0 && isValidAllowedOrigins) {
+                    const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
+                    if (isValidAllowedOrigins) {
                         const originHeader = req.headers.origin as string
                         const origin = new URL(originHeader).host
                         isDomainAllowed =
                             parsedConfig.allowedOrigins.filter((domain: string) => {
-                                const allowedOrigin = new URL(domain).host
-                                return origin === allowedOrigin
+                                try {
+                                    const allowedOrigin = new URL(domain).host
+                                    return origin === allowedOrigin
+                                } catch (e) {
+                                    return false
+                                }
                             }).length > 0
                     }
                 }
