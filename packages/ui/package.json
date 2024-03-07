@@ -62,7 +62,7 @@
         "dev": "vite",
         "build": "vite build",
         "clean": "rimraf build",
-        "nuke": "rimraf build node_modules"
+        "nuke": "rimraf build node_modules .turbo"
     },
     "babel": {
         "presets": [

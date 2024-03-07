@@ -23,7 +23,7 @@
         "build": "tsc",
         "start": "run-script-os",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules",
+        "nuke": "rimraf dist node_modules .turbo",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",
         "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"pnpm start\"",

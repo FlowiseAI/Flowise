@@ -17,7 +17,7 @@
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
         "clean": "pnpm --filter \"./packages/**\" clean",
-        "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules",
+        "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint-fix": "pnpm lint --fix",
