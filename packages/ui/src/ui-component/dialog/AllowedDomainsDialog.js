@@ -161,6 +161,7 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             size='small'
                                             value={origin}
                                             name='origin'
+                                            placeholder='https://example.com'
                                             endAdornment={
                                                 <InputAdornment position='end' sx={{ padding: '2px' }}>
                                                     {inputFields.length > 1 && (
