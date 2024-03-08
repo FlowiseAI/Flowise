@@ -2,10 +2,10 @@ import { flatten } from 'lodash'
 import { Chroma } from '@langchain/community/vectorstores/chroma'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChromaExtended } from './core'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 class Chroma_VectorStores implements INode {
     label: string
@@ -103,7 +103,7 @@ class Chroma_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const collectionName = nodeData.inputs?.collectionName as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
@@ -146,6 +146,7 @@ class Chroma_VectorStores implements INode {
                     return res
                 } else {
                     await ChromaExtended.fromDocuments(finalDocs, embeddings, obj)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)

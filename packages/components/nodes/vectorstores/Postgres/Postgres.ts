@@ -4,9 +4,9 @@ import { DataSourceOptions } from 'typeorm'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 class Postgres_VectorStores implements INode {
     label: string
@@ -116,7 +116,7 @@ class Postgres_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const user = getCredentialParam('user', credentialData, nodeData)
             const password = getCredentialParam('password', credentialData, nodeData)
@@ -189,6 +189,8 @@ class Postgres_VectorStores implements INode {
                     vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
                         return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
                     }
+
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)

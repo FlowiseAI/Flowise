@@ -82,6 +82,7 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { UpsertHistory } from './database/entities/UpsertHistory'
 
 export class App {
     app: express.Application
@@ -1280,6 +1281,49 @@ export class App {
             await this.upsertVector(req, res, true)
         })
 
+        // Get all upsert history from chatflowid
+        this.app.get('/api/v1/vector/upsert/:id', async (req: Request, res: Response) => {
+            const sortOrder = req.query?.order as string | undefined
+            const chatflowid = req.params?.id as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
+                const date = new Date(dateTimeStr)
+                if (isNaN(date.getTime())) {
+                    return undefined
+                }
+                setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
+                return date
+            }
+
+            let fromDate
+            if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
+
+            let toDate
+            if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
+
+            let upsertHistory = await this.AppDataSource.getRepository(UpsertHistory).find({
+                where: {
+                    chatflowid,
+                    ...(fromDate && { date: MoreThanOrEqual(fromDate) }),
+                    ...(toDate && { date: LessThanOrEqual(toDate) })
+                },
+                order: {
+                    date: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+                }
+            })
+            upsertHistory = upsertHistory.map((hist) => {
+                return {
+                    ...hist,
+                    result: hist.result ? JSON.parse(hist.result) : {},
+                    flowData: hist.flowData ? JSON.parse(hist.flowData) : {}
+                }
+            })
+
+            return res.json(upsertHistory)
+        })
+
         // ----------------------------------------
         // Prompt from Hub
         // ----------------------------------------
@@ -1657,6 +1701,12 @@ export class App {
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
+    /**
+     * Upsert documents
+     * @param {Request} req
+     * @param {Response} res
+     * @param {boolean} isInternal
+     */
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
         try {
             const chatflowid = req.params.id
@@ -1717,6 +1767,8 @@ export class App {
                     !node.data.label.includes('Upsert') &&
                     !node.data.label.includes('Load Existing')
             )
+
+            // Check if multiple vector store nodes exist, and if stopNodeId is specified
             if (vsNodes.length > 1 && !stopNodeId) {
                 return res.status(500).send('There are multiple vector nodes, please provide stopNodeId in body request')
             } else if (vsNodes.length === 1 && !stopNodeId) {
@@ -1761,6 +1813,18 @@ export class App {
 
             this.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
 
+            // Save to DB
+            if (upsertedResult['flowData'] && upsertedResult['result']) {
+                const result = cloneDeep(upsertedResult)
+                result['flowData'] = JSON.stringify(result['flowData'])
+                result['result'] = JSON.stringify(omit(result['result'], ['totalKeys', 'addedDocs']))
+                result.chatflowid = chatflowid
+                const newUpsertHistory = new UpsertHistory()
+                Object.assign(newUpsertHistory, result)
+                const upsertHistory = this.AppDataSource.getRepository(UpsertHistory).create(newUpsertHistory)
+                await this.AppDataSource.getRepository(UpsertHistory).save(upsertHistory)
+            }
+
             await this.telemetry.sendTelemetry('vector_upserted', {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
@@ -1769,7 +1833,7 @@ export class App {
                 stopNodeId
             })
 
-            return upsertedResult ? res.status(201).json(upsertedResult) : res.status(201).send('Successfully Upserted')
+            return res.status(201).json(upsertedResult['result'] ?? { result: 'Successfully Upserted' })
         } catch (e: any) {
             logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)

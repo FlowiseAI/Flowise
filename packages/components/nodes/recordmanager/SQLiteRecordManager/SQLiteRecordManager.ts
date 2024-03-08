@@ -31,7 +31,7 @@ class SQLiteRecordManager_RecordManager implements INode {
                 label: 'Database File Path',
                 name: 'databaseFilePath',
                 type: 'string',
-                placeholder: 'C:\\Users\\Henry\\.flowise\\database.sqlite'
+                placeholder: 'C:\\Users\\User\\.flowise\\database.sqlite'
             },
             {
                 label: 'Additional Connection Configuration',

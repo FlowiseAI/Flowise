@@ -5,9 +5,9 @@ import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/community/vectorstores/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
 type QdrantAddDocumentOptions = {
@@ -151,7 +151,7 @@ class Qdrant_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
             const collectionName = nodeData.inputs?.qdrantCollection as string
             const docs = nodeData.inputs?.document as Document[]
@@ -258,6 +258,7 @@ class Qdrant_VectorStores implements INode {
                     return res
                 } else {
                     await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)

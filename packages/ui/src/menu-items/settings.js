@@ -7,11 +7,22 @@ import {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
-    IconMicrophone
+    IconMicrophone,
+    IconDatabaseExport
 } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff, IconMicrophone }
+const icons = {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconSearch,
+    IconMessage,
+    IconPictureInPictureOff,
+    IconMicrophone,
+    IconDatabaseExport
+}
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -33,6 +44,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconMessage
+        },
+        {
+            id: 'viewUpsertHistory',
+            title: 'Upsert History',
+            type: 'item',
+            url: '',
+            icon: icons.IconDatabaseExport
         },
         {
             id: 'enableSpeechToText',

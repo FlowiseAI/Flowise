@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { Button } from '@mui/material'
 import { IconDatabaseImport, IconX } from '@tabler/icons'
 
 // project import
@@ -10,22 +8,7 @@ import { StyledFab } from 'ui-component/button/StyledFab'
 import VectorStoreDialog from './VectorStoreDialog'
 import UpsertResultDialog from './UpsertResultDialog'
 
-// api
-import vectorstoreApi from 'api/vectorstore'
-
-// Hooks
-import useNotifier from 'utils/useNotifier'
-
-// Const
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from 'store/actions'
-
 export const VectorStorePopUp = ({ chatflowid }) => {
-    const dispatch = useDispatch()
-
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
     const [open, setOpen] = useState(false)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
@@ -44,39 +27,6 @@ export const VectorStorePopUp = ({ chatflowid }) => {
         }
         setExpandDialogProps(props)
         setShowExpandDialog(true)
-    }
-
-    const onUpsert = async () => {
-        try {
-            await vectorstoreApi.upsertVectorStore(chatflowid, {})
-            enqueueSnackbar({
-                message: 'Succesfully upserted vector store',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            enqueueSnackbar({
-                message: errorData,
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        }
     }
 
     useEffect(() => {
@@ -104,7 +54,6 @@ export const VectorStorePopUp = ({ chatflowid }) => {
             <VectorStoreDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}
-                onUpsert={onUpsert}
                 onCancel={() => {
                     setShowExpandDialog(false)
                     setOpen((prevopen) => !prevopen)

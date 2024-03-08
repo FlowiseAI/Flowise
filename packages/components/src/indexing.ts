@@ -4,17 +4,9 @@ import { RecordManagerInterface, UUIDV5_NAMESPACE } from '@langchain/community/i
 import { insecureHash } from '@langchain/core/utils/hash'
 import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base.js'
+import { IndexingResult } from './Interface'
 
 type Metadata = Record<string, unknown>
-
-export type IndexingResult = {
-    numAdded: number
-    numDeleted: number
-    numUpdated: number
-    numSkipped: number
-    totalKeys: number
-    addedDocs: Document[]
-}
 
 type StringOrDocFunc = string | ((doc: DocumentInterface) => string)
 

@@ -3,7 +3,7 @@ import { Client } from '@opensearch-project/opensearch'
 import { Document } from '@langchain/core/documents'
 import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
 import { Embeddings } from '@langchain/core/embeddings'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
 class OpenSearch_VectorStores implements INode {
@@ -79,7 +79,7 @@ class OpenSearch_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<void> {
+        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const opensearchURL = nodeData.inputs?.opensearchURL as string
@@ -102,6 +102,7 @@ class OpenSearch_VectorStores implements INode {
                     client,
                     indexName: indexName
                 })
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

@@ -3,10 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 class Supabase_VectorStores implements INode {
     label: string
@@ -107,7 +107,7 @@ class Supabase_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
             const tableName = nodeData.inputs?.tableName as string
             const queryName = nodeData.inputs?.queryName as string
@@ -153,6 +153,7 @@ class Supabase_VectorStores implements INode {
                         tableName: tableName,
                         queryName: queryName
                     })
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)

@@ -3,10 +3,10 @@ import { Pinecone } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -105,7 +105,7 @@ class Pinecone_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const _index = nodeData.inputs?.pineconeIndex as string
             const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
             const docs = nodeData.inputs?.document as Document[]
@@ -153,6 +153,7 @@ class Pinecone_VectorStores implements INode {
                     return res
                 } else {
                     await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)

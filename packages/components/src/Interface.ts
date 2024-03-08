@@ -181,6 +181,7 @@ export type MessageContentImageUrl = {
 
 import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
 import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -234,7 +235,6 @@ export class VectorStoreRetriever {
  */
 import { BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
-import { IndexingResult } from './indexing'
 
 export interface MemoryMethods {
     getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean, prevHistory?: IMessage[]): Promise<IMessage[] | BaseMessage[]>
@@ -270,4 +270,13 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+}
+
+export type IndexingResult = {
+    numAdded: number
+    numDeleted: number
+    numUpdated: number
+    numSkipped: number
+    totalKeys: number
+    addedDocs: Document[]
 }

@@ -16,6 +16,7 @@ import SaveChatflowDialog from 'ui-component/dialog/SaveChatflowDialog'
 import APICodeDialog from 'views/chatflows/APICodeDialog'
 import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
 import ViewMessagesDialog from 'ui-component/dialog/ViewMessagesDialog'
+import UpsertHistoryDialog from 'views/vectorstore/UpsertHistoryDialog'
 import StarterPromptsDialog from 'ui-component/dialog/StarterPromptsDialog'
 
 // API
@@ -53,6 +54,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
+    const [upsertHistoryDialogOpen, setUpsertHistoryDialogOpen] = useState(false)
+    const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -86,6 +89,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setViewMessagesDialogOpen(true)
+        } else if (setting === 'viewUpsertHistory') {
+            setUpsertHistoryDialogProps({
+                title: 'View Upsert History',
+                chatflow: chatflow
+            })
+            setUpsertHistoryDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
                 localStorage.setItem('duplicatedFlowData', chatflow.flowData)
@@ -409,6 +418,11 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 show={viewMessagesDialogOpen}
                 dialogProps={viewMessagesDialogProps}
                 onCancel={() => setViewMessagesDialogOpen(false)}
+            />
+            <UpsertHistoryDialog
+                show={upsertHistoryDialogOpen}
+                dialogProps={upsertHistoryDialogProps}
+                onCancel={() => setUpsertHistoryDialogOpen(false)}
             />
         </>
     )

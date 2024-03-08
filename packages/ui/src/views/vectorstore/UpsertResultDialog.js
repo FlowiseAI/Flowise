@@ -39,11 +39,11 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
                             gap: 5
                         }}
                     >
-                        <StatsCard title='Added' stat={dialogProps.numAdded} />
-                        <StatsCard title='Updated' stat={dialogProps.numUpdated} />
-                        <StatsCard title='Skipped' stat={dialogProps.numSkipped} />
-                        <StatsCard title='Deleted' stat={dialogProps.numDeleted} />
-                        <StatsCard title='Total' stat={dialogProps.totalKeys} />
+                        <StatsCard title='Added' stat={dialogProps.numAdded ?? 0} />
+                        <StatsCard title='Updated' stat={dialogProps.numUpdated ?? 0} />
+                        <StatsCard title='Skipped' stat={dialogProps.numSkipped ?? 0} />
+                        <StatsCard title='Deleted' stat={dialogProps.numDeleted ?? 0} />
+                        <StatsCard title='Total' stat={dialogProps.totalKeys ?? dialogProps.numAdded ?? 0} />
                     </div>
                     {dialogProps.addedDocs && dialogProps.addedDocs.length > 0 && (
                         <Typography sx={{ mt: 2, mb: 2, fontWeight: 500 }}>{dialogProps.numAdded} Added Documents</Typography>
@@ -52,7 +52,10 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
                         dialogProps.addedDocs.length > 0 &&
                         dialogProps.addedDocs.map((docs, index) => {
                             return (
-                                <Card key={index} sx={{ border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
+                                <Card
+                                    key={index}
+                                    sx={{ border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px`, mb: 1 }}
+                                >
                                     <CardContent>
                                         <Typography sx={{ fontSize: 14 }} color='text.primary' gutterBottom>
                                             {docs.pageContent}

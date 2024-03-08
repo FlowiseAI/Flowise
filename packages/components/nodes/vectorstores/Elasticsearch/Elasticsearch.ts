@@ -3,9 +3,9 @@ import { Client, ClientOptions } from '@elastic/elasticsearch'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { IndexingResult, index } from '../../../src/indexing'
+import { index } from '../../../src/indexing'
 
 class Elasticsearch_VectorStores implements INode {
     label: string
@@ -113,7 +113,7 @@ class Elasticsearch_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<IndexingResult | void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
             const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
@@ -159,6 +159,7 @@ class Elasticsearch_VectorStores implements INode {
                     return res
                 } else {
                     await vectorStore.addDocuments(finalDocs)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
                 throw new Error(e)
