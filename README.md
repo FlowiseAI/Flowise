@@ -69,7 +69,7 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 Flowise has 3 different modules in a single mono repository.
 
--   `server`: Node backend to serve API logics
+-   `server`: Node backend to serve API logic
 -   `ui`: React frontend
 -   `components`: Third-party nodes integrations
 
@@ -88,7 +88,7 @@ Flowise has 3 different modules in a single mono repository.
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2. Go into the repository folder
 
     ```bash
     cd Flowise
@@ -137,7 +137,7 @@ FLOWISE_PASSWORD=1234
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+Flowise supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
 
 ## 📖 Documentation
 
@@ -201,4 +201,4 @@ See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://
 
 ## 📄 License
 
-Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+The source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
