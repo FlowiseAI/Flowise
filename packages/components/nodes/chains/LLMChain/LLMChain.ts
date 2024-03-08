@@ -4,7 +4,7 @@ import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, HumanMessage
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { LLMChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, getCallbackManager, clearCorrelations } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
@@ -141,6 +141,11 @@ class LLMChain_Chains implements INode {
         }
         promptValues = injectOutputParser(this.outputParser, chain, promptValues)
         const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
+
+        // ensure that is done to avoid memory leaks,
+        // should not be called from runPrediction as it is called multiple times (from nested chains)
+        await clearCorrelations(res, options)
+
         // eslint-disable-next-line no-console
         console.log('\x1b[93m\x1b[1m\n*****FINAL RESULT*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
@@ -158,13 +163,17 @@ const runPrediction = async (
     nodeData: INodeData
 ) => {
     const loggerHandler = new ConsoleCallbackHandler(options.logger)
-    const callbacks = await additionalCallbacks(nodeData, options)
+    const callbackManager = await getCallbackManager(input, nodeData, options, loggerHandler)
+
+    //const callbacks = await additionalCallbacks(nodeData, options)
 
     const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
     let model = nodeData.inputs?.model as ChatOpenAI
+
+    const corelationId = options.corelationId
 
     if (moderations && moderations.length > 0) {
         try {
@@ -232,10 +241,14 @@ const runPrediction = async (
             const options = { ...promptValues }
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
-                const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
+                callbackManager.addHandler(handler)
+                const res = await chain.call(options, callbackManager)
+                callbackManager.removeHandler(handler)
+                //const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
-                const res = await chain.call(options, [loggerHandler, ...callbacks])
+                const res = await chain.call(options, callbackManager)
+                //const res = await chain.call(options, [loggerHandler, ...callbacks])
                 return formatResponse(res?.text)
             }
         } else if (seen.length === 1) {
@@ -248,10 +261,14 @@ const runPrediction = async (
             }
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
-                const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
+                callbackManager.addHandler(handler)
+                const res = await chain.call(options, callbackManager)
+                callbackManager.removeHandler(handler)
+                //const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
-                const res = await chain.call(options, [loggerHandler, ...callbacks])
+                const res = await chain.call(options, callbackManager)
+                //const res = await chain.call(options, [loggerHandler, ...callbacks])
                 return formatResponse(res?.text)
             }
         } else {
@@ -260,10 +277,15 @@ const runPrediction = async (
     } else {
         if (isStreaming) {
             const handler = new CustomChainHandler(socketIO, socketIOClientId)
-            const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
+            callbackManager.addHandler(handler)
+            const res = await chain.call(options, callbackManager)
+            callbackManager.removeHandler(handler)
+
+            //const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return formatResponse(res)
         } else {
-            const res = await chain.run(input, [loggerHandler, ...callbacks])
+            const res = await chain.call(options, callbackManager)
+            //const res = await chain.run(input, [loggerHandler, ...callbacks])
             return formatResponse(res)
         }
     }

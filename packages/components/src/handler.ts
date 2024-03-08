@@ -16,6 +16,8 @@ import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam } from './utils'
 import { ICommonObject, INodeData } from './Interface'
+import { CallbackManager } from '@langchain/core/callbacks/manager'
+import { FlowiseCallbackManager } from './FlowiseCallbackManager'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -147,6 +149,95 @@ export class ConsoleCallbackHandler extends BaseTracer {
             )}`
         )
     }
+}
+
+const correlationWeakMap = new Map<string, CallbackManager>()
+const correlationParentIds = new Map<string, {}>()
+export const clearCorrelations = async (result: any, options: ICommonObject) => {
+    if (options.corelationId && correlationParentIds.has(options.corelationId)) {
+        let resultText = ''
+        if (result.text) resultText = result.text
+        else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+        else resultText = JSON.stringify(result, null, 2)
+
+        const callbackMgr = correlationWeakMap.get(options.corelationId)
+        const value: any = correlationParentIds.get(options.corelationId)
+        if (callbackMgr) {
+            for (const handler of callbackMgr.handlers) {
+                if (Object.prototype.hasOwnProperty.call(handler, 'langfuse')) {
+                    // @ts-ignore
+                    const langfuse: Langfuse = handler.langfuse
+                    if (value.langfuse.span) {
+                        value.langfuse.span.end({
+                            output: resultText
+                        })
+                    }
+                    await langfuse.shutdownAsync()
+                    console.log('*** shutting down langfuse ***')
+                    // const span: LangfuseSpanClient | undefined = this.handlers['langFuse'].span[returnIds['langFuse'].span]
+                    // if (span) {
+                    //     span.end({
+                    //         output
+                    //     })
+                    //     if (shutdown) {
+                    //         const langfuse: Langfuse = this.handlers['langFuse'].client
+                    //         await langfuse.shutdownAsync()
+                    //     }
+                    // }
+                } else if (handler instanceof LangChainTracer) {
+                    if (value && value.langsmith) {
+                        const parentRunConfig: RunTreeConfig = {
+                            id: value.langsmith.id,
+                            name: 'Multichain',
+                            outputs: { resultText },
+                            serialized: {},
+                            project_name: handler.projectName,
+                            // @ts-ignore
+                            client: handler.client
+                        }
+                        const parentRun = new RunTree(parentRunConfig)
+                        await parentRun.end({
+                            outputs: { resultText }
+                        })
+                        await parentRun.patchRun()
+                    }
+                } else if (handler instanceof LunaryHandler) {
+                    console.log('lunary cleanup')
+                }
+            }
+        }
+
+        correlationParentIds.delete(options.corelationId)
+    }
+    if (options.corelationId && correlationWeakMap.has(options.corelationId)) {
+        correlationWeakMap.delete(options.corelationId)
+    }
+}
+
+export const isParentIdInitialized = (id: string) => {
+    return correlationParentIds.has(id)
+}
+
+export const addParentId = (id: string, values: any = {}) => {
+    correlationParentIds.set(id, values)
+}
+
+export const getParentId = (id: string): any => {
+    return correlationParentIds.get(id)
+}
+
+export const getCallbackManager = async (input: string, nodeData: INodeData, options: ICommonObject, logger: ConsoleCallbackHandler) => {
+    if (options.corelationId && correlationWeakMap.has(options.corelationId)) {
+        return correlationWeakMap.get(options.corelationId) as CallbackManager
+    }
+    const callbacks = await additionalCallbacks(nodeData, options)
+    const groupManager = new FlowiseCallbackManager(options.corelationId, input, options.chatId)
+    groupManager.setHandlers(callbacks)
+    if (logger) {
+        groupManager.addHandler(logger)
+    }
+    correlationWeakMap.set(options.corelationId, groupManager)
+    return groupManager
 }
 
 /**
