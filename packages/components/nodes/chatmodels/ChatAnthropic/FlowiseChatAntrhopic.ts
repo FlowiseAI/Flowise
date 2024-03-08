@@ -1,6 +1,5 @@
 import { AnthropicInput, ChatAnthropic as LangchainChatAnthropic } from '@langchain/anthropic'
-import { IMultiModalOption } from '../../../src'
-import { IVisionChatModal } from '../../../src/IVisionChatModal'
+import { IVisionChatModal, IMultiModalOption } from '../../../src'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 
 export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChatModal {

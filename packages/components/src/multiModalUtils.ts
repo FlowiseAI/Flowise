@@ -1,8 +1,7 @@
-import { ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
+import { IVisionChatModal, ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
 import path from 'path'
 import { getStoragePath } from './utils'
 import fs from 'fs'
-import { IVisionChatModal } from './IVisionChatModal'
 
 export const addImagesToMessages = (
     nodeData: INodeData,

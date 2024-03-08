@@ -9,10 +9,9 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IVisionChatModal, FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { IVisionChatModal } from '../../../src/IVisionChatModal'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -158,10 +157,6 @@ const prepareAgent = async (
         if (messageContent?.length) {
             visionChatModel.setVisionModel()
 
-            // for (const msg of messageContent) {
-            //     humanImageMessages.push(new HumanMessage({ content: [msg] }))
-            // }
-
             // Pop the `agent_scratchpad` MessagePlaceHolder
             let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
             if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
@@ -176,8 +171,6 @@ const prepareAgent = async (
                 msg.inputVariables = lastMessage.inputVariables
                 prompt.promptMessages.push(msg)
             }
-            // Add the HumanMessage for images
-            //prompt.promptMessages.push(...humanImageMessages)
 
             // Add the `agent_scratchpad` MessagePlaceHolder back
             prompt.promptMessages.push(messagePlaceholder)

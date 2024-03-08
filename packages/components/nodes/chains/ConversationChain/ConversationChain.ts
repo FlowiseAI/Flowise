@@ -7,10 +7,17 @@ import { checkInputs, Moderation, streamResponse } from '../../moderation/Modera
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, MessageContentImageUrl } from '../../../src/Interface'
+import {
+    IVisionChatModal,
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    MessageContentImageUrl
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { IVisionChatModal } from '../../../src/IVisionChatModal'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
