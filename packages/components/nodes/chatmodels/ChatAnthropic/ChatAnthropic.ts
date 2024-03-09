@@ -1,8 +1,8 @@
+import { AnthropicInput, ChatAnthropic } from '@langchain/anthropic'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AnthropicInput, ChatAnthropic } from 'langchain/chat_models/anthropic'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -43,6 +43,16 @@ class ChatAnthropic_ChatModels implements INode {
                 name: 'modelName',
                 type: 'options',
                 options: [
+                    {
+                        label: 'claude-3-opus',
+                        name: 'claude-3-opus-20240229',
+                        description: 'Most powerful model for highly complex tasks'
+                    },
+                    {
+                        label: 'claude-3-sonnet',
+                        name: 'claude-3-sonnet-20240229',
+                        description: 'Ideal balance of intelligence and speed for enterprise workloads'
+                    },
                     {
                         label: 'claude-2',
                         name: 'claude-2',

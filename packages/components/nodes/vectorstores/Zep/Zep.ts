@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { IDocument, ZepClient } from '@getzep/zep-js'
-import { ZepVectorStore, IZepConfig } from 'langchain/vectorstores/zep'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/zep'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
@@ -22,7 +22,7 @@ class Zep_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep'
+        this.label = 'Zep Collection - Open Source'
         this.name = 'zep'
         this.version = 2.0
         this.type = 'Zep'

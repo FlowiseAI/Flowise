@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
+import { HFInput, HuggingFaceInference } from './core'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { HFInput, HuggingFaceInference } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class ChatHuggingFace_ChatModels implements INode {
     label: string

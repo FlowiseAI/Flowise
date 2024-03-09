@@ -16,7 +16,7 @@ import {
     Stack,
     Typography
 } from '@mui/material'
-import { IconTrash } from '@tabler/icons'
+import { IconEraser, IconTrash, IconX } from '@tabler/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { BackdropLoader } from 'ui-component/loading/BackdropLoader'
@@ -24,11 +24,22 @@ import { StyledButton } from 'ui-component/button/StyledButton'
 
 import scraperApi from 'api/scraper'
 
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import useNotifier from 'utils/useNotifier'
+
+import {
+    HIDE_CANVAS_DIALOG,
+    SHOW_CANVAS_DIALOG,
+    enqueueSnackbar as enqueueSnackbarAction,
+    closeSnackbar as closeSnackbarAction
+} from 'store/actions'
 
 const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
+
+    useNotifier()
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [loading, setLoading] = useState(false)
     const [selectedLinks, setSelectedLinks] = useState([])
@@ -53,9 +64,38 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
 
     const handleFetchLinks = async () => {
         setLoading(true)
-        const fetchLinksResp = await scraperApi.fetchAllLinks(url, 'webCrawl')
-        if (fetchLinksResp.data) {
-            setSelectedLinks(fetchLinksResp.data.links)
+        try {
+            const fetchLinksResp = await scraperApi.fetchLinks(url, dialogProps.relativeLinksMethod, dialogProps.limit)
+            if (fetchLinksResp.data) {
+                setSelectedLinks(fetchLinksResp.data.links)
+                enqueueSnackbar({
+                    message: 'Successfully fetched links',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            enqueueSnackbar({
+                message: errorData,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
         setLoading(false)
     }
@@ -71,6 +111,10 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
         const links = [...selectedLinks]
         links.splice(index, 1)
         setSelectedLinks(links)
+    }
+
+    const handleRemoveAllLinks = () => {
+        setSelectedLinks([])
     }
 
     const handleSaveLinks = () => {
@@ -105,6 +149,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             />
                         </FormControl>
                         <Button
+                            disabled={!url}
                             sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
                             size='small'
                             variant='contained'
@@ -114,7 +159,21 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                         </Button>
                     </Stack>
                 </Box>
-                <Typography sx={{ mb: 2, fontWeight: 500 }}>Scraped Links</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                    <Typography sx={{ fontWeight: 500 }}>Scraped Links</Typography>
+                    {selectedLinks.length > 0 ? (
+                        <StyledButton
+                            sx={{ height: 'max-content', width: 'max-content' }}
+                            variant='outlined'
+                            color='error'
+                            title='Clear All Links'
+                            onClick={handleRemoveAllLinks}
+                            startIcon={<IconEraser />}
+                        >
+                            Clear All
+                        </StyledButton>
+                    ) : null}
+                </Box>
                 <>
                     {loading && <BackdropLoader open={loading} />}
                     {selectedLinks.length > 0 ? (

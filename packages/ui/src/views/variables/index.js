@@ -193,7 +193,7 @@ const Variables = () => {
                             />
                             <Box sx={{ flexGrow: 1 }} />
                             <Button variant='outlined' sx={{ mr: 2 }} onClick={() => setShowHowToDialog(true)}>
-                                Info
+                                How To Use
                             </Button>
                             <ButtonGroup
                                 sx={{ maxHeight: 40 }}

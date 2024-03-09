@@ -38,6 +38,16 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
+                        label: 'claude-3-opus',
+                        name: 'claude-3-opus-20240229',
+                        description: 'Most powerful model for highly complex tasks'
+                    },
+                    {
+                        label: 'claude-3-sonnet',
+                        name: 'claude-3-sonnet-20240229',
+                        description: 'Ideal balance of intelligence and speed for enterprise workloads'
+                    },
+                    {
                         label: 'claude-2',
                         name: 'claude-2',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
