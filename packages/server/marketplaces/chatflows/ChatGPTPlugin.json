@@ -451,7 +451,7 @@
                 "id": "mrklAgentChat_0",
                 "label": "MRKL Agent for Chat Models",
                 "name": "mrklAgentChat",
-                "version": 1,
+                "version": 2,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -470,9 +470,19 @@
                         "name": "model",
                         "type": "BaseLanguageModel",
                         "id": "mrklAgentChat_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "mrklAgentChat_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{requestsGet_0.data.instance}}", "{{requestsPost_0.data.instance}}", "{{aiPlugin_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}"
                 },

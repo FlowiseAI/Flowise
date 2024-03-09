@@ -10,6 +10,8 @@ import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams }
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const defaultMessage = `Do your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary.`
 
@@ -28,7 +30,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Retrieval Agent'
         this.name = 'conversationalRetrievalAgent'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -59,6 +61,14 @@ class ConversationalRetrievalAgent_Agents implements INode {
                 rows: 4,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -68,8 +78,21 @@ class ConversationalRetrievalAgent_Agents implements INode {
         return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the BabyAGI agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
