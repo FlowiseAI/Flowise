@@ -1,9 +1,8 @@
-import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { AzureOpenAIInput, ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
@@ -20,12 +19,12 @@ class AzureChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'Azure ChatOpenAI'
         this.name = 'azureChatOpenAI'
-        this.version = 3.0
+        this.version = 2.0
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -139,14 +138,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
 
-        const multiModalOption: IMultiModalOption = {
-            image: {
-                allowImageUploads: false
-            }
-        }
-
-        const model = new ChatOpenAI(nodeData.id, obj)
-        model.setMultiModalOption(multiModalOption)
+        const model = new ChatOpenAI(obj)
         return model
     }
 }
