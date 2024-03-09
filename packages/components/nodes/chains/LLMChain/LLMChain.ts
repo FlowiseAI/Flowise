@@ -9,7 +9,6 @@ import { additionalCallbacks, ConsoleCallbackHandler, CustomChainHandler } from 
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
-import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
 class LLMChain_Chains implements INode {
@@ -164,7 +163,6 @@ const runPrediction = async (
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
-    let model = nodeData.inputs?.model as ChatOpenAI
 
     if (moderations && moderations.length > 0) {
         try {
@@ -185,8 +183,8 @@ const runPrediction = async (
     const promptValues = handleEscapeCharacters(promptValuesRaw, true)
 
     if (llmSupportsVision(chain.llm)) {
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
         const visionChatModel = chain.llm as IVisionChatModal
+        const messageContent = addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
         if (messageContent?.length) {
             // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
             visionChatModel.setVisionModel()
