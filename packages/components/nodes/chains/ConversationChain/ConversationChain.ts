@@ -1,7 +1,16 @@
 import { ConversationChain } from 'langchain/chains'
-import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import {
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    SystemMessagePromptTemplate,
+    BaseMessagePromptTemplateLike,
+    PromptTemplate
+} from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -156,11 +165,28 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const prompt = nodeData.inputs?.systemMessagePrompt as string
     const chatPromptTemplate = nodeData.inputs?.chatPromptTemplate as ChatPromptTemplate
+    let model = nodeData.inputs?.model as BaseChatModel
 
     if (chatPromptTemplate && chatPromptTemplate.promptMessages.length) {
         const sysPrompt = chatPromptTemplate.promptMessages[0]
         const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
         const messages = [sysPrompt, new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'), humanPrompt]
+
+        // OpenAI works better when separate images into standalone human messages
+        if (model instanceof ChatOpenAI && humanImageMessages.length) {
+            messages.push(new HumanMessage({ content: [...humanImageMessages] }))
+        } else if (humanImageMessages.length) {
+            const lastMessage = messages.pop() as HumanMessagePromptTemplate
+            const template = (lastMessage.prompt as PromptTemplate).template as string
+            const msg = HumanMessagePromptTemplate.fromTemplate([
+                ...humanImageMessages,
+                {
+                    text: template
+                }
+            ])
+            msg.inputVariables = lastMessage.inputVariables
+            messages.push(msg)
+        }
 
         const chatPrompt = ChatPromptTemplate.fromMessages(messages)
         if ((chatPromptTemplate as any).promptValues) {
@@ -171,11 +197,18 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
         return chatPrompt
     }
 
-    const messages = [
+    const messages: BaseMessagePromptTemplateLike[] = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? prompt : systemMessage),
-        new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
-        HumanMessagePromptTemplate.fromTemplate([`{${inputKey}}`, ...humanImageMessages])
+        new MessagesPlaceholder(memory.memoryKey ?? 'chat_history')
     ]
+
+    // OpenAI works better when separate images into standalone human messages
+    if (model instanceof ChatOpenAI && humanImageMessages.length) {
+        messages.push(HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`))
+        messages.push(new HumanMessage({ content: [...humanImageMessages] }))
+    } else if (humanImageMessages.length) {
+        messages.push(HumanMessagePromptTemplate.fromTemplate([`{${inputKey}}`, ...humanImageMessages]))
+    }
 
     const chatPrompt = ChatPromptTemplate.fromMessages(messages)
 
@@ -184,7 +217,7 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
 
 const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
     const chatHistory = options.chatHistory
-    let model = nodeData.inputs?.model as ChatOpenAI
+    let model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
 

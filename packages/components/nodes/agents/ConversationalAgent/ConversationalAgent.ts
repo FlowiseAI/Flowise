@@ -151,7 +151,6 @@ const prepareAgent = async (
 
     if (llmSupportsVision(model)) {
         const visionChatModel = model as IVisionChatModal
-        // let humanImageMessages: HumanMessage[] = []
         const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
