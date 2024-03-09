@@ -2,6 +2,8 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { BabyAGI } from './core'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class BabyAGI_Agents implements INode {
     label: string
@@ -17,7 +19,7 @@ class BabyAGI_Agents implements INode {
     constructor() {
         this.label = 'BabyAGI'
         this.name = 'babyAGI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'BabyAGI'
         this.category = 'Agents'
         this.icon = 'babyagi.svg'
@@ -39,6 +41,14 @@ class BabyAGI_Agents implements INode {
                 name: 'taskLoop',
                 type: 'number',
                 default: 3
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -53,8 +63,21 @@ class BabyAGI_Agents implements INode {
         return babyAgi
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string): Promise<string | object> {
         const executor = nodeData.instance as BabyAGI
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the BabyAGI agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         const objective = input
 
         const res = await executor.call({ objective })

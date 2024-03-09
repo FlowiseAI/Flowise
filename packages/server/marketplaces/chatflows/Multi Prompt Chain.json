@@ -84,7 +84,7 @@
                 "id": "multiPromptChain_0",
                 "label": "Multi Prompt Chain",
                 "name": "multiPromptChain",
-                "version": 1,
+                "version": 2,
                 "type": "MultiPromptChain",
                 "baseClasses": ["MultiPromptChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
                 "category": "Chains",
@@ -103,9 +103,19 @@
                         "type": "PromptRetriever",
                         "list": true,
                         "id": "multiPromptChain_0-input-promptRetriever-PromptRetriever"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "multiPromptChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "promptRetriever": [
                         "{{promptRetriever_0.data.instance}}",

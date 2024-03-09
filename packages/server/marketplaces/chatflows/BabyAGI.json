@@ -15,7 +15,7 @@
             "data": {
                 "id": "babyAGI_1",
                 "label": "BabyAGI",
-                "version": 1,
+                "version": 2,
                 "name": "babyAGI",
                 "type": "BabyAGI",
                 "baseClasses": ["BabyAGI"],
@@ -42,9 +42,19 @@
                         "name": "vectorStore",
                         "type": "VectorStore",
                         "id": "babyAGI_1-input-vectorStore-VectorStore"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "babyAGI_1-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStore": "{{pinecone_0.data.instance}}",
                     "taskLoop": 3

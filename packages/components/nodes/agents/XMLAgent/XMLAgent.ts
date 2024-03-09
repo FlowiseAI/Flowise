@@ -11,7 +11,8 @@ import { getBaseClasses } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor } from '../../../src/agents'
-//import { AgentExecutor } from "langchain/agents";
+import { Moderation, checkInputs } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const defaultSystemMessage = `You are a helpful assistant. Help the user answer any questions.
 
@@ -52,7 +53,7 @@ class XMLAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'XML Agent'
         this.name = 'xmlAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'XMLAgent'
         this.category = 'Agents'
         this.icon = 'xmlagent.svg'
@@ -83,6 +84,14 @@ class XMLAgent_Agents implements INode {
                 rows: 4,
                 default: defaultSystemMessage,
                 additionalParams: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -94,6 +103,18 @@ class XMLAgent_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the OpenAI Function Agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
         const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
