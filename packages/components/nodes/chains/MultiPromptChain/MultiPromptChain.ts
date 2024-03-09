@@ -1,7 +1,7 @@
-import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { MultiPromptChain } from 'langchain/chains'
+import { BaseLanguageModel } from 'langchain/base_language'
 import { ICommonObject, INode, INodeData, INodeParams, PromptRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { MultiPromptChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class MultiPromptChain_Chains implements INode {

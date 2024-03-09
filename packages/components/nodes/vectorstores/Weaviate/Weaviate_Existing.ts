@@ -1,8 +1,8 @@
-import { Embeddings } from '@langchain/core/embeddings'
-import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
-import { WeaviateLibArgs, WeaviateStore } from '@langchain/community/vectorstores/weaviate'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Embeddings } from 'langchain/embeddings/base'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
+import { WeaviateLibArgs, WeaviateStore } from 'langchain/vectorstores/weaviate'
 
 class Weaviate_Existing_VectorStores implements INode {
     label: string

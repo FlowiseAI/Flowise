@@ -1,8 +1,9 @@
-import { OpenAIChatInput, ChatOpenAI } from '@langchain/openai'
-import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { OpenAIChat } from 'langchain/llms/openai'
+import { OpenAIChatInput } from 'langchain/chat_models/openai'
+import { BaseCache } from 'langchain/schema'
+import { BaseLLMParams } from 'langchain/llms/base'
 
 class ChatLocalAI_ChatModels implements INode {
     label: string
@@ -24,7 +25,7 @@ class ChatLocalAI_ChatModels implements INode {
         this.icon = 'localai.png'
         this.category = 'Chat Models'
         this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI'
-        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -110,7 +111,7 @@ class ChatLocalAI_ChatModels implements INode {
         if (cache) obj.cache = cache
         if (localAIApiKey) obj.openAIApiKey = localAIApiKey
 
-        const model = new ChatOpenAI(obj, { basePath })
+        const model = new OpenAIChat(obj, { basePath })
 
         return model
     }

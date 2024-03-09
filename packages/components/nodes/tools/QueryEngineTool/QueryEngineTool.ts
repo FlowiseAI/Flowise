@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseQueryEngine } from 'llamaindex'
+import { VectorStoreIndex } from 'llamaindex'
 
 class QueryEngine_Tools implements INode {
     label: string
@@ -16,7 +16,7 @@ class QueryEngine_Tools implements INode {
     constructor() {
         this.label = 'QueryEngine Tool'
         this.name = 'queryEngineToolLlamaIndex'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'QueryEngineTool'
         this.icon = 'queryEngineTool.svg'
         this.category = 'Tools'
@@ -25,9 +25,9 @@ class QueryEngine_Tools implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Base QueryEngine',
-                name: 'baseQueryEngine',
-                type: 'BaseQueryEngine'
+                label: 'Vector Store Index',
+                name: 'vectorStoreIndex',
+                type: 'VectorStoreIndex'
             },
             {
                 label: 'Tool Name',
@@ -45,15 +45,20 @@ class QueryEngine_Tools implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const baseQueryEngine = nodeData.inputs?.baseQueryEngine as BaseQueryEngine
+        const vectorStoreIndex = nodeData.inputs?.vectorStoreIndex as VectorStoreIndex
         const toolName = nodeData.inputs?.toolName as string
         const toolDesc = nodeData.inputs?.toolDesc as string
         const queryEngineTool = {
-            queryEngine: baseQueryEngine,
+            queryEngine: vectorStoreIndex.asQueryEngine({
+                preFilters: {
+                    ...(vectorStoreIndex as any).metadatafilter
+                }
+            }),
             metadata: {
                 name: toolName,
                 description: toolDesc
-            }
+            },
+            vectorStoreIndex
         }
 
         return queryEngineTool

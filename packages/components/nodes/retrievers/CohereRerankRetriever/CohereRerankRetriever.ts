@@ -1,9 +1,9 @@
-import { BaseRetriever } from '@langchain/core/retrievers'
-import { VectorStoreRetriever } from '@langchain/core/vectorstores'
-import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
-import { CohereRerank } from './CohereRerank'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { BaseRetriever } from 'langchain/schema/retriever'
+import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
+import { CohereRerank } from './CohereRerank'
+import { VectorStoreRetriever } from 'langchain/vectorstores/base'
 
 class CohereRerankRetriever_Retrievers implements INode {
     label: string

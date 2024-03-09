@@ -1,17 +1,8 @@
 // assets
-import {
-    IconTrash,
-    IconFileUpload,
-    IconFileExport,
-    IconCopy,
-    IconSearch,
-    IconMessage,
-    IconPictureInPictureOff,
-    IconMicrophone
-} from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff, IconMicrophone }
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -33,13 +24,6 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconMessage
-        },
-        {
-            id: 'enableSpeechToText',
-            title: 'Speech to Text',
-            type: 'item',
-            url: '',
-            icon: icons.IconMicrophone
         },
         {
             id: 'duplicateChatflow',

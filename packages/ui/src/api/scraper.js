@@ -1,8 +1,8 @@
 import client from './client'
 
-const fetchLinks = (url, relativeLinksMethod, relativeLinksLimit) =>
-    client.get(`/fetch-links?url=${encodeURIComponent(url)}&relativeLinksMethod=${relativeLinksMethod}&limit=${relativeLinksLimit}`)
+const fetchAllLinks = (url, relativeLinksMethod) =>
+    client.get(`/fetch-links?url=${encodeURIComponent(url)}&relativeLinksMethod=${relativeLinksMethod}`)
 
 export default {
-    fetchLinks
+    fetchAllLinks
 }

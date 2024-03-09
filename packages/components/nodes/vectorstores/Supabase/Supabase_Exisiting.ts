@@ -1,8 +1,8 @@
-import { Embeddings } from '@langchain/core/embeddings'
-import { SupabaseLibArgs, SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
-import { createClient } from '@supabase/supabase-js'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { SupabaseLibArgs, SupabaseVectorStore } from 'langchain/vectorstores/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 class Supabase_Existing_VectorStores implements INode {
     label: string

@@ -1,17 +1,10 @@
-import { flatten } from 'lodash'
-import { AgentExecutor } from 'langchain/agents'
-import { HumanMessage } from '@langchain/core/messages'
-import { ChatPromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
-import { Tool } from '@langchain/core/tools'
-import type { PromptTemplate } from '@langchain/core/prompts'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { pull } from 'langchain/hub'
-import { additionalCallbacks } from '../../../src/handler'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
-import { createReactAgent } from '../../../src/agents'
-import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { Tool } from 'langchain/tools'
+import { BaseLanguageModel } from 'langchain/base_language'
+import { flatten } from 'lodash'
+import { additionalCallbacks } from '../../../src/handler'
 
 class MRKLAgentChat_Agents implements INode {
     label: string
@@ -23,12 +16,11 @@ class MRKLAgentChat_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    sessionId?: string
 
-    constructor(fields?: { sessionId?: string }) {
+    constructor() {
         this.label = 'ReAct Agent for Chat Models'
         this.name = 'mrklAgentChat'
-        this.version = 3.0
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -42,85 +34,30 @@ class MRKLAgentChat_Agents implements INode {
                 list: true
             },
             {
-                label: 'Chat Model',
+                label: 'Language Model',
                 name: 'model',
-                type: 'BaseChatModel'
-            },
-            {
-                label: 'Memory',
-                name: 'memory',
-                type: 'BaseChatMemory'
+                type: 'BaseLanguageModel'
             }
         ]
-        this.sessionId = fields?.sessionId
     }
 
-    async init(): Promise<any> {
-        return null
+    async init(nodeData: INodeData): Promise<any> {
+        const model = nodeData.inputs?.model as BaseLanguageModel
+        let tools = nodeData.inputs?.tools as Tool[]
+        tools = flatten(tools)
+        const executor = await initializeAgentExecutorWithOptions(tools, model, {
+            agentType: 'chat-zero-shot-react-description',
+            verbose: process.env.DEBUG === 'true' ? true : false
+        })
+        return executor
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
-        const memory = nodeData.inputs?.memory as FlowiseMemory
-        const model = nodeData.inputs?.model as BaseChatModel
-        let tools = nodeData.inputs?.tools as Tool[]
-        tools = flatten(tools)
-
-        const prompt = await pull<PromptTemplate>('hwchase17/react-chat')
-        let chatPromptTemplate = undefined
-
-        if (model instanceof ChatOpenAI) {
-            const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
-
-            if (messageContent?.length) {
-                // Change model to gpt-4-vision
-                model.modelName = 'gpt-4-vision-preview'
-
-                // Change default max token to higher when using gpt-4-vision
-                model.maxTokens = 1024
-
-                const oldTemplate = prompt.template as string
-                chatPromptTemplate = ChatPromptTemplate.fromMessages([HumanMessagePromptTemplate.fromTemplate(oldTemplate)])
-                chatPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
-            } else {
-                // revert to previous values if image upload is empty
-                model.modelName = model.configuredModel
-                model.maxTokens = model.configuredMaxToken
-            }
-        }
-
-        const agent = await createReactAgent({
-            llm: model,
-            tools,
-            prompt: chatPromptTemplate ?? prompt
-        })
-
-        const executor = new AgentExecutor({
-            agent,
-            tools,
-            verbose: process.env.DEBUG === 'true'
-        })
+        const executor = nodeData.instance as AgentExecutor
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const prevChatHistory = options.chatHistory
-        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prevChatHistory)) as IMessage[]) ?? []
-        const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
-
-        const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })
-
-        await memory.addChatMessages(
-            [
-                {
-                    text: input,
-                    type: 'userMessage'
-                },
-                {
-                    text: result?.output,
-                    type: 'apiMessage'
-                }
-            ],
-            this.sessionId
-        )
+        const result = await executor.call({ input }, [...callbacks])
 
         return result?.output
     }

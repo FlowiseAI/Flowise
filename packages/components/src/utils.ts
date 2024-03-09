@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -49,7 +49,7 @@ export const availableDependencies = [
     'langfuse',
     'langsmith',
     'linkifyjs',
-    'lunary',
+    'llmonitor',
     'mammoth',
     'moment',
     'mongodb',
@@ -290,12 +290,22 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
     const linkElements = dom.window.document.querySelectorAll('a')
     const urls: string[] = []
     for (const linkElement of linkElements) {
-        try {
-            const urlObj = new URL(linkElement.href, baseURL)
-            urls.push(urlObj.href)
-        } catch (err) {
-            if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
-            continue
+        if (linkElement.href.slice(0, 1) === '/') {
+            try {
+                const urlObj = new URL(baseURL + linkElement.href)
+                urls.push(urlObj.href) //relative
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
+                continue
+            }
+        } else {
+            try {
+                const urlObj = new URL(linkElement.href)
+                urls.push(urlObj.href) //absolute
+            } catch (err) {
+                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
+                continue
+            }
         }
     }
     return urls
@@ -355,7 +365,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         }
 
         const htmlBody = await resp.text()
-        const nextURLs = getURLsFromHTML(htmlBody, currentURL)
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
@@ -769,11 +779,4 @@ export const prepareSandboxVars = (variables: IVariable[]) => {
         }
     }
     return vars
-}
-
-/**
- * Prepare storage path
- */
-export const getStoragePath = (): string => {
-    return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
 }

@@ -28,7 +28,6 @@ import useApi from 'hooks/useApi'
 import { generateExportFlowData } from 'utils/genericHelper'
 import { uiBaseURL } from 'store/constant'
 import { SET_CHATFLOW } from 'store/actions'
-import SpeechToTextDialog from '../../ui-component/dialog/SpeechToTextDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -47,8 +46,6 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [apiDialogProps, setAPIDialogProps] = useState({})
     const [analyseDialogOpen, setAnalyseDialogOpen] = useState(false)
     const [analyseDialogProps, setAnalyseDialogProps] = useState({})
-    const [speechToAudioDialogOpen, setSpeechToAudioDialogOpen] = useState(false)
-    const [speechToAudioDialogProps, setSpeechToAudioialogProps] = useState({})
     const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
@@ -74,12 +71,6 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setAnalyseDialogOpen(true)
-        } else if (setting === 'enableSpeechToText') {
-            setSpeechToAudioialogProps({
-                title: 'Speech to Text',
-                chatflow: chatflow
-            })
-            setSpeechToAudioDialogOpen(true)
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
                 title: 'View Messages',
@@ -394,11 +385,6 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             />
             <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
             <AnalyseFlowDialog show={analyseDialogOpen} dialogProps={analyseDialogProps} onCancel={() => setAnalyseDialogOpen(false)} />
-            <SpeechToTextDialog
-                show={speechToAudioDialogOpen}
-                dialogProps={speechToAudioDialogProps}
-                onCancel={() => setSpeechToAudioDialogOpen(false)}
-            />
             <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}

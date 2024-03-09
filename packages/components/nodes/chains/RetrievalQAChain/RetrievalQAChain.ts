@@ -1,9 +1,9 @@
-import { BaseRetriever } from '@langchain/core/retrievers'
-import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { RetrievalQAChain } from 'langchain/chains'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { RetrievalQAChain } from 'langchain/chains'
+import { BaseRetriever } from 'langchain/schema/retriever'
 import { getBaseClasses } from '../../../src/utils'
+import { BaseLanguageModel } from 'langchain/base_language'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 class RetrievalQAChain_Chains implements INode {
     label: string

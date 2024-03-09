@@ -1,5 +1,5 @@
 import { Moderation } from '../Moderation'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 
 export class SimplePromptModerationRunner implements Moderation {
     private readonly denyList: string = ''

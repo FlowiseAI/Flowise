@@ -3,12 +3,9 @@ import PropTypes from 'prop-types'
 import { Chip } from '@mui/material'
 import './StarterPromptsCard.css'
 
-const StarterPromptsCard = ({ isGrid, starterPrompts, sx, onPromptClick }) => {
+const StarterPromptsCard = ({ isGrid, starterPrompts, onPromptClick }) => {
     return (
-        <Box
-            className={'button-container'}
-            sx={{ width: '100%', maxWidth: isGrid ? 'inherit' : '400px', p: 1.5, display: 'flex', gap: 1, ...sx }}
-        >
+        <Box className={'button-container'} sx={{ maxWidth: isGrid ? 'inherit' : '400px', m: 1 }}>
             {starterPrompts.map((sp, index) => (
                 <Chip label={sp.prompt} className={'button'} key={index} onClick={(e) => onPromptClick(sp.prompt, e)} />
             ))}
@@ -18,8 +15,7 @@ const StarterPromptsCard = ({ isGrid, starterPrompts, sx, onPromptClick }) => {
 
 StarterPromptsCard.propTypes = {
     isGrid: PropTypes.bool,
-    starterPrompts: PropTypes.array,
-    sx: PropTypes.object,
+    starterPrompts: PropTypes.arrayOf(PropTypes.string),
     onPromptClick: PropTypes.func
 }
 

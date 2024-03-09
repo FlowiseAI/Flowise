@@ -2,7 +2,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src'
 import { Moderation } from '../Moderation'
 import { SimplePromptModerationRunner } from './SimplePromptModerationRunner'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { BaseChatModel } from 'langchain/chat_models/base'
 
 class SimplePromptModeration implements INode {
     label: string

@@ -1,6 +1,6 @@
 import { INode, INodeParams } from '../../../src/Interface'
 
-class Lunary_Analytic implements INode {
+class LLMonitor_Analytic implements INode {
     label: string
     name: string
     version: number
@@ -13,10 +13,10 @@ class Lunary_Analytic implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'Lunary'
-        this.name = 'lunary'
+        this.label = 'LLMonitor'
+        this.name = 'llmonitor'
         this.version = 1.0
-        this.type = 'Lunary'
+        this.type = 'LLMonitor'
         this.icon = 'Lunary.svg'
         this.category = 'Analytic'
         this.baseClasses = [this.type]
@@ -25,9 +25,9 @@ class Lunary_Analytic implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['lunaryApi']
+            credentialNames: ['llmonitorApi']
         }
     }
 }
 
-module.exports = { nodeClass: Lunary_Analytic }
+module.exports = { nodeClass: LLMonitor_Analytic }

@@ -1,4 +1,4 @@
-import { VectorStore } from '@langchain/core/vectorstores'
+import { VectorStore } from 'langchain/vectorstores/base'
 import { INode, INodeData, INodeParams, VectorStoreRetriever, VectorStoreRetrieverInput } from '../../../src/Interface'
 
 class VectorStoreRetriever_Retrievers implements INode {

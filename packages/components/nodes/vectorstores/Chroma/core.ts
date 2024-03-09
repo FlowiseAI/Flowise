@@ -1,5 +1,5 @@
-import { Chroma, ChromaLibArgs } from '@langchain/community/vectorstores/chroma'
-import { Embeddings } from '@langchain/core/embeddings'
+import { Chroma, ChromaLibArgs } from 'langchain/vectorstores/chroma'
+import { Embeddings } from 'langchain/embeddings/base'
 import type { Collection } from 'chromadb'
 import { ChromaClient } from 'chromadb'
 
