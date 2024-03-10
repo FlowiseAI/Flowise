@@ -8,7 +8,7 @@ import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } f
 import { XMLAgentOutputParser } from 'langchain/agents/xml/output_parser'
 import { formatLogToMessage } from 'langchain/agents/format_scratchpad/log_to_message'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor } from '../../../src/agents'
 import { Moderation, checkInputs } from '../../moderation/Moderation'
@@ -49,6 +49,7 @@ class XMLAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
+    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'XML Agent'
@@ -57,6 +58,7 @@ class XMLAgent_Agents implements INode {
         this.type = 'XMLAgent'
         this.category = 'Agents'
         this.icon = 'xmlagent.svg'
+        this.badge = 'NEW'
         this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
@@ -122,6 +124,7 @@ class XMLAgent_Agents implements INode {
 
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
@@ -130,10 +133,17 @@ class XMLAgent_Agents implements INode {
                 options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
                 sourceDocuments = res.sourceDocuments
             }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
             }
         }
 
@@ -151,7 +161,20 @@ class XMLAgent_Agents implements INode {
             this.sessionId
         )
 
-        return sourceDocuments.length ? { text: res?.output, sourceDocuments: flatten(sourceDocuments) } : res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 
