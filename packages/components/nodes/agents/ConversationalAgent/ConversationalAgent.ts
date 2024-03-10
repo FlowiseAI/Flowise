@@ -13,6 +13,8 @@ import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams }
 import { AgentExecutor } from '../../../src/agents'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
 
@@ -46,7 +48,7 @@ class ConversationalAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Agent'
         this.name = 'conversationalAgent'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -77,6 +79,14 @@ class ConversationalAgent_Agents implements INode {
                 default: DEFAULT_PREFIX,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -86,9 +96,20 @@ class ConversationalAgent_Agents implements INode {
         return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the BabyAGI agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
         const executor = await prepareAgent(
             nodeData,
             options,
