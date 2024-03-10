@@ -143,10 +143,11 @@ class IfElseFunction_Utilities implements INode {
         const vm = new NodeVM(nodeVMOptions)
         try {
             const responseTrue = await vm.run(`module.exports = async function() {${ifFunction}}()`, __dirname)
-            if (responseTrue) return { output: responseTrue, type: true }
+            if (responseTrue)
+                return { output: typeof responseTrue === 'string' ? handleEscapeCharacters(responseTrue, false) : responseTrue, type: true }
 
             const responseFalse = await vm.run(`module.exports = async function() {${elseFunction}}()`, __dirname)
-            return { output: responseFalse, type: false }
+            return { output: typeof responseFalse === 'string' ? handleEscapeCharacters(responseFalse, false) : responseFalse, type: false }
         } catch (e) {
             throw new Error(e)
         }
