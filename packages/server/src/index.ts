@@ -1652,6 +1652,8 @@ export class App {
         const newChatMessage = new ChatMessage()
         Object.assign(newChatMessage, chatMessage)
 
+        if (!newChatMessage.createdDate) newChatMessage.createdDate = new Date()
+
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
