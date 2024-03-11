@@ -115,6 +115,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            startDate: date,
+            endDate: endDate,
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+        })
     }
 
     const onEndDateSelected = (date) => {
@@ -124,11 +129,21 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            endDate: date,
+            startDate: startDate,
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+        })
     }
 
     const onChatTypeSelected = (chatTypes) => {
         setChatTypeFilter(chatTypes)
         getChatmessageApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypes.length ? chatTypes : undefined,
+            startDate: startDate,
+            endDate: endDate
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
             chatType: chatTypes.length ? chatTypes : undefined,
             startDate: startDate,
             endDate: endDate
@@ -432,6 +447,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setSelectedMessageIndex(0)
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
             setEndDate(new Date())
+            setStats([])
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -463,23 +479,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             </DialogTitle>
             <DialogContent>
                 <>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                            gap: 10,
-                            marginBottom: 16,
-                            marginLeft: 8,
-                            marginRight: 8
-                        }}
-                    >
-                        <StatsCard title='Total Messages (API/Embed)' stat={`${stats.totalMessages}`} />
-                        <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
-                        <StatsCard
-                            title='Positive Feedback'
-                            stat={`${((stats.positiveFeedback / stats.totalFeedback) * 100 || 0).toFixed(2)}%`}
-                        />
-                    </div>
                     <div
                         style={{
                             display: 'flex',
@@ -535,6 +534,23 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ flex: 1 }}></div>
+                    </div>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                            gap: 10,
+                            marginBottom: 16,
+                            marginLeft: 8,
+                            marginRight: 8
+                        }}
+                    >
+                        <StatsCard title='Total Messages' stat={`${stats.totalMessages}`} />
+                        <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
+                        <StatsCard
+                            title='Positive Feedback'
+                            stat={`${((stats.positiveFeedback / stats.totalFeedback) * 100 || 0).toFixed(2)}%`}
+                        />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         {chatlogs && chatlogs.length == 0 && (
