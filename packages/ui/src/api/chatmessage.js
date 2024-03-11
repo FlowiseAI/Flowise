@@ -1,6 +1,7 @@
 import client from './client'
 
-const getInternalChatmessageFromChatflow = (id) => client.get(`/internal-chatmessage/${id}`)
+const getInternalChatmessageFromChatflow = (id, params = {}) =>
+    client.get(`/internal-chatmessage/${id}`, { params: { feedback: true, ...params } })
 const getAllChatmessageFromChatflow = (id, params = {}) =>
     client.get(`/chatmessage/${id}`, { params: { order: 'DESC', feedback: true, ...params } })
 const getChatmessageFromPK = (id, params = {}) => client.get(`/chatmessage/${id}`, { params: { order: 'ASC', feedback: true, ...params } })

@@ -595,7 +595,27 @@ export class App {
 
         // Get internal chatmessages from chatflowid
         this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatType.INTERNAL,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate,
+                messageId,
+                feedback
+            )
             return res.json(chatmessages)
         })
 
