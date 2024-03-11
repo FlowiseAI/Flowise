@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
 import { Tool } from '@langchain/core/tools'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { XMLAgentOutputParser } from 'langchain/agents/xml/output_parser'
@@ -160,7 +160,7 @@ const prepareAgent = async (
     flowObj: { sessionId?: string; chatId?: string; input?: string },
     chatHistory: IMessage[] = []
 ) => {
-    const model = nodeData.inputs?.model as ChatOpenAI
+    const model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
