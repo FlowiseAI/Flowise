@@ -1,19 +1,44 @@
 import { flatten } from 'lodash'
-import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI, formatToOpenAIFunction } from '@langchain/openai'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { OpenAIFunctionsAgentOutputParser } from 'langchain/agents/openai/output_parser'
+import { Tool } from '@langchain/core/tools'
+import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import { XMLAgentOutputParser } from 'langchain/agents/xml/output_parser'
+import { formatLogToMessage } from 'langchain/agents/format_scratchpad/log_to_message'
 import { getBaseClasses } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
+import { AgentExecutor } from '../../../src/agents'
 import { Moderation, checkInputs } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class OpenAIFunctionAgent_Agents implements INode {
+const defaultSystemMessage = `You are a helpful assistant. Help the user answer any questions.
+
+You have access to the following tools:
+
+{tools}
+
+In order to use a tool, you can use <tool></tool> and <tool_input></tool_input> tags. You will then get back a response in the form <observation></observation>
+For example, if you have a tool called 'search' that could run a google search, in order to search for the weather in SF you would respond:
+
+<tool>search</tool><tool_input>weather in SF</tool_input>
+<observation>64 degrees</observation>
+
+When you are done, respond with a final answer between <final_answer></final_answer>. For example:
+
+<final_answer>The weather in SF is 64 degrees</final_answer>
+
+Begin!
+
+Previous Conversation:
+{chat_history}
+
+Question: {input}
+{agent_scratchpad}`
+
+class XMLAgent_Agents implements INode {
     label: string
     name: string
     version: number
@@ -26,17 +51,17 @@ class OpenAIFunctionAgent_Agents implements INode {
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'OpenAI Function Agent'
-        this.name = 'openAIFunctionAgent'
-        this.version = 4.0
-        this.type = 'AgentExecutor'
+        this.label = 'XML Agent'
+        this.name = 'xmlAgent'
+        this.version = 2.0
+        this.type = 'XMLAgent'
         this.category = 'Agents'
-        this.icon = 'function.svg'
-        this.description = `An agent that uses Function Calling to pick the tool and args to call`
+        this.icon = 'xmlagent.svg'
+        this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {
-                label: 'Allowed Tools',
+                label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
                 list: true
@@ -47,7 +72,7 @@ class OpenAIFunctionAgent_Agents implements INode {
                 type: 'BaseChatMemory'
             },
             {
-                label: 'OpenAI/Azure Chat Model',
+                label: 'Chat Model',
                 name: 'model',
                 type: 'BaseChatModel'
             },
@@ -55,8 +80,9 @@ class OpenAIFunctionAgent_Agents implements INode {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
+                warning: 'Prompt must include input variables: {tools}, {chat_history}, {input} and {agent_scratchpad}',
                 rows: 4,
-                optional: true,
+                default: defaultSystemMessage,
                 additionalParams: true
             },
             {
@@ -71,8 +97,8 @@ class OpenAIFunctionAgent_Agents implements INode {
         this.sessionId = fields?.sessionId
     }
 
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+    async init(): Promise<any> {
+        return null
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
@@ -89,8 +115,7 @@ class OpenAIFunctionAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-
-        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -130,42 +155,57 @@ class OpenAIFunctionAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = (
+const prepareAgent = async (
     nodeData: INodeData,
     flowObj: { sessionId?: string; chatId?: string; input?: string },
     chatHistory: IMessage[] = []
 ) => {
-    const model = nodeData.inputs?.model as ChatOpenAI
+    const model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
-    const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
+    const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
+
+    let promptMessage = systemMessage ? systemMessage : defaultSystemMessage
+    if (memory.memoryKey) promptMessage = promptMessage.replaceAll('{chat_history}', `{${memory.memoryKey}}`)
+    if (memory.inputKey) promptMessage = promptMessage.replaceAll('{input}', `{${memory.inputKey}}`)
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
-        new MessagesPlaceholder(memoryKey),
-        ['human', `{${inputKey}}`],
+        HumanMessagePromptTemplate.fromTemplate(promptMessage),
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
-    const modelWithFunctions = model.bind({
-        functions: [...tools.map((tool: any) => formatToOpenAIFunction(tool))]
-    })
+    const missingVariables = ['tools', 'agent_scratchpad'].filter((v) => !prompt.inputVariables.includes(v))
+
+    if (missingVariables.length > 0) {
+        throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`)
+    }
+
+    const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
+
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false, chatHistory)) as IMessage[]
+    let chatHistoryMsgTxt = ''
+    for (const message of messages) {
+        if (message.type === 'apiMessage') {
+            chatHistoryMsgTxt += `\\nAI:${message.message}`
+        } else if (message.type === 'userMessage') {
+            chatHistoryMsgTxt += `\\nHuman:${message.message}`
+        }
+    }
 
     const runnableAgent = RunnableSequence.from([
         {
-            [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
-            agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
-            [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
-                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, chatHistory)) as BaseMessage[]
-                return messages ?? []
-            }
+            [inputKey]: (i: { input: string; tools: Tool[]; steps: AgentStep[] }) => i.input,
+            agent_scratchpad: (i: { input: string; tools: Tool[]; steps: AgentStep[] }) => formatLogToMessage(i.steps),
+            tools: (_: { input: string; tools: Tool[]; steps: AgentStep[] }) =>
+                tools.map((tool: Tool) => `${tool.name}: ${tool.description}`),
+            [memoryKey]: (_: { input: string; tools: Tool[]; steps: AgentStep[] }) => chatHistoryMsgTxt
         },
         prompt,
-        modelWithFunctions,
-        new OpenAIFunctionsAgentOutputParser()
+        llmWithStop,
+        new XMLAgentOutputParser()
     ])
 
     const executor = AgentExecutor.fromAgentAndTools({
@@ -174,10 +214,11 @@ const prepareAgent = (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
+        isXML: true,
         verbose: process.env.DEBUG === 'true' ? true : false
     })
 
     return executor
 }
 
-module.exports = { nodeClass: OpenAIFunctionAgent_Agents }
+module.exports = { nodeClass: XMLAgent_Agents }

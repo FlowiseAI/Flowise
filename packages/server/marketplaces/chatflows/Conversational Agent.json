@@ -392,7 +392,7 @@
             "data": {
                 "id": "conversationalAgent_0",
                 "label": "Conversational Agent",
-                "version": 2,
+                "version": 3,
                 "name": "conversationalAgent",
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
@@ -429,9 +429,19 @@
                         "name": "memory",
                         "type": "BaseChatMemory",
                         "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalAgent_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{calculator_1.data.instance}}", "{{serpAPI_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "memory": "{{bufferMemory_1.data.instance}}",

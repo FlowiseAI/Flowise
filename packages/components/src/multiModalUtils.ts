@@ -1,5 +1,4 @@
-import { ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
-import { ChatOpenAI as LangchainChatOpenAI } from 'langchain/chat_models/openai'
+import { IVisionChatModal, ICommonObject, IFileUpload, IMultiModalOption, INodeData, MessageContentImageUrl } from './Interface'
 import path from 'path'
 import { getStoragePath } from './utils'
 import fs from 'fs'
@@ -12,7 +11,7 @@ export const addImagesToMessages = (
     const imageContent: MessageContentImageUrl[] = []
     let model = nodeData.inputs?.model
 
-    if (model instanceof LangchainChatOpenAI && multiModalOption) {
+    if (llmSupportsVision(model) && multiModalOption) {
         // Image Uploaded
         if (multiModalOption.image && multiModalOption.image.allowImageUploads && options?.uploads && options?.uploads.length > 0) {
             const imageUploads = getImageUploads(options.uploads)
@@ -46,3 +45,5 @@ export const getAudioUploads = (uploads: IFileUpload[]) => {
 export const getImageUploads = (uploads: IFileUpload[]) => {
     return uploads.filter((upload: IFileUpload) => upload.mime.startsWith('image/'))
 }
+
+export const llmSupportsVision = (value: any): value is IVisionChatModal => !!value?.multiModalOption

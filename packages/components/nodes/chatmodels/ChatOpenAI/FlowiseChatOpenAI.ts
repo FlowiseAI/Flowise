@@ -1,38 +1,39 @@
 import type { ClientOptions } from 'openai'
-import {
-    ChatOpenAI as LangchainChatOpenAI,
-    OpenAIChatInput,
-    LegacyOpenAIInput,
-    AzureOpenAIInput,
-    ChatOpenAICallOptions
-} from '@langchain/openai'
+import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, LegacyOpenAIInput, AzureOpenAIInput } from '@langchain/openai'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { IMultiModalOption } from '../../../src'
-import { BaseMessageLike, LLMResult } from 'langchain/schema'
-import { Callbacks } from '@langchain/core/callbacks/manager'
+import { IMultiModalOption, IVisionChatModal } from '../../../src'
 
-export class ChatOpenAI extends LangchainChatOpenAI {
+export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal {
     configuredModel: string
-    configuredMaxToken?: number
-    multiModalOption?: IMultiModalOption
+    configuredMaxToken: number
+    multiModalOption: IMultiModalOption
     id: string
 
     constructor(
         id: string,
         fields?: Partial<OpenAIChatInput> &
             Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput; multiModalOption?: IMultiModalOption },
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput },
         /** @deprecated */
         configuration?: ClientOptions & LegacyOpenAIInput
     ) {
         super(fields, configuration)
         this.id = id
-        this.multiModalOption = fields?.multiModalOption
         this.configuredModel = fields?.modelName ?? 'gpt-3.5-turbo'
-        this.configuredMaxToken = fields?.maxTokens
+        this.configuredMaxToken = fields?.maxTokens ?? 256
     }
 
-    async generate(messages: BaseMessageLike[][], options?: string[] | ChatOpenAICallOptions, callbacks?: Callbacks): Promise<LLMResult> {
-        return super.generate(messages, options, callbacks)
+    revertToOriginalModel(): void {
+        super.modelName = this.configuredModel
+        super.maxTokens = this.configuredMaxToken
+    }
+
+    setMultiModalOption(multiModalOption: IMultiModalOption): void {
+        this.multiModalOption = multiModalOption
+    }
+
+    setVisionModel(): void {
+        super.modelName = 'gpt-4-vision-preview'
+        super.maxTokens = 1024
     }
 }
