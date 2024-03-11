@@ -4,6 +4,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 
 type CredentialType = AwsCredentialIdentity | Provider<AwsCredentialIdentity>
 

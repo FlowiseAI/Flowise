@@ -29,7 +29,7 @@
         "@google-ai/generativelanguage": "^0.2.1",
         "@google/generative-ai": "^0.1.3",
         "@huggingface/inference": "^2.6.1",
-        "@langchain/anthropic": "^0.0.10",
+        "@langchain/anthropic": "^0.1.4",
         "@langchain/cohere": "^0.0.5",
         "@langchain/community": "^0.0.30",
         "@langchain/google-genai": "^0.0.10",

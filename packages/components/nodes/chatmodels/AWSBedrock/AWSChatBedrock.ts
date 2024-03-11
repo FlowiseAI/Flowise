@@ -1,23 +1,9 @@
-import type { AwsCredentialIdentity, Provider } from '@aws-sdk/types'
 import { BedrockChat } from '@langchain/community/chat_models/bedrock'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
+import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-
-type CredentialType = AwsCredentialIdentity | Provider<AwsCredentialIdentity>
-
-interface BaseBedrockInput {
-    model: string
-    region?: string
-    credentials?: CredentialType
-    temperature?: number
-    maxTokens?: number
-    fetchFn?: typeof fetch
-    endpointHost?: string
-    modelKwargs?: Record<string, unknown>
-    streaming: boolean
-}
 
 /**
  * I had to run the following to build the component
