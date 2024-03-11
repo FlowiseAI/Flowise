@@ -7,6 +7,7 @@ import {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
+    IconLink,
     IconMicrophone,
     IconThumbUp
 } from '@tabler/icons'
@@ -20,6 +21,7 @@ const icons = {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
+    IconLink,
     IconMicrophone,
     IconThumbUp
 }
@@ -51,6 +53,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconThumbUp
+        },
+        {
+            id: 'allowedDomains',
+            title: 'Allowed Domains',
+            type: 'item',
+            url: '',
+            icon: icons.IconLink
         },
         {
             id: 'enableSpeechToText',

@@ -493,13 +493,14 @@ export const clearSessionMemory = async (
  * @returns {string}
  */
 export const getVariableValue = (
-    paramValue: string,
+    paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false
 ) => {
-    let returnVal = paramValue
+    const isObject = typeof paramValue === 'object'
+    let returnVal = isObject ? JSON.stringify(paramValue) : paramValue
     const variableStack = []
     const variableDict = {} as IVariableDict
     let startIdx = 0
@@ -596,7 +597,7 @@ export const getVariableValue = (
         })
         return returnVal
     }
-    return returnVal
+    return isObject ? JSON.parse(returnVal) : returnVal
 }
 
 /**

@@ -18,6 +18,7 @@ import AnalyseFlowDialog from 'ui-component/dialog/AnalyseFlowDialog'
 import ViewMessagesDialog from 'ui-component/dialog/ViewMessagesDialog'
 import StarterPromptsDialog from 'ui-component/dialog/StarterPromptsDialog'
 import ChatFeedbackDialog from 'ui-component/dialog/ChatFeedbackDialog'
+import AllowedDomainsDialog from 'ui-component/dialog/AllowedDomainsDialog'
 
 // API
 import chatflowsApi from 'api/chatflows'
@@ -56,6 +57,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
     const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
     const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
+    const [allowedDomainsDialogOpen, setAllowedDomainsDialogOpen] = useState(false)
+    const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -77,6 +80,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setChatFeedbackDialogOpen(true)
+        } else if (setting === 'allowedDomains') {
+            setAllowedDomainsDialogProps({
+                title: 'Allowed Domains - ' + chatflow.name,
+                chatflow: chatflow
+            })
+            setAllowedDomainsDialogOpen(true)
         } else if (setting === 'analyseChatflow') {
             setAnalyseDialogProps({
                 title: 'Analyse Chatflow',
@@ -419,6 +428,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 dialogProps={chatFeedbackDialogProps}
                 onConfirm={() => setChatFeedbackDialogOpen(false)}
                 onCancel={() => setChatFeedbackDialogOpen(false)}
+            />
+            <AllowedDomainsDialog
+                show={allowedDomainsDialogOpen}
+                dialogProps={allowedDomainsDialogProps}
+                onConfirm={() => setAllowedDomainsDialogOpen(false)}
+                onCancel={() => setAllowedDomainsDialogOpen(false)}
             />
             <ViewMessagesDialog
                 show={viewMessagesDialogOpen}
