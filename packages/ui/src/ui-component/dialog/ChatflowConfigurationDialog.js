@@ -2,15 +2,21 @@ import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
-import SpeechToText from './SpeechToTextDialog'
+import SpeechToText from './SpeechToText'
 import Configuration from 'views/chatflows/Configuration'
-import AllowedDomains from './AllowedDomainsDialog'
-import ChatFeedback from './ChatFeedbackDialog'
+import AllowedDomains from './AllowedDomains'
+import ChatFeedback from './ChatFeedback'
+import AnalyseFlow from './AnalyseFlow'
+import StarterPrompts from './StarterPrompts'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Rate Limiting',
         id: 'rateLimiting'
+    },
+    {
+        label: 'Starter Prompts',
+        id: 'conversationStarters'
     },
     {
         label: 'Speech to Text',
@@ -23,6 +29,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Allowed Domains',
         id: 'allowedDomains'
+    },
+    {
+        label: 'Analyse Chatflow',
+        id: 'analyseChatflow'
     }
 ]
 
@@ -34,7 +44,7 @@ function TabPanel(props) {
             hidden={value !== index}
             id={`chatflow-config-tabpanel-${index}`}
             aria-labelledby={`chatflow-config-tab-${index}`}
-            style={{ paddingTop: '1rem' }}
+            style={{ width: '100%', paddingTop: '1rem' }}
             {...other}
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
@@ -73,22 +83,28 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             </DialogTitle>
             <DialogContent>
                 <Tabs
-                    sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
-                    variant='fullWidth'
+                    sx={{ position: 'relative', minHeight: '40px', height: '40px' }}
                     value={tabValue}
                     onChange={(event, value) => setTabValue(value)}
                     aria-label='tabs'
                 >
                     {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
-                        <Tab sx={{ minHeight: '50px', height: '50px' }} key={index} label={item.label} {...a11yProps(index)}></Tab>
+                        <Tab
+                            sx={{ minHeight: '40px', height: '40px', textAlign: 'left', display: 'flex', alignItems: 'start', mb: 1 }}
+                            key={index}
+                            label={item.label}
+                            {...a11yProps(index)}
+                        ></Tab>
                     ))}
                 </Tabs>
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <Configuration />}
+                        {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
+                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

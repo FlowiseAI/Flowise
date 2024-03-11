@@ -183,8 +183,10 @@ const SpeechToText = ({ dialogProps }) => {
 
     return (
         <>
-            <Box fullWidth sx={{ my: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography>Speech To Text Providers</Typography>
+            <Box fullWidth sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant='h4' sx={{ mb: 1 }}>
+                    Providers
+                </Typography>
                 <FormControl fullWidth>
                     <Select value={selectedProvider} onChange={handleProviderChange}>
                         <MenuItem value='none'>None</MenuItem>
@@ -289,6 +291,7 @@ const SpeechToText = ({ dialogProps }) => {
                 </>
             )}
             <StyledButton
+                style={{ marginBottom: 10, marginTop: 10 }}
                 disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
                 variant='contained'
                 onClick={onSave}

@@ -93,7 +93,7 @@ const ChatFeedback = ({ dialogProps }) => {
             <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                 <SwitchInput label='Enable chat feedback' onChange={handleChange} value={chatFeedbackStatus} />
             </Box>
-            <StyledButton variant='contained' onClick={onSave}>
+            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>
         </>
