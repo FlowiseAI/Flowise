@@ -1,28 +1,8 @@
 // assets
-import {
-    IconTrash,
-    IconFileUpload,
-    IconFileExport,
-    IconCopy,
-    IconSearch,
-    IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone
-} from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
 
 // constant
-const icons = {
-    IconTrash,
-    IconFileUpload,
-    IconFileExport,
-    IconCopy,
-    IconSearch,
-    IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone
-}
+const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -44,20 +24,6 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconMessage
-        },
-        {
-            id: 'allowedDomains',
-            title: 'Allowed Domains',
-            type: 'item',
-            url: '',
-            icon: icons.IconLink
-        },
-        {
-            id: 'enableSpeechToText',
-            title: 'Speech to Text',
-            type: 'item',
-            url: '',
-            icon: icons.IconMicrophone
         },
         {
             id: 'duplicateChatflow',

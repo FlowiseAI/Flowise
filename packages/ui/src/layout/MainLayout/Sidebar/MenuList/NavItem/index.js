@@ -100,7 +100,8 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             {...listItemProps}
             disabled={item.disabled}
             sx={{
-                borderRadius: `${customization.borderRadius}px`,
+                // borderRadius: `${customization.borderRadius}px`,
+                // borderRadius: "0px",
                 mb: 0.5,
                 alignItems: 'flex-start',
                 backgroundColor: level > 1 ? 'transparent !important' : 'inherit',

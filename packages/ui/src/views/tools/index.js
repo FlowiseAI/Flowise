@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
+import { Grid, Box, Stack, Button, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -21,6 +21,7 @@ import useApi from 'hooks/useApi'
 
 // icons
 import { IconPlus, IconFileImport } from '@tabler/icons'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -105,7 +106,8 @@ const Tools = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <h1>Tools</h1>
+                    {/* <h1>Tools</h1> */}
+                    <Typography variant='h1'>Tools</Typography>
                     <Grid sx={{ mb: 1.25 }} container direction='row'>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
@@ -152,4 +154,4 @@ const Tools = () => {
     )
 }
 
-export default Tools
+export default withAuthenticationRequired(Tools)

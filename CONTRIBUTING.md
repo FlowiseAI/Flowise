@@ -30,7 +30,7 @@ Found an issue? [Report it](https://github.com/FlowiseAI/Flowise/issues/new/choo
 
 Not sure what to contribute? Some ideas:
 
--   Create new components from `packages/components`
+-   Create new components from Langchain
 -   Update existing components such as extending functionality, fixing bugs
 -   Add new chatflow ideas
 
@@ -40,7 +40,7 @@ Flowise has 3 different modules in a single mono repository.
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
--   `components`: Third-party nodes integrations
+-   `components`: Langchain components
 
 #### Prerequisite
 
@@ -129,7 +129,6 @@ Flowise support different environment variables to configure your instance. You 
 | FLOWISE_PASSWORD            | Password to login                                                            | String                                           |                                     |
 | FLOWISE_FILE_SIZE_LIMIT     | Upload File Size Limit                                                       | String                                           | 50mb                                |
 | DEBUG                       | Print logs from components                                                   | Boolean                                          |                                     |
-| BLOB_STORAGE_PATH           | Location where uploaded files are stored                                     | String                                           | `your-home-dir/.flowise/storage`    |
 | LOG_PATH                    | Location where log files are stored                                          | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                   | Different levels of logs                                                     | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | APIKEY_PATH                 | Location where api keys are saved                                            | String                                           | `your-path/Flowise/packages/server` |

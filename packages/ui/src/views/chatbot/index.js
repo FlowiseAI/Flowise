@@ -13,6 +13,7 @@ import useApi from 'hooks/useApi'
 
 //Const
 import { baseURL } from 'store/constant'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 
 // ==============================|| Chatbot ||============================== //
 
@@ -121,4 +122,4 @@ const ChatbotFull = () => {
     )
 }
 
-export default ChatbotFull
+export default withAuthenticationRequired(ChatbotFull)

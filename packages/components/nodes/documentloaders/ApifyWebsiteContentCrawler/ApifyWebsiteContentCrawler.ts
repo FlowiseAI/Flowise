@@ -2,7 +2,7 @@ import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Inter
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { TextSplitter } from 'langchain/text_splitter'
 import { ApifyDatasetLoader } from 'langchain/document_loaders/web/apify_dataset'
-import { Document } from '@langchain/core/documents'
+import { Document } from 'langchain/document'
 
 class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
     label: string

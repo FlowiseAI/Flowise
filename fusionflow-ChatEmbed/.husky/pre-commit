@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+set -e # Exit on any error
+
+echo "Running ESLint for linting..."
+npm run lint
+
+echo "Running ESLint for fixing issues..."
+npm run lint-fix
+
+echo "Formatting code..."
+npm run format
+
+echo "Checking formatting..."
+npm run format:check
+
+echo "Pre-commit checks passed."

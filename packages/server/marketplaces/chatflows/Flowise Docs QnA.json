@@ -158,7 +158,7 @@
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
                 "name": "conversationalRetrievalQAChain",
-                "version": 3,
+                "version": 2,
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
                 "category": "Chains",
@@ -216,19 +216,9 @@
                         "optional": true,
                         "description": "If left empty, a default BufferMemory will be used",
                         "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
-                    },
-                    {
-                        "label": "Input Moderation",
-                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-                        "name": "inputModeration",
-                        "type": "Moderation",
-                        "optional": true,
-                        "list": true,
-                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
-                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{memoryVectorStore_0.data.instance}}",
                     "memory": "",
@@ -388,7 +378,7 @@
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 5,
+                "version": 3,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -423,10 +413,6 @@
                                 "name": "gpt-4-1106-preview"
                             },
                             {
-                                "label": "gpt-4-1106-vision-preview",
-                                "name": "gpt-4-1106-vision-preview"
-                            },
-                            {
                                 "label": "gpt-4-vision-preview",
                                 "name": "gpt-4-vision-preview"
                             },
@@ -445,10 +431,6 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0125",
-                                "name": "gpt-3.5-turbo-0125"
                             },
                             {
                                 "label": "gpt-3.5-turbo-1106",
@@ -534,39 +516,6 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-baseOptions-json"
-                    },
-                    {
-                        "label": "Allow Image Uploads",
-                        "name": "allowImageUploads",
-                        "type": "boolean",
-                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
-                        "default": false,
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
-                    },
-                    {
-                        "label": "Image Resolution",
-                        "description": "This parameter controls the resolution in which the model views the image.",
-                        "name": "imageResolution",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Low",
-                                "name": "low"
-                            },
-                            {
-                                "label": "High",
-                                "name": "high"
-                            },
-                            {
-                                "label": "Auto",
-                                "name": "auto"
-                            }
-                        ],
-                        "default": "low",
-                        "optional": false,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -587,9 +536,7 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": "",
-                    "allowImageUploads": true,
-                    "imageResolution": "low"
+                    "baseOptions": ""
                 },
                 "outputAnchors": [
                     {

@@ -1,7 +1,8 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
-import { FewShotPromptTemplate, FewShotPromptTemplateInput, PromptTemplate, TemplateFormat } from '@langchain/core/prompts'
-import type { Example } from '@langchain/core/prompts'
+import { FewShotPromptTemplate, FewShotPromptTemplateInput, PromptTemplate } from 'langchain/prompts'
+import { Example } from 'langchain/schema'
+import { TemplateFormat } from 'langchain/dist/prompts/template'
 
 class FewShotPromptTemplate_Prompts implements INode {
     label: string

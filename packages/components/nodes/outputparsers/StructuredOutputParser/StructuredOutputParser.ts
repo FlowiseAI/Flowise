@@ -1,8 +1,8 @@
-import { z } from 'zod'
-import { BaseOutputParser } from '@langchain/core/output_parsers'
+import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
+import { BaseOutputParser } from 'langchain/schema/output_parser'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
-import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
+import { z } from 'zod'
 
 class StructuredOutputParser implements INode {
     label: string

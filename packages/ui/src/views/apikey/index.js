@@ -58,6 +58,7 @@ import {
 import APIEmptySVG from 'assets/images/api_empty.svg'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 
 // ==============================|| APIKey ||============================== //
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -335,7 +336,8 @@ const APIKey = () => {
                                 width: '100%'
                             }}
                         >
-                            <h1>API Keys&nbsp;</h1>
+                            {/* <h1>API Keys&nbsp;</h1> */}
+                    <Typography variant='h1'>API Keys&nbsp;</Typography>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -430,4 +432,4 @@ const APIKey = () => {
     )
 }
 
-export default APIKey
+export default withAuthenticationRequired(APIKey)

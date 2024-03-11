@@ -1,8 +1,7 @@
-import axios from 'axios'
-import { Callbacks } from '@langchain/core/callbacks/manager'
-import { Document } from '@langchain/core/documents'
+import { Callbacks } from 'langchain/callbacks'
+import { Document } from 'langchain/document'
 import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressors'
-
+import axios from 'axios'
 export class CohereRerank extends BaseDocumentCompressor {
     private cohereAPIKey: any
     private COHERE_API_URL = 'https://api.cohere.ai/v1/rerank'

@@ -1,6 +1,6 @@
-import { BaseCache } from '@langchain/core/caches'
-import hash from 'object-hash'
 import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import { BaseCache } from 'langchain/schema'
+import hash from 'object-hash'
 
 class InMemoryCache implements INode {
     label: string

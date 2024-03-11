@@ -7,16 +7,20 @@ import { Box, Grid, Typography } from '@mui/material'
 // project imports
 import MainCard from 'ui-component/cards/MainCard'
 import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
+import { useSelector } from 'react-redux'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-    background: theme.palette.card.main,
+    background: theme.palette.card.ItemCard,
+    // background: theme.customization.isDarkMode ? "#fff" : "#121D35", // customization is not working here
     color: theme.darkTextPrimary,
+    // color: theme.paper,
     overflow: 'auto',
     position: 'relative',
     boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
     cursor: 'pointer',
     '&:hover': {
-        background: theme.palette.card.hover,
+        background: theme.palette.card.ItemCardhover,
+        // background: "rgb(92 49 84 / 87%)",
         boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
     },
     maxHeight: '300px',
@@ -28,6 +32,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| CONTRACT CARD ||=========================== //
 
 const ItemCard = ({ isLoading, data, images, onClick }) => {
+    const customization = useSelector((state) => state.customization)
     return (
         <>
             {isLoading ? (
@@ -63,19 +68,32 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                             width: 35,
                                             height: 35,
                                             marginRight: 10,
-                                            borderRadius: '50%',
+                                            // borderRadius: '50%',
                                             background: data.color
                                         }}
                                     ></div>
                                 )}
                                 <Typography
-                                    sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                    sx={{
+                                        color: customization.isDarkMode ? '#121D35' : '#FFF860',
+                                        fontSize: '1.5rem',
+                                        fontWeight: 500,
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'pre-line'
+                                    }}
                                 >
                                     {data.templateName || data.name}
                                 </Typography>
                             </div>
                             {data.description && (
-                                <span style={{ marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                <span
+                                    style={{
+                                        color: customization.isDarkMode ? '#121D35' : '#fff',
+                                        marginTop: 10,
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'pre-line'
+                                    }}
+                                >
                                     {data.description}
                                 </span>
                             )}
@@ -95,8 +113,9 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                                 width: 35,
                                                 height: 35,
                                                 marginRight: 5,
-                                                borderRadius: '50%',
-                                                backgroundColor: 'white',
+                                                // borderRadius: '50%',
+                                                // backgroundColor: 'white',
+                                                backgroundColor: '#EEEEEE',
                                                 marginTop: 5
                                             }}
                                         >

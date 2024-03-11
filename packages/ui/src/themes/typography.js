@@ -54,7 +54,8 @@ export default function themeTypography(theme) {
         body1: {
             fontSize: '0.875rem',
             fontWeight: 400,
-            lineHeight: '1.334em'
+            lineHeight: '1.334em',
+            color: theme.heading
         },
         body2: {
             letterSpacing: '0em',
@@ -111,8 +112,8 @@ export default function themeTypography(theme) {
             textTransform: 'capitalize'
         },
         commonAvatar: {
-            cursor: 'pointer',
-            borderRadius: '8px'
+            cursor: 'pointer'
+            // borderRadius: '8px'
         },
         smallAvatar: {
             width: '22px',

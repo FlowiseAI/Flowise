@@ -7,9 +7,8 @@ import { entities } from './database/entities'
 import { sqliteMigrations } from './database/migrations/sqlite'
 import { mysqlMigrations } from './database/migrations/mysql'
 import { postgresMigrations } from './database/migrations/postgres'
-
 let appDataSource: DataSource
-
+const ca = fs.readFileSync(process.env.DATABASE_CERT_PATH!, 'utf8');
 export const init = async (): Promise<void> => {
     let homePath
     let flowisePath = path.join(getUserHome(), '.flowise')
@@ -52,7 +51,11 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                ssl: getDatabaseSSLFromEnv(),
+				
+                ssl: {
+					ca:ca,
+					rejectUnauthorized: true
+				},
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),

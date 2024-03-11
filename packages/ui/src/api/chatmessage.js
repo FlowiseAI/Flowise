@@ -4,12 +4,10 @@ const getInternalChatmessageFromChatflow = (id) => client.get(`/internal-chatmes
 const getAllChatmessageFromChatflow = (id, params = {}) => client.get(`/chatmessage/${id}`, { params: { order: 'DESC', ...params } })
 const getChatmessageFromPK = (id, params = {}) => client.get(`/chatmessage/${id}`, { params: { order: 'ASC', ...params } })
 const deleteChatmessage = (id, params = {}) => client.delete(`/chatmessage/${id}`, { params: { ...params } })
-const getStoragePath = () => client.get(`/get-upload-path`)
 
 export default {
     getInternalChatmessageFromChatflow,
     getAllChatmessageFromChatflow,
     getChatmessageFromPK,
-    deleteChatmessage,
-    getStoragePath
+    deleteChatmessage
 }

@@ -1,6 +1,8 @@
 .messagelist {
     width: 100%;
-    height: auto;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
     border-radius: 0.5rem;
 }
 
@@ -17,12 +19,14 @@
 
 .usermessagewaiting-light {
     padding: 1rem 1.5rem 1rem 1.5rem;
-    background: linear-gradient(to left, #ede7f6, #e3f2fd, #ede7f6);
+    /* background: linear-gradient(to left, #ede7f6, #e3f2fd, #ede7f6); */
+    background: linear-gradient(to right, #e084b4 0%, #77bfaf 100%);
+    opacity: 0.5;
     background-size: 200% 200%;
     background-position: -100% 0;
-    animation: loading-gradient 2s ease-in-out infinite;
+    animation: gradient 2s ease-in-out infinite;
     animation-direction: alternate;
-    animation-name: loading-gradient;
+    animation-name: gradient;
 }
 
 .usermessagewaiting-dark {
@@ -36,10 +40,23 @@
     animation-name: loading-gradient;
 }
 
+@keyframes gradient {
+    0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+    }
+}
+
 @keyframes loading-gradient {
     0% {
         background-position: -100% 0;
     }
+
     100% {
         background-position: 100% 0;
     }
@@ -54,6 +71,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -106,57 +124,31 @@
 }
 
 .center {
-    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     flex-direction: column;
-    padding: 12px;
+    padding: 10px;
 }
 
-.cloud-wrapper {
+.cloud {
     width: 400px;
-    height: calc(100vh - 180px);
-}
-
-.cloud-dialog-wrapper {
-    width: 100%;
-    height: calc(100vh - 120px);
-}
-
-.cloud-wrapper > div,
-.cloud-dialog-wrapper > div {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    flex-direction: column;
-    position: relative;
-}
-
-.image-dropzone {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    z-index: 2001; /* Ensure it's above other content */
-}
-
-.cloud,
-.cloud-dialog {
-    width: 100%;
-    height: auto;
-    max-height: calc(100% - 54px);
-    overflow-y: scroll;
+    height: calc(100vh - 260px);
+    border-radius: 0.5rem;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    flex-grow: 1;
+    align-items: center;
+}
+
+.cloud-dialog {
+    width: 100%;
+    height: 100vh;
+    overflow-y: scroll;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .cloud-message {
@@ -167,39 +159,4 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.preview {
-    position: absolute;
-    bottom: 0;
-    z-index: 1000;
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* For momentum scroll on mobile devices */
-    scrollbar-width: none; /* For Firefox */
-}
-
-.file-drop-field {
-    position: relative; /* Needed to position the icon correctly */
-    /* Other styling for the field */
-}
-
-.drop-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(137, 134, 134, 0.83); /* Semi-transparent white */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000; /* Ensure it's above other content */
-    border: 2px dashed #0094ff; /* Example style */
-}
-
-.center audio {
-    height: 100%;
-    border-radius: 0;
 }

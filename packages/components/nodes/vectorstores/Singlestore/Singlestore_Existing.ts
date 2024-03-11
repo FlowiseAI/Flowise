@@ -1,7 +1,7 @@
-import { Embeddings } from '@langchain/core/embeddings'
-import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from '@langchain/community/vectorstores/singlestore'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Embeddings } from 'langchain/embeddings/base'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
 
 class SingleStoreExisting_VectorStores implements INode {
     label: string

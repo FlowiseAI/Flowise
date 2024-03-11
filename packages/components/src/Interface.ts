@@ -21,8 +21,6 @@ export type CommonType = string | number | boolean | undefined | null
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ImageDetail = 'auto' | 'low' | 'high'
-
 /**
  * Others
  */
@@ -148,39 +146,12 @@ export interface IUsedTool {
     toolOutput: string | object
 }
 
-export interface IFileUpload {
-    data?: string
-    type: string
-    name: string
-    mime: string
-}
-
-export interface IMultiModalOption {
-    image?: Record<string, any>
-    audio?: Record<string, any>
-}
-
-export type MessageContentText = {
-    type: 'text'
-    text: string
-}
-
-export type MessageContentImageUrl = {
-    type: 'image_url'
-    image_url:
-        | string
-        | {
-              url: string
-              detail?: ImageDetail
-          }
-}
-
 /**
  * Classes
  */
 
-import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
-import { VectorStore } from '@langchain/core/vectorstores'
+import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
+import { VectorStore } from 'langchain/vectorstores/base'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -232,7 +203,7 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage } from 'langchain/schema'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
@@ -269,15 +240,4 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
-}
-
-export interface IVisionChatModal {
-    id: string
-    configuredModel: string
-    configuredMaxToken: number
-    multiModalOption: IMultiModalOption
-
-    setVisionModel(): void
-    revertToOriginalModel(): void
-    setMultiModalOption(multiModalOption: IMultiModalOption): void
 }

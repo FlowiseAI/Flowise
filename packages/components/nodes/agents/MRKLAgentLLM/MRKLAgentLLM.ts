@@ -1,15 +1,10 @@
-import { flatten } from 'lodash'
-import { AgentExecutor } from 'langchain/agents'
-import { pull } from 'langchain/hub'
-import { Tool } from '@langchain/core/tools'
-import type { PromptTemplate } from '@langchain/core/prompts'
-import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { additionalCallbacks } from '../../../src/handler'
-import { getBaseClasses } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { createReactAgent } from '../../../src/agents'
-import { checkInputs, Moderation } from '../../moderation/Moderation'
-import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import { initializeAgentExecutorWithOptions, AgentExecutor } from 'langchain/agents'
+import { Tool } from 'langchain/tools'
+import { getBaseClasses } from '../../../src/utils'
+import { BaseLanguageModel } from 'langchain/base_language'
+import { flatten } from 'lodash'
+import { additionalCallbacks } from '../../../src/handler'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -25,7 +20,7 @@ class MRKLAgentLLM_Agents implements INode {
     constructor() {
         this.label = 'ReAct Agent for LLMs'
         this.name = 'mrklAgentLLM'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -42,57 +37,28 @@ class MRKLAgentLLM_Agents implements INode {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel'
-            },
-            {
-                label: 'Input Moderation',
-                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
-                name: 'inputModeration',
-                type: 'Moderation',
-                optional: true,
-                list: true
             }
         ]
     }
 
-    async init(): Promise<any> {
-        return null
-    }
-
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
+    async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
-        const moderations = nodeData.inputs?.inputModeration as Moderation[]
-
-        if (moderations && moderations.length > 0) {
-            try {
-                // Use the output of the moderation chain as input for the ReAct Agent for LLMs
-                input = await checkInputs(moderations, input)
-            } catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
-                return formatResponse(e.message)
-            }
-        }
-
         tools = flatten(tools)
 
-        const prompt = await pull<PromptTemplate>('hwchase17/react')
-
-        const agent = await createReactAgent({
-            llm: model,
-            tools,
-            prompt
-        })
-
-        const executor = new AgentExecutor({
-            agent,
-            tools,
+        const executor = await initializeAgentExecutorWithOptions(tools, model, {
+            agentType: 'zero-shot-react-description',
             verbose: process.env.DEBUG === 'true' ? true : false
         })
+        return executor
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+        const executor = nodeData.instance as AgentExecutor
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const result = await executor.invoke({ input }, { callbacks })
+        const result = await executor.call({ input }, [...callbacks])
 
         return result?.output
     }

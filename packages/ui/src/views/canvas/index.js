@@ -46,6 +46,7 @@ import useNotifier from 'utils/useNotifier'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from 'store/constant'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 
 const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
@@ -551,4 +552,4 @@ const Canvas = () => {
     )
 }
 
-export default Canvas
+export default withAuthenticationRequired(Canvas)

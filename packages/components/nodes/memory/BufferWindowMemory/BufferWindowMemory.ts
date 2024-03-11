@@ -1,7 +1,7 @@
 import { FlowiseWindowMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
 import { BufferWindowMemory, BufferWindowMemoryInput } from 'langchain/memory'
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage } from 'langchain/schema'
 
 class BufferWindowMemory_Memory implements INode {
     label: string

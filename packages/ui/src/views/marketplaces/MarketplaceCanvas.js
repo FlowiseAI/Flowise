@@ -10,6 +10,7 @@ import { Toolbar, Box, AppBar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 import MarketplaceCanvasNode from './MarketplaceCanvasNode'
 import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
 import StickyNote from '../canvas/StickyNote'
@@ -102,4 +103,4 @@ const MarketplaceCanvas = () => {
     )
 }
 
-export default MarketplaceCanvas
+export default withAuthenticationRequired(MarketplaceCanvas)

@@ -1,8 +1,9 @@
-import { ZepMemory, ZepMemoryInput } from '@langchain/community/memory/zep'
-import { BaseMessage } from '@langchain/core/messages'
-import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
-import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType, ICommonObject } from '../../../src/Interface'
+import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ZepMemory, ZepMemoryInput } from 'langchain/memory/zep'
+import { ICommonObject } from '../../../src'
+import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
+import { BaseMessage } from 'langchain/schema'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -17,7 +18,7 @@ class ZepMemory_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Zep Memory - Open Source'
+        this.label = 'Zep Memory'
         this.name = 'ZepMemory'
         this.version = 2.0
         this.type = 'ZepMemory'
@@ -97,11 +98,11 @@ class ZepMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return await initializeZep(nodeData, options)
+        return await initalizeZep(nodeData, options)
     }
 }
 
-const initializeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
+const initalizeZep = async (nodeData: INodeData, options: ICommonObject): Promise<ZepMemory> => {
     const baseURL = nodeData.inputs?.baseURL as string
     const aiPrefix = nodeData.inputs?.aiPrefix as string
     const humanPrefix = nodeData.inputs?.humanPrefix as string

@@ -9,6 +9,7 @@ import {
     Box,
     Stack,
     Badge,
+    Typography,
     Toolbar,
     TextField,
     InputAdornment,
@@ -40,6 +41,7 @@ import useApi from 'hooks/useApi'
 
 // const
 import { baseURL } from 'store/constant'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { MarketplaceTable } from '../../ui-component/table/MarketplaceTable'
@@ -87,6 +89,16 @@ const Marketplace = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
+    // const [isChatflowsLoading, setChatflowsLoading] = useState(true)
+    // const [isToolsLoading, setToolsLoading] = useState(true)
+    // const [images, setImages] = useState({})
+    // const tabItems = ['Chatflows', 'Tools']
+    // const [value, setValue] = useState(0)
+    // const [showToolDialog, setShowToolDialog] = useState(false)
+    // const [toolDialogProps, setToolDialogProps] = useState({})
+
+    // const getAllChatflowsMarketplacesApi = useApi(marketplacesApi.getAllChatflowsMarketplaces)
+    // const getAllToolsMarketplacesApi = useApi(marketplacesApi.getAllToolsMarketplaces)
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
 
@@ -131,7 +143,6 @@ const Marketplace = () => {
     }
 
     const handleViewChange = (event, nextView) => {
-        if (nextView === null) return
         localStorage.setItem('mpDisplayStyle', nextView)
         setView(nextView)
     }
@@ -186,6 +197,14 @@ const Marketplace = () => {
         navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
     }
 
+    // const handleChange = (event, newValue) => {
+    //     setValue(newValue)
+    // }
+
+    // // Request for getting data of chatflows and tools
+    // useEffect(() => {
+    //     getAllChatflowsMarketplacesApi.request()
+    //     getAllToolsMarketplacesApi.request()
     useEffect(() => {
         getAllTemplatesMarketplacesApi.request()
 
@@ -193,6 +212,27 @@ const Marketplace = () => {
     }, [])
 
     useEffect(() => {
+        //     setChatflowsLoading(getAllChatflowsMarketplacesApi.loading)
+        // }, [getAllChatflowsMarketplacesApi.loading])
+
+        // useEffect(() => {
+        //     setToolsLoading(getAllToolsMarketplacesApi.loading)
+        // }, [getAllToolsMarketplacesApi.loading])
+
+        // useEffect(() => {
+        //     if (getAllChatflowsMarketplacesApi.data) {
+        //         try {
+        //             const chatflows = getAllChatflowsMarketplacesApi.data
+        //             const images = {}
+        //             for (let i = 0; i < chatflows.length; i += 1) {
+        //                 const flowDataStr = chatflows[i].flowData
+        //                 const flowData = JSON.parse(flowDataStr)
+        //                 const nodes = flowData.nodes || []
+        //                 images[chatflows[i].id] = []
+        //                 for (let j = 0; j < nodes.length; j += 1) {
+        //                     const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+        //                     if (!images[chatflows[i].id].includes(imageSrc)) {
+        //                         images[chatflows[i].id].push(imageSrc)
         setLoading(getAllTemplatesMarketplacesApi.loading)
     }, [getAllTemplatesMarketplacesApi.loading])
 
@@ -221,6 +261,7 @@ const Marketplace = () => {
                 console.error(e)
             }
         }
+        // }, [getAllChatflowsMarketplacesApi.data])
     }, [getAllTemplatesMarketplacesApi.data])
 
     return (
@@ -238,7 +279,7 @@ const Marketplace = () => {
                             width: '100%'
                         }}
                     >
-                        <h1>Marketplace</h1>
+                        <Typography variant='h1'>Marketplace</Typography>
                         <TextField
                             size='small'
                             id='search-filter-textbox'
@@ -274,7 +315,8 @@ const Marketplace = () => {
                                     onChange={handleViewChange}
                                 >
                                     <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        // sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        sx={{ borderRadius: '0px' }}
                                         variant='contained'
                                         value='card'
                                         title='Card View'
@@ -282,7 +324,8 @@ const Marketplace = () => {
                                         <IconLayoutGrid />
                                     </ToggleButton>
                                     <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        // sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                        sx={{ borderRadius: '0px' }}
                                         variant='contained'
                                         value='list'
                                         title='List View'
@@ -453,4 +496,4 @@ const Marketplace = () => {
     )
 }
 
-export default Marketplace
+export default withAuthenticationRequired(Marketplace)

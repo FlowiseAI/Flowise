@@ -101,17 +101,12 @@ class IfElseFunction_Utilities implements INode {
 
         // Some values might be a stringified JSON, parse it
         for (const key in inputVars) {
-            let value = inputVars[key]
-            if (typeof value === 'string') {
-                value = handleEscapeCharacters(value, true)
-                if (value.startsWith('{') && value.endsWith('}')) {
-                    try {
-                        value = JSON.parse(value)
-                    } catch (e) {
-                        // ignore
-                    }
+            if (typeof inputVars[key] === 'string' && inputVars[key].startsWith('{') && inputVars[key].endsWith('}')) {
+                try {
+                    inputVars[key] = JSON.parse(inputVars[key])
+                } catch (e) {
+                    continue
                 }
-                inputVars[key] = value
             }
         }
 
@@ -121,7 +116,11 @@ class IfElseFunction_Utilities implements INode {
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
+                let value = inputVars[item]
+                if (typeof value === 'string') {
+                    value = handleEscapeCharacters(value, true)
+                }
+                sandbox[`$${item}`] = value
             }
         }
 
@@ -143,11 +142,10 @@ class IfElseFunction_Utilities implements INode {
         const vm = new NodeVM(nodeVMOptions)
         try {
             const responseTrue = await vm.run(`module.exports = async function() {${ifFunction}}()`, __dirname)
-            if (responseTrue)
-                return { output: typeof responseTrue === 'string' ? handleEscapeCharacters(responseTrue, false) : responseTrue, type: true }
+            if (responseTrue) return { output: responseTrue, type: true }
 
             const responseFalse = await vm.run(`module.exports = async function() {${elseFunction}}()`, __dirname)
-            return { output: typeof responseFalse === 'string' ? handleEscapeCharacters(responseFalse, false) : responseFalse, type: false }
+            return { output: responseFalse, type: false }
         } catch (e) {
             throw new Error(e)
         }

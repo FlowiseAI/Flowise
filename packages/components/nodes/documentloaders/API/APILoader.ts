@@ -1,8 +1,8 @@
-import axios, { AxiosRequestConfig } from 'axios'
-import { Document } from '@langchain/core/documents'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { Document } from 'langchain/document'
+import axios, { AxiosRequestConfig } from 'axios'
 
 class API_DocumentLoaders implements INode {
     label: string
