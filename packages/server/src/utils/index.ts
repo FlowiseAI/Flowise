@@ -300,7 +300,7 @@ export const buildFlow = async (
     }
 
     const initializedNodes: Set<string> = new Set()
-    const nonDirectedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
+    const reversedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
 
@@ -410,7 +410,7 @@ export const buildFlow = async (
             const neighNodeId = neighbourNodeIds[i]
             if (ignoreNodeIds.includes(neighNodeId)) continue
             if (initializedNodes.has(neighNodeId)) continue
-            if (nonDirectedGraph[neighNodeId].some((dependId) => !initializedNodes.has(dependId))) continue
+            if (reversedGraph[neighNodeId].some((dependId) => !initializedNodes.has(dependId))) continue
             // If nodeId has been seen, cycle detected
             if (Object.prototype.hasOwnProperty.call(exploredNode, neighNodeId)) {
                 const { remainingLoop, lastSeenDepth } = exploredNode[neighNodeId]
