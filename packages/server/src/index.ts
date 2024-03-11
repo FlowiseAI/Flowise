@@ -756,7 +756,7 @@ export class App {
             )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
             const totalMessages = chatmessages.length
 
-            const totalFeedback = chatmessages.filter((message) => !message?.feedback).length
+            const totalFeedback = chatmessages.filter((message) => message?.feedback).length
             const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length
 
             const results = {
