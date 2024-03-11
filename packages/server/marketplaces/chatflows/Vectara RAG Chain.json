@@ -15,7 +15,7 @@
             "data": {
                 "id": "vectaraQAChain_0",
                 "label": "Vectara QA Chain",
-                "version": 1,
+                "version": 2,
                 "name": "vectaraQAChain",
                 "type": "VectaraQAChain",
                 "baseClasses": ["VectaraQAChain", "BaseChain", "Runnable"],
@@ -189,9 +189,19 @@
                         "name": "vectaraStore",
                         "type": "VectorStore",
                         "id": "vectaraQAChain_0-input-vectaraStore-VectorStore"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "vectaraQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "vectaraStore": "{{vectara_1.data.instance}}",
                     "summarizerPromptName": "vectara-experimental-summary-ext-2023-10-23-small",
                     "responseLang": "eng",
