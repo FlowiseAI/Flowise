@@ -7,6 +7,8 @@ import { SqlDatabase } from 'langchain/sql_db'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
 
@@ -24,7 +26,7 @@ class SqlDatabaseChain_Chains implements INode {
     constructor() {
         this.label = 'Sql Database Chain'
         this.name = 'sqlDatabaseChain'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'SqlDatabaseChain'
         this.icon = 'sqlchain.svg'
         this.category = 'Chains'
@@ -115,6 +117,14 @@ class SqlDatabaseChain_Chains implements INode {
                 placeholder: DEFAULT_SQL_DATABASE_PROMPT.template + DEFAULT_SQL_DATABASE_PROMPT.templateFormat,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -144,7 +154,7 @@ class SqlDatabaseChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
         const url = nodeData.inputs?.url as string
@@ -155,6 +165,17 @@ class SqlDatabaseChain_Chains implements INode {
         const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
         const topK = nodeData.inputs?.topK as number
         const customPrompt = nodeData.inputs?.customPrompt as string
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Sql Database Chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         const chain = await getSQLDBChain(
             databaseType,
