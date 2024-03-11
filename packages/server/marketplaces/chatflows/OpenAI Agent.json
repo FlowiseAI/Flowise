@@ -208,7 +208,7 @@
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
                 "name": "openAIFunctionAgent",
-                "version": 3,
+                "version": 4,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -243,9 +243,19 @@
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIFunctionAgent_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"],
                     "memory": "{{bufferMemory_0.data.instance}}",
                     "model": "{{chatOpenAI_0.data.instance}}",

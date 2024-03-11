@@ -280,3 +280,13 @@ export type IndexingResult = {
     totalKeys: number
     addedDocs: Document[]
 }
+
+export interface IVisionChatModal {
+    id: string
+    configuredModel: string
+    configuredMaxToken: number
+    multiModalOption: IMultiModalOption
+    setVisionModel(): void
+    revertToOriginalModel(): void
+    setMultiModalOption(multiModalOption: IMultiModalOption): void
+}
