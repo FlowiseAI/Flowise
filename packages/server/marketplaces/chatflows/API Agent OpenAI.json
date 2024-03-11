@@ -15,7 +15,7 @@
             "data": {
                 "id": "openApiChain_1",
                 "label": "OpenAPI Chain",
-                "version": 1,
+                "version": 2,
                 "name": "openApiChain",
                 "type": "OpenAPIChain",
                 "baseClasses": ["OpenAPIChain", "BaseChain"],
@@ -53,9 +53,19 @@
                         "name": "model",
                         "type": "ChatOpenAI",
                         "id": "openApiChain_1-input-model-ChatOpenAI"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openApiChain_1-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_1.data.instance}}",
                     "yamlLink": "https://gist.githubusercontent.com/roaldnefs/053e505b2b7a807290908fe9aa3e1f00/raw/0a212622ebfef501163f91e23803552411ed00e4/openapi.yaml",
                     "headers": ""
@@ -399,7 +409,7 @@
                 "id": "openAIFunctionAgent_0",
                 "label": "OpenAI Function Agent",
                 "name": "openAIFunctionAgent",
-                "version": 3,
+                "version": 4,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -434,9 +444,19 @@
                         "name": "model",
                         "type": "BaseChatModel",
                         "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIFunctionAgent_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{chainTool_0.data.instance}}"],
                     "memory": "{{bufferMemory_0.data.instance}}",
                     "model": "{{chatOpenAI_2.data.instance}}",

@@ -1,5 +1,6 @@
 import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
+import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { LLMChain } from 'langchain/chains'
@@ -10,7 +11,6 @@ import { checkInputs, Moderation, streamResponse } from '../../moderation/Modera
 import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { addImagesToMessages } from '../../../src/multiModalUtils'
-import { HumanMessage } from 'langchain/schema'
 
 class LLMChain_Chains implements INode {
     label: string

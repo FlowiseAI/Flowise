@@ -352,7 +352,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     let langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
-                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
+                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+                        sdkIntegration: 'Flowise'
                     }
                     if (release) langFuseOptions.release = release
                     if (options.chatId) langFuseOptions.sessionId = options.chatId
@@ -431,6 +432,7 @@ export class AnalyticHandler {
                             secretKey: langFuseSecretKey,
                             publicKey: langFusePublicKey,
                             baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+                            sdkIntegration: 'Flowise',
                             release
                         })
                         this.handlers['langFuse'] = { client: langfuse }

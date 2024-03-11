@@ -7,9 +7,10 @@ import {
     ChatOpenAICallOptions
 } from '@langchain/openai'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { IMultiModalOption } from '../../../src'
-import { BaseMessageLike, LLMResult } from 'langchain/schema'
+import { BaseMessageLike } from '@langchain/core/messages'
 import { Callbacks } from '@langchain/core/callbacks/manager'
+import { LLMResult } from '@langchain/core/outputs'
+import { IMultiModalOption } from '../../../src'
 
 export class ChatOpenAI extends LangchainChatOpenAI {
     configuredModel: string

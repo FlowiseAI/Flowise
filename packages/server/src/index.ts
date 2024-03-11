@@ -1371,13 +1371,12 @@ export class App {
                 }
                 templates.push(template)
             })
-            const FlowiseDocsQnA = templates.find((tmp) => tmp.name === 'Flowise Docs QnA')
-            const FlowiseDocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'Flowise Docs QnA')
-            if (FlowiseDocsQnA && FlowiseDocsQnAIndex > 0) {
-                templates.splice(FlowiseDocsQnAIndex, 1)
-                templates.unshift(FlowiseDocsQnA)
+            const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
+            const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
+            if (FlowiseDocsQnAIndex > 0) {
+                sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
             }
-            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
+            return res.json(sortedTemplates)
         })
 
         // ----------------------------------------

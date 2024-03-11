@@ -1,9 +1,9 @@
 import { Bedrock } from '@langchain/community/llms/bedrock'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 
 /**
  * I had to run the following to build the component
