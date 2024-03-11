@@ -1443,13 +1443,12 @@ export class App {
                 }
                 templates.push(template)
             })
-            const FlowiseDocsQnA = templates.find((tmp) => tmp.name === 'Flowise Docs QnA')
-            const FlowiseDocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'Flowise Docs QnA')
-            if (FlowiseDocsQnA && FlowiseDocsQnAIndex > 0) {
-                templates.splice(FlowiseDocsQnAIndex, 1)
-                templates.unshift(FlowiseDocsQnA)
+            const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
+            const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
+            if (FlowiseDocsQnAIndex > 0) {
+                sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
             }
-            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
+            return res.json(sortedTemplates)
         })
 
         // ----------------------------------------
@@ -1606,7 +1605,7 @@ export class App {
         if (!chatflow) return `Chatflow ${chatflowid} not found`
 
         const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-        const uploadProcessingNodes = ['chatOpenAI']
+        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic']
 
         const flowObj = JSON.parse(chatflow.flowData)
         const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
@@ -1760,6 +1759,8 @@ export class App {
     async addChatMessage(chatMessage: Partial<IChatMessage>): Promise<ChatMessage> {
         const newChatMessage = new ChatMessage()
         Object.assign(newChatMessage, chatMessage)
+
+        if (!newChatMessage.createdDate) newChatMessage.createdDate = new Date()
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)

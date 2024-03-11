@@ -249,7 +249,7 @@
             "data": {
                 "id": "sqlDatabaseChain_0",
                 "label": "Sql Database Chain",
-                "version": 4,
+                "version": 5,
                 "name": "sqlDatabaseChain",
                 "type": "SqlDatabaseChain",
                 "baseClasses": ["SqlDatabaseChain", "BaseChain", "Runnable"],
@@ -347,9 +347,19 @@
                         "name": "model",
                         "type": "BaseLanguageModel",
                         "id": "sqlDatabaseChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "sqlDatabaseChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "database": "sqlite",
                     "url": "",
