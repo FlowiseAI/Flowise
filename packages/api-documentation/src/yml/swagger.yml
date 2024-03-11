@@ -64,6 +64,20 @@ paths:
         get:
             tags:
                 - apikey
+            summary: Get API keys
+            description: Multiple API keys values can be retrieved
+            operationId: listApiKey
+            responses:
+                '200':
+                  description: successful operation
+                  content:
+                    application/json:
+                      schema:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/apiKey'
+                '400':
+                  description: Invalid status value
         put:
             tags:
                 - apikey
@@ -287,13 +301,24 @@ components:
             description: Description for what api key is used for
             type: object
             properties:
-                id:
-                    type: integer
-                    format: int64
-                    example: 10
-                name:
+                apiKey:
                     type: string
-                    example: doggie
+                    example: "vYV8OdUMRzRQbzpp2JzY5DvriBnuVHo3pYpPQ7IJWyw="
+                apiSecret:
+                    type: string
+                    example: "50e19a35ee1df775c09628dade1c00f0f680c6e15256e34a6eab350b38b31352df35c4db7925a3e5dd41cc773a0e2529e6c6da18408a8bbeeb0ae4b0f0ab9486.a96478a9225ed6ab"
+                chatFlows:
+                    type: array
+                    example: []
+                createdAt:
+                    type: string
+                    example: "10-Mar-24"
+                id:
+                    type: string
+                    example: "525e4daa2104f06ffdea5c1af37009be"
+                keyName:
+                    type: string
+                    example: "someKeyName"
         Chatflow:
             description: Retrieval for all chatflows associated to a user id have succeded
             type: object
