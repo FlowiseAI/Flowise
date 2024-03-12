@@ -52,7 +52,7 @@
             "data": {
                 "id": "mrklAgentChat_0",
                 "label": "ReAct Agent for Chat Models",
-                "version": 3,
+                "version": 4,
                 "name": "mrklAgentChat",
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
@@ -78,9 +78,19 @@
                         "name": "memory",
                         "type": "BaseChatMemory",
                         "id": "mrklAgentChat_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "mrklAgentChat_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{calculator_1.data.instance}}", "{{serper_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "memory": "{{RedisBackedChatMemory_0.data.instance}}"

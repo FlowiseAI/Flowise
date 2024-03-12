@@ -251,7 +251,7 @@
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
-                "version": 2,
+                "version": 3,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
@@ -310,9 +310,19 @@
                         "optional": true,
                         "description": "If left empty, a default BufferMemory will be used",
                         "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
                     "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
