@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import SpeechToText from './SpeechToText'
@@ -69,6 +70,18 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const [tabValue, setTabValue] = useState(0)
 
+    const canvas = useSelector((state) => state.canvas)
+    const [canvasDataStore, setCanvasDataStore] = useState(canvas)
+    const [chatflow, setChatflow] = useState(null)
+
+    useEffect(() => {
+        setCanvasDataStore(canvas)
+    }, [canvas])
+
+    useEffect(() => {
+        setChatflow(canvasDataStore.chatflow)
+    }, [canvasDataStore.chatflow])
+
     const component = show ? (
         <Dialog
             onClose={onCancel}
@@ -100,11 +113,11 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <Configuration />}
-                        {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
-                        {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
-                        {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
-                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
-                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
+                        {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={{ chatflow }} /> : null}
+                        {item.id === 'speechToText' ? <SpeechToText dialogProps={{ chatflow }} /> : null}
+                        {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={{ chatflow }} /> : null}
+                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={{ chatflow }} /> : null}
+                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={{ chatflow }} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
