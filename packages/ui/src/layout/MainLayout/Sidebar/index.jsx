@@ -21,7 +21,12 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
 
     const drawer = (
         <>
-            <Box sx={{ display: { xs: 'block', md: 'none' }, height: '80px' }}>
+            <Box
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    height: '80px'
+                }}
+            >
                 <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                     <LogoSection />
                 </Box>
@@ -49,7 +54,14 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     const container = window !== undefined ? () => window.document.body : undefined
 
     return (
-        <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label='mailbox folders'>
+        <Box
+            component='nav'
+            sx={{
+                flexShrink: { md: 0 },
+                width: matchUpMd ? drawerWidth : 'auto'
+            }}
+            aria-label='mailbox folders'
+        >
             <Drawer
                 container={container}
                 variant={matchUpMd ? 'persistent' : 'temporary'}
@@ -61,11 +73,11 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                         width: drawerWidth,
                         background: theme.palette.background.default,
                         color: theme.palette.text.primary,
-                        borderRight: 'none',
                         [theme.breakpoints.up('md')]: {
                             top: `${headerHeight}px`
                         },
-                        paddingTop: '20px'
+                        borderRight: drawerOpen ? '1px solid' : 'none',
+                        borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent'
                     }
                 }}
                 ModalProps={{ keepMounted: true }}

@@ -19,7 +19,8 @@ import {
     Toolbar,
     TextField,
     InputAdornment,
-    ButtonGroup
+    ButtonGroup,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -190,21 +191,27 @@ const Credentials = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
+            <MainCard>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <Box sx={{ flexGrow: 1 }}>
                         <Toolbar
                             disableGutters={true}
-                            style={{
-                                margin: 1,
-                                padding: 1,
-                                paddingBottom: 10,
+                            sx={{
+                                p: 0,
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 width: '100%'
                             }}
                         >
-                            <h1>Credentials&nbsp;</h1>
+                            <Typography
+                                sx={{
+                                    fontSize: '2rem',
+                                    fontWeight: 600
+                                }}
+                                variant='h1'
+                            >
+                                Credentials
+                            </Typography>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -226,7 +233,7 @@ const Credentials = () => {
                                 variant='contained'
                                 aria-label='outlined primary button group'
                             >
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
                                         sx={{ color: 'white', mr: 1, height: 37 }}
@@ -239,82 +246,82 @@ const Credentials = () => {
                             </ButtonGroup>
                         </Toolbar>
                     </Box>
-                </Stack>
-                {credentials.length <= 0 && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img
-                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={CredentialEmptySVG}
-                                alt='CredentialEmptySVG'
-                            />
-                        </Box>
-                        <div>No Credentials Yet</div>
-                    </Stack>
-                )}
-                {credentials.length > 0 && (
-                    <TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Last Updated</TableCell>
-                                    <TableCell>Created</TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {credentials.filter(filterCredentials).map((credential, index) => (
-                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell component='th' scope='row'>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center'
-                                                }}
-                                            >
+                    {credentials.length <= 0 && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img
+                                    style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
+                                    src={CredentialEmptySVG}
+                                    alt='CredentialEmptySVG'
+                                />
+                            </Box>
+                            <div>No Credentials Yet</div>
+                        </Stack>
+                    )}
+                    {credentials.length > 0 && (
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Last Updated</TableCell>
+                                        <TableCell>Created</TableCell>
+                                        <TableCell> </TableCell>
+                                        <TableCell> </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {credentials.filter(filterCredentials).map((credential, index) => (
+                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell component='th' scope='row'>
                                                 <div
                                                     style={{
-                                                        width: 25,
-                                                        height: 25,
-                                                        marginRight: 10,
-                                                        borderRadius: '50%'
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center'
                                                     }}
                                                 >
-                                                    <img
+                                                    <div
                                                         style={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            borderRadius: '50%',
-                                                            objectFit: 'contain'
+                                                            width: 25,
+                                                            height: 25,
+                                                            marginRight: 10,
+                                                            borderRadius: '50%'
                                                         }}
-                                                        alt={credential.credentialName}
-                                                        src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
-                                                    />
+                                                    >
+                                                        <img
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                borderRadius: '50%',
+                                                                objectFit: 'contain'
+                                                            }}
+                                                            alt={credential.credentialName}
+                                                            src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
+                                                        />
+                                                    </div>
+                                                    {credential.name}
                                                 </div>
-                                                {credential.name}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{moment(credential.updatedDate).format('DD-MMM-YY')}</TableCell>
-                                        <TableCell>{moment(credential.createdDate).format('DD-MMM-YY')}</TableCell>
-                                        <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
-                                                <IconEdit />
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteCredential(credential)}>
-                                                <IconTrash />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                )}
+                                            </TableCell>
+                                            <TableCell>{moment(credential.updatedDate).format('DD-MMM-YY')}</TableCell>
+                                            <TableCell>{moment(credential.createdDate).format('DD-MMM-YY')}</TableCell>
+                                            <TableCell>
+                                                <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
+                                                    <IconEdit />
+                                                </IconButton>
+                                            </TableCell>
+                                            <TableCell>
+                                                <IconButton title='Delete' color='error' onClick={() => deleteCredential(credential)}>
+                                                    <IconTrash />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Stack>
             </MainCard>
             <CredentialListDialog
                 show={showCredentialListDialog}

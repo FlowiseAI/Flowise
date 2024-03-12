@@ -20,7 +20,8 @@ import {
     OutlinedInput,
     Checkbox,
     ListItemText,
-    Button
+    Button,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconChevronsDown, IconChevronsUp, IconLayoutGrid, IconList, IconSearch } from '@tabler/icons'
@@ -224,224 +225,237 @@ const Marketplace = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Box sx={{ flexGrow: 1 }}>
-                    <Toolbar
-                        disableGutters={true}
-                        style={{
-                            margin: 1,
-                            padding: 1,
-                            paddingBottom: 10,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%'
-                        }}
-                    >
-                        <h1>Marketplace</h1>
-                        <TextField
-                            size='small'
-                            id='search-filter-textbox'
-                            sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                            variant='outlined'
-                            fullWidth='true'
-                            placeholder='Search name or description or node name'
-                            onChange={onSearchChange}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position='start'>
-                                        <IconSearch />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        <Button
-                            sx={{ width: '220px', ml: 3, mr: 5 }}
-                            variant='outlined'
-                            onClick={() => setOpen(!open)}
-                            startIcon={open ? <IconChevronsUp /> : <IconChevronsDown />}
-                        >
-                            {open ? 'Hide Filters' : 'Show Filters'}
-                        </Button>
-                        <Box sx={{ flexGrow: 1 }} />
-                        <ButtonGroup sx={{ maxHeight: 40 }} disableElevation variant='contained' aria-label='outlined primary button group'>
-                            <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                <ToggleButtonGroup
-                                    sx={{ maxHeight: 40 }}
-                                    value={view}
-                                    color='primary'
-                                    exclusive
-                                    onChange={handleViewChange}
-                                >
-                                    <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                        variant='contained'
-                                        value='card'
-                                        title='Card View'
-                                    >
-                                        <IconLayoutGrid />
-                                    </ToggleButton>
-                                    <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                        variant='contained'
-                                        value='list'
-                                        title='List View'
-                                    >
-                                        <IconList />
-                                    </ToggleButton>
-                                </ToggleButtonGroup>
-                            </ButtonGroup>
-                        </ButtonGroup>
-                    </Toolbar>
-                </Box>
-                {open && (
-                    <Box sx={{ flexGrow: 1, mb: 2 }}>
+            <MainCard>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <Box sx={{ flexGrow: 1 }}>
                         <Toolbar
                             disableGutters={true}
-                            style={{
-                                margin: 1,
-                                padding: 1,
-                                paddingBottom: 10,
+                            sx={{
+                                p: 0,
                                 display: 'flex',
-                                justifyContent: 'flex-start',
-                                width: '100%',
-                                borderBottom: '1px solid'
+                                justifyContent: 'space-between',
+                                width: '100%'
                             }}
                         >
-                            <FormControl sx={{ m: 1, width: 250 }}>
-                                <InputLabel size='small' id='filter-badge-label'>
-                                    Tag
-                                </InputLabel>
-                                <Select
-                                    labelId='filter-badge-label'
-                                    id='filter-badge-checkbox'
-                                    size='small'
-                                    multiple
-                                    value={badgeFilter}
-                                    onChange={handleBadgeFilterChange}
-                                    input={<OutlinedInput label='Badge' />}
-                                    renderValue={(selected) => selected.join(', ')}
-                                    MenuProps={MenuProps}
-                                >
-                                    {badges.map((name) => (
-                                        <MenuItem key={name} value={name}>
-                                            <Checkbox checked={badgeFilter.indexOf(name) > -1} />
-                                            <ListItemText primary={name} />
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: 250 }}>
-                                <InputLabel size='small' id='type-badge-label'>
-                                    Type
-                                </InputLabel>
-                                <Select
-                                    size='small'
-                                    labelId='type-badge-label'
-                                    id='type-badge-checkbox'
-                                    multiple
-                                    value={typeFilter}
-                                    onChange={handleTypeFilterChange}
-                                    input={<OutlinedInput label='Badge' />}
-                                    renderValue={(selected) => selected.join(', ')}
-                                    MenuProps={MenuProps}
-                                >
-                                    {types.map((name) => (
-                                        <MenuItem key={name} value={name}>
-                                            <Checkbox checked={typeFilter.indexOf(name) > -1} />
-                                            <ListItemText primary={name} />
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: 250 }}>
-                                <InputLabel size='small' id='type-fw-label'>
-                                    Framework
-                                </InputLabel>
-                                <Select
-                                    size='small'
-                                    labelId='type-fw-label'
-                                    id='type-fw-checkbox'
-                                    multiple
-                                    value={frameworkFilter}
-                                    onChange={handleFrameworkFilterChange}
-                                    input={<OutlinedInput label='Badge' />}
-                                    renderValue={(selected) => selected.join(', ')}
-                                    MenuProps={MenuProps}
-                                >
-                                    {framework.map((name) => (
-                                        <MenuItem key={name} value={name}>
-                                            <Checkbox checked={frameworkFilter.indexOf(name) > -1} />
-                                            <ListItemText primary={name} />
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <Typography
+                                sx={{
+                                    fontSize: '2rem',
+                                    fontWeight: 600
+                                }}
+                                variant='h1'
+                            >
+                                Marketplace
+                            </Typography>
+                            <TextField
+                                size='small'
+                                id='search-filter-textbox'
+                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
+                                variant='outlined'
+                                fullWidth='true'
+                                placeholder='Search name or description or node name'
+                                onChange={onSearchChange}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <IconSearch />
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                            <Button
+                                sx={{ width: '220px', ml: 3, mr: 5 }}
+                                variant='outlined'
+                                onClick={() => setOpen(!open)}
+                                startIcon={open ? <IconChevronsUp /> : <IconChevronsDown />}
+                            >
+                                {open ? 'Hide Filters' : 'Show Filters'}
+                            </Button>
+                            <Box sx={{ flexGrow: 1 }} />
+                            <ButtonGroup
+                                sx={{ maxHeight: 40 }}
+                                disableElevation
+                                variant='contained'
+                                aria-label='outlined primary button group'
+                            >
+                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                                    <ToggleButtonGroup
+                                        sx={{ maxHeight: 40 }}
+                                        value={view}
+                                        color='primary'
+                                        exclusive
+                                        onChange={handleViewChange}
+                                    >
+                                        <ToggleButton
+                                            sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                            variant='contained'
+                                            value='card'
+                                            title='Card View'
+                                        >
+                                            <IconLayoutGrid />
+                                        </ToggleButton>
+                                        <ToggleButton
+                                            sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                            variant='contained'
+                                            value='list'
+                                            title='List View'
+                                        >
+                                            <IconList />
+                                        </ToggleButton>
+                                    </ToggleButtonGroup>
+                                </ButtonGroup>
+                            </ButtonGroup>
                         </Toolbar>
                     </Box>
-                )}
-
-                {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (
-                    <>
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            {getAllTemplatesMarketplacesApi.data
-                                .filter(filterByBadge)
-                                .filter(filterByType)
-                                .filter(filterFlows)
-                                .filter(filterByFramework)
-                                .map((data, index) => (
-                                    <Box key={index}>
-                                        {data.badge && (
-                                            <Badge
-                                                sx={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    '& .MuiBadge-badge': {
-                                                        right: 20
-                                                    }
-                                                }}
-                                                badgeContent={data.badge}
-                                                color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                            >
-                                                {data.type === 'Chatflow' && (
-                                                    <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                                )}
-                                                {data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
-                                            </Badge>
-                                        )}
-                                        {!data.badge && data.type === 'Chatflow' && (
-                                            <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                        )}
-                                        {!data.badge && data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
-                                    </Box>
-                                ))}
+                    {open && (
+                        <Box sx={{ flexGrow: 1, mb: 2 }}>
+                            <Toolbar
+                                disableGutters={true}
+                                style={{
+                                    margin: 1,
+                                    padding: 1,
+                                    paddingBottom: 10,
+                                    display: 'flex',
+                                    justifyContent: 'flex-start',
+                                    width: '100%',
+                                    borderBottom: '1px solid'
+                                }}
+                            >
+                                <FormControl sx={{ m: 1, width: 250 }}>
+                                    <InputLabel size='small' id='filter-badge-label'>
+                                        Tag
+                                    </InputLabel>
+                                    <Select
+                                        labelId='filter-badge-label'
+                                        id='filter-badge-checkbox'
+                                        size='small'
+                                        multiple
+                                        value={badgeFilter}
+                                        onChange={handleBadgeFilterChange}
+                                        input={<OutlinedInput label='Badge' />}
+                                        renderValue={(selected) => selected.join(', ')}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {badges.map((name) => (
+                                            <MenuItem key={name} value={name}>
+                                                <Checkbox checked={badgeFilter.indexOf(name) > -1} />
+                                                <ListItemText primary={name} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl sx={{ m: 1, width: 250 }}>
+                                    <InputLabel size='small' id='type-badge-label'>
+                                        Type
+                                    </InputLabel>
+                                    <Select
+                                        size='small'
+                                        labelId='type-badge-label'
+                                        id='type-badge-checkbox'
+                                        multiple
+                                        value={typeFilter}
+                                        onChange={handleTypeFilterChange}
+                                        input={<OutlinedInput label='Badge' />}
+                                        renderValue={(selected) => selected.join(', ')}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {types.map((name) => (
+                                            <MenuItem key={name} value={name}>
+                                                <Checkbox checked={typeFilter.indexOf(name) > -1} />
+                                                <ListItemText primary={name} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl sx={{ m: 1, width: 250 }}>
+                                    <InputLabel size='small' id='type-fw-label'>
+                                        Framework
+                                    </InputLabel>
+                                    <Select
+                                        size='small'
+                                        labelId='type-fw-label'
+                                        id='type-fw-checkbox'
+                                        multiple
+                                        value={frameworkFilter}
+                                        onChange={handleFrameworkFilterChange}
+                                        input={<OutlinedInput label='Badge' />}
+                                        renderValue={(selected) => selected.join(', ')}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {framework.map((name) => (
+                                            <MenuItem key={name} value={name}>
+                                                <Checkbox checked={frameworkFilter.indexOf(name) > -1} />
+                                                <ListItemText primary={name} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Toolbar>
                         </Box>
-                    </>
-                )}
-                {!isLoading && view === 'list' && getAllTemplatesMarketplacesApi.data && (
-                    <MarketplaceTable
-                        sx={{ mt: 20 }}
-                        data={getAllTemplatesMarketplacesApi.data}
-                        filterFunction={filterFlows}
-                        filterByType={filterByType}
-                        filterByBadge={filterByBadge}
-                        filterByFramework={filterByFramework}
-                        goToTool={goToTool}
-                        goToCanvas={goToCanvas}
-                    />
-                )}
+                    )}
 
-                {!isLoading && (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img
-                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={WorkflowEmptySVG}
-                                alt='WorkflowEmptySVG'
-                            />
-                        </Box>
-                        <div>No Marketplace Yet</div>
-                    </Stack>
-                )}
+                    {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (
+                        <>
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {getAllTemplatesMarketplacesApi.data
+                                    .filter(filterByBadge)
+                                    .filter(filterByType)
+                                    .filter(filterFlows)
+                                    .filter(filterByFramework)
+                                    .map((data, index) => (
+                                        <Box key={index}>
+                                            {data.badge && (
+                                                <Badge
+                                                    sx={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        '& .MuiBadge-badge': {
+                                                            right: 20
+                                                        }
+                                                    }}
+                                                    badgeContent={data.badge}
+                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                >
+                                                    {data.type === 'Chatflow' && (
+                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                    )}
+                                                    {data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
+                                                </Badge>
+                                            )}
+                                            {!data.badge && data.type === 'Chatflow' && (
+                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                            )}
+                                            {!data.badge && data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
+                                        </Box>
+                                    ))}
+                            </Box>
+                        </>
+                    )}
+                    {!isLoading && view === 'list' && getAllTemplatesMarketplacesApi.data && (
+                        <MarketplaceTable
+                            sx={{ mt: 20 }}
+                            data={getAllTemplatesMarketplacesApi.data}
+                            filterFunction={filterFlows}
+                            filterByType={filterByType}
+                            filterByBadge={filterByBadge}
+                            filterByFramework={filterByFramework}
+                            goToTool={goToTool}
+                            goToCanvas={goToCanvas}
+                        />
+                    )}
+
+                    {!isLoading && (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img
+                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                    src={WorkflowEmptySVG}
+                                    alt='WorkflowEmptySVG'
+                                />
+                            </Box>
+                            <div>No Marketplace Yet</div>
+                        </Stack>
+                    )}
+                </Stack>
             </MainCard>
             <ToolDialog
                 show={showToolDialog}

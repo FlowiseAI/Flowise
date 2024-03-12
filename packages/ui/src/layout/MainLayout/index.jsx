@@ -16,6 +16,7 @@ import { SET_MENU } from '@/store/actions'
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
     ...theme.typography.mainContent,
     ...(!open && {
+        backgroundColor: 'transparent',
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         transition: theme.transitions.create('all', {
@@ -40,6 +41,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         }
     }),
     ...(open && {
+        backgroundColor: 'transparent',
         transition: theme.transitions.create('all', {
             easing: theme.transitions.easing.easeOut,
             duration: theme.transitions.duration.enteringScreen
@@ -84,7 +86,7 @@ const MainLayout = () => {
                     transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
                 }}
             >
-                <Toolbar sx={{ height: `${headerHeight}px` }}>
+                <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.primary[200] + 75 }}>
                     <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
                 </Toolbar>
             </AppBar>

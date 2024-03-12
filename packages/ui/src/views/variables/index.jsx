@@ -20,7 +20,8 @@ import {
     TextField,
     InputAdornment,
     ButtonGroup,
-    Chip
+    Chip,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -162,142 +163,152 @@ const Variables = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            style={{
-                                margin: 1,
-                                padding: 1,
-                                paddingBottom: 10,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
-                        >
-                            <h1>Variables&nbsp;</h1>
-                            <TextField
-                                size='small'
-                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                                variant='outlined'
-                                placeholder='Search variable name'
-                                onChange={onSearchChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <IconSearch />
-                                        </InputAdornment>
-                                    )
+            <MainCard>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <Stack flexDirection='row'>
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Toolbar
+                                disableGutters={true}
+                                sx={{
+                                    p: 0,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    width: '100%'
                                 }}
-                            />
-                            <Box sx={{ flexGrow: 1 }} />
-                            <Button variant='outlined' sx={{ mr: 2 }} onClick={() => setShowHowToDialog(true)}>
-                                How To Use
-                            </Button>
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
                             >
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                    <StyledButton
-                                        variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
-                                        onClick={addNew}
-                                        startIcon={<IconPlus />}
-                                    >
-                                        Add Variable
-                                    </StyledButton>
+                                <Typography
+                                    sx={{
+                                        fontSize: '2rem',
+                                        fontWeight: 600
+                                    }}
+                                    variant='h1'
+                                >
+                                    Variables
+                                </Typography>
+                                <TextField
+                                    size='small'
+                                    sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
+                                    variant='outlined'
+                                    placeholder='Search variable name'
+                                    onChange={onSearchChange}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position='start'>
+                                                <IconSearch />
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                />
+                                <Box sx={{ flexGrow: 1 }} />
+                                <ButtonGroup
+                                    sx={{ maxHeight: 40 }}
+                                    disableElevation
+                                    variant='contained'
+                                    aria-label='outlined primary button group'
+                                >
+                                    <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                                        <Button variant='outlined' sx={{ mr: 2 }} onClick={() => setShowHowToDialog(true)}>
+                                            How To Use
+                                        </Button>
+                                    </ButtonGroup>
+                                    <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                                        <StyledButton
+                                            variant='contained'
+                                            sx={{ color: 'white', mr: 1, height: 37 }}
+                                            onClick={addNew}
+                                            startIcon={<IconPlus />}
+                                        >
+                                            Add Variable
+                                        </StyledButton>
+                                    </ButtonGroup>
                                 </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
-                </Stack>
-                {variables.length === 0 && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img
-                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={VariablesEmptySVG}
-                                alt='VariablesEmptySVG'
-                            />
+                            </Toolbar>
                         </Box>
-                        <div>No Variables Yet</div>
                     </Stack>
-                )}
-                {variables.length > 0 && (
-                    <TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Value</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Last Updated</TableCell>
-                                    <TableCell>Created</TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {variables.filter(filterVariables).map((variable, index) => (
-                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell component='th' scope='row'>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center'
-                                                }}
-                                            >
+                    {variables.length === 0 && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img
+                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                    src={VariablesEmptySVG}
+                                    alt='VariablesEmptySVG'
+                                />
+                            </Box>
+                            <div>No Variables Yet</div>
+                        </Stack>
+                    )}
+                    {variables.length > 0 && (
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Value</TableCell>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Last Updated</TableCell>
+                                        <TableCell>Created</TableCell>
+                                        <TableCell> </TableCell>
+                                        <TableCell> </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {variables.filter(filterVariables).map((variable, index) => (
+                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell component='th' scope='row'>
                                                 <div
                                                     style={{
-                                                        width: 25,
-                                                        height: 25,
-                                                        marginRight: 10,
-                                                        borderRadius: '50%'
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center'
                                                     }}
                                                 >
-                                                    <IconVariable
+                                                    <div
                                                         style={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            borderRadius: '50%',
-                                                            objectFit: 'contain'
+                                                            width: 25,
+                                                            height: 25,
+                                                            marginRight: 10,
+                                                            borderRadius: '50%'
                                                         }}
-                                                    />
+                                                    >
+                                                        <IconVariable
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                borderRadius: '50%',
+                                                                objectFit: 'contain'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    {variable.name}
                                                 </div>
-                                                {variable.name}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{variable.value}</TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                color={variable.type === 'static' ? 'info' : 'secondary'}
-                                                size='small'
-                                                label={variable.type}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{moment(variable.updatedDate).format('DD-MMM-YY')}</TableCell>
-                                        <TableCell>{moment(variable.createdDate).format('DD-MMM-YY')}</TableCell>
-                                        <TableCell>
-                                            <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
-                                                <IconEdit />
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
-                                                <IconTrash />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                )}
+                                            </TableCell>
+                                            <TableCell>{variable.value}</TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    color={variable.type === 'static' ? 'info' : 'secondary'}
+                                                    size='small'
+                                                    label={variable.type}
+                                                />
+                                            </TableCell>
+                                            <TableCell>{moment(variable.updatedDate).format('DD-MMM-YY')}</TableCell>
+                                            <TableCell>{moment(variable.createdDate).format('DD-MMM-YY')}</TableCell>
+                                            <TableCell>
+                                                <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                                    <IconEdit />
+                                                </IconButton>
+                                            </TableCell>
+                                            <TableCell>
+                                                <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
+                                                    <IconTrash />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Stack>
             </MainCard>
             <AddEditVariableDialog
                 show={showVariableDialog}

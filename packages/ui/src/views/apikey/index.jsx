@@ -321,21 +321,27 @@ const APIKey = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
+            <MainCard>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <Box sx={{ flexGrow: 1 }}>
                         <Toolbar
                             disableGutters={true}
-                            style={{
-                                margin: 1,
-                                padding: 1,
-                                paddingBottom: 10,
+                            sx={{
+                                p: 0,
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 width: '100%'
                             }}
                         >
-                            <h1>API Keys&nbsp;</h1>
+                            <Typography
+                                sx={{
+                                    fontSize: '2rem',
+                                    fontWeight: 600
+                                }}
+                                variant='h1'
+                            >
+                                API Keys
+                            </Typography>
                             <TextField
                                 size='small'
                                 sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -357,7 +363,7 @@ const APIKey = () => {
                                 variant='contained'
                                 aria-label='outlined primary button group'
                             >
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
                                     <StyledButton
                                         variant='contained'
                                         sx={{ color: 'white', mr: 1, height: 37 }}
@@ -370,54 +376,54 @@ const APIKey = () => {
                             </ButtonGroup>
                         </Toolbar>
                     </Box>
+                    {apiKeys.length <= 0 && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
+                            </Box>
+                            <div>No API Keys Yet</div>
+                        </Stack>
+                    )}
+                    {apiKeys.length > 0 && (
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Key Name</TableCell>
+                                        <TableCell>API Key</TableCell>
+                                        <TableCell>Usage</TableCell>
+                                        <TableCell>Created</TableCell>
+                                        <TableCell> </TableCell>
+                                        <TableCell> </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {apiKeys.filter(filterKeys).map((key, index) => (
+                                        <APIKeyRow
+                                            key={index}
+                                            apiKey={key}
+                                            showApiKeys={showApiKeys}
+                                            onCopyClick={(event) => {
+                                                navigator.clipboard.writeText(key.apiKey)
+                                                setAnchorEl(event.currentTarget)
+                                                setTimeout(() => {
+                                                    handleClosePopOver()
+                                                }, 1500)
+                                            }}
+                                            onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
+                                            open={openPopOver}
+                                            anchorEl={anchorEl}
+                                            onClose={handleClosePopOver}
+                                            theme={theme}
+                                            onEditClick={() => edit(key)}
+                                            onDeleteClick={() => deleteKey(key)}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
                 </Stack>
-                {apiKeys.length <= 0 && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
-                        </Box>
-                        <div>No API Keys Yet</div>
-                    </Stack>
-                )}
-                {apiKeys.length > 0 && (
-                    <TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Key Name</TableCell>
-                                    <TableCell>API Key</TableCell>
-                                    <TableCell>Usage</TableCell>
-                                    <TableCell>Created</TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {apiKeys.filter(filterKeys).map((key, index) => (
-                                    <APIKeyRow
-                                        key={index}
-                                        apiKey={key}
-                                        showApiKeys={showApiKeys}
-                                        onCopyClick={(event) => {
-                                            navigator.clipboard.writeText(key.apiKey)
-                                            setAnchorEl(event.currentTarget)
-                                            setTimeout(() => {
-                                                handleClosePopOver()
-                                            }, 1500)
-                                        }}
-                                        onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
-                                        open={openPopOver}
-                                        anchorEl={anchorEl}
-                                        onClose={handleClosePopOver}
-                                        theme={theme}
-                                        onEditClick={() => edit(key)}
-                                        onDeleteClick={() => deleteKey(key)}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                )}
             </MainCard>
             <APIKeyDialog
                 show={showDialog}

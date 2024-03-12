@@ -20,7 +20,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
     },
     height: '100%',
-    minHeight: '200px',
+    minHeight: '160px',
     maxHeight: '300px',
     width: '100%',
     overflowWrap: 'break-word',
@@ -37,8 +37,8 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
             ) : (
                 <CardWrapper border={false} content={false} onClick={onClick}>
                     <Box sx={{ height: '100%', p: 2.25 }}>
-                        <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%' }}>
-                            <Box display='flex' flexDirection='column' gap={1}>
+                        <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
+                            <Box display='flex' flexDirection='column'>
                                 <div
                                     style={{
                                         display: 'flex',
@@ -72,7 +72,7 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                         ></div>
                                     )}
                                     <Typography
-                                        sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                        sx={{ fontSize: '1.25rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
                                     >
                                         {data.templateName || data.name}
                                     </Typography>

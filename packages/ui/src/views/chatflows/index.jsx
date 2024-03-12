@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
+import { Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -124,21 +124,27 @@ const Chatflows = () => {
     }, [getAllChatflowsApi.data])
 
     return (
-        <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-            <Stack flexDirection='column'>
+        <MainCard>
+            <Stack flexDirection='column' sx={{ gap: 3 }}>
                 <Box sx={{ flexGrow: 1 }}>
                     <Toolbar
                         disableGutters={true}
-                        style={{
-                            margin: 1,
-                            padding: 1,
-                            paddingBottom: 10,
+                        sx={{
+                            p: 0,
                             display: 'flex',
                             justifyContent: 'space-between',
                             width: '100%'
                         }}
                     >
-                        <h1>Chatflows</h1>
+                        <Typography
+                            sx={{
+                                fontSize: '2rem',
+                                fontWeight: 600
+                            }}
+                            variant='h1'
+                        >
+                            Chatflows
+                        </Typography>
                         <TextField
                             size='small'
                             sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
@@ -185,7 +191,7 @@ const Chatflows = () => {
                     </Toolbar>
                 </Box>
                 {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
-                    <Box display='grid' gridTemplateColumns='repeat(4, 1fr)' gap={gridSpacing}>
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                         {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (
                             <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                         ))}
@@ -205,7 +211,7 @@ const Chatflows = () => {
             {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
                 <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                     <Box sx={{ p: 2, height: 'auto' }}>
-                        <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
+                        <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
                     </Box>
                     <div>No Chatflows Yet</div>
                 </Stack>
