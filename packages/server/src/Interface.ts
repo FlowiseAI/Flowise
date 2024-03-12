@@ -6,6 +6,11 @@ export enum chatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
 }
+
+export enum ChatMessageRatingType {
+    THUMBS_UP = 'THUMBS_UP',
+    THUMBS_DOWN = 'THUMBS_DOWN'
+}
 /**
  * Databases
  */
@@ -36,6 +41,16 @@ export interface IChatMessage {
     chatId: string
     memoryType?: string
     sessionId?: string
+    createdDate: Date
+}
+
+export interface IChatMessageFeedback {
+    id: string
+    content?: string
+    chatflowid: string
+    chatId: string
+    messageId: string
+    rating: ChatMessageRatingType
     createdDate: Date
 }
 

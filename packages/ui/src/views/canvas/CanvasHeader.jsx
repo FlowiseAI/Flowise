@@ -18,6 +18,7 @@ import AnalyseFlowDialog from '@/ui-component/dialog/AnalyseFlowDialog'
 import ViewMessagesDialog from '@/ui-component/dialog/ViewMessagesDialog'
 import StarterPromptsDialog from '@/ui-component/dialog/StarterPromptsDialog'
 import SpeechToTextDialog from '@/ui-component/dialog/SpeechToTextDialog'
+import ChatFeedbackDialog from '@/ui-component/dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '@/ui-component/dialog/AllowedDomainsDialog'
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 
@@ -57,6 +58,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
     const [upsertHistoryDialogOpen, setUpsertHistoryDialogOpen] = useState(false)
     const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
+    const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
+    const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
     const [allowedDomainsDialogOpen, setAllowedDomainsDialogOpen] = useState(false)
     const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
 
@@ -74,6 +77,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setConversationStartersDialogOpen(true)
+        } else if (setting === 'chatFeedback') {
+            setChatFeedbackDialogProps({
+                title: `Chat Feedback - ${chatflow.name}`,
+                chatflow: chatflow
+            })
+            setChatFeedbackDialogOpen(true)
         } else if (setting === 'allowedDomains') {
             setAllowedDomainsDialogProps({
                 title: 'Allowed Domains - ' + chatflow.name,
@@ -422,6 +431,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 dialogProps={conversationStartersDialogProps}
                 onConfirm={() => setConversationStartersDialogOpen(false)}
                 onCancel={() => setConversationStartersDialogOpen(false)}
+            />
+            <ChatFeedbackDialog
+                show={chatFeedbackDialogOpen}
+                dialogProps={chatFeedbackDialogProps}
+                onConfirm={() => setChatFeedbackDialogOpen(false)}
+                onCancel={() => setChatFeedbackDialogOpen(false)}
             />
             <AllowedDomainsDialog
                 show={allowedDomainsDialogOpen}

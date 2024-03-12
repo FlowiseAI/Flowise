@@ -7,9 +7,10 @@ import {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
+    IconLink,
     IconMicrophone,
     IconDatabaseExport,
-    IconLink
+    IconThumbUp
 } from '@tabler/icons'
 
 // constant
@@ -21,9 +22,10 @@ const icons = {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
+    IconLink,
     IconMicrophone,
     IconDatabaseExport,
-    IconLink
+    IconThumbUp
 }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
@@ -53,6 +55,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconDatabaseExport
+        },
+        {
+            id: 'chatFeedback',
+            title: 'Chat Feedback',
+            type: 'item',
+            url: '',
+            icon: icons.IconThumbUp
         },
         {
             id: 'allowedDomains',
