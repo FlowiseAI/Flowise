@@ -595,7 +595,27 @@ export class App {
 
         // Get internal chatmessages from chatflowid
         this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatType.INTERNAL,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate,
+                messageId,
+                feedback
+            )
             return res.json(chatmessages)
         })
 
@@ -703,19 +723,41 @@ export class App {
         // get stats for showing in chatflow
         this.app.get('/api/v1/stats/:id', async (req: Request, res: Response) => {
             const chatflowid = req.params.id
-            const chatTypeFilter = chatType.EXTERNAL
+            let chatTypeFilter = req.query?.chatType as chatType | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
 
-            const totalMessages = await this.AppDataSource.getRepository(ChatMessage).count({
-                where: {
-                    chatflowid,
-                    chatType: chatTypeFilter
+            if (chatTypeFilter) {
+                try {
+                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
+                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = undefined
+                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
+                        chatTypeFilter = chatType.EXTERNAL
+                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = chatType.INTERNAL
+                    }
+                } catch (e) {
+                    return res.status(500).send(e)
                 }
-            })
+            }
 
-            const chatMessageFeedbackRepo = this.AppDataSource.getRepository(ChatMessageFeedback)
+            const chatmessages = (await this.getChatMessage(
+                chatflowid,
+                chatTypeFilter,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                startDate,
+                endDate,
+                '',
+                true
+            )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
+            const totalMessages = chatmessages.length
 
-            const totalFeedback = await chatMessageFeedbackRepo.count({ where: { chatflowid } })
-            const positiveFeedback = await chatMessageFeedbackRepo.countBy({ chatflowid, rating: ChatMessageRatingType.THUMBS_UP })
+            const totalFeedback = chatmessages.filter((message) => message?.feedback).length
+            const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length
 
             const results = {
                 totalMessages,
