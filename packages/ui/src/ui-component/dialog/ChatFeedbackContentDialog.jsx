@@ -27,7 +27,10 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
         else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+        return () => {
+            dispatch({ type: HIDE_CANVAS_DIALOG })
+            setFeedbackContent('')
+        }
     }, [show, dispatch])
 
     const component = show ? (

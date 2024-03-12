@@ -871,11 +871,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                         />
                                                     ) : null}
                                                 </Box>
-                                                <ChatFeedbackContentDialog
-                                                    show={showFeedbackContentDialog}
-                                                    onCancel={() => setShowFeedbackContentDialog(false)}
-                                                    onConfirm={submitFeedbackContent}
-                                                />
                                             </>
                                         ) : null}
                                         {message.fileAnnotations && (
@@ -1124,6 +1119,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 )}
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
+            <ChatFeedbackContentDialog
+                show={showFeedbackContentDialog}
+                onCancel={() => setShowFeedbackContentDialog(false)}
+                onConfirm={submitFeedbackContent}
+            />
         </div>
     )
 }
