@@ -5,7 +5,6 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import {
-    Grid,
     Box,
     Stack,
     Badge,
@@ -383,17 +382,19 @@ const Marketplace = () => {
 
                 {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (
                     <>
-                        <Grid container spacing={gridSpacing}>
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                             {getAllTemplatesMarketplacesApi.data
                                 .filter(filterByBadge)
                                 .filter(filterByType)
                                 .filter(filterFlows)
                                 .filter(filterByFramework)
                                 .map((data, index) => (
-                                    <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
+                                    <Box key={index}>
                                         {data.badge && (
                                             <Badge
                                                 sx={{
+                                                    width: '100%',
+                                                    height: '100%',
                                                     '& .MuiBadge-badge': {
                                                         right: 20
                                                     }
@@ -411,9 +412,9 @@ const Marketplace = () => {
                                             <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                         )}
                                         {!data.badge && data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
-                                    </Grid>
+                                    </Box>
                                 ))}
-                        </Grid>
+                        </Box>
                     </>
                 )}
                 {!isLoading && view === 'list' && getAllTemplatesMarketplacesApi.data && (

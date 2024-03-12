@@ -19,8 +19,10 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         background: theme.palette.card.hover,
         boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
     },
+    height: '100%',
+    minHeight: '200px',
     maxHeight: '300px',
-    maxWidth: '300px',
+    width: '100%',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-line'
 }))
@@ -34,51 +36,53 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 <SkeletonChatflowCard />
             ) : (
                 <CardWrapper border={false} content={false} onClick={onClick}>
-                    <Box sx={{ p: 2.25 }}>
-                        <Grid container direction='column'>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                {data.iconSrc && (
-                                    <div
-                                        style={{
-                                            width: 35,
-                                            height: 35,
-                                            marginRight: 10,
-                                            borderRadius: '50%',
-                                            background: `url(${data.iconSrc})`,
-                                            backgroundSize: 'contain',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center center'
-                                        }}
-                                    ></div>
-                                )}
-                                {!data.iconSrc && data.color && (
-                                    <div
-                                        style={{
-                                            width: 35,
-                                            height: 35,
-                                            marginRight: 10,
-                                            borderRadius: '50%',
-                                            background: data.color
-                                        }}
-                                    ></div>
-                                )}
-                                <Typography
-                                    sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                    <Box sx={{ height: '100%', p: 2.25 }}>
+                        <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%' }}>
+                            <Box display='flex' flexDirection='column' gap={1}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center'
+                                    }}
                                 >
-                                    {data.templateName || data.name}
-                                </Typography>
-                            </div>
-                            {data.description && (
-                                <span style={{ marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
-                                    {data.description}
-                                </span>
-                            )}
+                                    {data.iconSrc && (
+                                        <div
+                                            style={{
+                                                width: 35,
+                                                height: 35,
+                                                marginRight: 10,
+                                                borderRadius: '50%',
+                                                background: `url(${data.iconSrc})`,
+                                                backgroundSize: 'contain',
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'center center'
+                                            }}
+                                        ></div>
+                                    )}
+                                    {!data.iconSrc && data.color && (
+                                        <div
+                                            style={{
+                                                width: 35,
+                                                height: 35,
+                                                marginRight: 10,
+                                                borderRadius: '50%',
+                                                background: data.color
+                                            }}
+                                        ></div>
+                                    )}
+                                    <Typography
+                                        sx={{ fontSize: '1.5rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                    >
+                                        {data.templateName || data.name}
+                                    </Typography>
+                                </div>
+                                {data.description && (
+                                    <span style={{ marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                        {data.description}
+                                    </span>
+                                )}
+                            </Box>
                             {images && (
                                 <div
                                     style={{

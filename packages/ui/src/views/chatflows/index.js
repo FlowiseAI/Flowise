@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
+import { Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -185,13 +185,11 @@ const Chatflows = () => {
                     </Toolbar>
                 </Box>
                 {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
-                    <Grid container spacing={gridSpacing}>
+                    <Box display='grid' gridTemplateColumns='repeat(4, 1fr)' gap={gridSpacing}>
                         {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (
-                            <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                            </Grid>
+                            <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                         ))}
-                    </Grid>
+                    </Box>
                 )}
                 {!isLoading && view === 'list' && getAllChatflowsApi.data && (
                     <FlowListTable
