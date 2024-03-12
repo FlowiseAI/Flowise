@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,

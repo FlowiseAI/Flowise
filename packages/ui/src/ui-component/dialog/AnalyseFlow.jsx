@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // material-ui
 import {
@@ -19,20 +19,20 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconX } from '@tabler/icons'
 
 // Project import
-import CredentialInputHandler from 'views/canvas/CredentialInputHandler'
-import { TooltipWithParser } from 'ui-component/tooltip/TooltipWithParser'
-import { SwitchInput } from 'ui-component/switch/Switch'
-import { Input } from 'ui-component/input/Input'
-import { StyledButton } from 'ui-component/button/StyledButton'
-import langsmithPNG from 'assets/images/langchain.png'
-import langfuseSVG from 'assets/images/langfuse.svg'
-import lunarySVG from 'assets/images/lunary.svg'
+import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { SwitchInput } from '@/ui-component/switch/Switch'
+import { Input } from '@/ui-component/input/Input'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import langsmithPNG from '@/assets/images/langchain.png'
+import langfuseSVG from '@/assets/images/langfuse.svg'
+import lunarySVG from '@/assets/images/lunary.svg'
 
 // store
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from '@/api/chatflows'
 
 const analyticProviders = [
     {

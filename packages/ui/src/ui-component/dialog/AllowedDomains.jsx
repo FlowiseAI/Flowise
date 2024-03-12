@@ -1,20 +1,20 @@
 import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // material-ui
 import { Button, IconButton, OutlinedInput, Box, List, InputAdornment } from '@mui/material'
 import { IconX, IconTrash, IconPlus } from '@tabler/icons'
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // store
-import useNotifier from 'utils/useNotifier'
+import useNotifier from '@/utils/useNotifier'
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from '@/api/chatflows'
 
 const AllowedDomains = ({ dialogProps }) => {
     const dispatch = useDispatch()
