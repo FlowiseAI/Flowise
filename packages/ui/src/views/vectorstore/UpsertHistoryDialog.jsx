@@ -26,10 +26,10 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconChevronsUp, IconChevronsDown } from '@tabler/icons'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import HistoryEmptySVG from 'assets/images/upsert_history_empty.svg'
-import vectorstoreApi from 'api/vectorstore'
-import useApi from 'hooks/useApi'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import HistoryEmptySVG from '@/assets/images/upsert_history_empty.svg'
+import vectorstoreApi from '@/api/vectorstore'
+import useApi from '@/hooks/useApi'
 
 const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value, onClick }, ref) {
     return (

@@ -2,10 +2,10 @@ import PropTypes from 'prop-types'
 import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
-import { Typography, Card, CardContent, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
-import StatsCard from 'ui-component/cards/StatsCard'
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
 import ReactJson from 'flowise-react-json-view'
+import { Typography, Card, CardContent, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import StatsCard from '@/ui-component/cards/StatsCard'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
