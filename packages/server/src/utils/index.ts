@@ -299,6 +299,8 @@ export const buildFlow = async (
         exploredNode[startingNodeIds[i]] = { remainingLoop: maxLoop, lastSeenDepth: 0 }
     }
 
+    const initializedNodes: Set<string> = new Set()
+    const reversedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
 
@@ -384,6 +386,7 @@ export const buildFlow = async (
                 flowNodes[nodeIndex].data.instance = outputResult
 
                 logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                initializedNodes.add(reactFlowNode.data.id)
             }
         } catch (e: any) {
             logger.error(e)
@@ -406,6 +409,8 @@ export const buildFlow = async (
         for (let i = 0; i < neighbourNodeIds.length; i += 1) {
             const neighNodeId = neighbourNodeIds[i]
             if (ignoreNodeIds.includes(neighNodeId)) continue
+            if (initializedNodes.has(neighNodeId)) continue
+            if (reversedGraph[neighNodeId].some((dependId) => !initializedNodes.has(dependId))) continue
             // If nodeId has been seen, cycle detected
             if (Object.prototype.hasOwnProperty.call(exploredNode, neighNodeId)) {
                 const { remainingLoop, lastSeenDepth } = exploredNode[neighNodeId]
