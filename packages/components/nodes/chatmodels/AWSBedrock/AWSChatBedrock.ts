@@ -1,7 +1,7 @@
 import { BedrockChat } from '@langchain/community/chat_models/bedrock'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
+import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -95,6 +95,8 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'model',
                 type: 'options',
                 options: [
+                    { label: 'anthropic.claude-3-sonnet', name: 'anthropic.claude-3-sonnet-20240229-v1:0' },
+                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
                     { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
                     { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
                     { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' },

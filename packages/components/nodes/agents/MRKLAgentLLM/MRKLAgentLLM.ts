@@ -3,11 +3,13 @@ import { AgentExecutor } from 'langchain/agents'
 import { pull } from 'langchain/hub'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
-import { BaseLanguageModel } from 'langchain/base_language'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { createReactAgent } from '../../../src/agents'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class MRKLAgentLLM_Agents implements INode {
     label: string
@@ -23,7 +25,7 @@ class MRKLAgentLLM_Agents implements INode {
     constructor() {
         this.label = 'ReAct Agent for LLMs'
         this.name = 'mrklAgentLLM'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'agent.svg'
@@ -40,6 +42,14 @@ class MRKLAgentLLM_Agents implements INode {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel'
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -48,9 +58,22 @@ class MRKLAgentLLM_Agents implements INode {
         return null
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const model = nodeData.inputs?.model as BaseLanguageModel
         let tools = nodeData.inputs?.tools as Tool[]
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the ReAct Agent for LLMs
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         tools = flatten(tools)
 
         const prompt = await pull<PromptTemplate>('hwchase17/react')
