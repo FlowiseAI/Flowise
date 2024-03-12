@@ -5,6 +5,8 @@ import { PromptTemplate, ChatPromptTemplate, MessagesPlaceholder } from '@langch
 import { Runnable, RunnableSequence, RunnableMap, RunnableBranch, RunnableLambda } from '@langchain/core/runnables'
 import { BaseMessage, HumanMessage, AIMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { StringOutputParser } from '@langchain/core/output_parsers'
 import type { Document } from '@langchain/core/documents'
 import { BufferMemoryInput } from 'langchain/memory'
@@ -36,7 +38,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Retrieval QA Chain'
         this.name = 'conversationalRetrievalQAChain'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ConversationalRetrievalQAChain'
         this.icon = 'qa.svg'
         this.category = 'Chains'
@@ -87,6 +89,14 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 additionalParams: true,
                 optional: true,
                 default: RESPONSE_TEMPLATE
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
             /** Deprecated
             {
@@ -163,6 +173,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         }
 
         let memory: FlowiseMemory | undefined = externalMemory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
         if (!memory) {
             memory = new BufferMemory({
                 returnMessages: true,
@@ -171,6 +182,16 @@ class ConversationalRetrievalQAChain_Chains implements INode {
             })
         }
 
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Conversational Retrieval QA Chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
         const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt)
 
         const history = ((await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]) ?? []

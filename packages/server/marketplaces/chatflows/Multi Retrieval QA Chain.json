@@ -82,7 +82,7 @@
             "data": {
                 "id": "multiRetrievalQAChain_0",
                 "label": "Multi Retrieval QA Chain",
-                "version": 1,
+                "version": 2,
                 "name": "multiRetrievalQAChain",
                 "type": "MultiRetrievalQAChain",
                 "baseClasses": ["MultiRetrievalQAChain", "MultiRouteChain", "BaseChain", "BaseLangChain"],
@@ -109,9 +109,19 @@
                         "type": "VectorStoreRetriever",
                         "list": true,
                         "id": "multiRetrievalQAChain_0-input-vectorStoreRetriever-VectorStoreRetriever"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "multiRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": [
                         "{{vectorStoreRetriever_0.data.instance}}",

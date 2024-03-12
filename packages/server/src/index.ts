@@ -1319,7 +1319,36 @@ export class App {
             upload.array('files'),
             (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
             async (req: Request, res: Response) => {
-                await this.buildChatflow(req, res, socketIO)
+                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                    id: req.params.id
+                })
+                if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+                let isDomainAllowed = true
+                logger.info(`[server]: Request originated from ${req.headers.origin}`)
+                if (chatflow.chatbotConfig) {
+                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
+                    const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
+                    if (isValidAllowedOrigins) {
+                        const originHeader = req.headers.origin as string
+                        const origin = new URL(originHeader).host
+                        isDomainAllowed =
+                            parsedConfig.allowedOrigins.filter((domain: string) => {
+                                try {
+                                    const allowedOrigin = new URL(domain).host
+                                    return origin === allowedOrigin
+                                } catch (e) {
+                                    return false
+                                }
+                            }).length > 0
+                    }
+                }
+
+                if (isDomainAllowed) {
+                    await this.buildChatflow(req, res, socketIO)
+                } else {
+                    return res.status(401).send(`This site is not allowed to access this chatbot`)
+                }
             }
         )
 
@@ -1533,7 +1562,7 @@ export class App {
         if (!chatflow) return `Chatflow ${chatflowid} not found`
 
         const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-        const uploadProcessingNodes = ['chatOpenAI']
+        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic']
 
         const flowObj = JSON.parse(chatflow.flowData)
         const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
@@ -1651,6 +1680,8 @@ export class App {
     async addChatMessage(chatMessage: Partial<IChatMessage>): Promise<ChatMessage> {
         const newChatMessage = new ChatMessage()
         Object.assign(newChatMessage, chatMessage)
+
+        if (!newChatMessage.createdDate) newChatMessage.createdDate = new Date()
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)

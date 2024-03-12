@@ -228,7 +228,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         const obj: Partial<OpenAIChatInput> &
             Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput; multiModalOption?: IMultiModalOption } = {
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -265,10 +265,9 @@ class ChatOpenAI_ChatModels implements INode {
                 imageResolution
             }
         }
-        obj.multiModalOption = multiModalOption
 
         const model = new ChatOpenAI(nodeData.id, obj)
-
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }
