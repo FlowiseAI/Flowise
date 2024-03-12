@@ -8,7 +8,8 @@ import {
     IconMessage,
     IconPictureInPictureOff,
     IconMicrophone,
-    IconDatabaseExport
+    IconDatabaseExport,
+    IconLink
 } from '@tabler/icons'
 
 // constant
@@ -21,7 +22,8 @@ const icons = {
     IconMessage,
     IconPictureInPictureOff,
     IconMicrophone,
-    IconDatabaseExport
+    IconDatabaseExport,
+    IconLink
 }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
@@ -51,6 +53,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconDatabaseExport
+        },
+        {
+            id: 'allowedDomains',
+            title: 'Allowed Domains',
+            type: 'item',
+            url: '',
+            icon: icons.IconLink
         },
         {
             id: 'enableSpeechToText',
