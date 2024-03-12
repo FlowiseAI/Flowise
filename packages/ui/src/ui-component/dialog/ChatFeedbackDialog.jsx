@@ -2,22 +2,27 @@ import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 
 // material-ui
 import { Button, Dialog, DialogContent, DialogTitle, DialogActions, Box } from '@mui/material'
 import { IconX } from '@tabler/icons'
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
-import { SwitchInput } from 'ui-component/switch/Switch'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import useNotifier from 'utils/useNotifier'
+import {
+    enqueueSnackbar as enqueueSnackbarAction,
+    closeSnackbar as closeSnackbarAction,
+    SET_CHATFLOW,
+    HIDE_CANVAS_DIALOG,
+    SHOW_CANVAS_DIALOG
+} from '@/store/actions'
+import useNotifier from '@/utils/useNotifier'
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from '@/api/chatflows'
 
 const ChatFeedbackDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')

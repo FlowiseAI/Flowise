@@ -7,10 +7,10 @@ import { Button, Dialog, DialogContent, DialogTitle, DialogActions, Box, Outline
 import { useState } from 'react'
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
+import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
