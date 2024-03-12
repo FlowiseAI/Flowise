@@ -50,7 +50,7 @@ const CanvasNode = ({ data }) => {
     const onDialogClicked = () => {
         const dialogProps = {
             data,
-            inputParams: data.inputParams.filter((param) => param.additionalParams),
+            inputParams: data.inputParams.filter((inputParam) => !inputParam.hidden).filter((param) => param.additionalParams),
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
         }

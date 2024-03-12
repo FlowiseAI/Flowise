@@ -3,6 +3,8 @@ import { MultiPromptChain } from 'langchain/chains'
 import { ICommonObject, INode, INodeData, INodeParams, PromptRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class MultiPromptChain_Chains implements INode {
     label: string
@@ -18,7 +20,7 @@ class MultiPromptChain_Chains implements INode {
     constructor() {
         this.label = 'Multi Prompt Chain'
         this.name = 'multiPromptChain'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'MultiPromptChain'
         this.icon = 'prompt.svg'
         this.category = 'Chains'
@@ -34,6 +36,14 @@ class MultiPromptChain_Chains implements INode {
                 label: 'Prompt Retriever',
                 name: 'promptRetriever',
                 type: 'PromptRetriever',
+                list: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
                 list: true
             }
         ]
@@ -62,8 +72,19 @@ class MultiPromptChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const chain = nodeData.instance as MultiPromptChain
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Multi Prompt Chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
         const obj = { input }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
