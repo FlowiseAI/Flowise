@@ -32,9 +32,13 @@ import audioUploadSVG from '@/assets/images/wave-sound.jpg'
 import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
 import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
+import ChatFeedbackContentDialog from '@/ui-component/dialog/ChatFeedbackContentDialog'
 import StarterPromptsCard from '@/ui-component/cards/StarterPromptsCard'
 import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
 import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from '@/ui-component/button/ImageButton'
+import CopyToClipboardButton from '@/ui-component/button/CopyToClipboardButton'
+import ThumbsUpButton from '@/ui-component/button/ThumbsUpButton'
+import ThumbsDownButton from '@/ui-component/button/ThumbsDownButton'
 import './ChatMessage.css'
 import './audio-recording.css'
 
@@ -42,6 +46,7 @@ import './audio-recording.css'
 import chatmessageApi from '@/api/chatmessage'
 import chatflowsApi from '@/api/chatflows'
 import predictionApi from '@/api/prediction'
+import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -86,6 +91,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     const getChatflowConfig = useApi(chatflowsApi.getSpecificChatflow)
 
     const [starterPrompts, setStarterPrompts] = useState([])
+    const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
+    const [feedbackId, setFeedbackId] = useState('')
+    const [showFeedbackContentDialog, setShowFeedbackContentDialog] = useState(false)
 
     // drag & drop and file input
     const fileUploadRef = useRef(null)
@@ -318,6 +326,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
             allMessages[allMessages.length - 1].message += text
+            allMessages[allMessages.length - 1].feedback = null
             return allMessages
         })
     }
@@ -389,6 +398,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             if (response.data) {
                 const data = response.data
 
+                setMessages((prevMessages) => {
+                    let allMessages = [...cloneDeep(prevMessages)]
+                    if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                        allMessages[allMessages.length - 1].id = data?.chatMessageId
+                    }
+                    return allMessages
+                })
+
                 if (!chatId) setChatId(data.chatId)
 
                 if (input === '' && data.question) {
@@ -412,10 +429,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         ...prevMessages,
                         {
                             message: text,
+                            id: data?.chatMessageId,
                             sourceDocuments: data?.sourceDocuments,
                             usedTools: data?.usedTools,
                             fileAnnotations: data?.fileAnnotations,
-                            type: 'apiMessage'
+                            type: 'apiMessage',
+                            feedback: null
                         }
                     ])
                 }
@@ -474,7 +493,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             setChatId(chatId)
             const loadedMessages = getChatmessageApi.data.map((message) => {
                 const obj = {
+                    id: message.id,
                     message: message.content,
+                    feedback: message.feedback,
                     type: message.role
                 }
                 if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
@@ -526,6 +547,9 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         }
                     })
                     setStarterPrompts(inputFields)
+                }
+                if (config.chatFeedback) {
+                    setChatFeedbackStatus(config.chatFeedback.status)
                 }
             }
         }
@@ -603,6 +627,83 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         }
         // eslint-disable-next-line
     }, [previews])
+
+    const copyMessageToClipboard = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text || '')
+        } catch (error) {
+            console.error('Error copying to clipboard:', error)
+        }
+    }
+
+    const onThumbsUpClick = async (messageId) => {
+        const body = {
+            chatflowid,
+            chatId,
+            messageId,
+            rating: 'THUMBS_UP',
+            content: ''
+        }
+        const result = await chatmessagefeedbackApi.addFeedback(chatflowid, body)
+        if (result.data) {
+            const data = result.data
+            let id = ''
+            if (data && data.id) id = data.id
+            setMessages((prevMessages) => {
+                const allMessages = [...cloneDeep(prevMessages)]
+                return allMessages.map((message) => {
+                    if (message.id === messageId) {
+                        message.feedback = {
+                            rating: 'THUMBS_UP'
+                        }
+                    }
+                    return message
+                })
+            })
+            setFeedbackId(id)
+            setShowFeedbackContentDialog(true)
+        }
+    }
+
+    const onThumbsDownClick = async (messageId) => {
+        const body = {
+            chatflowid,
+            chatId,
+            messageId,
+            rating: 'THUMBS_DOWN',
+            content: ''
+        }
+        const result = await chatmessagefeedbackApi.addFeedback(chatflowid, body)
+        if (result.data) {
+            const data = result.data
+            let id = ''
+            if (data && data.id) id = data.id
+            setMessages((prevMessages) => {
+                const allMessages = [...cloneDeep(prevMessages)]
+                return allMessages.map((message) => {
+                    if (message.id === messageId) {
+                        message.feedback = {
+                            rating: 'THUMBS_DOWN'
+                        }
+                    }
+                    return message
+                })
+            })
+            setFeedbackId(id)
+            setShowFeedbackContentDialog(true)
+        }
+    }
+
+    const submitFeedbackContent = async (text) => {
+        const body = {
+            content: text
+        }
+        const result = await chatmessagefeedbackApi.updateFeedback(feedbackId, body)
+        if (result.data) {
+            setFeedbackId('')
+            setShowFeedbackContentDialog(false)
+        }
+    }
 
     return (
         <div onDragEnter={handleDrag}>
@@ -747,6 +848,31 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 {message.message}
                                             </MemoizedReactMarkdown>
                                         </div>
+                                        {message.type === 'apiMessage' && message.id && chatFeedbackStatus ? (
+                                            <>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'start', gap: 1 }}>
+                                                    <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
+                                                    {!message.feedback ||
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_UP' ? (
+                                                        <ThumbsUpButton
+                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
+                                                            rating={message.feedback ? message.feedback.rating : ''}
+                                                            onClick={() => onThumbsUpClick(message.id)}
+                                                        />
+                                                    ) : null}
+                                                    {!message.feedback ||
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                        <ThumbsDownButton
+                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
+                                                            rating={message.feedback ? message.feedback.rating : ''}
+                                                            onClick={() => onThumbsDownClick(message.id)}
+                                                        />
+                                                    ) : null}
+                                                </Box>
+                                            </>
+                                        ) : null}
                                         {message.fileAnnotations && (
                                             <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                 {message.fileAnnotations.map((fileAnnotation, index) => {
@@ -993,6 +1119,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 )}
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
+            <ChatFeedbackContentDialog
+                show={showFeedbackContentDialog}
+                onCancel={() => setShowFeedbackContentDialog(false)}
+                onConfirm={submitFeedbackContent}
+            />
         </div>
     )
 }

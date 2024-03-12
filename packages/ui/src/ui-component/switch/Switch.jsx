@@ -1,13 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, Switch } from '@mui/material'
+import { FormControl, Switch, Typography } from '@mui/material'
 
-export const SwitchInput = ({ value, onChange, disabled = false }) => {
+export const SwitchInput = ({ label, value, onChange, disabled = false }) => {
     const [myValue, setMyValue] = useState(!!value ?? false)
+
+    useEffect(() => {
+        setMyValue(value)
+    }, [value])
 
     return (
         <>
-            <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
+            <FormControl
+                sx={{ mt: 1, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                size='small'
+            >
+                {label && <Typography>{label}</Typography>}
                 <Switch
                     disabled={disabled}
                     checked={myValue}
@@ -22,6 +30,7 @@ export const SwitchInput = ({ value, onChange, disabled = false }) => {
 }
 
 SwitchInput.propTypes = {
+    label: PropTypes.string,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     onChange: PropTypes.func,
     disabled: PropTypes.bool

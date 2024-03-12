@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -21,8 +21,10 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
+    IChatMessageFeedback,
     IDepthQueue,
     INodeDirectedGraph,
+    ChatMessageRatingType,
     IUploadFileSizeAndTypes
 } from './Interface'
 import {
@@ -57,6 +59,7 @@ import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
+import { ChatMessageFeedback } from './database/entities/ChatMessageFeedback'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
@@ -184,6 +187,7 @@ export class App {
                 '/api/v1/chatflows-streaming',
                 '/api/v1/chatflows-uploads',
                 '/api/v1/openai-assistants-file',
+                '/api/v1/feedback',
                 '/api/v1/get-upload-file',
                 '/api/v1/ip'
             ]
@@ -556,6 +560,7 @@ export class App {
             const messageId = req.query?.messageId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
             let chatTypeFilter = req.query?.chatType as chatType | undefined
 
             if (chatTypeFilter) {
@@ -582,14 +587,35 @@ export class App {
                 sessionId,
                 startDate,
                 endDate,
-                messageId
+                messageId,
+                feedback
             )
             return res.json(chatmessages)
         })
 
         // Get internal chatmessages from chatflowid
         this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatType.INTERNAL,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate,
+                messageId,
+                feedback
+            )
             return res.json(chatmessages)
         })
 
@@ -640,6 +666,10 @@ export class App {
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
 
+            // remove all related feedback records
+            const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
+            await this.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
+
             // Delete all uploads corresponding to this chatflow/chatId
             if (chatId) {
                 try {
@@ -652,6 +682,90 @@ export class App {
 
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
+        })
+
+        // ----------------------------------------
+        // Chat Message Feedback
+        // ----------------------------------------
+
+        // Get all chatmessage feedback from chatflowid
+        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const chatId = req.query?.chatId as string | undefined
+            const sortOrder = req.query?.order as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            const feedback = await this.getChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate)
+
+            return res.json(feedback)
+        })
+
+        // Add chatmessage feedback for chatflowid
+        this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const body = req.body
+            const results = await this.addChatMessageFeedback(body)
+            return res.json(results)
+        })
+
+        // Update chatmessage feedback for id
+        this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const id = req.params.id
+            const body = req.body
+            await this.updateChatMessageFeedback(id, body)
+            return res.json({ status: 'OK' })
+        })
+
+        // ----------------------------------------
+        // stats
+        // ----------------------------------------
+        //
+        // get stats for showing in chatflow
+        this.app.get('/api/v1/stats/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            let chatTypeFilter = req.query?.chatType as chatType | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            if (chatTypeFilter) {
+                try {
+                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
+                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = undefined
+                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
+                        chatTypeFilter = chatType.EXTERNAL
+                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = chatType.INTERNAL
+                    }
+                } catch (e) {
+                    return res.status(500).send(e)
+                }
+            }
+
+            const chatmessages = (await this.getChatMessage(
+                chatflowid,
+                chatTypeFilter,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                startDate,
+                endDate,
+                '',
+                true
+            )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
+            const totalMessages = chatmessages.length
+
+            const totalFeedback = chatmessages.filter((message) => message?.feedback).length
+            const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length
+
+            const results = {
+                totalMessages,
+                totalFeedback,
+                positiveFeedback
+            }
+
+            res.json(results)
         })
 
         // ----------------------------------------
@@ -1629,6 +1743,7 @@ export class App {
      * @param {string} sessionId
      * @param {string} startDate
      * @param {string} endDate
+     * @param {boolean} feedback
      */
     async getChatMessage(
         chatflowid: string,
@@ -1639,7 +1754,8 @@ export class App {
         sessionId?: string,
         startDate?: string,
         endDate?: string,
-        messageId?: string
+        messageId?: string,
+        feedback?: boolean
     ): Promise<ChatMessage[]> {
         const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
             const date = new Date(dateTimeStr)
@@ -1655,6 +1771,40 @@ export class App {
 
         let toDate
         if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
+
+        if (feedback) {
+            const query = this.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
+
+            // do the join with chat message feedback based on messageId for each chat message in the chatflow
+            query
+                .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
+                .where('chat_message.chatflowid = :chatflowid', { chatflowid })
+
+            // based on which parameters are available add `andWhere` clauses to the query
+            if (chatType) {
+                query.andWhere('chat_message.chatType = :chatType', { chatType })
+            }
+            if (chatId) {
+                query.andWhere('chat_message.chatId = :chatId', { chatId })
+            }
+            if (memoryType) {
+                query.andWhere('chat_message.memoryType = :memoryType', { memoryType })
+            }
+            if (sessionId) {
+                query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
+            }
+
+            // set date range
+            query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
+                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                toDate: toDate ?? new Date()
+            })
+            // sort
+            query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+
+            const messages = await query.getMany()
+            return messages
+        }
 
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
@@ -1685,6 +1835,62 @@ export class App {
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    }
+
+    /**
+     * Method that get chat messages.
+     * @param {string} chatflowid
+     * @param {string} sortOrder
+     * @param {string} chatId
+     * @param {string} startDate
+     * @param {string} endDate
+     */
+    async getChatMessageFeedback(
+        chatflowid: string,
+        chatId?: string,
+        sortOrder: string = 'ASC',
+        startDate?: string,
+        endDate?: string
+    ): Promise<ChatMessageFeedback[]> {
+        let fromDate
+        if (startDate) fromDate = new Date(startDate)
+
+        let toDate
+        if (endDate) toDate = new Date(endDate)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).find({
+            where: {
+                chatflowid,
+                chatId,
+                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
+        })
+    }
+
+    /**
+     * Method that add chat message feedback.
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
+
+        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
+    }
+
+    /**
+     * Method that updates chat message feedback.
+     * @param {string} id
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async updateChatMessageFeedback(id: string, chatMessageFeedback: Partial<IChatMessageFeedback>) {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
+
+        await this.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
     }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
