@@ -6,10 +6,6 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 /**
- * I had to run the following to build the component
- * and get the icon copied over to the dist directory
- * Flowise/packages/components > yarn build
- *
  * @author Michael Connor <mlconnor@yahoo.com>
  */
 class AWSChatBedrock_ChatModels implements INode {

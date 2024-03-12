@@ -7,11 +7,22 @@ import {
     IconSearch,
     IconMessage,
     IconPictureInPictureOff,
+    IconLink,
     IconMicrophone
 } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff, IconMicrophone }
+const icons = {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconSearch,
+    IconMessage,
+    IconPictureInPictureOff,
+    IconLink,
+    IconMicrophone
+}
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
@@ -33,6 +44,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconMessage
+        },
+        {
+            id: 'allowedDomains',
+            title: 'Allowed Domains',
+            type: 'item',
+            url: '',
+            icon: icons.IconLink
         },
         {
             id: 'enableSpeechToText',

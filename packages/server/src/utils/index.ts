@@ -162,45 +162,32 @@ export const constructGraphs = (
  * @param {string} endNodeId
  */
 export const getStartingNodes = (graph: INodeDirectedGraph, endNodeId: string) => {
-    const visited = new Set<string>()
-    const queue: Array<[string, number]> = [[endNodeId, 0]]
     const depthQueue: IDepthQueue = {
         [endNodeId]: 0
     }
 
-    let maxDepth = 0
-    let startingNodeIds: string[] = []
-
-    while (queue.length > 0) {
-        const [currentNode, depth] = queue.shift()!
-
-        if (visited.has(currentNode)) {
-            continue
-        }
-
-        visited.add(currentNode)
-
-        if (depth > maxDepth) {
-            maxDepth = depth
-            startingNodeIds = [currentNode]
-        } else if (depth === maxDepth) {
-            startingNodeIds.push(currentNode)
-        }
-
-        for (const neighbor of graph[currentNode]) {
-            if (!visited.has(neighbor)) {
-                queue.push([neighbor, depth + 1])
-                depthQueue[neighbor] = depth + 1
-            }
-        }
+    // Assuming that this is a directed acyclic graph, there will be no infinite loop problem.
+    const walkGraph = (nodeId: string) => {
+        const depth = depthQueue[nodeId]
+        graph[nodeId].flatMap((id) => {
+            depthQueue[id] = Math.max(depthQueue[id] ?? 0, depth + 1)
+            walkGraph(id)
+        })
     }
 
+    walkGraph(endNodeId)
+
+    const maxDepth = Math.max(...Object.values(depthQueue))
     const depthQueueReversed: IDepthQueue = {}
     for (const nodeId in depthQueue) {
         if (Object.prototype.hasOwnProperty.call(depthQueue, nodeId)) {
             depthQueueReversed[nodeId] = Math.abs(depthQueue[nodeId] - maxDepth)
         }
     }
+
+    const startingNodeIds = Object.entries(depthQueueReversed)
+        .filter(([_, depth]) => depth === 0)
+        .map(([id, _]) => id)
 
     return { startingNodeIds, depthQueue: depthQueueReversed }
 }
@@ -299,6 +286,8 @@ export const buildFlow = async (
         exploredNode[startingNodeIds[i]] = { remainingLoop: maxLoop, lastSeenDepth: 0 }
     }
 
+    const initializedNodes: Set<string> = new Set()
+    const reversedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
 
@@ -384,6 +373,7 @@ export const buildFlow = async (
                 flowNodes[nodeIndex].data.instance = outputResult
 
                 logger.debug(`[server]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                initializedNodes.add(reactFlowNode.data.id)
             }
         } catch (e: any) {
             logger.error(e)
@@ -406,6 +396,8 @@ export const buildFlow = async (
         for (let i = 0; i < neighbourNodeIds.length; i += 1) {
             const neighNodeId = neighbourNodeIds[i]
             if (ignoreNodeIds.includes(neighNodeId)) continue
+            if (initializedNodes.has(neighNodeId)) continue
+            if (reversedGraph[neighNodeId].some((dependId) => !initializedNodes.has(dependId))) continue
             // If nodeId has been seen, cycle detected
             if (Object.prototype.hasOwnProperty.call(exploredNode, neighNodeId)) {
                 const { remainingLoop, lastSeenDepth } = exploredNode[neighNodeId]
@@ -493,13 +485,14 @@ export const clearSessionMemory = async (
  * @returns {string}
  */
 export const getVariableValue = (
-    paramValue: string,
+    paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false
 ) => {
-    let returnVal = paramValue
+    const isObject = typeof paramValue === 'object'
+    let returnVal = isObject ? JSON.stringify(paramValue) : paramValue
     const variableStack = []
     const variableDict = {} as IVariableDict
     let startIdx = 0
@@ -596,7 +589,7 @@ export const getVariableValue = (
         })
         return returnVal
     }
-    return returnVal
+    return isObject ? JSON.parse(returnVal) : returnVal
 }
 
 /**

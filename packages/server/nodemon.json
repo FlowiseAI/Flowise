@@ -1,6 +1,6 @@
 {
     "ignore": ["**/*.spec.ts", ".git", "node_modules"],
     "watch": ["commands", "index.ts", "src", "../components/nodes", "../components/src"],
-    "exec": "yarn oclif-dev",
+    "exec": "pnpm start",
     "ext": "ts"
 }
