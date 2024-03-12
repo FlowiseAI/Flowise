@@ -16,5 +16,6 @@
         "declaration": true,
         "module": "commonjs"
     },
-    "include": ["src", "nodes", "credentials"]
+    "include": ["src", "nodes", "credentials"],
+    "exclude": ["gulpfile.ts", "node_modules", "dist"]
 }
