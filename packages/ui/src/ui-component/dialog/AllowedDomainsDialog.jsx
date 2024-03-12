@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from 'store/actions'
 
 // material-ui
 import {
@@ -20,14 +19,20 @@ import {
 import { IconX, IconTrash, IconPlus } from '@tabler/icons'
 
 // Project import
-import { StyledButton } from 'ui-component/button/StyledButton'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // store
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from 'store/actions'
-import useNotifier from 'utils/useNotifier'
+import {
+    enqueueSnackbar as enqueueSnackbarAction,
+    closeSnackbar as closeSnackbarAction,
+    SET_CHATFLOW,
+    HIDE_CANVAS_DIALOG,
+    SHOW_CANVAS_DIALOG
+} from '@/store/actions'
+import useNotifier from '@/utils/useNotifier'
 
 // API
-import chatflowsApi from 'api/chatflows'
+import chatflowsApi from '@/api/chatflows'
 
 const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
