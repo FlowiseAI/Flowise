@@ -171,6 +171,13 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
+            // if configuration dialog is open, update its data
+            if (chatflowConfigurationDialogOpen) {
+                setChatflowConfigurationDialogProps({
+                    title: 'Chatflow Configuration',
+                    chatflow
+                })
+            }
         }
     }, [chatflow])
 
@@ -381,6 +388,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onCancel={() => setViewMessagesDialogOpen(false)}
             />
             <ChatflowConfigurationDialog
+                key='chatflowConfiguration'
                 show={chatflowConfigurationDialogOpen}
                 dialogProps={chatflowConfigurationDialogProps}
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
