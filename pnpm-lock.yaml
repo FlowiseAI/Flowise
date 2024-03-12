@@ -123,8 +123,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.4
       '@langchain/anthropic':
-        specifier: ^0.0.10
-        version: 0.0.10
+        specifier: ^0.1.4
+        version: 0.1.5
       '@langchain/cohere':
         specifier: ^0.0.5
         version: 0.0.5
@@ -238,11 +238,11 @@ importers:
         version: >-
           0.1.25(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.454.0)(@aws-sdk/client-s3@3.456.0)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.10.0)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.51.1)(@gomomento/sdk@1.51.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.13)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.0.1)(@qdrant/js-client-rest@1.6.0)(@supabase/supabase-js@2.38.5)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.4)(apify-client@2.8.4)(assemblyai@4.3.1)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.6.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.6.0)(mongodb@6.2.0)(mysql2@3.6.5)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.40.0)(puppeteer@20.9.0)(pyodide@0.24.1)(redis@4.6.11)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.17)(weaviate-ts-client@1.6.0)(ws@8.14.2)
       langfuse:
-        specifier: 3.1.0
-        version: 3.1.0
+        specifier: 3.3.1
+        version: 3.3.1
       langfuse-langchain:
-        specifier: ^3.1.0
-        version: 3.3.0(langchain@0.1.25)
+        specifier: ^3.3.1
+        version: 3.3.1(langchain@0.1.25)
       langsmith:
         specifier: 0.1.6
         version: 0.1.6
@@ -738,8 +738,8 @@ packages:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.20
 
-  /@anthropic-ai/sdk@0.12.8:
-    resolution: {integrity: sha512-35tLfkDXsKwU6fyfVmcQGqWF8IsB5JUz0OAp/AjErHjcet/30x48QJxR9hlc+gq+cWzzacQmxe/bdSGKMdH+ew==}
+  /@anthropic-ai/sdk@0.15.0:
+    resolution: {integrity: sha512-QMNEFcwGGB64oEIL+U9b+mxSbat5TCdNxvQVV0qCNGQvg/nlnbOmq2/x/0mKhuKD0n5bioL75oCkTbQaAgyYtw==}
     dependencies:
       '@types/node': 18.18.13
       '@types/node-fetch': 2.6.9
@@ -4636,12 +4636,15 @@ packages:
       - typescript
     dev: false
 
-  /@langchain/anthropic@0.0.10:
-    resolution: {integrity: sha512-Lbx8U7l+LcbOuGUguAw0PKBMRE6Haj71c68aCJKSQwNBQNAPuOr1xrSDymHwtpllJV8o4n1I0Fm668xBYSrUhw==}
+  /@langchain/anthropic@0.1.5:
+    resolution: {integrity: sha512-Hp0kwcsxjG3JT+Pt0zGqHf/GGT/t1mE0oHIJDv1A0xMTFhSNdAiYrPQxfMMU/y4RehNCSIOw7/PeMxBTY0ew0Q==}
     engines: {node: '>=18'}
     dependencies:
-      '@anthropic-ai/sdk': 0.12.8
-      '@langchain/core': 0.1.42
+      '@anthropic-ai/sdk': 0.15.0
+      '@langchain/core': 0.1.44
+      fast-xml-parser: 4.3.5
+      zod: 3.22.4
+      zod-to-json-schema: 3.22.4(zod@3.22.4)
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -5258,6 +5261,23 @@ packages:
 
   /@langchain/core@0.1.42:
     resolution: {integrity: sha512-sk5s1dZiJHTeZMkdG4c0RouxJGBSox0HhQsPDngOCVlD895g8BHjUl8jdW0/P0xIuIQ5pujQmlaJYilhsucDzA==}
+    engines: {node: '>=18'}
+    dependencies:
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.8
+      langsmith: 0.1.13
+      ml-distance: 4.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 9.0.1
+      zod: 3.22.4
+      zod-to-json-schema: 3.22.4(zod@3.22.4)
+    dev: false
+
+  /@langchain/core@0.1.44:
+    resolution: {integrity: sha512-6kzRRf8X1TgkAfc8xOZ1qCHalasPDxdcNLnL++ZCGtWLyiKMFP7HcDwG/UewYsbqQd3sTQUPiP9+PHdPWXHd/Q==}
     engines: {node: '>=18'}
     dependencies:
       ansi-styles: 5.2.0
@@ -14368,6 +14388,13 @@ packages:
       strnum: 1.0.5
     dev: false
 
+  /fast-xml-parser@4.3.5:
+    resolution: {integrity: sha512-sWvP1Pl8H03B8oFJpFR3HE31HUfwtX7Rlf9BNsvdpujD4n7WMhfmu8h9wOV2u+c1k0ZilTADhPqypzx2J690ZQ==}
+    hasBin: true
+    dependencies:
+      strnum: 1.0.5
+    dev: false
+
   /fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
@@ -18677,37 +18704,30 @@ packages:
     resolution: {integrity: sha512-Woyb8YDHgqqTOZvWIbm2CaFDGfZ4NTSyXV687AG4vXEfoNo7cGQp7nhl7wL3ehenKWmNEmcxCLgOZzW8jE6lOQ==}
     dev: false
 
-  /langfuse-core@3.3.0:
-    resolution: {integrity: sha512-8fFwq5vkpQ58T0yDBIb0mrIgtJ/c3ZMCKVaYRDsmKmZis5nOLdAWnKDQVPf7QRZxx3hj+BIyVYwQW+jS0B5F2A==}
+  /langfuse-core@3.3.1:
+    resolution: {integrity: sha512-MNy/LCf4/AjZ1tqUADaLTwWsQUWQYbH9D9sljZoAJ1Kpc/h5hN+Yl9r2BtfbMGNS4j76FvsTi0gmh1KV4ZWERw==}
     engines: {node: '>=18'}
     dependencies:
       mustache: 4.2.0
     dev: false
 
-  /langfuse-langchain@3.3.0(langchain@0.1.25):
-    resolution: {integrity: sha512-L0qKlPFCcnMg0zmgTYhOU7pp8H+csHRnl5VwmiZs+1LRhI85xig8B2c2l2kwsB3wC++Yqs9Q2vF0IaIaa69ENQ==}
+  /langfuse-langchain@3.3.1(langchain@0.1.25):
+    resolution: {integrity: sha512-opcu9Pi3rd7JITDzYXx4wuUheln8HXvn74XHk9h9NSWp3NUuax++7BOlqugmzNyC/3m2DIGIFCy71L+5MQTniw==}
     engines: {node: '>=18'}
     peerDependencies:
       langchain: '>=0.0.157 <0.2.0'
     dependencies:
       langchain: >-
         0.1.25(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.454.0)(@aws-sdk/client-s3@3.456.0)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.10.0)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.51.1)(@gomomento/sdk@1.51.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.13)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.0.1)(@qdrant/js-client-rest@1.6.0)(@supabase/supabase-js@2.38.5)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.4)(apify-client@2.8.4)(assemblyai@4.3.1)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.6.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.6.0)(mongodb@6.2.0)(mysql2@3.6.5)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.40.0)(puppeteer@20.9.0)(pyodide@0.24.1)(redis@4.6.11)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.17)(weaviate-ts-client@1.6.0)(ws@8.14.2)
-      langfuse: 3.3.0
-      langfuse-core: 3.3.0
+      langfuse: 3.3.1
+      langfuse-core: 3.3.1
     dev: false
 
-  /langfuse@3.1.0:
-    resolution: {integrity: sha512-qwnvcbEzdipCbanxMGLBu7HOGj76+1Y3URPzioupeLvIdRKXD97hPydye8Xa5azJpwFjb5EpJb//G6i5h8231A==}
+  /langfuse@3.3.1:
+    resolution: {integrity: sha512-OLpfN8zb+o68qw/usRcJ4NVFvLywHZkbiHwfpYMsQYh0IcHF03D3oweVv/Ws2y2Ekt4w2sVRvxyNs6eVoUP9ew==}
     engines: {node: '>=18'}
     dependencies:
-      langfuse-core: 3.3.0
-    dev: false
-
-  /langfuse@3.3.0:
-    resolution: {integrity: sha512-2hsRhvSkVtXtjM/uXMAgIMDW4TBAIZrV6FTCO2EJKQdU8s1lgB1+ScZkjvvlEVtxAZ9yKmHcr2Iyeusegs27ww==}
-    engines: {node: '>=18'}
-    dependencies:
-      langfuse-core: 3.3.0
+      langfuse-core: 3.3.1
     dev: false
 
   /langsmith@0.1.13:
