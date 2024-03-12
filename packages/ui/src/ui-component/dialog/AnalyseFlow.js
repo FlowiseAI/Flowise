@@ -112,7 +112,7 @@ const analyticProviders = [
     }
 ]
 
-const AnalyseFlow = ({ dialogProps, onCancel }) => {
+const AnalyseFlow = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -143,7 +143,6 @@ const AnalyseFlow = ({ dialogProps, onCancel }) => {
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
-            onCancel()
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({

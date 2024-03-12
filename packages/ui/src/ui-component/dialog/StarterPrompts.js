@@ -16,7 +16,7 @@ import useNotifier from 'utils/useNotifier'
 // API
 import chatflowsApi from 'api/chatflows'
 
-const StarterPrompts = ({ dialogProps, onConfirm }) => {
+const StarterPrompts = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -79,7 +79,6 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
-            onConfirm()
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
