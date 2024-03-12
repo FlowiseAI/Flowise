@@ -75,7 +75,7 @@ Flowise has 3 different modules in a single mono repository.
 
 ### Prerequisite
 
--   Install [Yarn v1](https://pnpm.io/installation)
+-   Install [PNPM](https://pnpm.io/installation)
     ```bash
     npm i -g pnpm
     ```
