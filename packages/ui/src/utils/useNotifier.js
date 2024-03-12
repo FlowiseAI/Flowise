@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSnackbar } from 'notistack'
-import { removeSnackbar } from 'store/actions'
+import { removeSnackbar } from '@/store/actions'
 
 let displayed = []
 
