@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
-import Configuration from '@/views/chatflows/Configuration'
+import RateLimit from '@/ui-component/extended/RateLimit'
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
@@ -99,7 +99,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 </Tabs>
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
-                        {item.id === 'rateLimiting' && <Configuration />}
+                        {item.id === 'rateLimiting' && <RateLimit />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
