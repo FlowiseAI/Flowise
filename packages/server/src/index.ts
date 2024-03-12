@@ -24,7 +24,6 @@ import {
     IChatMessageFeedback,
     IDepthQueue,
     INodeDirectedGraph,
-    ChatMessageRatingType,
     IUploadFileSizeAndTypes
 } from './Interface'
 import {
