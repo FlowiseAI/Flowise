@@ -2,12 +2,12 @@ import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
-import SpeechToText from './SpeechToText'
+import SpeechToText from '@/ui-component/extended/SpeechToText'
 import Configuration from '@/views/chatflows/Configuration'
-import AllowedDomains from './AllowedDomains'
-import ChatFeedback from './ChatFeedback'
-import AnalyseFlow from './AnalyseFlow'
-import StarterPrompts from './StarterPrompts'
+import AllowedDomains from '@/ui-component/extended/AllowedDomains'
+import ChatFeedback from '@/ui-component/extended/ChatFeedback'
+import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
+import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {

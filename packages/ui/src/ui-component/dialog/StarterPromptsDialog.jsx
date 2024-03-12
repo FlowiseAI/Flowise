@@ -11,7 +11,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import useNotifier from '@/utils/useNotifier'
 
 // Project imports
-import StarterPrompts from './StarterPrompts'
+import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 
 const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
