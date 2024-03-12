@@ -39,12 +39,15 @@ import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import StatsCard from '@/ui-component/cards/StatsCard'
+import Feedback from '@/ui-component/extended/Feedback'
 
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 // API
 import chatmessageApi from '@/api/chatmessage'
+import feedbackApi from '@/api/feedback'
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
@@ -91,6 +94,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [chatlogs, setChatLogs] = useState([])
     const [allChatlogs, setAllChatLogs] = useState([])
     const [chatMessages, setChatMessages] = useState([])
+    const [stats, setStats] = useState([])
     const [selectedMessageIndex, setSelectedMessageIndex] = useState(0)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
@@ -100,12 +104,18 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const getChatmessageApi = useApi(chatmessageApi.getAllChatmessageFromChatflow)
     const getChatmessageFromPKApi = useApi(chatmessageApi.getChatmessageFromPK)
+    const getStatsApi = useApi(feedbackApi.getStatsFromChatflow)
     const getStoragePathFromServer = useApi(chatmessageApi.getStoragePath)
     let storagePath = ''
 
     const onStartDateSelected = (date) => {
         setStartDate(date)
         getChatmessageApi.request(dialogProps.chatflow.id, {
+            startDate: date,
+            endDate: endDate,
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
             startDate: date,
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
@@ -119,11 +129,21 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            endDate: date,
+            startDate: startDate,
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+        })
     }
 
     const onChatTypeSelected = (chatTypes) => {
         setChatTypeFilter(chatTypes)
         getChatmessageApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypes.length ? chatTypes : undefined,
+            startDate: startDate,
+            endDate: endDate
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
             chatType: chatTypes.length ? chatTypes : undefined,
             startDate: startDate,
             endDate: endDate
@@ -162,6 +182,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
+            if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -238,6 +259,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     }
                 })
                 getChatmessageApi.request(chatflowid)
+                getStatsApi.request(chatflowid) // update stats
             } catch (error) {
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
@@ -406,8 +428,15 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }, [getChatmessageApi.data])
 
     useEffect(() => {
+        if (getStatsApi.data) {
+            setStats(getStatsApi.data)
+        }
+    }, [getStatsApi.data])
+
+    useEffect(() => {
         if (dialogProps.chatflow) {
             getChatmessageApi.request(dialogProps.chatflow.id)
+            getStatsApi.request(dialogProps.chatflow.id)
         }
 
         return () => {
@@ -418,6 +447,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setSelectedMessageIndex(0)
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
             setEndDate(new Date())
+            setStats([])
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -449,7 +479,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             </DialogTitle>
             <DialogContent>
                 <>
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 10 }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: 16,
+                            marginLeft: 8,
+                            marginRight: 8
+                        }}
+                    >
                         <div style={{ marginRight: 10 }}>
                             <b style={{ marginRight: 10 }}>From Date</b>
                             <DatePicker
@@ -495,6 +534,23 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ flex: 1 }}></div>
+                    </div>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                            gap: 10,
+                            marginBottom: 16,
+                            marginLeft: 8,
+                            marginRight: 8
+                        }}
+                    >
+                        <StatsCard title='Total Messages' stat={`${stats.totalMessages}`} />
+                        <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
+                        <StatsCard
+                            title='Positive Feedback'
+                            stat={`${((stats.positiveFeedback / stats.totalFeedback) * 100 || 0).toFixed(2)}%`}
+                        />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         {chatlogs && chatlogs.length == 0 && (
@@ -812,6 +868,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         })}
                                                                     </div>
                                                                 )}
+                                                                {message.type === 'apiMessage' && message.feedback ? (
+                                                                    <Feedback
+                                                                        content={message.feedback?.content || ''}
+                                                                        rating={message.feedback?.rating}
+                                                                    />
+                                                                ) : null}
                                                             </div>
                                                         </Box>
                                                     )
