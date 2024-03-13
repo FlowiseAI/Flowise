@@ -2,7 +2,6 @@ import PropTypes from 'prop-types'
 import { forwardRef } from 'react'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
 import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material'
 
 // constant
@@ -14,7 +13,6 @@ const headerSX = {
 
 const MainCard = forwardRef(function MainCard(
     {
-        border = true,
         boxShadow,
         children,
         content = true,
@@ -32,8 +30,6 @@ const MainCard = forwardRef(function MainCard(
     },
     ref
 ) {
-    const theme = useTheme()
-
     return (
         <Card
             ref={ref}

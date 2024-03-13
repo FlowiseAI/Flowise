@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 // material-ui
@@ -10,8 +9,6 @@ import {
     Stack,
     Badge,
     Toolbar,
-    TextField,
-    InputAdornment,
     ButtonGroup,
     ToggleButton,
     InputLabel,
@@ -20,11 +17,10 @@ import {
     OutlinedInput,
     Checkbox,
     ListItemText,
-    Button,
-    Typography
+    Button
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconChevronsDown, IconChevronsUp, IconLayoutGrid, IconList, IconSearch } from '@tabler/icons'
+import { IconChevronsDown, IconChevronsUp, IconLayoutGrid, IconList } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -44,6 +40,7 @@ import { baseURL } from '@/store/constant'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
 import MenuItem from '@mui/material/MenuItem'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -85,7 +82,6 @@ const Marketplace = () => {
     const navigate = useNavigate()
 
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -227,41 +223,8 @@ const Marketplace = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            sx={{
-                                p: 0,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
-                        >
-                            <Typography
-                                sx={{
-                                    fontSize: '2rem',
-                                    fontWeight: 600
-                                }}
-                                variant='h1'
-                            >
-                                Marketplace
-                            </Typography>
-                            <TextField
-                                size='small'
-                                id='search-filter-textbox'
-                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                                variant='outlined'
-                                fullWidth='true'
-                                placeholder='Search name or description or node name'
-                                onChange={onSearchChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <IconSearch />
-                                        </InputAdornment>
-                                    )
-                                }}
-                            />
+                    <ViewHeader
+                        filters={
                             <Button
                                 sx={{ width: '220px', ml: 3, mr: 5 }}
                                 variant='outlined'
@@ -270,42 +233,32 @@ const Marketplace = () => {
                             >
                                 {open ? 'Hide Filters' : 'Show Filters'}
                             </Button>
-                            <Box sx={{ flexGrow: 1 }} />
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
-                            >
-                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                    <ToggleButtonGroup
-                                        sx={{ maxHeight: 40 }}
-                                        value={view}
-                                        color='primary'
-                                        exclusive
-                                        onChange={handleViewChange}
-                                    >
-                                        <ToggleButton
-                                            sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                            variant='contained'
-                                            value='card'
-                                            title='Card View'
-                                        >
-                                            <IconLayoutGrid />
-                                        </ToggleButton>
-                                        <ToggleButton
-                                            sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                            variant='contained'
-                                            value='list'
-                                            title='List View'
-                                        >
-                                            <IconList />
-                                        </ToggleButton>
-                                    </ToggleButtonGroup>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
+                        }
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        title='Marketplace'
+                    >
+                        <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
+                            <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleViewChange}>
+                                <ToggleButton
+                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                    variant='contained'
+                                    value='card'
+                                    title='Card View'
+                                >
+                                    <IconLayoutGrid />
+                                </ToggleButton>
+                                <ToggleButton
+                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                    variant='contained'
+                                    value='list'
+                                    title='List View'
+                                >
+                                    <IconList />
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </ButtonGroup>
+                    </ViewHeader>
                     {open && (
                         <Box sx={{ flexGrow: 1, mb: 2 }}>
                             <Toolbar
