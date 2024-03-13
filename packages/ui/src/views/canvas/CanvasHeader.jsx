@@ -179,7 +179,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 })
             }
         }
-    }, [chatflow])
+    }, [chatflow, chatflowConfigurationDialogOpen])
 
     return (
         <>
