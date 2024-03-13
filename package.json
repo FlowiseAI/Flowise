@@ -55,6 +55,7 @@
     "packageManager": "pnpm@8.14.0",
     "pnpm": {
         "onlyBuiltDependencies": [
+            "faiss-node",
             "sqlite3"
         ]
     },
