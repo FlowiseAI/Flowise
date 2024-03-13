@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express'
+import 'source-map-support/register'
 import multer from 'multer'
 import path from 'path'
 import cors from 'cors'
@@ -1758,10 +1759,18 @@ export class App {
         feedback?: boolean
     ): Promise<ChatMessage[]> {
         const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-            const date = new Date(dateTimeStr)
+            let date
+            // Check if dateTimeStr is numeric, then assume it's a timestamp in milliseconds
+            if (!isNaN(+dateTimeStr)) {
+                date = new Date(parseInt(dateTimeStr, 10))
+            } else {
+                date = new Date(dateTimeStr)
+            }
+
             if (isNaN(date.getTime())) {
                 return undefined
             }
+
             setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
             return date
         }
@@ -1775,12 +1784,10 @@ export class App {
         if (feedback) {
             const query = this.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
 
-            // do the join with chat message feedback based on messageId for each chat message in the chatflow
             query
                 .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
                 .where('chat_message.chatflowid = :chatflowid', { chatflowid })
 
-            // based on which parameters are available add `andWhere` clauses to the query
             if (chatType) {
                 query.andWhere('chat_message.chatType = :chatType', { chatType })
             }
@@ -1794,13 +1801,14 @@ export class App {
                 query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
             }
 
-            // set date range
             query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
-                toDate: toDate ?? new Date()
+                fromDate: fromDate ?? new Date(new Date().setHours(0, 0, 0, 0)),
+                toDate: toDate ?? new Date(new Date().setHours(23, 59, 59, 999))
             })
-            // sort
+
             query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+
+            const [sql, parameters] = query.getQueryAndParameters()
 
             const messages = await query.getMany()
             return messages

@@ -31,6 +31,7 @@
 .env.test.local
 .env.production.local
 .env
+.nvmrc
 
 ## turbo
 .turbo
@@ -41,6 +42,9 @@
 
 ## uploads
 **/uploads
+
+## database
+.db
 
 ## compressed
 **/*.tgz

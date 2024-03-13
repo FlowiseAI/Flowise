@@ -25,7 +25,8 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: sqliteMigrations
+                migrations: sqliteMigrations,
+                logging: process.env.DEBUG === 'true'
             })
             break
         case 'mysql':
@@ -41,7 +42,8 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: mysqlMigrations,
-                ssl: getDatabaseSSLFromEnv()
+                ssl: getDatabaseSSLFromEnv(),
+                logging: process.env.DEBUG === 'true'
             })
             break
         case 'postgres':
@@ -56,7 +58,8 @@ export const init = async (): Promise<void> => {
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
-                migrations: postgresMigrations
+                migrations: postgresMigrations,
+                logging: process.env.DEBUG === 'true'
             })
             break
         default:
