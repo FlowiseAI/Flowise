@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -22,14 +22,16 @@
     "scripts": {
         "build": "tsc",
         "start": "run-script-os",
+        "clean": "rimraf dist",
+        "nuke": "rimraf dist node_modules .turbo",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",
-        "dev": "concurrently \"yarn watch\" \"nodemon\"",
+        "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"pnpm start\"",
         "oclif-dev": "run-script-os",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",
         "postpack": "shx rm -f oclif.manifest.json",
-        "prepack": "yarn build && oclif manifest && oclif readme",
+        "prepack": "pnpm build && oclif manifest && oclif readme",
         "typeorm": "typeorm-ts-node-commonjs",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
@@ -41,11 +43,13 @@
         "email": "henryheng@flowiseai.com"
     },
     "engines": {
-        "node": ">=18.15.0"
+        "node": ">=18.15.0 <19.0.0 || ^20"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@oclif/core": "^1.13.10",
+        "@types/lodash": "^4.14.202",
+        "@types/uuid": "^9.0.7",
         "async-mutex": "^0.4.0",
         "axios": "1.6.2",
         "content-disposition": "0.5.4",
@@ -55,11 +59,14 @@
         "express": "^4.17.3",
         "express-basic-auth": "^1.2.1",
         "express-rate-limit": "^6.9.0",
-        "flowise-components": "*",
-        "flowise-ui": "*",
+        "flowise-components": "workspace:^",
+        "flowise-ui": "workspace:^",
+        "lodash": "^4.17.21",
+        "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
         "multer": "^1.4.5-lts.1",
         "mysql": "^2.18.1",
+        "openai": "^4.20.0",
         "pg": "^8.11.1",
         "posthog-node": "^3.5.0",
         "reflect-metadata": "^0.1.13",
@@ -77,11 +84,13 @@
         "@types/multer": "^1.4.7",
         "@types/sanitize-html": "^2.9.5",
         "concurrently": "^7.1.0",
-        "nodemon": "^2.0.15",
+        "nodemon": "^2.0.22",
         "oclif": "^3",
+        "rimraf": "^5.0.5",
         "run-script-os": "^1.1.6",
         "shx": "^0.3.3",
         "ts-node": "^10.7.0",
+        "tsc-watch": "^6.0.4",
         "typescript": "^4.8.4"
     }
 }

@@ -160,7 +160,7 @@
             "data": {
                 "id": "chatAnthropic_0",
                 "label": "ChatAnthropic",
-                "version": 3,
+                "version": 4,
                 "name": "chatAnthropic",
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -288,6 +288,15 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatAnthropic_0-input-topK-number"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-allowImageUploads-boolean"
                     }
                 ],
                 "inputAnchors": [
@@ -305,7 +314,8 @@
                     "temperature": 0.9,
                     "maxTokensToSample": "",
                     "topP": "",
-                    "topK": ""
+                    "topK": "",
+                    "allowImageUploads": true
                 },
                 "outputAnchors": [
                     {

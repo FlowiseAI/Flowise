@@ -1,14 +1,30 @@
 import { ConversationChain } from 'langchain/chains'
-import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import {
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    SystemMessagePromptTemplate,
+    BaseMessagePromptTemplateLike,
+    PromptTemplate
+} from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { addImagesToMessages } from '../../../src/multiModalUtils'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import {
+    IVisionChatModal,
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    MessageContentImageUrl
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 
@@ -145,16 +161,32 @@ class ConversationChain_Chains implements INode {
     }
 }
 
-const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage[]) => {
+const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageContentImageUrl[]) => {
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const prompt = nodeData.inputs?.systemMessagePrompt as string
     const chatPromptTemplate = nodeData.inputs?.chatPromptTemplate as ChatPromptTemplate
+    let model = nodeData.inputs?.model as BaseChatModel
 
     if (chatPromptTemplate && chatPromptTemplate.promptMessages.length) {
         const sysPrompt = chatPromptTemplate.promptMessages[0]
         const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
         const messages = [sysPrompt, new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'), humanPrompt]
-        if (humanImageMessages.length) messages.push(...humanImageMessages)
+
+        // OpenAI works better when separate images into standalone human messages
+        if (model instanceof ChatOpenAI && humanImageMessages.length) {
+            messages.push(new HumanMessage({ content: [...humanImageMessages] }))
+        } else if (humanImageMessages.length) {
+            const lastMessage = messages.pop() as HumanMessagePromptTemplate
+            const template = (lastMessage.prompt as PromptTemplate).template as string
+            const msg = HumanMessagePromptTemplate.fromTemplate([
+                ...humanImageMessages,
+                {
+                    text: template
+                }
+            ])
+            msg.inputVariables = lastMessage.inputVariables
+            messages.push(msg)
+        }
 
         const chatPrompt = ChatPromptTemplate.fromMessages(messages)
         if ((chatPromptTemplate as any).promptValues) {
@@ -165,12 +197,19 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage
         return chatPrompt
     }
 
-    const messages = [
+    const messages: BaseMessagePromptTemplateLike[] = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? prompt : systemMessage),
         new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
         HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
     ]
-    if (humanImageMessages.length) messages.push(...(humanImageMessages as any[]))
+
+    // OpenAI works better when separate images into standalone human messages
+    if (model instanceof ChatOpenAI && humanImageMessages.length) {
+        messages.push(new HumanMessage({ content: [...humanImageMessages] }))
+    } else if (humanImageMessages.length) {
+        messages.pop()
+        messages.push(HumanMessagePromptTemplate.fromTemplate([`{${inputKey}}`, ...humanImageMessages]))
+    }
 
     const chatPrompt = ChatPromptTemplate.fromMessages(messages)
 
@@ -179,32 +218,23 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: HumanMessage
 
 const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
     const chatHistory = options.chatHistory
-    let model = nodeData.inputs?.model as ChatOpenAI
+    let model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
 
-    let humanImageMessages: HumanMessage[] = []
-    if (model instanceof ChatOpenAI) {
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
-
+    let messageContent: MessageContentImageUrl[] = []
+    if (llmSupportsVision(model)) {
+        messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+        const visionChatModel = model as IVisionChatModal
         if (messageContent?.length) {
-            // Change model to gpt-4-vision
-            model.modelName = 'gpt-4-vision-preview'
-
-            // Change default max token to higher when using gpt-4-vision
-            model.maxTokens = 1024
-
-            for (const msg of messageContent) {
-                humanImageMessages.push(new HumanMessage({ content: [msg] }))
-            }
+            visionChatModel.setVisionModel()
         } else {
             // revert to previous values if image upload is empty
-            model.modelName = model.configuredModel
-            model.maxTokens = model.configuredMaxToken
+            visionChatModel.revertToOriginalModel()
         }
     }
 
-    const chatPrompt = prepareChatPrompt(nodeData, humanImageMessages)
+    const chatPrompt = prepareChatPrompt(nodeData, messageContent)
     let promptVariables = {}
     const promptValuesRaw = (chatPrompt as any).promptValues
     if (promptValuesRaw) {
@@ -228,7 +258,7 @@ const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: s
             },
             ...promptVariables
         },
-        prepareChatPrompt(nodeData, humanImageMessages),
+        prepareChatPrompt(nodeData, messageContent),
         model,
         new StringOutputParser()
     ])

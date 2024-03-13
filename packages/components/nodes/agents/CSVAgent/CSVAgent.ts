@@ -5,6 +5,8 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class CSV_Agents implements INode {
     label: string
@@ -20,7 +22,7 @@ class CSV_Agents implements INode {
     constructor() {
         this.label = 'CSV Agent'
         this.name = 'csvAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'CSVagent.svg'
@@ -47,6 +49,14 @@ class CSV_Agents implements INode {
                 optional: true,
                 placeholder:
                     'I want you to act as a document that I am having a conversation with. Your name is "AI Assistant". You will provide me with answers from the given info. If the answer is not included, say exactly "Hmm, I am not sure." and stop after that. Refuse to answer any question not about the info. Never break character.'
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -56,10 +66,22 @@ class CSV_Agents implements INode {
         return undefined
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const model = nodeData.inputs?.model as BaseLanguageModel
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the CSV agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
