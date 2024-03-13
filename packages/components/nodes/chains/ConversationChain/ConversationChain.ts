@@ -199,14 +199,15 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
 
     const messages: BaseMessagePromptTemplateLike[] = [
         SystemMessagePromptTemplate.fromTemplate(prompt ? prompt : systemMessage),
-        new MessagesPlaceholder(memory.memoryKey ?? 'chat_history')
+        new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'),
+        HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
     ]
 
     // OpenAI works better when separate images into standalone human messages
     if (model instanceof ChatOpenAI && humanImageMessages.length) {
-        messages.push(HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`))
         messages.push(new HumanMessage({ content: [...humanImageMessages] }))
     } else if (humanImageMessages.length) {
+        messages.pop()
         messages.push(HumanMessagePromptTemplate.fromTemplate([`{${inputKey}}`, ...humanImageMessages]))
     }
 
