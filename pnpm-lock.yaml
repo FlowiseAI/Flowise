@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 onlyBuiltDependencies:
+  - faiss-node
   - sqlite3
 
 overrides:
@@ -14430,6 +14431,7 @@ packages:
   /faiss-node@0.2.3:
     resolution: {integrity: sha512-HfGhKFjyXPIyAlatcBNjv66q5ZQ43xfIpv8Uc17mIbEye7gbrmzVqAy+OxdlRy0usuLni+Dk1vSXf/z2yyr1Dg==}
     engines: {node: '>= 14.0.0'}
+    requiresBuild: true
     dependencies:
       bindings: 1.5.0
       node-addon-api: 6.1.0
