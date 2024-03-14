@@ -163,7 +163,6 @@ const Chatflows = () => {
                 )}
                 {!isLoading && view === 'list' && getAllChatflowsApi.data && (
                     <FlowListTable
-                        sx={{ mt: 20 }}
                         data={getAllChatflowsApi.data}
                         images={images}
                         filterFunction={filterFlows}

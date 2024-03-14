@@ -362,7 +362,6 @@ const Marketplace = () => {
                     )}
                     {!isLoading && view === 'list' && getAllTemplatesMarketplacesApi.data && (
                         <MarketplaceTable
-                            sx={{ mt: 20 }}
                             data={getAllTemplatesMarketplacesApi.data}
                             filterFunction={filterFlows}
                             filterByType={filterByType}
