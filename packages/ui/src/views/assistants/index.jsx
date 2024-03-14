@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
+import { Box, Stack, Button } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -98,22 +98,21 @@ const Assistants = () => {
                             Add
                         </StyledButton>
                     </ViewHeader>
-                    <Grid container spacing={gridSpacing}>
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                         {!getAllAssistantsApi.loading &&
                             getAllAssistantsApi.data &&
                             getAllAssistantsApi.data.map((data, index) => (
-                                <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                    <ItemCard
-                                        data={{
-                                            name: JSON.parse(data.details)?.name,
-                                            description: JSON.parse(data.details)?.instructions,
-                                            iconSrc: data.iconSrc
-                                        }}
-                                        onClick={() => edit(data)}
-                                    />
-                                </Grid>
+                                <ItemCard
+                                    data={{
+                                        name: JSON.parse(data.details)?.name,
+                                        description: JSON.parse(data.details)?.instructions,
+                                        iconSrc: data.iconSrc
+                                    }}
+                                    key={index}
+                                    onClick={() => edit(data)}
+                                />
                             ))}
-                    </Grid>
+                    </Box>
                     {!getAllAssistantsApi.loading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>

@@ -131,15 +131,11 @@ const Tools = () => {
                             </StyledButton>
                         </ButtonGroup>
                     </ViewHeader>
-                    <Grid container spacing={gridSpacing}>
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                         {!getAllToolsApi.loading &&
                             getAllToolsApi.data &&
-                            getAllToolsApi.data.map((data, index) => (
-                                <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                    <ItemCard data={data} onClick={() => edit(data)} />
-                                </Grid>
-                            ))}
-                    </Grid>
+                            getAllToolsApi.data.map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
+                    </Box>
                     {!getAllToolsApi.loading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>

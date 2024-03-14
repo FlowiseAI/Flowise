@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
 
 // material-ui
+import { styled } from '@mui/material/styles'
+import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Box,
@@ -16,7 +18,8 @@ import {
     TableRow,
     Paper,
     IconButton,
-    Chip
+    Chip,
+    useTheme
 } from '@mui/material'
 
 // project imports
@@ -43,9 +46,30 @@ import AddEditVariableDialog from './AddEditVariableDialog'
 import HowToUseVariablesDialog from './HowToUseVariablesDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    borderColor: theme.palette.grey[900] + 25,
+
+    [`&.${tableCellClasses.head}`]: {
+        color: theme.palette.grey[900]
+    },
+    [`&.${tableCellClasses.body}`]: {
+        fontSize: 14,
+        height: 64
+    }
+}))
+
+const StyledTableRow = styled(TableRow)(() => ({
+    // hide last border
+    '&:last-child td, &:last-child th': {
+        border: 0
+    }
+}))
+
 // ==============================|| Credentials ||============================== //
 
 const Variables = () => {
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     useNotifier()
 
@@ -183,23 +207,28 @@ const Variables = () => {
                         </Stack>
                     )}
                     {variables.length > 0 && (
-                        <TableContainer component={Paper}>
+                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
                             <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                                <TableHead>
+                                <TableHead
+                                    sx={{
+                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                                        height: 56
+                                    }}
+                                >
                                     <TableRow>
-                                        <TableCell>Name</TableCell>
-                                        <TableCell>Value</TableCell>
-                                        <TableCell>Type</TableCell>
-                                        <TableCell>Last Updated</TableCell>
-                                        <TableCell>Created</TableCell>
-                                        <TableCell> </TableCell>
-                                        <TableCell> </TableCell>
+                                        <StyledTableCell>Name</StyledTableCell>
+                                        <StyledTableCell>Value</StyledTableCell>
+                                        <StyledTableCell>Type</StyledTableCell>
+                                        <StyledTableCell>Last Updated</StyledTableCell>
+                                        <StyledTableCell>Created</StyledTableCell>
+                                        <StyledTableCell> </StyledTableCell>
+                                        <StyledTableCell> </StyledTableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {variables.filter(filterVariables).map((variable, index) => (
-                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell component='th' scope='row'>
+                                        <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <StyledTableCell scope='row'>
                                                 <div
                                                     style={{
                                                         display: 'flex',
@@ -226,28 +255,28 @@ const Variables = () => {
                                                     </div>
                                                     {variable.name}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>{variable.value}</TableCell>
-                                            <TableCell>
+                                            </StyledTableCell>
+                                            <StyledTableCell>{variable.value}</StyledTableCell>
+                                            <StyledTableCell>
                                                 <Chip
                                                     color={variable.type === 'static' ? 'info' : 'secondary'}
                                                     size='small'
                                                     label={variable.type}
                                                 />
-                                            </TableCell>
-                                            <TableCell>{moment(variable.updatedDate).format('DD-MMM-YY')}</TableCell>
-                                            <TableCell>{moment(variable.createdDate).format('DD-MMM-YY')}</TableCell>
-                                            <TableCell>
+                                            </StyledTableCell>
+                                            <StyledTableCell>{moment(variable.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                            <StyledTableCell>{moment(variable.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                            <StyledTableCell>
                                                 <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
                                                     <IconEdit />
                                                 </IconButton>
-                                            </TableCell>
-                                            <TableCell>
+                                            </StyledTableCell>
+                                            <StyledTableCell>
                                                 <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
                                                     <IconTrash />
                                                 </IconButton>
-                                            </TableCell>
-                                        </TableRow>
+                                            </StyledTableCell>
+                                        </StyledTableRow>
                                     ))}
                                 </TableBody>
                             </Table>
