@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography } from '@mui/material'
+import { Box, Grid, Typography, useTheme } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -30,12 +31,19 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| CONTRACT CARD ||=========================== //
 
 const ItemCard = ({ isLoading, data, images, onClick }) => {
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
+
     return (
         <>
             {isLoading ? (
                 <SkeletonChatflowCard />
             ) : (
-                <CardWrapper border={false} content={false} onClick={onClick}>
+                <CardWrapper
+                    content={false}
+                    onClick={onClick}
+                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                >
                     <Box sx={{ height: '100%', p: 2.25 }}>
                         <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
                             <Box display='flex' flexDirection='column'>
@@ -84,24 +92,24 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                 )}
                             </Box>
                             {images && (
-                                <div
-                                    style={{
+                                <Box
+                                    sx={{
                                         display: 'flex',
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        marginTop: 5
+                                        alignItems: 'center',
+                                        justifyContent: 'start',
+                                        gap: 1
                                     }}
                                 >
-                                    {images.map((img) => (
-                                        <div
+                                    {images.slice(0, images.length > 3 ? 3 : images.length).map((img) => (
+                                        <Box
                                             key={img}
-                                            style={{
-                                                width: 35,
-                                                height: 35,
-                                                marginRight: 5,
+                                            sx={{
+                                                width: 30,
+                                                height: 30,
                                                 borderRadius: '50%',
-                                                backgroundColor: 'white',
-                                                marginTop: 5
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.white
+                                                    : theme.palette.grey[300] + 75
                                             }}
                                         >
                                             <img
@@ -109,9 +117,14 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                                 alt=''
                                                 src={img}
                                             />
-                                        </div>
+                                        </Box>
                                     ))}
-                                </div>
+                                    {images.length > 3 && (
+                                        <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
+                                            + {images.length - 3} More
+                                        </Typography>
+                                    )}
+                                </Box>
                             )}
                         </Grid>
                     </Box>

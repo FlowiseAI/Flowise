@@ -266,7 +266,9 @@ const Credentials = () => {
                                                             width: 35,
                                                             height: 35,
                                                             borderRadius: '50%',
-                                                            backgroundColor: theme.palette.common.white
+                                                            backgroundColor: customization.isDarkMode
+                                                                ? theme.palette.common.white
+                                                                : theme.palette.grey[300] + 75
                                                         }}
                                                     >
                                                         <img

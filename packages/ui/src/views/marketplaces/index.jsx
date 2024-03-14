@@ -306,7 +306,11 @@ const Marketplace = () => {
                             onChange={handleViewChange}
                         >
                             <ToggleButton
-                                sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
                                 variant='contained'
                                 value='card'
                                 title='Card View'
@@ -314,7 +318,11 @@ const Marketplace = () => {
                                 <IconLayoutGrid />
                             </ToggleButton>
                             <ToggleButton
-                                sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
                                 variant='contained'
                                 value='list'
                                 title='List View'

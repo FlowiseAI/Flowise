@@ -120,10 +120,12 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                                 <Box
                                                     key={img}
                                                     sx={{
-                                                        width: 35,
-                                                        height: 35,
+                                                        width: 30,
+                                                        height: 30,
                                                         borderRadius: '50%',
-                                                        backgroundColor: theme.palette.common.white
+                                                        backgroundColor: customization.isDarkMode
+                                                            ? theme.palette.common.white
+                                                            : theme.palette.grey[300] + 75
                                                     }}
                                                 >
                                                     <img
@@ -135,7 +137,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                             ))}
                                             {images[row.id].length > 5 && (
                                                 <Typography
-                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.8rem', fontWeight: 200 }}
+                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}
                                                 >
                                                     + {images[row.id].length - 5} More
                                                 </Typography>
