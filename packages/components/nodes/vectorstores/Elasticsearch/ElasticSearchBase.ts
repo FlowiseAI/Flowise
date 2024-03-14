@@ -8,10 +8,10 @@ import {
     INodeParams
 } from '../../../src'
 import { Client, ClientOptions } from '@elastic/elasticsearch'
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { Document } from 'langchain/document'
+import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export abstract class ElasticSearchBase {
     label: string
@@ -21,6 +21,7 @@ export abstract class ElasticSearchBase {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -30,6 +31,7 @@ export abstract class ElasticSearchBase {
         this.type = 'Elasticsearch'
         this.icon = 'elasticsearch.png'
         this.category = 'Vector Stores'
+        this.badge = 'DEPRECATING'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
         this.credential = {
             label: 'Connect Credential',
@@ -144,13 +146,26 @@ export abstract class ElasticSearchBase {
         } else if (cloudId) {
             let username = getCredentialParam('username', credentialData, nodeData)
             let password = getCredentialParam('password', credentialData, nodeData)
-            elasticSearchClientOptions = {
-                cloud: {
-                    id: cloudId
-                },
-                auth: {
-                    username: username,
-                    password: password
+            if (cloudId.startsWith('http')) {
+                elasticSearchClientOptions = {
+                    node: cloudId,
+                    auth: {
+                        username: username,
+                        password: password
+                    },
+                    tls: {
+                        rejectUnauthorized: false
+                    }
+                }
+            } else {
+                elasticSearchClientOptions = {
+                    cloud: {
+                        id: cloudId
+                    },
+                    auth: {
+                        username: username,
+                        password: password
+                    }
                 }
             }
         }

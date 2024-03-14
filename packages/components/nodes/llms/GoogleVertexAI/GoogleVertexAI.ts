@@ -1,8 +1,8 @@
+import { GoogleAuthOptions } from 'google-auth-library'
+import { BaseCache } from '@langchain/core/caches'
+import { GoogleVertexAI, GoogleVertexAITextInput } from '@langchain/community/llms/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GoogleVertexAI, GoogleVertexAITextInput } from 'langchain/llms/googlevertexai'
-import { GoogleAuthOptions } from 'google-auth-library'
-import { BaseCache } from 'langchain/schema'
 
 class GoogleVertexAI_LLMs implements INode {
     label: string
@@ -21,7 +21,7 @@ class GoogleVertexAI_LLMs implements INode {
         this.name = 'googlevertexai'
         this.version = 2.0
         this.type = 'GoogleVertexAI'
-        this.icon = 'vertexai.svg'
+        this.icon = 'GoogleVertex.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around GoogleVertexAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(GoogleVertexAI)]

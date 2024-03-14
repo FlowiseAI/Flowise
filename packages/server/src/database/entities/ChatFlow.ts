@@ -31,9 +31,15 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     analytic?: string
 
+    @Column({ nullable: true, type: 'text' })
+    speechToText?: string
+
     @CreateDateColumn()
     createdDate: Date
 
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: true, type: 'text' })
+    category?: string
 }

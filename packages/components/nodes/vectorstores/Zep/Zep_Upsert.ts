@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { ZepVectorStore, IZepConfig } from 'langchain/vectorstores/zep'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
+import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/zep'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Zep_Upsert_VectorStores implements INode {
     label: string
@@ -13,20 +13,22 @@ class Zep_Upsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep Upsert Document'
+        this.label = 'Zep Upsert Document - Open Source'
         this.name = 'zepUpsert'
         this.version = 1.0
         this.type = 'Zep'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Zep'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

@@ -1,10 +1,15 @@
-import { ICommonObject, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
 export enum chatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
+}
+
+export enum ChatMessageRatingType {
+    THUMBS_UP = 'THUMBS_UP',
+    THUMBS_DOWN = 'THUMBS_DOWN'
 }
 /**
  * Databases
@@ -31,10 +36,21 @@ export interface IChatMessage {
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
+    fileUploads?: string
     chatType: string
     chatId: string
     memoryType?: string
     sessionId?: string
+    createdDate: Date
+}
+
+export interface IChatMessageFeedback {
+    id: string
+    content?: string
+    chatflowid: string
+    chatId: string
+    messageId: string
+    rating: ChatMessageRatingType
     createdDate: Date
 }
 
@@ -64,6 +80,15 @@ export interface ICredential {
     name: string
     credentialName: string
     encryptedData: string
+    updatedDate: Date
+    createdDate: Date
+}
+
+export interface IVariable {
+    id: string
+    name: string
+    value: string
+    type: string
     updatedDate: Date
     createdDate: Date
 }
@@ -166,12 +191,14 @@ export interface IncomingInput {
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
+    stopNodeId?: string
+    uploads?: IFileUpload[]
 }
 
 export interface IActiveChatflows {
     [key: string]: {
         startingNodes: IReactFlowNode[]
-        endingNodeData: INodeData
+        endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
     }
@@ -189,12 +216,6 @@ export interface IOverrideConfig {
     type: string
 }
 
-export interface IDatabaseExport {
-    chatmessages: IChatMessage[]
-    chatflows: IChatFlow[]
-    apikeys: ICommonObject[]
-}
-
 export type ICredentialDataDecrypted = ICommonObject
 
 // Plain credential object sent to server
@@ -207,4 +228,9 @@ export interface ICredentialReqBody {
 // Decrypted credential object sent back to client
 export interface ICredentialReturnResponse extends ICredential {
     plainDataObj: ICredentialDataDecrypted
+}
+
+export interface IUploadFileSizeAndTypes {
+    fileTypes: string[]
+    maxUploadSize: number
 }

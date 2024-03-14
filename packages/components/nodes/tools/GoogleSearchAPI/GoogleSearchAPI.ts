@@ -1,6 +1,6 @@
+import { GoogleCustomSearch } from '@langchain/community/tools/google_custom_search'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GoogleCustomSearch } from 'langchain/tools'
 
 class GoogleCustomSearchAPI_Tools implements INode {
     label: string
@@ -19,7 +19,7 @@ class GoogleCustomSearchAPI_Tools implements INode {
         this.name = 'googleCustomSearch'
         this.version = 1.0
         this.type = 'GoogleCustomSearchAPI'
-        this.icon = 'google.png'
+        this.icon = 'google.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around Google Custom Search API - a real-time API to access Google search results'
         this.inputs = []

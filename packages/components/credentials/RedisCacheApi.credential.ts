@@ -8,7 +8,7 @@ class RedisCacheApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Redis Cache API'
+        this.label = 'Redis API'
         this.name = 'redisCacheApi'
         this.version = 1.0
         this.inputs = [
@@ -35,6 +35,11 @@ class RedisCacheApi implements INodeCredential {
                 name: 'redisCachePwd',
                 type: 'password',
                 placeholder: '<REDIS_PASSWORD>'
+            },
+            {
+                label: 'Use SSL',
+                name: 'redisCacheSslEnabled',
+                type: 'boolean'
             }
         ]
     }

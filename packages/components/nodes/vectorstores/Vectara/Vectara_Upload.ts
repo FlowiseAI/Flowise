@@ -1,6 +1,6 @@
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from '@langchain/community/vectorstores/vectara'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from 'langchain/vectorstores/vectara'
 
 class VectaraUpload_VectorStores implements INode {
     label: string
@@ -10,6 +10,7 @@ class VectaraUpload_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -24,6 +25,7 @@ class VectaraUpload_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upload files to Vectara'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

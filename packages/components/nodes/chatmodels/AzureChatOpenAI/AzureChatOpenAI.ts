@@ -1,9 +1,8 @@
-import { OpenAIBaseInput } from 'langchain/dist/types/openai-types'
+import { AzureOpenAIInput, ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AzureOpenAIInput, ChatOpenAI } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
 
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
@@ -123,7 +122,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIBaseInput> = {
+        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIChatInput> = {
             temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,

@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import axios from 'axios'
+import { Document } from '@langchain/core/documents'
 import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { Document } from 'langchain/document'
-import axios from 'axios'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class Airtable_DocumentLoaders implements INode {
     label: string
@@ -20,7 +20,7 @@ class Airtable_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Airtable'
         this.name = 'airtable'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 'airtable.svg'
         this.category = 'Document Loaders'
@@ -56,9 +56,29 @@ class Airtable_DocumentLoaders implements INode {
                     'If your table URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, tblJdmvbrgizbYICO is the table id'
             },
             {
+                label: 'View Id',
+                name: 'viewId',
+                type: 'string',
+                placeholder: 'viw9UrP77Id0CE4ee',
+                description:
+                    'If your view URL looks like: https://airtable.com/app11RobdGoX0YNsC/tblJdmvbrgizbYICO/viw9UrP77Id0CE4ee, viw9UrP77Id0CE4ee is the view id',
+                optional: true
+            },
+            {
+                label: 'Include Only Fields',
+                name: 'fields',
+                type: 'string',
+                placeholder: 'Name, Assignee, fld1u0qUz0SoOQ9Gg, fldew39v6LBN5CjUl',
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Comma-separated list of field names or IDs to include. If empty, then ALL fields are used. Use field IDs if field names contain commas.'
+            },
+            {
                 label: 'Return All',
                 name: 'returnAll',
                 type: 'boolean',
+                optional: true,
                 default: true,
                 additionalParams: true,
                 description: 'If all results should be returned or only up to a given limit'
@@ -67,9 +87,10 @@ class Airtable_DocumentLoaders implements INode {
                 label: 'Limit',
                 name: 'limit',
                 type: 'number',
+                optional: true,
                 default: 100,
                 additionalParams: true,
-                description: 'Number of results to return'
+                description: 'Number of results to return. Ignored when Return All is enabled.'
             },
             {
                 label: 'Metadata',
@@ -83,6 +104,9 @@ class Airtable_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const baseId = nodeData.inputs?.baseId as string
         const tableId = nodeData.inputs?.tableId as string
+        const viewId = nodeData.inputs?.viewId as string
+        const fieldsInput = nodeData.inputs?.fields as string
+        const fields = fieldsInput ? fieldsInput.split(',').map((field) => field.trim()) : []
         const returnAll = nodeData.inputs?.returnAll as boolean
         const limit = nodeData.inputs?.limit as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
@@ -94,12 +118,18 @@ class Airtable_DocumentLoaders implements INode {
         const airtableOptions: AirtableLoaderParams = {
             baseId,
             tableId,
+            viewId,
+            fields,
             returnAll,
             accessToken,
             limit: limit ? parseInt(limit, 10) : 100
         }
 
         const loader = new AirtableLoader(airtableOptions)
+
+        if (!baseId || !tableId) {
+            throw new Error('Base ID and Table ID must be provided.')
+        }
 
         let docs = []
 
@@ -133,8 +163,17 @@ interface AirtableLoaderParams {
     baseId: string
     tableId: string
     accessToken: string
+    viewId?: string
+    fields?: string[]
     limit?: number
     returnAll?: boolean
+}
+
+interface AirtableLoaderRequest {
+    maxRecords?: number
+    view: string | undefined
+    fields?: string[]
+    offset?: string
 }
 
 interface AirtableLoaderResponse {
@@ -153,16 +192,22 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly tableId: string
 
+    public readonly viewId?: string
+
+    public readonly fields: string[]
+
     public readonly accessToken: string
 
     public readonly limit: number
 
     public readonly returnAll: boolean
 
-    constructor({ baseId, tableId, accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
+    constructor({ baseId, tableId, viewId, fields = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
         super()
         this.baseId = baseId
         this.tableId = tableId
+        this.viewId = viewId
+        this.fields = fields
         this.accessToken = accessToken
         this.limit = limit
         this.returnAll = returnAll
@@ -175,17 +220,21 @@ class AirtableLoader extends BaseDocumentLoader {
         return this.loadLimit()
     }
 
-    protected async fetchAirtableData(url: string, params: ICommonObject): Promise<AirtableLoaderResponse> {
+    protected async fetchAirtableData(url: string, data: AirtableLoaderRequest): Promise<AirtableLoaderResponse> {
         try {
             const headers = {
                 Authorization: `Bearer ${this.accessToken}`,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
-            const response = await axios.get(url, { params, headers })
+            const response = await axios.post(url, data, { headers })
             return response.data
         } catch (error) {
-            throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Failed to fetch ${url} from Airtable: ${error.message}, status: ${error.response?.status}`)
+            } else {
+                throw new Error(`Failed to fetch ${url} from Airtable: ${error}`)
+            }
         }
     }
 
@@ -203,24 +252,53 @@ class AirtableLoader extends BaseDocumentLoader {
     }
 
     private async loadLimit(): Promise<Document[]> {
-        const params = { maxRecords: this.limit }
-        const data = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, params)
-        if (data.records.length === 0) {
-            return []
+        let data: AirtableLoaderRequest = {
+            maxRecords: this.limit,
+            view: this.viewId
         }
-        return data.records.map((page) => this.createDocumentFromPage(page))
+
+        if (this.fields.length > 0) {
+            data.fields = this.fields
+        }
+
+        let response: AirtableLoaderResponse
+        let returnPages: AirtableLoaderPage[] = []
+
+        // Paginate if the user specifies a limit > 100 (like 200) but not return all.
+        do {
+            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
+            returnPages.push(...response.records)
+            data.offset = response.offset
+
+            // Stop if we have fetched enough records
+            if (returnPages.length >= this.limit) break
+        } while (response.offset !== undefined)
+
+        // Truncate array to the limit if necessary
+        if (returnPages.length > this.limit) {
+            returnPages.length = this.limit
+        }
+
+        return returnPages.map((page) => this.createDocumentFromPage(page))
     }
 
     private async loadAll(): Promise<Document[]> {
-        const params: ICommonObject = { pageSize: 100 }
-        let data: AirtableLoaderResponse
+        let data: AirtableLoaderRequest = {
+            view: this.viewId
+        }
+
+        if (this.fields.length > 0) {
+            data.fields = this.fields
+        }
+
+        let response: AirtableLoaderResponse
         let returnPages: AirtableLoaderPage[] = []
 
         do {
-            data = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}`, params)
-            returnPages.push.apply(returnPages, data.records)
-            params.offset = data.offset
-        } while (data.offset !== undefined)
+            response = await this.fetchAirtableData(`https://api.airtable.com/v0/${this.baseId}/${this.tableId}/listRecords`, data)
+            returnPages.push(...response.records)
+            data.offset = response.offset
+        } while (response.offset !== undefined)
         return returnPages.map((page) => this.createDocumentFromPage(page))
     }
 }

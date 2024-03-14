@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Chroma } from 'langchain/vectorstores/chroma'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { flatten } from 'lodash'
+import { Chroma } from '@langchain/community/vectorstores/chroma'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { ChromaExtended } from './core'
 
 class ChromaUpsert_VectorStores implements INode {
@@ -14,6 +14,7 @@ class ChromaUpsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -28,6 +29,7 @@ class ChromaUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Chroma'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

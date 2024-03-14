@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { PromptTemplate } from '@langchain/core/prompts'
 import { APIChain } from 'langchain/chains'
 import { getBaseClasses } from '../../../src/utils'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate } from 'langchain/prompts'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:
@@ -32,7 +32,7 @@ class GETApiChain_Chains implements INode {
         this.name = 'getApiChain'
         this.version = 1.0
         this.type = 'GETApiChain'
-        this.icon = 'apichain.svg'
+        this.icon = 'get.svg'
         this.category = 'Chains'
         this.description = 'Chain to run queries against GET API'
         this.baseClasses = [this.type, ...getBaseClasses(APIChain)]

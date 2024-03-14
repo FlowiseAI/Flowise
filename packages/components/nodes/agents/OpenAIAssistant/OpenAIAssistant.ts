@@ -8,6 +8,9 @@ import * as path from 'node:path'
 import fetch from 'node-fetch'
 import { flatten, uniqWith, isEqual } from 'lodash'
 import { zodToJsonSchema } from 'zod-to-json-schema'
+import { AnalyticHandler } from '../../../src/handler'
+import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class OpenAIAssistant_Agents implements INode {
     label: string
@@ -23,10 +26,10 @@ class OpenAIAssistant_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Assistant'
         this.name = 'openAIAssistant'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'OpenAIAssistant'
         this.category = 'Agents'
-        this.icon = 'openai.png'
+        this.icon = 'assistant.svg'
         this.description = `An agent that uses OpenAI Assistant API to pick the tool and args to call`
         this.baseClasses = [this.type]
         this.inputs = [
@@ -41,6 +44,23 @@ class OpenAIAssistant_Agents implements INode {
                 name: 'tools',
                 type: 'Tool',
                 list: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
+            },
+            {
+                label: 'Disable File Download',
+                name: 'disableFileDownload',
+                type: 'boolean',
+                description:
+                    'Messages can contain text, images, or files. In some cases, you may want to prevent others from downloading the files. Learn more from OpenAI File Annotation <a target="_blank" href="https://platform.openai.com/docs/assistants/how-it-works/managing-threads-and-messages">docs</a>',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -76,11 +96,10 @@ class OpenAIAssistant_Agents implements INode {
         return null
     }
 
-    async clearSessionMemory(nodeData: INodeData, options: ICommonObject): Promise<void> {
+    async clearChatMessages(nodeData: INodeData, options: ICommonObject, sessionIdObj: { type: string; id: string }): Promise<void> {
         const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
-        let sessionId = nodeData.inputs?.sessionId as string
 
         const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
             id: selectedAssistantId
@@ -91,15 +110,21 @@ class OpenAIAssistant_Agents implements INode {
             return
         }
 
-        if (!sessionId && options.chatId) {
+        if (!sessionIdObj) return
+
+        let sessionId = ''
+        if (sessionIdObj.type === 'chatId') {
+            const chatId = sessionIdObj.id
             const chatmsg = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                chatId: options.chatId
+                chatId
             })
             if (!chatmsg) {
-                options.logger.error(`Chat Message with Chat Id: ${options.chatId} not found`)
+                options.logger.error(`Chat Message with Chat Id: ${chatId} not found`)
                 return
             }
             sessionId = chatmsg.sessionId
+        } else if (sessionIdObj.type === 'threadId') {
+            sessionId = sessionIdObj.id
         }
 
         const credentialData = await getCredentialData(assistant.credential ?? '', options)
@@ -111,14 +136,34 @@ class OpenAIAssistant_Agents implements INode {
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
         options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
-        if (sessionId) await openai.beta.threads.del(sessionId)
-        options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+        try {
+            if (sessionId) await openai.beta.threads.del(sessionId)
+            options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+        } catch (e) {
+            throw new Error(e)
+        }
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const selectedAssistantId = nodeData.inputs?.selectedAssistant as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const disableFileDownload = nodeData.inputs?.disableFileDownload as boolean
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const isStreaming = options.socketIO && options.socketIOClientId
+        const socketIO = isStreaming ? options.socketIO : undefined
+        const socketIOClientId = isStreaming ? options.socketIOClientId : ''
+
+        if (moderations && moderations.length > 0) {
+            try {
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         const formattedTools = tools?.map((tool: any) => formatToOpenAIAssistantTool(tool)) ?? []
@@ -134,6 +179,11 @@ class OpenAIAssistant_Agents implements INode {
         if (!openAIApiKey) throw new Error(`OpenAI ApiKey not found`)
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
+
+        // Start analytics
+        const analyticHandlers = new AnalyticHandler(nodeData, options)
+        await analyticHandlers.init()
+        const parentIds = await analyticHandlers.onChainStart('OpenAIAssistant', input)
 
         try {
             const assistantDetails = JSON.parse(assistant.details)
@@ -157,7 +207,8 @@ class OpenAIAssistant_Agents implements INode {
             }
 
             const chatmessage = await appDataSource.getRepository(databaseEntities['ChatMessage']).findOneBy({
-                chatId: options.chatId
+                chatId: options.chatId,
+                chatflowid: options.chatflowid
             })
 
             let threadId = ''
@@ -171,7 +222,7 @@ class OpenAIAssistant_Agents implements INode {
                 threadId = thread.id
             }
 
-            // List all runs
+            // List all runs, in case existing thread is still running
             if (!isNewThread) {
                 const promise = (threadId: string) => {
                     return new Promise<void>((resolve) => {
@@ -207,6 +258,7 @@ class OpenAIAssistant_Agents implements INode {
             })
 
             // Run assistant thread
+            const llmIds = await analyticHandlers.onLLMStart('ChatOpenAI', input, parentIds)
             const runThread = await openai.beta.threads.runs.create(threadId, {
                 assistant_id: retrievedAssistant.id
             })
@@ -227,7 +279,12 @@ class OpenAIAssistant_Agents implements INode {
                                 const actions: ICommonObject[] = []
                                 run.required_action.submit_tool_outputs.tool_calls.forEach((item) => {
                                     const functionCall = item.function
-                                    const args = JSON.parse(functionCall.arguments)
+                                    let args = {}
+                                    try {
+                                        args = JSON.parse(functionCall.arguments)
+                                    } catch (e) {
+                                        console.error('Error parsing arguments, default to empty object')
+                                    }
                                     actions.push({
                                         tool: functionCall.name,
                                         toolInput: args,
@@ -239,26 +296,57 @@ class OpenAIAssistant_Agents implements INode {
                                 for (let i = 0; i < actions.length; i += 1) {
                                     const tool = tools.find((tool: any) => tool.name === actions[i].tool)
                                     if (!tool) continue
-                                    const toolOutput = await tool.call(actions[i].toolInput)
-                                    submitToolOutputs.push({
-                                        tool_call_id: actions[i].toolCallId,
-                                        output: toolOutput
-                                    })
-                                    usedTools.push({
-                                        tool: tool.name,
-                                        toolInput: actions[i].toolInput,
-                                        toolOutput
-                                    })
+
+                                    // Start tool analytics
+                                    const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
+                                    if (options.socketIO && options.socketIOClientId)
+                                        options.socketIO.to(options.socketIOClientId).emit('tool', tool.name)
+
+                                    try {
+                                        const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, {
+                                            sessionId: threadId,
+                                            chatId: options.chatId,
+                                            input
+                                        })
+                                        await analyticHandlers.onToolEnd(toolIds, toolOutput)
+                                        submitToolOutputs.push({
+                                            tool_call_id: actions[i].toolCallId,
+                                            output: toolOutput
+                                        })
+                                        usedTools.push({
+                                            tool: tool.name,
+                                            toolInput: actions[i].toolInput,
+                                            toolOutput
+                                        })
+                                    } catch (e) {
+                                        await analyticHandlers.onToolEnd(toolIds, e)
+                                        console.error('Error executing tool', e)
+                                        clearInterval(timeout)
+                                        reject(
+                                            new Error(
+                                                `Error processing thread: ${state}, Thread ID: ${threadId}, Run ID: ${runId}, Tool: ${tool.name}`
+                                            )
+                                        )
+                                        break
+                                    }
                                 }
 
-                                if (submitToolOutputs.length) {
-                                    await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
-                                        tool_outputs: submitToolOutputs
-                                    })
-                                    resolve(state)
-                                } else {
-                                    await openai.beta.threads.runs.cancel(threadId, runId)
-                                    resolve('requires_action_retry')
+                                const newRun = await openai.beta.threads.runs.retrieve(threadId, runId)
+                                const newStatus = newRun?.status
+
+                                try {
+                                    if (submitToolOutputs.length && newStatus === 'requires_action') {
+                                        await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
+                                            tool_outputs: submitToolOutputs
+                                        })
+                                        resolve(state)
+                                    } else {
+                                        await openai.beta.threads.runs.cancel(threadId, runId)
+                                        resolve('requires_action_retry')
+                                    }
+                                } catch (e) {
+                                    clearInterval(timeout)
+                                    reject(new Error(`Error submitting tool outputs: ${state}, Thread ID: ${threadId}, Run ID: ${runId}`))
                                 }
                             }
                         } else if (state === 'cancelled' || state === 'expired' || state === 'failed') {
@@ -288,7 +376,9 @@ class OpenAIAssistant_Agents implements INode {
                     runThreadId = newRunThread.id
                     state = await promise(threadId, newRunThread.id)
                 } else {
-                    throw new Error(`Error processing thread: ${state}, Thread ID: ${threadId}`)
+                    const errMsg = `Error processing thread: ${state}, Thread ID: ${threadId}`
+                    await analyticHandlers.onChainError(parentIds, errMsg)
+                    throw new Error(errMsg)
                 }
             }
 
@@ -310,7 +400,7 @@ class OpenAIAssistant_Agents implements INode {
 
                         const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
 
-                        // Iterate over the annotations and add footnotes
+                        // Iterate over the annotations
                         for (let index = 0; index < annotations.length; index++) {
                             const annotation = annotations[index]
                             let filePath = ''
@@ -323,11 +413,13 @@ class OpenAIAssistant_Agents implements INode {
                                 // eslint-disable-next-line no-useless-escape
                                 const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                 filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                fileAnnotations.push({
-                                    filePath,
-                                    fileName
-                                })
+                                if (!disableFileDownload) {
+                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                    fileAnnotations.push({
+                                        filePath,
+                                        fileName
+                                    })
+                                }
                             } else {
                                 const file_path = (annotation as OpenAI.Beta.Threads.Messages.MessageContentText.Text.FilePath).file_path
                                 if (file_path) {
@@ -335,22 +427,30 @@ class OpenAIAssistant_Agents implements INode {
                                     // eslint-disable-next-line no-useless-escape
                                     const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                     filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', fileName)
-                                    await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
-                                    fileAnnotations.push({
-                                        filePath,
-                                        fileName
-                                    })
+                                    if (!disableFileDownload) {
+                                        await downloadFile(cited_file, filePath, dirPath, openAIApiKey)
+                                        fileAnnotations.push({
+                                            filePath,
+                                            fileName
+                                        })
+                                    }
                                 }
                             }
 
                             // Replace the text with a footnote
-                            message_content.value = message_content.value.replace(`${annotation.text}`, `${filePath}`)
+                            message_content.value = message_content.value.replace(
+                                `${annotation.text}`,
+                                `${disableFileDownload ? '' : filePath}`
+                            )
                         }
 
                         returnVal += message_content.value
                     } else {
                         returnVal += content.text.value
                     }
+
+                    const lenticularBracketRegex = /【[^】]*】/g
+                    returnVal = returnVal.replace(lenticularBracketRegex, '')
                 } else {
                     const content = assistantMessages[0].content[i] as MessageContentImageFile
                     const fileId = content.image_file.file_id
@@ -358,15 +458,23 @@ class OpenAIAssistant_Agents implements INode {
                     const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
                     const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', `${fileObj.filename}.png`)
 
-                    await downloadFile(fileObj, filePath, dirPath, openAIApiKey)
+                    await downloadImg(openai, fileId, filePath, dirPath)
 
                     const bitmap = fsDefault.readFileSync(filePath)
                     const base64String = Buffer.from(bitmap).toString('base64')
 
+                    // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
                     const imgHTML = `<img src="data:image/png;base64,${base64String}" width="100%" height="max-content" alt="${fileObj.filename}" /><br/>`
                     returnVal += imgHTML
                 }
             }
+
+            const imageRegex = /<img[^>]*\/>/g
+            let llmOutput = returnVal.replace(imageRegex, '')
+            llmOutput = llmOutput.replace('<br/>', '')
+
+            await analyticHandlers.onLLMEnd(llmIds, llmOutput)
+            await analyticHandlers.onChainEnd(parentIds, messageData, true)
 
             return {
                 text: returnVal,
@@ -375,9 +483,26 @@ class OpenAIAssistant_Agents implements INode {
                 assistant: { assistantId: openAIAssistantId, threadId, runId: runThreadId, messages: messageData }
             }
         } catch (error) {
+            await analyticHandlers.onChainError(parentIds, error, true)
             throw new Error(error)
         }
     }
+}
+
+const downloadImg = async (openai: OpenAI, fileId: string, filePath: string, dirPath: string) => {
+    const response = await openai.files.content(fileId)
+
+    // Extract the binary data from the Response object
+    const image_data = await response.arrayBuffer()
+
+    // Convert the binary data to a Buffer
+    const image_data_buffer = Buffer.from(image_data)
+
+    // Save the image to a specific location
+    if (!fsDefault.existsSync(dirPath)) {
+        fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+    }
+    fsDefault.writeFileSync(filePath, image_data_buffer)
 }
 
 const downloadFile = async (fileObj: any, filePath: string, dirPath: string, openAIApiKey: string) => {

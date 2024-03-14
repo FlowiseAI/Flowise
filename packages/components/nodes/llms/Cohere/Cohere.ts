@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Cohere, CohereInput } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class Cohere_LLMs implements INode {
     label: string
@@ -20,7 +20,7 @@ class Cohere_LLMs implements INode {
         this.name = 'cohere'
         this.version = 2.0
         this.type = 'Cohere'
-        this.icon = 'cohere.png'
+        this.icon = 'Cohere.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Cohere large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Cohere)]

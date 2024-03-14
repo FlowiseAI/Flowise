@@ -1,6 +1,6 @@
+import { CohereEmbeddings, CohereEmbeddingsParams } from '@langchain/cohere'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { CohereEmbeddings, CohereEmbeddingsParams } from 'langchain/embeddings/cohere'
 
 class CohereEmbedding_Embeddings implements INode {
     label: string
@@ -19,7 +19,7 @@ class CohereEmbedding_Embeddings implements INode {
         this.name = 'cohereEmbeddings'
         this.version = 1.0
         this.type = 'CohereEmbeddings'
-        this.icon = 'cohere.png'
+        this.icon = 'Cohere.svg'
         this.category = 'Embeddings'
         this.description = 'Cohere API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(CohereEmbeddings)]
@@ -64,7 +64,7 @@ class CohereEmbedding_Embeddings implements INode {
             apiKey: cohereApiKey
         }
 
-        if (modelName) obj.modelName = modelName
+        if (modelName) obj.model = modelName
 
         const model = new CohereEmbeddings(obj)
         return model

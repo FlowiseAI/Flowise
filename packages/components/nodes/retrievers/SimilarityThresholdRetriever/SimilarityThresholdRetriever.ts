@@ -1,7 +1,7 @@
-import { VectorStore } from 'langchain/vectorstores/base'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { ScoreThresholdRetriever } from 'langchain/retrievers/score_threshold'
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src'
-import { ScoreThresholdRetriever } from 'langchain/retrievers/score_threshold'
 
 class SimilarityThresholdRetriever_Retrievers implements INode {
     label: string
@@ -18,7 +18,7 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Similarity Score Threshold Retriever'
         this.name = 'similarityThresholdRetriever'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'SimilarityThresholdRetriever'
         this.icon = 'similaritythreshold.svg'
         this.category = 'Retrievers'
@@ -29,6 +29,14 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
                 label: 'Vector Store',
                 name: 'vectorStore',
                 type: 'VectorStore'
+            },
+            {
+                label: 'Query',
+                name: 'query',
+                type: 'string',
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Minimum Similarity Score (%)',
@@ -44,7 +52,8 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
                 description: `The maximum number of results to fetch`,
                 type: 'number',
                 default: 20,
-                step: 1
+                step: 1,
+                additionalParams: true
             },
             {
                 label: 'K Increment',
@@ -52,7 +61,8 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
                 description: `How much to increase K by each time. It'll fetch N results, then N + kIncrement, then N + kIncrement * 2, etc.`,
                 type: 'number',
                 default: 2,
-                step: 1
+                step: 1,
+                additionalParams: true
             }
         ]
         this.outputs = [
@@ -64,11 +74,13 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: ['Document']
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: ['Document', 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]
@@ -77,6 +89,7 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
     async init(nodeData: INodeData, input: string): Promise<any> {
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const minSimilarityScore = nodeData.inputs?.minSimilarityScore as number
+        const query = nodeData.inputs?.query as string
         const maxK = nodeData.inputs?.maxK as string
         const kIncrement = nodeData.inputs?.kIncrement as string
 
@@ -89,11 +102,11 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
         })
 
         if (output === 'retriever') return retriever
-        else if (output === 'document') return await retriever.getRelevantDocuments(input)
+        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
         else if (output === 'text') {
             let finaltext = ''
 
-            const docs = await retriever.getRelevantDocuments(input)
+            const docs = await retriever.getRelevantDocuments(query ? query : input)
 
             for (const doc of docs) finaltext += `${doc.pageContent}\n`
 
