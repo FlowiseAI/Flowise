@@ -1,16 +1,5 @@
 // assets
-import {
-    IconTrash,
-    IconFileUpload,
-    IconFileExport,
-    IconCopy,
-    IconSearch,
-    IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone,
-    IconThumbUp
-} from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconMessage, IconAdjustmentsHorizontal } from '@tabler/icons'
 
 // constant
 const icons = {
@@ -18,12 +7,8 @@ const icons = {
     IconFileUpload,
     IconFileExport,
     IconCopy,
-    IconSearch,
     IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone,
-    IconThumbUp
+    IconAdjustmentsHorizontal
 }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
@@ -34,13 +19,6 @@ const settings = {
     type: 'group',
     children: [
         {
-            id: 'conversationStarters',
-            title: 'Starter Prompts',
-            type: 'item',
-            url: '',
-            icon: icons.IconPictureInPictureOff
-        },
-        {
             id: 'viewMessages',
             title: 'View Messages',
             type: 'item',
@@ -48,25 +26,11 @@ const settings = {
             icon: icons.IconMessage
         },
         {
-            id: 'chatFeedback',
-            title: 'Chat Feedback',
+            id: 'chatflowConfiguration',
+            title: 'Configuration',
             type: 'item',
             url: '',
-            icon: icons.IconThumbUp
-        },
-        {
-            id: 'allowedDomains',
-            title: 'Allowed Domains',
-            type: 'item',
-            url: '',
-            icon: icons.IconLink
-        },
-        {
-            id: 'enableSpeechToText',
-            title: 'Speech to Text',
-            type: 'item',
-            url: '',
-            icon: icons.IconMicrophone
+            icon: icons.IconAdjustmentsHorizontal
         },
         {
             id: 'duplicateChatflow',
@@ -88,13 +52,6 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileExport
-        },
-        {
-            id: 'analyseChatflow',
-            title: 'Analyse Chatflow',
-            type: 'item',
-            url: '',
-            icon: icons.IconSearch
         },
         {
             id: 'deleteChatflow',

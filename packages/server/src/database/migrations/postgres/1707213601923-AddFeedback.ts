@@ -11,7 +11,7 @@ export class AddFeedback1707213601923 implements MigrationInterface {
                 "messageId" varchar NOT NULL,
                 "rating" varchar NOT NULL,
                 "createdDate" timestamp NOT NULL DEFAULT now(),
-                CONSTRAINT "PK_98419043dd704f54-9830ab78f8" PRIMARY KEY (id)
+                CONSTRAINT "PK_98419043dd704f54-9830ab78f9" PRIMARY KEY (id)
             );`
         )
     }
