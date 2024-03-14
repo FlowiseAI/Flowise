@@ -1,28 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
 
 // material-ui
-import {
-    Button,
-    Box,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    Toolbar,
-    TextField,
-    InputAdornment,
-    ButtonGroup,
-    Typography
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Button, Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -42,19 +24,17 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconSearch } from '@tabler/icons'
+import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 
 // const
 import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_CREDENTIALS } from '@/store/actions'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| Credentials ||============================== //
 
 const Credentials = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const dispatch = useDispatch()
     useNotifier()
 
@@ -193,64 +173,21 @@ const Credentials = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            sx={{
-                                p: 0,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Credentials' title='Credentials'>
+                        <StyledButton
+                            variant='contained'
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            onClick={listCredential}
+                            startIcon={<IconPlus />}
                         >
-                            <Typography
-                                sx={{
-                                    fontSize: '2rem',
-                                    fontWeight: 600
-                                }}
-                                variant='h1'
-                            >
-                                Credentials
-                            </Typography>
-                            <TextField
-                                size='small'
-                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                                variant='outlined'
-                                placeholder='Search credential name'
-                                onChange={onSearchChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <IconSearch />
-                                        </InputAdornment>
-                                    )
-                                }}
-                            />
-                            <Box sx={{ flexGrow: 1 }} />
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
-                            >
-                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                    <StyledButton
-                                        variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
-                                        onClick={listCredential}
-                                        startIcon={<IconPlus />}
-                                    >
-                                        Add Credential
-                                    </StyledButton>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
+                            Add Credential
+                        </StyledButton>
+                    </ViewHeader>
                     {credentials.length <= 0 && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
-                                    style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
+                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
                                     src={CredentialEmptySVG}
                                     alt='CredentialEmptySVG'
                                 />

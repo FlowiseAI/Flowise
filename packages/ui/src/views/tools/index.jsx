@@ -1,9 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button, ButtonGroup, Toolbar, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Grid, Box, Stack, Button, ButtonGroup } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -21,13 +19,11 @@ import useApi from '@/hooks/useApi'
 
 // icons
 import { IconPlus, IconFileImport } from '@tabler/icons'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Tools = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
     const [showDialog, setShowDialog] = useState(false)
@@ -105,54 +101,36 @@ const Tools = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            sx={{
-                                p: 0,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
-                        >
-                            <Typography
-                                sx={{
-                                    fontSize: '2rem',
-                                    fontWeight: 600
-                                }}
-                                variant='h1'
+                    <ViewHeader title='Tools'>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Button
+                                variant='outlined'
+                                onClick={() => inputRef.current.click()}
+                                startIcon={<IconFileImport />}
+                                sx={{ borderRadius: 2, height: 40 }}
                             >
-                                Tools
-                            </Typography>
-                            <Box sx={{ flexGrow: 1 }} />
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
+                                Load
+                            </Button>
+                            <input
+                                style={{ display: 'none' }}
+                                ref={inputRef}
+                                type='file'
+                                hidden
+                                accept='.json'
+                                onChange={(e) => handleFileUpload(e)}
+                            />
+                        </Box>
+                        <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                            <StyledButton
                                 variant='contained'
-                                aria-label='outlined primary button group'
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                                sx={{ borderRadius: 2, height: 40 }}
                             >
-                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                    <Button variant='outlined' onClick={() => inputRef.current.click()} startIcon={<IconFileImport />}>
-                                        Load
-                                    </Button>
-                                    <input
-                                        style={{ display: 'none' }}
-                                        ref={inputRef}
-                                        type='file'
-                                        hidden
-                                        accept='.json'
-                                        onChange={(e) => handleFileUpload(e)}
-                                    />
-                                </ButtonGroup>
-                                <Box sx={{ width: 5 }} />
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                                        Create
-                                    </StyledButton>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
+                                Create
+                            </StyledButton>
+                        </ButtonGroup>
+                    </ViewHeader>
                     <Grid container spacing={gridSpacing}>
                         {!getAllToolsApi.loading &&
                             getAllToolsApi.data &&

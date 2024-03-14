@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
 
@@ -16,14 +16,8 @@ import {
     TableRow,
     Paper,
     IconButton,
-    Toolbar,
-    TextField,
-    InputAdornment,
-    ButtonGroup,
-    Chip,
-    Typography
+    Chip
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -41,19 +35,17 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconSearch, IconVariable } from '@tabler/icons'
+import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons'
 import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 
 // const
 import AddEditVariableDialog from './AddEditVariableDialog'
 import HowToUseVariablesDialog from './HowToUseVariablesDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| Credentials ||============================== //
 
 const Variables = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const dispatch = useDispatch()
     useNotifier()
 
@@ -165,66 +157,19 @@ const Variables = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Stack flexDirection='row'>
-                        <Box sx={{ flexGrow: 1 }}>
-                            <Toolbar
-                                disableGutters={true}
-                                sx={{
-                                    p: 0,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    width: '100%'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontSize: '2rem',
-                                        fontWeight: 600
-                                    }}
-                                    variant='h1'
-                                >
-                                    Variables
-                                </Typography>
-                                <TextField
-                                    size='small'
-                                    sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                                    variant='outlined'
-                                    placeholder='Search variable name'
-                                    onChange={onSearchChange}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position='start'>
-                                                <IconSearch />
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                />
-                                <Box sx={{ flexGrow: 1 }} />
-                                <ButtonGroup
-                                    sx={{ maxHeight: 40 }}
-                                    disableElevation
-                                    variant='contained'
-                                    aria-label='outlined primary button group'
-                                >
-                                    <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                        <Button variant='outlined' sx={{ mr: 2 }} onClick={() => setShowHowToDialog(true)}>
-                                            How To Use
-                                        </Button>
-                                    </ButtonGroup>
-                                    <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                        <StyledButton
-                                            variant='contained'
-                                            sx={{ color: 'white', mr: 1, height: 37 }}
-                                            onClick={addNew}
-                                            startIcon={<IconPlus />}
-                                        >
-                                            Add Variable
-                                        </StyledButton>
-                                    </ButtonGroup>
-                                </ButtonGroup>
-                            </Toolbar>
-                        </Box>
-                    </Stack>
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Variables' title='Variables'>
+                        <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
+                            How To Use
+                        </Button>
+                        <StyledButton
+                            variant='contained'
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            onClick={addNew}
+                            startIcon={<IconPlus />}
+                        >
+                            Add Variable
+                        </StyledButton>
+                    </ViewHeader>
                     {variables.length === 0 && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>

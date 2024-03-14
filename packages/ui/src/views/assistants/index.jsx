@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button, ButtonGroup, Toolbar, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Grid, Box, Stack, Button } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -22,13 +20,11 @@ import useApi from '@/hooks/useApi'
 
 // icons
 import { IconPlus, IconFileImport } from '@tabler/icons'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Assistants = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
     const [showDialog, setShowDialog] = useState(false)
@@ -89,46 +85,19 @@ const Assistants = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            sx={{
-                                p: 0,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
+                    <ViewHeader title='OpenAI Assistants'>
+                        <Button
+                            variant='outlined'
+                            onClick={loadExisting}
+                            startIcon={<IconFileImport />}
+                            sx={{ borderRadius: 2, height: 40 }}
                         >
-                            <Typography
-                                sx={{
-                                    fontSize: '2rem',
-                                    fontWeight: 600
-                                }}
-                                variant='h1'
-                            >
-                                OpenAI Assistants
-                            </Typography>
-                            <Box sx={{ flexGrow: 1 }} />
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
-                            >
-                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                    <Button variant='outlined' onClick={loadExisting} startIcon={<IconFileImport />}>
-                                        Load
-                                    </Button>
-                                </ButtonGroup>
-                                <Box sx={{ width: 5 }} />
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                                        Add
-                                    </StyledButton>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
+                            Load
+                        </Button>
+                        <StyledButton variant='contained' sx={{ borderRadius: 2, height: 40 }} onClick={addNew} startIcon={<IconPlus />}>
+                            Add
+                        </StyledButton>
+                    </ViewHeader>
                     <Grid container spacing={gridSpacing}>
                         {!getAllAssistantsApi.loading &&
                             getAllAssistantsApi.data &&

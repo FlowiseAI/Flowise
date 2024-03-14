@@ -4,23 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 // material-ui
-import {
-    Box,
-    Stack,
-    Badge,
-    Toolbar,
-    ButtonGroup,
-    ToggleButton,
-    InputLabel,
-    FormControl,
-    Select,
-    OutlinedInput,
-    Checkbox,
-    ListItemText,
-    Button
-} from '@mui/material'
+import { Box, Stack, Badge, ToggleButton, InputLabel, FormControl, Select, OutlinedInput, Checkbox, ListItemText } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconChevronsDown, IconChevronsUp, IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconLayoutGrid, IconList } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -63,17 +49,19 @@ TabPanel.propTypes = {
     value: PropTypes.number.isRequired
 }
 
-const ITEM_HEIGHT = 48
-const ITEM_PADDING_TOP = 8
 const badges = ['POPULAR', 'NEW']
 const types = ['Chatflow', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
     PaperProps: {
         style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250
+            width: 160
         }
+    }
+}
+const SelectStyles = {
+    '& .MuiOutlinedInput-notchedOutline': {
+        borderRadius: 2
     }
 }
 // ==============================|| Marketplace ||============================== //
@@ -97,7 +85,6 @@ const Marketplace = () => {
     const [badgeFilter, setBadgeFilter] = useState([])
     const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])
-    const [open, setOpen] = useState(false)
     const handleBadgeFilterChange = (event) => {
         const {
             target: { value }
@@ -225,55 +212,10 @@ const Marketplace = () => {
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader
                         filters={
-                            <Button
-                                sx={{ width: '220px', ml: 3, mr: 5 }}
-                                variant='outlined'
-                                onClick={() => setOpen(!open)}
-                                startIcon={open ? <IconChevronsUp /> : <IconChevronsDown />}
-                            >
-                                {open ? 'Hide Filters' : 'Show Filters'}
-                            </Button>
-                        }
-                        onSearchChange={onSearchChange}
-                        search={true}
-                        title='Marketplace'
-                    >
-                        <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                            <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleViewChange}>
-                                <ToggleButton
-                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
+                            <>
+                                <FormControl
+                                    sx={{ borderRadius: 2, display: 'flex', flexDirection: 'column', justifyContent: 'end', minWidth: 120 }}
                                 >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        </ButtonGroup>
-                    </ViewHeader>
-                    {open && (
-                        <Box sx={{ flexGrow: 1, mb: 2 }}>
-                            <Toolbar
-                                disableGutters={true}
-                                style={{
-                                    margin: 1,
-                                    padding: 1,
-                                    paddingBottom: 10,
-                                    display: 'flex',
-                                    justifyContent: 'flex-start',
-                                    width: '100%',
-                                    borderBottom: '1px solid'
-                                }}
-                            >
-                                <FormControl sx={{ m: 1, width: 250 }}>
                                     <InputLabel size='small' id='filter-badge-label'>
                                         Tag
                                     </InputLabel>
@@ -287,16 +229,19 @@ const Marketplace = () => {
                                         input={<OutlinedInput label='Badge' />}
                                         renderValue={(selected) => selected.join(', ')}
                                         MenuProps={MenuProps}
+                                        sx={SelectStyles}
                                     >
                                         {badges.map((name) => (
-                                            <MenuItem key={name} value={name}>
-                                                <Checkbox checked={badgeFilter.indexOf(name) > -1} />
+                                            <MenuItem key={name} value={name} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}>
+                                                <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
                                                 <ListItemText primary={name} />
                                             </MenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
-                                <FormControl sx={{ m: 1, width: 250 }}>
+                                <FormControl
+                                    sx={{ borderRadius: 2, display: 'flex', flexDirection: 'column', justifyContent: 'end', minWidth: 120 }}
+                                >
                                     <InputLabel size='small' id='type-badge-label'>
                                         Type
                                     </InputLabel>
@@ -310,16 +255,19 @@ const Marketplace = () => {
                                         input={<OutlinedInput label='Badge' />}
                                         renderValue={(selected) => selected.join(', ')}
                                         MenuProps={MenuProps}
+                                        sx={SelectStyles}
                                     >
                                         {types.map((name) => (
-                                            <MenuItem key={name} value={name}>
-                                                <Checkbox checked={typeFilter.indexOf(name) > -1} />
+                                            <MenuItem key={name} value={name} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}>
+                                                <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
                                                 <ListItemText primary={name} />
                                             </MenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
-                                <FormControl sx={{ m: 1, width: 250 }}>
+                                <FormControl
+                                    sx={{ borderRadius: 2, display: 'flex', flexDirection: 'column', justifyContent: 'end', minWidth: 120 }}
+                                >
                                     <InputLabel size='small' id='type-fw-label'>
                                         Framework
                                     </InputLabel>
@@ -333,19 +281,48 @@ const Marketplace = () => {
                                         input={<OutlinedInput label='Badge' />}
                                         renderValue={(selected) => selected.join(', ')}
                                         MenuProps={MenuProps}
+                                        sx={SelectStyles}
                                     >
                                         {framework.map((name) => (
-                                            <MenuItem key={name} value={name}>
-                                                <Checkbox checked={frameworkFilter.indexOf(name) > -1} />
+                                            <MenuItem key={name} value={name} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}>
+                                                <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} />
                                                 <ListItemText primary={name} />
                                             </MenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
-                            </Toolbar>
-                        </Box>
-                    )}
-
+                            </>
+                        }
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        searchPlaceholder='Search Name/Description/Node'
+                        title='Marketplace'
+                    >
+                        <ToggleButtonGroup
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            value={view}
+                            color='primary'
+                            exclusive
+                            onChange={handleViewChange}
+                        >
+                            <ToggleButton
+                                sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                variant='contained'
+                                value='card'
+                                title='Card View'
+                            >
+                                <IconLayoutGrid />
+                            </ToggleButton>
+                            <ToggleButton
+                                sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                                variant='contained'
+                                value='list'
+                                title='List View'
+                            >
+                                <IconList />
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </ViewHeader>
                     {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (
                         <>
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>

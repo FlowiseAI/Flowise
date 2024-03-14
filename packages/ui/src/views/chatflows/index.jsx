@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, ToggleButton, ButtonGroup } from '@mui/material'
+import { Box, Stack, ToggleButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -125,38 +125,34 @@ const Chatflows = () => {
     return (
         <MainCard>
             <Stack flexDirection='column' sx={{ gap: 3 }}>
-                <ViewHeader onSearchChange={onSearchChange} search={true} title='Chatflows'>
-                    <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            color='primary'
-                            exclusive
-                            onChange={handleChange}
+                <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Chatflows'>
+                    <ToggleButtonGroup
+                        sx={{ borderRadius: 2, maxHeight: 40 }}
+                        value={view}
+                        color='primary'
+                        exclusive
+                        onChange={handleChange}
+                    >
+                        <ToggleButton
+                            sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                            variant='contained'
+                            value='card'
+                            title='Card View'
                         >
-                            <ToggleButton
-                                sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
-                            >
-                                <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
-                                <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                    </ButtonGroup>
-                    <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
-                            Add New
-                        </StyledButton>
-                    </ButtonGroup>
+                            <IconLayoutGrid />
+                        </ToggleButton>
+                        <ToggleButton
+                            sx={{ borderRadius: 2, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
+                            variant='contained'
+                            value='list'
+                            title='List View'
+                        >
+                            <IconList />
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                    <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+                        Add New
+                    </StyledButton>
                 </ViewHeader>
                 {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
                     <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>

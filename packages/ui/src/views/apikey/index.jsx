@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // material-ui
@@ -17,11 +17,7 @@ import {
     IconButton,
     Popover,
     Collapse,
-    Typography,
-    Toolbar,
-    TextField,
-    InputAdornment,
-    ButtonGroup
+    Typography
 } from '@mui/material'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import { useTheme, styled } from '@mui/material/styles'
@@ -43,21 +39,11 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import {
-    IconTrash,
-    IconEdit,
-    IconCopy,
-    IconChevronsUp,
-    IconChevronsDown,
-    IconX,
-    IconSearch,
-    IconPlus,
-    IconEye,
-    IconEyeOff
-} from '@tabler/icons'
+import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| APIKey ||============================== //
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -185,7 +171,6 @@ APIKeyRow.propTypes = {
 }
 const APIKey = () => {
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
 
     const dispatch = useDispatch()
     useNotifier()
@@ -323,63 +308,20 @@ const APIKey = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Toolbar
-                            disableGutters={true}
-                            sx={{
-                                p: 0,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                width: '100%'
-                            }}
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search API Keys' title='API Keys'>
+                        <StyledButton
+                            variant='contained'
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            onClick={addNew}
+                            startIcon={<IconPlus />}
                         >
-                            <Typography
-                                sx={{
-                                    fontSize: '2rem',
-                                    fontWeight: 600
-                                }}
-                                variant='h1'
-                            >
-                                API Keys
-                            </Typography>
-                            <TextField
-                                size='small'
-                                sx={{ display: { xs: 'none', sm: 'block' }, ml: 3 }}
-                                variant='outlined'
-                                placeholder='Search key name'
-                                onChange={onSearchChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <IconSearch />
-                                        </InputAdornment>
-                                    )
-                                }}
-                            />
-                            <Box sx={{ flexGrow: 1 }} />
-                            <ButtonGroup
-                                sx={{ maxHeight: 40 }}
-                                disableElevation
-                                variant='contained'
-                                aria-label='outlined primary button group'
-                            >
-                                <ButtonGroup disableElevation variant='contained' aria-label='outlined primary button group'>
-                                    <StyledButton
-                                        variant='contained'
-                                        sx={{ color: 'white', mr: 1, height: 37 }}
-                                        onClick={addNew}
-                                        startIcon={<IconPlus />}
-                                    >
-                                        Create Key
-                                    </StyledButton>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </Toolbar>
-                    </Box>
+                            Create Key
+                        </StyledButton>
+                    </ViewHeader>
                     {apiKeys.length <= 0 && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
-                                <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
+                                <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
                             </Box>
                             <div>No API Keys Yet</div>
                         </Stack>
