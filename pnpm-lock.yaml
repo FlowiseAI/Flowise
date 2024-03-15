@@ -577,11 +577,11 @@ importers:
         specifier: ^16.0.0
         version: 16.4.5
       flowise-embed:
-        specifier: '*'
-        version: 1.1.0
+        specifier: latest
+        version: 1.2.0
       flowise-embed-react:
-        specifier: '*'
-        version: 1.0.2(flowise-embed@1.1.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
+        specifier: latest
+        version: 1.0.2(flowise-embed@1.2.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
       flowise-react-json-view:
         specifier: '*'
         version: 1.21.7(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0)
@@ -14881,14 +14881,14 @@ packages:
     resolution: {integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==}
     dev: true
 
-  /flowise-embed-react@1.0.2(flowise-embed@1.1.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
+  /flowise-embed-react@1.0.2(flowise-embed@1.2.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
     resolution: {integrity: sha512-M6rDofJWTWI9rtZN7G3oTlqAcQaHoF/IUIoW1YitHsjKly24awq5sky+0Wfkcg4VfoXz3SiLHMZ/XOF4PDuvqA==}
     peerDependencies:
       flowise-embed: '*'
       react: 18.x
     dependencies:
       '@ladle/react': 2.5.1(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
-      flowise-embed: 1.1.0
+      flowise-embed: 1.2.0
       react: 18.2.0
     transitivePeerDependencies:
       - '@types/node'
@@ -14903,8 +14903,8 @@ packages:
       - typescript
     dev: false
 
-  /flowise-embed@1.1.0:
-    resolution: {integrity: sha512-XGYeSFiSx9YH0AQfZi6GYdJaMO8bzOoublNcC17gHXNy89Xt7mUMc+st3YDG7zzjaG6+F0POAE4N9dMzWsQSHA==}
+  /flowise-embed@1.2.0:
+    resolution: {integrity: sha512-WGVH/ix6fvb+bOvp8ugxgC9raQvF7HuhqTDasFmltkrDhDySXeyOiZOj5eUs5nOkk9WT4ZaDznjSeBGDXOiShQ==}
     dependencies:
       '@babel/core': 7.24.0
       '@ts-stack/markdown': 1.5.0
