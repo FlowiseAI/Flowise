@@ -1,8 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.2'
 
 settings:
   autoInstallPeers: true
-  excludeLinksFromLockfile: false
+  excludeLinksFromLockfile: true
 
 onlyBuiltDependencies:
   - faiss-node
