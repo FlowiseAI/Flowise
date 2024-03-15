@@ -1768,7 +1768,7 @@ export class App {
         const aMonthAgo = () => {
             const date = new Date()
             date.setMonth(new Date().getMonth() - 1)
-            return date;
+            return date
         }
 
         let fromDate
