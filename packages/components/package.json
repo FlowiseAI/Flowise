@@ -35,7 +35,7 @@
         "@huggingface/inference": "^2.6.1",
         "@langchain/anthropic": "^0.1.4",
         "@langchain/cohere": "^0.0.5",
-        "@langchain/community": "^0.0.30",
+        "@langchain/community": "^0.0.39",
         "@langchain/google-genai": "^0.0.10",
         "@langchain/groq": "^0.0.2",
         "@langchain/mistralai": "^0.0.7",
