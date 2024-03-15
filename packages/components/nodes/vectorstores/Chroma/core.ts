@@ -1,5 +1,5 @@
-import { Chroma, ChromaLibArgs } from 'langchain/vectorstores/chroma'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Chroma, ChromaLibArgs } from '@langchain/community/vectorstores/chroma'
+import { Embeddings } from '@langchain/core/embeddings'
 import type { Collection } from 'chromadb'
 import { ChromaClient } from 'chromadb'
 
@@ -30,7 +30,7 @@ export class ChromaExtended extends Chroma {
                 if (this.chromaApiKey) {
                     obj.fetchOptions = {
                         headers: {
-                            'X-Api-Key': this.chromaApiKey
+                            Authorization: `Bearer ${this.chromaApiKey}`
                         }
                     }
                 }

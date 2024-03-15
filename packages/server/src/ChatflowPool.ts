@@ -16,7 +16,7 @@ export class ChatflowPool {
      * @param {IReactFlowNode[]} startingNodes
      * @param {ICommonObject} overrideConfig
      */
-    add(chatflowid: string, endingNodeData: INodeData, startingNodes: IReactFlowNode[], overrideConfig?: ICommonObject) {
+    add(chatflowid: string, endingNodeData: INodeData | undefined, startingNodes: IReactFlowNode[], overrideConfig?: ICommonObject) {
         this.activeChatflows[chatflowid] = {
             startingNodes,
             endingNodeData,

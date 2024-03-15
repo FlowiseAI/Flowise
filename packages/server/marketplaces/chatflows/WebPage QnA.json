@@ -1,173 +1,22 @@
 {
     "description": "Scrape web pages for QnA with long term memory Motorhead and return source documents",
+    "categories": "HtmlToMarkdown,Cheerio Web Scraper,ChatOpenAI,Redis,Pinecone,Langchain",
+    "framework": "Langchain",
+    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,
-            "height": 523,
-            "id": "chatOpenAI_0",
-            "position": {
-                "x": 1542.965468159417,
-                "y": -200.10756989974368
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chatOpenAI_0",
-                "label": "ChatOpenAI",
-                "version": 1,
-                "name": "chatOpenAI",
-                "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
-                "category": "Chat Models",
-                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["openAIApi"],
-                        "id": "chatOpenAI_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
-                        "default": "gpt-3.5-turbo",
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-modelName-options"
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "default": 0.9,
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-temperature-number"
-                    },
-                    {
-                        "label": "Max Tokens",
-                        "name": "maxTokens",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-maxTokens-number"
-                    },
-                    {
-                        "label": "Top Probability",
-                        "name": "topP",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-topP-number"
-                    },
-                    {
-                        "label": "Frequency Penalty",
-                        "name": "frequencyPenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
-                    },
-                    {
-                        "label": "Presence Penalty",
-                        "name": "presencePenalty",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-presencePenalty-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-basepath-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": "0.9",
-                    "maxTokens": "",
-                    "topP": "",
-                    "frequencyPenalty": "",
-                    "presencePenalty": "",
-                    "timeout": "",
-                    "basepath": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-                        "name": "chatOpenAI",
-                        "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 1542.965468159417,
-                "y": -200.10756989974368
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 328,
+            "height": 329,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 827.6835380475393,
-                "y": 253.8955254525015
+                "x": 825.9524798523752,
+                "y": 243.50917628151723
             },
             "type": "customNode",
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -180,6 +29,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_0-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -219,7 +90,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -234,8 +106,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 827.6835380475393,
-                "y": 253.8955254525015
+                "x": 825.9524798523752,
+                "y": 243.50917628151723
             },
             "dragging": false
         },
@@ -305,7 +177,7 @@
         },
         {
             "width": 300,
-            "height": 479,
+            "height": 480,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
                 "x": 1882.5543981868987,
@@ -315,10 +187,10 @@
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
-                "version": 1,
+                "version": 3,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain"],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
@@ -330,47 +202,36 @@
                         "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
                     },
                     {
-                        "label": "System Message",
-                        "name": "systemMessagePrompt",
+                        "label": "Rephrase Prompt",
+                        "name": "rephrasePrompt",
                         "type": "string",
+                        "description": "Using previous chat history, rephrase question into a standalone question",
+                        "warning": "Prompt must include input variables: {chat_history} and {question}",
                         "rows": 4,
                         "additionalParams": true,
                         "optional": true,
-                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
-                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                        "default": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                        "id": "conversationalRetrievalQAChain_0-input-rephrasePrompt-string"
                     },
                     {
-                        "label": "Chain Option",
-                        "name": "chainOption",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "MapReduceDocumentsChain",
-                                "name": "map_reduce",
-                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
-                            },
-                            {
-                                "label": "RefineDocumentsChain",
-                                "name": "refine",
-                                "description": "Suitable for QA tasks over a large number of documents."
-                            },
-                            {
-                                "label": "StuffDocumentsChain",
-                                "name": "stuff",
-                                "description": "Suitable for QA tasks over a small number of documents."
-                            }
-                        ],
+                        "label": "Response Prompt",
+                        "name": "responsePrompt",
+                        "type": "string",
+                        "description": "Taking the rephrased question, search for answer from the provided context",
+                        "warning": "Prompt must include input variable: {context}",
+                        "rows": 4,
                         "additionalParams": true,
                         "optional": true,
-                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
+                        "default": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.",
+                        "id": "conversationalRetrievalQAChain_0-input-responsePrompt-string"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                        "type": "BaseChatModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Vector Store Retriever",
@@ -385,22 +246,32 @@
                         "optional": true,
                         "description": "If left empty, a default BufferMemory will be used",
                         "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pineconeUpsert_0.data.instance}}",
-                    "memory": "{{motorheadMemory_0.data.instance}}",
+                    "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
+                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
                     "returnSourceDocuments": true,
-                    "systemMessagePrompt": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given context. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Do not make up any information that is not in the context. Refuse to answer any question not about the info. Never break character.",
-                    "chainOption": ""
+                    "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                    "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain",
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
                         "name": "conversationalRetrievalQAChain",
                         "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain"
+                        "type": "ConversationalRetrievalQAChain | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -418,14 +289,14 @@
             "height": 380,
             "id": "cheerioWebScraper_0",
             "position": {
-                "x": 831.9867292136466,
-                "y": -181.92350323746112
+                "x": 825.0624964329904,
+                "y": -183.65456143262517
             },
             "type": "customNode",
             "data": {
                 "id": "cheerioWebScraper_0",
                 "label": "Cheerio Web Scraper",
-                "version": 1,
+                "version": 1.1,
                 "name": "cheerioWebScraper",
                 "type": "Document",
                 "baseClasses": ["Document"],
@@ -470,6 +341,15 @@
                         "id": "cheerioWebScraper_0-input-limit-number"
                     },
                     {
+                        "label": "Selector (CSS)",
+                        "name": "selector",
+                        "type": "string",
+                        "description": "Specify a CSS selector to select the content to be extracted",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "cheerioWebScraper_0-input-selector-string"
+                    },
+                    {
                         "label": "Metadata",
                         "name": "metadata",
                         "type": "json",
@@ -507,42 +387,362 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 831.9867292136466,
-                "y": -181.92350323746112
+                "x": 825.0624964329904,
+                "y": -183.65456143262517
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 574,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 1530.2074695018944,
+                "y": -247.5543013399219
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 5,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "gpt-4",
+                                "name": "gpt-4"
+                            },
+                            {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-0613",
+                                "name": "gpt-4-0613"
+                            },
+                            {
+                                "label": "gpt-4-32k",
+                                "name": "gpt-4-32k"
+                            },
+                            {
+                                "label": "gpt-4-32k-0613",
+                                "name": "gpt-4-32k-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo",
+                                "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0613",
+                                "name": "gpt-3.5-turbo-0613"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k",
+                                "name": "gpt-3.5-turbo-16k"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-16k-0613",
+                                "name": "gpt-3.5-turbo-16k-0613"
+                            }
+                        ],
+                        "default": "gpt-3.5-turbo",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1530.2074695018944,
+                "y": -247.5543013399219
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "RedisBackedChatMemory_0",
+            "position": {
+                "x": 1203.0374706158896,
+                "y": 420.6341619933999
+            },
+            "type": "customNode",
+            "data": {
+                "id": "RedisBackedChatMemory_0",
+                "label": "Redis-Backed Chat Memory",
+                "version": 2,
+                "name": "RedisBackedChatMemory",
+                "type": "RedisBackedChatMemory",
+                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Redis server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
+                        "id": "RedisBackedChatMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Omit this parameter to make sessions never expire",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "RedisBackedChatMemory",
+                        "label": "RedisBackedChatMemory",
+                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1203.0374706158896,
+                "y": 420.6341619933999
             },
             "dragging": false
         },
         {
             "width": 300,
             "height": 555,
-            "id": "pineconeUpsert_0",
+            "id": "pinecone_0",
             "position": {
-                "x": 1179.6228496246993,
-                "y": -167.023255532671
+                "x": 1194.3821796400694,
+                "y": -162.7324497768837
             },
             "type": "customNode",
             "data": {
-                "id": "pineconeUpsert_0",
-                "label": "Pinecone Upsert Document",
-                "version": 1,
-                "name": "pineconeUpsert",
+                "id": "pinecone_0",
+                "label": "Pinecone",
+                "version": 3,
+                "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert documents to Pinecone",
+                "description": "Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
                         "credentialNames": ["pineconeApi"],
-                        "id": "pineconeUpsert_0-input-credential-credential"
+                        "id": "pinecone_0-input-credential-credential"
                     },
                     {
                         "label": "Pinecone Index",
                         "name": "pineconeIndex",
                         "type": "string",
-                        "id": "pineconeUpsert_0-input-pineconeIndex-string"
+                        "id": "pinecone_0-input-pineconeIndex-string"
                     },
                     {
                         "label": "Pinecone Namespace",
@@ -551,7 +751,15 @@
                         "placeholder": "my-first-namespace",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeUpsert_0-input-pineconeNamespace-string"
+                        "id": "pinecone_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pinecone_0-input-pineconeMetadataFilter-json"
                     },
                     {
                         "label": "Top K",
@@ -561,7 +769,46 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pineconeUpsert_0-input-topK-number"
+                        "id": "pinecone_0-input-topK-number"
+                    },
+                    {
+                        "label": "Search Type",
+                        "name": "searchType",
+                        "type": "options",
+                        "default": "similarity",
+                        "options": [
+                            {
+                                "label": "Similarity",
+                                "name": "similarity"
+                            },
+                            {
+                                "label": "Max Marginal Relevance",
+                                "name": "mmr"
+                            }
+                        ],
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-searchType-options"
+                    },
+                    {
+                        "label": "Fetch K (for MMR Search)",
+                        "name": "fetchK",
+                        "description": "Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR",
+                        "placeholder": "20",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-fetchK-number"
+                    },
+                    {
+                        "label": "Lambda (for MMR Search)",
+                        "name": "lambda",
+                        "description": "Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR",
+                        "placeholder": "0.5",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pinecone_0-input-lambda-number"
                     }
                 ],
                 "inputAnchors": [
@@ -570,13 +817,14 @@
                         "name": "document",
                         "type": "Document",
                         "list": true,
-                        "id": "pineconeUpsert_0-input-document-Document"
+                        "optional": true,
+                        "id": "pinecone_0-input-document-Document"
                     },
                     {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pineconeUpsert_0-input-embeddings-Embeddings"
+                        "id": "pinecone_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
@@ -584,7 +832,11 @@
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
-                    "topK": ""
+                    "pineconeMetadataFilter": "",
+                    "topK": "",
+                    "searchType": "similarity",
+                    "fetchK": "",
+                    "lambda": ""
                 },
                 "outputAnchors": [
                     {
@@ -593,13 +845,13 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pineconeUpsert_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
                                 "type": "Pinecone | VectorStore"
@@ -615,103 +867,13 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1179.6228496246993,
-                "y": -167.023255532671
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 427,
-            "id": "motorheadMemory_0",
-            "position": {
-                "x": 1202.1545938923578,
-                "y": 425.69055061366237
-            },
-            "type": "customNode",
-            "data": {
-                "id": "motorheadMemory_0",
-                "label": "Motorhead Memory",
-                "version": 1,
-                "name": "motorheadMemory",
-                "type": "MotorheadMemory",
-                "baseClasses": ["MotorheadMemory", "BaseChatMemory", "BaseMemory"],
-                "category": "Memory",
-                "description": "Use Motorhead Memory to store chat conversations",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "optional": true,
-                        "description": "Only needed when using hosted solution - https://getmetal.io",
-                        "credentialNames": ["motorheadMemoryApi"],
-                        "id": "motorheadMemory_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Base URL",
-                        "name": "baseURL",
-                        "type": "string",
-                        "optional": true,
-                        "description": "To use the online version, leave the URL blank. More details at https://getmetal.io.",
-                        "id": "motorheadMemory_0-input-baseURL-string"
-                    },
-                    {
-                        "label": "Session Id",
-                        "name": "sessionId",
-                        "type": "string",
-                        "description": "If not specified, the first CHAT_MESSAGE_ID will be used as sessionId",
-                        "default": "",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "motorheadMemory_0-input-sessionId-string"
-                    },
-                    {
-                        "label": "Memory Key",
-                        "name": "memoryKey",
-                        "type": "string",
-                        "default": "chat_history",
-                        "additionalParams": true,
-                        "id": "motorheadMemory_0-input-memoryKey-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "baseURL": "",
-                    "sessionId": "",
-                    "memoryKey": "chat_history"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory",
-                        "name": "motorheadMemory",
-                        "label": "MotorheadMemory",
-                        "type": "MotorheadMemory | BaseChatMemory | BaseMemory"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1202.1545938923578,
-                "y": 425.69055061366237
+                "x": 1194.3821796400694,
+                "y": -162.7324497768837
             },
             "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
         {
             "source": "htmlToMarkdownTextSplitter_0",
             "sourceHandle": "htmlToMarkdownTextSplitter_0-output-htmlToMarkdownTextSplitter-HtmlToMarkdownTextSplitter|MarkdownTextSplitter|RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer",
@@ -724,12 +886,34 @@
             }
         },
         {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "RedisBackedChatMemory_0",
+            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
             "source": "cheerioWebScraper_0",
             "sourceHandle": "cheerioWebScraper_0-output-cheerioWebScraper-Document",
-            "target": "pineconeUpsert_0",
-            "targetHandle": "pineconeUpsert_0-input-document-Document",
+            "target": "pinecone_0",
+            "targetHandle": "pinecone_0-input-document-Document",
             "type": "buttonedge",
-            "id": "cheerioWebScraper_0-cheerioWebScraper_0-output-cheerioWebScraper-Document-pineconeUpsert_0-pineconeUpsert_0-input-document-Document",
+            "id": "cheerioWebScraper_0-cheerioWebScraper_0-output-cheerioWebScraper-Document-pinecone_0-pinecone_0-input-document-Document",
             "data": {
                 "label": ""
             }
@@ -737,32 +921,21 @@
         {
             "source": "openAIEmbeddings_0",
             "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pineconeUpsert_0",
-            "targetHandle": "pineconeUpsert_0-input-embeddings-Embeddings",
+            "target": "pinecone_0",
+            "targetHandle": "pinecone_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pineconeUpsert_0-pineconeUpsert_0-input-embeddings-Embeddings",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pinecone_0-pinecone_0-input-embeddings-Embeddings",
             "data": {
                 "label": ""
             }
         },
         {
-            "source": "pineconeUpsert_0",
-            "sourceHandle": "pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "source": "pinecone_0",
+            "sourceHandle": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "pineconeUpsert_0-pineconeUpsert_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "motorheadMemory_0",
-            "sourceHandle": "motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
-            "type": "buttonedge",
-            "id": "motorheadMemory_0-motorheadMemory_0-output-motorheadMemory-MotorheadMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
+            "id": "pinecone_0-pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "data": {
                 "label": ""
             }

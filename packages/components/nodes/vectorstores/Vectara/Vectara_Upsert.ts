@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from '@langchain/community/vectorstores/vectara'
+import { Document } from '@langchain/core/documents'
 import { flatten } from 'lodash'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class VectaraUpsert_VectorStores implements INode {
     label: string
@@ -13,6 +13,7 @@ class VectaraUpsert_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -27,6 +28,7 @@ class VectaraUpsert_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Vectara'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -41,7 +43,7 @@ class VectaraUpsert_VectorStores implements INode {
                 list: true
             },
             {
-                label: 'Vectara Metadata Filter',
+                label: 'Metadata Filter',
                 name: 'filter',
                 description:
                     'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
@@ -116,7 +118,8 @@ class VectaraUpsert_VectorStores implements INode {
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,
             customerId: customerId,
-            corpusId: corpusId
+            corpusId: corpusId,
+            source: 'flowise'
         }
 
         const vectaraFilter: VectaraFilter = {}
@@ -131,7 +134,9 @@ class VectaraUpsert_VectorStores implements INode {
         const flattenDocs = docs && docs.length ? flatten(docs) : []
         const finalDocs = []
         for (let i = 0; i < flattenDocs.length; i += 1) {
-            finalDocs.push(new Document(flattenDocs[i]))
+            if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                finalDocs.push(new Document(flattenDocs[i]))
+            }
         }
 
         const vectorStore = await VectaraStore.fromDocuments(finalDocs, embeddings, vectaraArgs)

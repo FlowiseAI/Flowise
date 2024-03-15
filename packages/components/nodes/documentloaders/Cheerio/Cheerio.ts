@@ -1,8 +1,10 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CheerioWebBaseLoader } from 'langchain/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
+import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'
+import { SelectorType } from 'cheerio'
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -18,7 +20,7 @@ class Cheerio_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Cheerio Web Scraper'
         this.name = 'cheerioWebScraper'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Document'
         this.icon = 'cheerio.svg'
         this.category = 'Document Loaders'
@@ -61,10 +63,19 @@ class Cheerio_DocumentLoaders implements INode {
                 name: 'limit',
                 type: 'number',
                 optional: true,
+                default: '10',
                 additionalParams: true,
                 description:
                     'Only used when "Get Relative Links Method" is selected. Set 0 to retrieve all relative links, default limit is 10.',
                 warning: `Retrieving all links might take long time, and all links will be upserted again if the flow's state changed (eg: different URL, chunk size, etc)`
+            },
+            {
+                label: 'Selector (CSS)',
+                name: 'selector',
+                type: 'string',
+                description: 'Specify a CSS selector to select the content to be extracted',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Metadata',
@@ -76,11 +87,12 @@ class Cheerio_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
-        let limit = nodeData.inputs?.limit as string
+        const selectedLinks = nodeData.inputs?.selectedLinks as string[]
+        let limit = parseInt(nodeData.inputs?.limit as string)
 
         let url = nodeData.inputs?.url as string
         url = url.trim()
@@ -88,10 +100,18 @@ class Cheerio_DocumentLoaders implements INode {
             throw new Error('Invalid URL')
         }
 
+        const selector: SelectorType = nodeData.inputs?.selector as SelectorType
+
+        let params: WebBaseLoaderParams = {}
+        if (selector) {
+            parse(selector) // comes with cheerio - will throw error if invalid
+            params['selector'] = selector
+        }
+
         async function cheerioLoader(url: string): Promise<any> {
             try {
                 let docs = []
-                const loader = new CheerioWebBaseLoader(url)
+                const loader = new CheerioWebBaseLoader(url, params)
                 if (textSplitter) {
                     docs = await loader.loadAndSplit(textSplitter)
                 } else {
@@ -99,23 +119,35 @@ class Cheerio_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true') options.logger.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
         let docs = []
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            if (!limit) limit = '10'
-            else if (parseInt(limit) < 0) throw new Error('Limit cannot be less than 0')
+            if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
+            // if limit is 0 we don't want it to default to 10 so we check explicitly for null or undefined
+            // so when limit is 0 we can fetch all the links
+            if (limit === null || limit === undefined) limit = 10
+            else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
-                relativeLinksMethod === 'webCrawl' ? await webCrawl(url, parseInt(limit)) : await xmlScrape(url, parseInt(limit))
-            if (process.env.DEBUG === 'true') console.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+                selectedLinks && selectedLinks.length > 0
+                    ? selectedLinks.slice(0, limit)
+                    : relativeLinksMethod === 'webCrawl'
+                    ? await webCrawl(url, limit)
+                    : await xmlScrape(url, limit)
+            if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await cheerioLoader(page)))
             }
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
+        } else if (selectedLinks && selectedLinks.length > 0) {
+            if (process.env.DEBUG === 'true')
+                options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+            for (const page of selectedLinks.slice(0, limit)) {
+                docs.push(...(await cheerioLoader(page)))
+            }
         } else {
             docs = await cheerioLoader(url)
         }

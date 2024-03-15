@@ -1,7 +1,8 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
-import { OpenAIChat } from 'langchain/llms/openai'
-import { OpenAIChatInput } from 'langchain/chat_models/openai'
+import { OpenAIChatInput, ChatOpenAI } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class ChatLocalAI_ChatModels implements INode {
     label: string
@@ -12,18 +13,32 @@ class ChatLocalAI_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'ChatLocalAI'
         this.name = 'chatLocalAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatLocalAI'
         this.icon = 'localai.png'
         this.category = 'Chat Models'
         this.description = 'Use local LLMs like llama.cpp, gpt4all using LocalAI'
-        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(OpenAIChat)]
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(ChatOpenAI)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['localAIApi'],
+            optional: true
+        }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Base Path',
                 name: 'basePath',
@@ -71,15 +86,19 @@ class ChatLocalAI_ChatModels implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const localAIApiKey = getCredentialParam('localAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-'
@@ -88,8 +107,10 @@ class ChatLocalAI_ChatModels implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
+        if (localAIApiKey) obj.openAIApiKey = localAIApiKey
 
-        const model = new OpenAIChat(obj, { basePath })
+        const model = new ChatOpenAI(obj, { basePath })
 
         return model
     }

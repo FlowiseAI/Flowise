@@ -1,5 +1,7 @@
 {
     "description": "Conversational Agent with ability to visit a website and extract information",
+    "categories": "Buffer Memory,Web Browser,ChatOpenAI,Conversational Agent",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -13,8 +15,8 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "name": "bufferMemory",
                 "version": 1,
+                "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
@@ -70,8 +72,8 @@
             "data": {
                 "id": "webBrowser_0",
                 "label": "Web Browser",
-                "name": "webBrowser",
                 "version": 1,
+                "name": "webBrowser",
                 "type": "WebBrowser",
                 "baseClasses": ["WebBrowser", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -115,93 +117,18 @@
         },
         {
             "width": 300,
-            "height": 383,
-            "id": "conversationalAgent_0",
-            "position": {
-                "x": 1464.513303631911,
-                "y": 155.73036805253955
-            },
-            "type": "customNode",
-            "data": {
-                "id": "conversationalAgent_0",
-                "label": "Conversational Agent",
-                "name": "conversationalAgent",
-                "version": 1,
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
-                "category": "Agents",
-                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
-                "inputParams": [
-                    {
-                        "label": "System Message",
-                        "name": "systemMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "default": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "conversationalAgent_0-input-systemMessage-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "conversationalAgent_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalAgent_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseChatMemory",
-                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
-                    }
-                ],
-                "inputs": {
-                    "tools": ["{{webBrowser_0.data.instance}}"],
-                    "model": "{{chatOpenAI_1.data.instance}}",
-                    "memory": "{{bufferMemory_0.data.instance}}",
-                    "systemMessage": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist."
-                },
-                "outputAnchors": [
-                    {
-                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain",
-                        "name": "conversationalAgent",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1464.513303631911,
-                "y": 155.73036805253955
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 734.7477982032904,
-                "y": -400.9979556765114
+                "y": -470.9979556765114
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 5,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -224,6 +151,26 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-0613",
                                 "name": "gpt-4-0613"
                             },
@@ -238,6 +185,14 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
                             },
                             {
                                 "label": "gpt-3.5-turbo-0613",
@@ -311,9 +266,58 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
                     "temperature": 0.9,
@@ -322,7 +326,10 @@
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -338,7 +345,7 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 734.7477982032904,
-                "y": -400.9979556765114
+                "y": -470.9979556765114
             },
             "dragging": false
         },
@@ -354,8 +361,8 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
+                "version": 2,
                 "name": "openAIEmbeddings",
-                "version": 1,
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
@@ -367,6 +374,28 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "text-embedding-3-large",
+                                "name": "text-embedding-3-large"
+                            },
+                            {
+                                "label": "text-embedding-3-small",
+                                "name": "text-embedding-3-small"
+                            },
+                            {
+                                "label": "text-embedding-ada-002",
+                                "name": "text-embedding-ada-002"
+                            }
+                        ],
+                        "default": "text-embedding-ada-002",
+                        "optional": true,
+                        "id": "openAIEmbeddings_0-input-modelName-options"
                     },
                     {
                         "label": "Strip New Lines",
@@ -406,7 +435,8 @@
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -428,18 +458,18 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 574,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 68.312124033115,
-                "y": -169.65476709991256
+                "y": -239.65476709991256
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
+                "version": 5,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -462,6 +492,26 @@
                                 "name": "gpt-4"
                             },
                             {
+                                "label": "gpt-4-turbo-preview",
+                                "name": "gpt-4-turbo-preview"
+                            },
+                            {
+                                "label": "gpt-4-0125-preview",
+                                "name": "gpt-4-0125-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-preview",
+                                "name": "gpt-4-1106-preview"
+                            },
+                            {
+                                "label": "gpt-4-1106-vision-preview",
+                                "name": "gpt-4-1106-vision-preview"
+                            },
+                            {
+                                "label": "gpt-4-vision-preview",
+                                "name": "gpt-4-vision-preview"
+                            },
+                            {
                                 "label": "gpt-4-0613",
                                 "name": "gpt-4-0613"
                             },
@@ -476,6 +526,14 @@
                             {
                                 "label": "gpt-3.5-turbo",
                                 "name": "gpt-3.5-turbo"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-0125",
+                                "name": "gpt-3.5-turbo-0125"
+                            },
+                            {
+                                "label": "gpt-3.5-turbo-1106",
+                                "name": "gpt-3.5-turbo-1106"
                             },
                             {
                                 "label": "gpt-3.5-turbo-0613",
@@ -549,18 +607,70 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_1-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_1-input-imageResolution-options"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_1-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "gpt-3.5-turbo",
+                    "modelName": "gpt-3.5-turbo-16k",
                     "temperature": 0.9,
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -576,7 +686,92 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 68.312124033115,
-                "y": -169.65476709991256
+                "y": -239.65476709991256
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 383,
+            "id": "conversationalAgent_0",
+            "position": {
+                "x": 1518.944765840293,
+                "y": 212.2513364217197
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalAgent_0",
+                "label": "Conversational Agent",
+                "version": 3,
+                "name": "conversationalAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "conversationalAgent_0-input-systemMessage-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "conversationalAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationalAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "tools": ["{{webBrowser_0.data.instance}}"],
+                    "model": "{{chatOpenAI_1.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "systemMessage": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "conversationalAgent",
+                        "label": "AgentExecutor",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1518.944765840293,
+                "y": 212.2513364217197
             },
             "dragging": false
         }
@@ -605,23 +800,23 @@
             }
         },
         {
-            "source": "chatOpenAI_1",
-            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-model-BaseLanguageModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
             "source": "webBrowser_0",
             "sourceHandle": "webBrowser_0-output-webBrowser-WebBrowser|Tool|StructuredTool|BaseLangChain",
             "target": "conversationalAgent_0",
             "targetHandle": "conversationalAgent_0-input-tools-Tool",
             "type": "buttonedge",
             "id": "webBrowser_0-webBrowser_0-output-webBrowser-WebBrowser|Tool|StructuredTool|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_1",
+            "sourceHandle": "chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "conversationalAgent_0",
+            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_1-chatOpenAI_1-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }

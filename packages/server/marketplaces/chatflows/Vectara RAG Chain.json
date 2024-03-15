@@ -1,0 +1,398 @@
+{
+    "description": "QA chain for Vectara",
+    "categories": "Vectara QA Chain,Vectara,Langchain",
+    "framework": "Langchain",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 520,
+            "id": "vectaraQAChain_0",
+            "position": {
+                "x": 740.28434119739,
+                "y": 164.93261446841598
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectaraQAChain_0",
+                "label": "Vectara QA Chain",
+                "version": 2,
+                "name": "vectaraQAChain",
+                "type": "VectaraQAChain",
+                "baseClasses": ["VectaraQAChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "QA chain for Vectara",
+                "inputParams": [
+                    {
+                        "label": "Summarizer Prompt Name",
+                        "name": "summarizerPromptName",
+                        "description": "Summarize the results fetched from Vectara. Read <a target=\"_blank\" href=\"https://docs.vectara.com/docs/learn/grounded-generation/select-a-summarizer\">more</a>",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "vectara-summary-ext-v1.2.0 (gpt-3.5-turbo)",
+                                "name": "vectara-summary-ext-v1.2.0"
+                            },
+                            {
+                                "label": "vectara-experimental-summary-ext-2023-10-23-small (gpt-3.5-turbo)",
+                                "name": "vectara-experimental-summary-ext-2023-10-23-small",
+                                "description": "In beta, available to both Growth and Scale Vectara users"
+                            },
+                            {
+                                "label": "vectara-summary-ext-v1.3.0 (gpt-4.0)",
+                                "name": "vectara-summary-ext-v1.3.0",
+                                "description": "Only available to paying Scale Vectara users"
+                            },
+                            {
+                                "label": "vectara-experimental-summary-ext-2023-10-23-med (gpt-4.0)",
+                                "name": "vectara-experimental-summary-ext-2023-10-23-med",
+                                "description": "In beta, only available to paying Scale Vectara users"
+                            }
+                        ],
+                        "default": "vectara-summary-ext-v1.2.0",
+                        "id": "vectaraQAChain_0-input-summarizerPromptName-options"
+                    },
+                    {
+                        "label": "Response Language",
+                        "name": "responseLang",
+                        "description": "Return the response in specific language. If not selected, Vectara will automatically detects the language. Read <a target=\"_blank\" href=\"https://docs.vectara.com/docs/learn/grounded-generation/grounded-generation-response-languages\">more</a>",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "English",
+                                "name": "eng"
+                            },
+                            {
+                                "label": "German",
+                                "name": "deu"
+                            },
+                            {
+                                "label": "French",
+                                "name": "fra"
+                            },
+                            {
+                                "label": "Chinese",
+                                "name": "zho"
+                            },
+                            {
+                                "label": "Korean",
+                                "name": "kor"
+                            },
+                            {
+                                "label": "Arabic",
+                                "name": "ara"
+                            },
+                            {
+                                "label": "Russian",
+                                "name": "rus"
+                            },
+                            {
+                                "label": "Thai",
+                                "name": "tha"
+                            },
+                            {
+                                "label": "Dutch",
+                                "name": "nld"
+                            },
+                            {
+                                "label": "Italian",
+                                "name": "ita"
+                            },
+                            {
+                                "label": "Portuguese",
+                                "name": "por"
+                            },
+                            {
+                                "label": "Spanish",
+                                "name": "spa"
+                            },
+                            {
+                                "label": "Japanese",
+                                "name": "jpn"
+                            },
+                            {
+                                "label": "Polish",
+                                "name": "pol"
+                            },
+                            {
+                                "label": "Turkish",
+                                "name": "tur"
+                            },
+                            {
+                                "label": "Vietnamese",
+                                "name": "vie"
+                            },
+                            {
+                                "label": "Indonesian",
+                                "name": "ind"
+                            },
+                            {
+                                "label": "Czech",
+                                "name": "ces"
+                            },
+                            {
+                                "label": "Ukrainian",
+                                "name": "ukr"
+                            },
+                            {
+                                "label": "Greek",
+                                "name": "ell"
+                            },
+                            {
+                                "label": "Hebrew",
+                                "name": "heb"
+                            },
+                            {
+                                "label": "Farsi/Persian",
+                                "name": "fas"
+                            },
+                            {
+                                "label": "Hindi",
+                                "name": "hin"
+                            },
+                            {
+                                "label": "Urdu",
+                                "name": "urd"
+                            },
+                            {
+                                "label": "Swedish",
+                                "name": "swe"
+                            },
+                            {
+                                "label": "Bengali",
+                                "name": "ben"
+                            },
+                            {
+                                "label": "Malay",
+                                "name": "msa"
+                            },
+                            {
+                                "label": "Romanian",
+                                "name": "ron"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "eng",
+                        "id": "vectaraQAChain_0-input-responseLang-options"
+                    },
+                    {
+                        "label": "Max Summarized Results",
+                        "name": "maxSummarizedResults",
+                        "description": "Maximum results used to build the summarized response",
+                        "type": "number",
+                        "default": 7,
+                        "id": "vectaraQAChain_0-input-maxSummarizedResults-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vectara Store",
+                        "name": "vectaraStore",
+                        "type": "VectorStore",
+                        "id": "vectaraQAChain_0-input-vectaraStore-VectorStore"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "vectaraQAChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "vectaraStore": "{{vectara_1.data.instance}}",
+                    "summarizerPromptName": "vectara-experimental-summary-ext-2023-10-23-small",
+                    "responseLang": "eng",
+                    "maxSummarizedResults": 7
+                },
+                "outputAnchors": [
+                    {
+                        "id": "vectaraQAChain_0-output-vectaraQAChain-VectaraQAChain|BaseChain|Runnable",
+                        "name": "vectaraQAChain",
+                        "label": "VectaraQAChain",
+                        "type": "VectaraQAChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 740.28434119739,
+                "y": 164.93261446841598
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 536,
+            "id": "vectara_1",
+            "position": {
+                "x": 139.43135627266395,
+                "y": 189.3685569634871
+            },
+            "type": "customNode",
+            "data": {
+                "id": "vectara_1",
+                "label": "Vectara",
+                "version": 2,
+                "name": "vectara",
+                "type": "Vectara",
+                "baseClasses": ["Vectara", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Vectara, a LLM-powered search-as-a-service",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["vectaraApi"],
+                        "id": "vectara_1-input-credential-credential"
+                    },
+                    {
+                        "label": "File",
+                        "name": "file",
+                        "description": "File to upload to Vectara. Supported file types: https://docs.vectara.com/docs/api-reference/indexing-apis/file-upload/file-upload-filetypes",
+                        "type": "file",
+                        "optional": true,
+                        "id": "vectara_1-input-file-file"
+                    },
+                    {
+                        "label": "Metadata Filter",
+                        "name": "filter",
+                        "description": "Filter to apply to Vectara metadata. Refer to the <a target=\"_blank\" href=\"https://docs.flowiseai.com/vector-stores/vectara\">documentation</a> on how to use Vectara filters with Flowise.",
+                        "type": "string",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-filter-string"
+                    },
+                    {
+                        "label": "Sentences Before",
+                        "name": "sentencesBefore",
+                        "description": "Number of sentences to fetch before the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "default": 2,
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-sentencesBefore-number"
+                    },
+                    {
+                        "label": "Sentences After",
+                        "name": "sentencesAfter",
+                        "description": "Number of sentences to fetch after the matched sentence. Defaults to 2.",
+                        "type": "number",
+                        "default": 2,
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-sentencesAfter-number"
+                    },
+                    {
+                        "label": "Lambda",
+                        "name": "lambda",
+                        "description": "Enable hybrid search to improve retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.A value of 0.0 means that only neural search is used, while a value of 1.0 means that only keyword-based search is used. Defaults to 0.0 (neural only).",
+                        "default": 0,
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-lambda-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Defaults to 5",
+                        "placeholder": "5",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-topK-number"
+                    },
+                    {
+                        "label": "MMR K",
+                        "name": "mmrK",
+                        "description": "Number of top results to fetch for MMR. Defaults to 50",
+                        "placeholder": "50",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-mmrK-number"
+                    },
+                    {
+                        "label": "MMR diversity bias",
+                        "name": "mmrDiversityBias",
+                        "step": 0.1,
+                        "description": "The diversity bias to use for MMR. This is a value between 0.0 and 1.0Values closer to 1.0 optimize for the most diverse results.Defaults to 0 (MMR disabled)",
+                        "placeholder": "0.0",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "vectara_1-input-mmrDiversityBias-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "vectara_1-input-document-Document"
+                    }
+                ],
+                "inputs": {
+                    "document": "",
+                    "filter": "",
+                    "sentencesBefore": 2,
+                    "sentencesAfter": 2,
+                    "lambda": "",
+                    "topK": "",
+                    "mmrK": "",
+                    "mmrDiversityBias": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "vectara_1-output-retriever-Vectara|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Vectara Retriever",
+                                "type": "Vectara | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "vectara_1-output-vectorStore-Vectara|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Vectara Vector Store",
+                                "type": "Vectara | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "vectorStore"
+                },
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 139.43135627266395,
+                "y": 189.3685569634871
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "vectara_1",
+            "sourceHandle": "vectara_1-output-vectorStore-Vectara|VectorStore",
+            "target": "vectaraQAChain_0",
+            "targetHandle": "vectaraQAChain_0-input-vectaraStore-VectorStore",
+            "type": "buttonedge",
+            "id": "vectara_1-vectara_1-output-vectorStore-Vectara|VectorStore-vectaraQAChain_0-vectaraQAChain_0-input-vectaraStore-VectorStore"
+        }
+    ]
+}

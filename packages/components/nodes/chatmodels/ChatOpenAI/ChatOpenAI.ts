@@ -1,6 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import type { ClientOptions } from 'openai'
+import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, AzureOpenAIInput, LegacyOpenAIInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
+import { ChatOpenAI } from './FlowiseChatOpenAI'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -17,12 +21,12 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 1.0
+        this.version = 5.0
         this.type = 'ChatOpenAI'
-        this.icon = 'openai.png'
+        this.icon = 'openai.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -31,6 +35,12 @@ class ChatOpenAI_ChatModels implements INode {
         }
         this.inputs = [
             {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
@@ -38,6 +48,26 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-4',
                         name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-turbo-preview',
+                        name: 'gpt-4-turbo-preview'
+                    },
+                    {
+                        label: 'gpt-4-0125-preview',
+                        name: 'gpt-4-0125-preview'
+                    },
+                    {
+                        label: 'gpt-4-1106-preview',
+                        name: 'gpt-4-1106-preview'
+                    },
+                    {
+                        label: 'gpt-4-1106-vision-preview',
+                        name: 'gpt-4-1106-vision-preview'
+                    },
+                    {
+                        label: 'gpt-4-vision-preview',
+                        name: 'gpt-4-vision-preview'
                     },
                     {
                         label: 'gpt-4-0613',
@@ -54,6 +84,14 @@ class ChatOpenAI_ChatModels implements INode {
                     {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-0125',
+                        name: 'gpt-3.5-turbo-0125'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-1106',
+                        name: 'gpt-3.5-turbo-1106'
                     },
                     {
                         label: 'gpt-3.5-turbo-0613',
@@ -132,6 +170,38 @@ class ChatOpenAI_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Image Resolution',
+                description: 'This parameter controls the resolution in which the model views the image.',
+                name: 'imageResolution',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                default: 'low',
+                optional: false,
+                additionalParams: true
             }
         ]
     }
@@ -148,10 +218,17 @@ class ChatOpenAI_ChatModels implements INode {
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
 
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const imageResolution = nodeData.inputs?.imageResolution as string
+
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<OpenAIChatInput> &
+            Partial<AzureOpenAIInput> &
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -163,6 +240,7 @@ class ChatOpenAI_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
 
         let parsedBaseOptions: any | undefined = undefined
 
@@ -173,10 +251,23 @@ class ChatOpenAI_ChatModels implements INode {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-        const model = new ChatOpenAI(obj, {
-            basePath,
-            baseOptions: parsedBaseOptions
-        })
+
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                baseOptions: parsedBaseOptions
+            }
+        }
+
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false,
+                imageResolution
+            }
+        }
+
+        const model = new ChatOpenAI(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }

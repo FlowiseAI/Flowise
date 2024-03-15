@@ -1,6 +1,7 @@
 import { getCredentialData, getCredentialParam } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { FigmaFileLoader, FigmaLoaderParams } from 'langchain/document_loaders/web/figma'
+import { TextSplitter } from 'langchain/text_splitter'
 
 class Figma_DocumentLoaders implements INode {
     label: string
@@ -71,6 +72,8 @@ class Figma_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const nodeIds = (nodeData.inputs?.nodeIds as string)?.trim().split(',') || []
         const fileKey = nodeData.inputs?.fileKey as string
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const metadata = nodeData.inputs?.metadata
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
@@ -82,7 +85,21 @@ class Figma_DocumentLoaders implements INode {
         }
 
         const loader = new FigmaFileLoader(figmaOptions)
-        const docs = await loader.load()
+
+        const docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
+
+        if (metadata) {
+            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            return docs.map((doc) => {
+                return {
+                    ...doc,
+                    metadata: {
+                        ...doc.metadata,
+                        ...parsedMetadata
+                    }
+                }
+            })
+        }
 
         return docs
     }

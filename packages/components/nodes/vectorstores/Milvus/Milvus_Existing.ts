@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataType, ErrorCode } from '@zilliz/milvus2-sdk-node'
-import { MilvusLibArgs, Milvus } from 'langchain/vectorstores/milvus'
-import { Embeddings } from 'langchain/embeddings/base'
+import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Document } from 'langchain/document'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Milvus_Existing_VectorStores implements INode {
     label: string
@@ -13,6 +13,7 @@ class Milvus_Existing_VectorStores implements INode {
     type: string
     icon: string
     category: string
+    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -27,6 +28,7 @@ class Milvus_Existing_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Load existing collection from Milvus (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.badge = 'DEPRECATING'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

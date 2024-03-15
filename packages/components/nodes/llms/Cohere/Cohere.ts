@@ -1,3 +1,4 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Cohere, CohereInput } from './core'
@@ -17,9 +18,9 @@ class Cohere_LLMs implements INode {
     constructor() {
         this.label = 'Cohere'
         this.name = 'cohere'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Cohere'
-        this.icon = 'cohere.png'
+        this.icon = 'Cohere.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Cohere large language models'
         this.baseClasses = [this.type, ...getBaseClasses(Cohere)]
@@ -30,6 +31,12 @@ class Cohere_LLMs implements INode {
             credentialNames: ['cohereApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -85,7 +92,7 @@ class Cohere_LLMs implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
-
+        const cache = nodeData.inputs?.cache as BaseCache
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
 
@@ -96,7 +103,7 @@ class Cohere_LLMs implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (modelName) obj.model = modelName
         if (temperature) obj.temperature = parseFloat(temperature)
-
+        if (cache) obj.cache = cache
         const model = new Cohere(obj)
         return model
     }

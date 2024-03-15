@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { PromptTemplate } from '@langchain/core/prompts'
 import { APIChain } from 'langchain/chains'
 import { getBaseClasses } from '../../../src/utils'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate } from 'langchain/prompts'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:
@@ -32,7 +32,7 @@ class GETApiChain_Chains implements INode {
         this.name = 'getApiChain'
         this.version = 1.0
         this.type = 'GETApiChain'
-        this.icon = 'apichain.svg'
+        this.icon = 'get.svg'
         this.category = 'Chains'
         this.description = 'Chain to run queries against GET API'
         this.baseClasses = [this.type, ...getBaseClasses(APIChain)]
@@ -47,7 +47,7 @@ class GETApiChain_Chains implements INode {
                 name: 'apiDocs',
                 type: 'string',
                 description:
-                    'Description of how API works. Please refer to more <a target="_blank" href="https://github.com/hwchase17/langchain/blob/master/langchain/chains/api/open_meteo_docs.py">examples</a>',
+                    'Description of how API works. Please refer to more <a target="_blank" href="https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/chains/api/open_meteo_docs.py">examples</a>',
                 rows: 4
             },
             {

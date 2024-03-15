@@ -1,6 +1,8 @@
+import { AzureOpenAIInput, OpenAI, OpenAIInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AzureOpenAIInput, OpenAI, OpenAIInput } from 'langchain/llms/openai'
 
 class AzureOpenAI_LLMs implements INode {
     label: string
@@ -17,7 +19,7 @@ class AzureOpenAI_LLMs implements INode {
     constructor() {
         this.label = 'Azure OpenAI'
         this.name = 'azureOpenAI'
-        this.version = 1.0
+        this.version = 2.1
         this.type = 'AzureOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'LLMs'
@@ -30,6 +32,12 @@ class AzureOpenAI_LLMs implements INode {
             credentialNames: ['azureOpenAIApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -82,6 +90,14 @@ class AzureOpenAI_LLMs implements INode {
                     {
                         label: 'gpt-35-turbo',
                         name: 'gpt-35-turbo'
+                    },
+                    {
+                        label: 'gpt-4',
+                        name: 'gpt-4'
+                    },
+                    {
+                        label: 'gpt-4-32k',
+                        name: 'gpt-4-32k'
                     }
                 ],
                 default: 'text-davinci-003',
@@ -163,7 +179,9 @@ class AzureOpenAI_LLMs implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<AzureOpenAIInput> & Partial<OpenAIInput> = {
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIInput> = {
             temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
@@ -179,6 +197,7 @@ class AzureOpenAI_LLMs implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (bestOf) obj.bestOf = parseInt(bestOf, 10)
+        if (cache) obj.cache = cache
 
         const model = new OpenAI(obj)
         return model

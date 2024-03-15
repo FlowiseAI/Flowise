@@ -3,14 +3,88 @@ import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
+import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData } from './Interface'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { ChatMessageHistory } from 'langchain/memory'
-import { AIMessage, HumanMessage } from 'langchain/schema'
+import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+/*
+ * List of dependencies allowed to be import in vm2
+ */
+export const availableDependencies = [
+    '@aws-sdk/client-bedrock-runtime',
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/client-s3',
+    '@elastic/elasticsearch',
+    '@dqbd/tiktoken',
+    '@getzep/zep-js',
+    '@gomomento/sdk',
+    '@gomomento/sdk-core',
+    '@google-ai/generativelanguage',
+    '@huggingface/inference',
+    '@notionhq/client',
+    '@opensearch-project/opensearch',
+    '@pinecone-database/pinecone',
+    '@qdrant/js-client-rest',
+    '@supabase/supabase-js',
+    '@upstash/redis',
+    '@zilliz/milvus2-sdk-node',
+    'apify-client',
+    'axios',
+    'cheerio',
+    'chromadb',
+    'cohere-ai',
+    'd3-dsv',
+    'faiss-node',
+    'form-data',
+    'google-auth-library',
+    'graphql',
+    'html-to-text',
+    'ioredis',
+    'langchain',
+    'langfuse',
+    'langsmith',
+    'linkifyjs',
+    'lunary',
+    'mammoth',
+    'moment',
+    'mongodb',
+    'mysql2',
+    'node-fetch',
+    'node-html-markdown',
+    'notion-to-md',
+    'openai',
+    'pdf-parse',
+    'pdfjs-dist',
+    'pg',
+    'playwright',
+    'puppeteer',
+    'redis',
+    'replicate',
+    'srt-parser-2',
+    'typeorm',
+    'weaviate-ts-client'
+]
+
+export const defaultAllowBuiltInDep = [
+    'assert',
+    'buffer',
+    'crypto',
+    'events',
+    'http',
+    'https',
+    'net',
+    'path',
+    'querystring',
+    'timers',
+    'tls',
+    'url',
+    'zlib'
+]
 
 /**
  * Get base classes of components
@@ -132,6 +206,7 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
  * @returns {boolean}
  */
 export const getInputVariables = (paramValue: string): string[] => {
+    if (typeof paramValue !== 'string') return []
     let returnVal = paramValue
     const variableStack = []
     const inputVariables = []
@@ -215,22 +290,12 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
     const linkElements = dom.window.document.querySelectorAll('a')
     const urls: string[] = []
     for (const linkElement of linkElements) {
-        if (linkElement.href.slice(0, 1) === '/') {
-            try {
-                const urlObj = new URL(baseURL + linkElement.href)
-                urls.push(urlObj.href) //relative
-            } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with relative url: ${err.message}`)
-                continue
-            }
-        } else {
-            try {
-                const urlObj = new URL(linkElement.href)
-                urls.push(urlObj.href) //absolute
-            } catch (err) {
-                if (process.env.DEBUG === 'true') console.error(`error with absolute url: ${err.message}`)
-                continue
-            }
+        try {
+            const urlObj = new URL(linkElement.href, baseURL)
+            urls.push(urlObj.href)
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
+            continue
         }
     }
     return urls
@@ -290,7 +355,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         }
 
         const htmlBody = await resp.text()
-        const nextURLs = getURLsFromHTML(htmlBody, baseURL)
+        const nextURLs = getURLsFromHTML(htmlBody, currentURL)
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
@@ -301,7 +366,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 }
 
 /**
- * Prep URL before passing into recursive carwl function
+ * Prep URL before passing into recursive crawl function
  * @param {string} stringURL
  * @param {number} limit
  * @returns {Promise<string[]>}
@@ -377,7 +442,8 @@ const getEncryptionKeyFilePath = (): string => {
         path.join(__dirname, '..', '..', '..', '..', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', 'server', 'encryption.key'),
         path.join(__dirname, '..', '..', '..', '..', '..', 'encryption.key'),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key')
+        path.join(__dirname, '..', '..', '..', '..', '..', 'server', 'encryption.key'),
+        path.join(getUserHome(), '.flowise', 'encryption.key')
     ]
     for (const checkPath of checkPaths) {
         if (fs.existsSync(checkPath)) {
@@ -387,7 +453,7 @@ const getEncryptionKeyFilePath = (): string => {
     return ''
 }
 
-const getEncryptionKeyPath = (): string => {
+export const getEncryptionKeyPath = (): string => {
     return process.env.SECRETKEY_PATH ? path.join(process.env.SECRETKEY_PATH, 'encryption.key') : getEncryptionKeyFilePath()
 }
 
@@ -445,7 +511,7 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
 
         if (!credential) return {}
 
-        // Decrpyt credentialData
+        // Decrypt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
 
         return decryptedCredentialData
@@ -511,7 +577,7 @@ export const getUserHome = (): string => {
 
 /**
  * Map incoming chat history to ChatMessageHistory
- * @param {options} ICommonObject
+ * @param {ICommonObject} options
  * @returns {ChatMessageHistory}
  */
 export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
@@ -533,7 +599,7 @@ export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
  * @param {IMessage[]} chatHistory
  * @returns {string}
  */
-export const convertChatHistoryToText = (chatHistory: IMessage[]): string => {
+export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string => {
     return chatHistory
         .map((chatMessage) => {
             if (chatMessage.type === 'apiMessage') {
@@ -545,4 +611,169 @@ export const convertChatHistoryToText = (chatHistory: IMessage[]): string => {
             }
         })
         .join('\n')
+}
+
+/**
+ * Serialize array chat history to string
+ * @param {IMessage[]} chatHistory
+ * @returns {string}
+ */
+export const serializeChatHistory = (chatHistory: string | Array<string>) => {
+    if (Array.isArray(chatHistory)) {
+        return chatHistory.join('\n')
+    }
+    return chatHistory
+}
+
+/**
+ * Convert schema to zod schema
+ * @param {string | object} schema
+ * @returns {ICommonObject}
+ */
+export const convertSchemaToZod = (schema: string | object): ICommonObject => {
+    try {
+        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
+        const zodObj: ICommonObject = {}
+        for (const sch of parsedSchema) {
+            if (sch.type === 'string') {
+                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
+                zodObj[sch.property] = z.string().describe(sch.description)
+            } else if (sch.type === 'number') {
+                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
+                zodObj[sch.property] = z.number().describe(sch.description)
+            } else if (sch.type === 'boolean') {
+                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
+                zodObj[sch.property] = z.boolean().describe(sch.description)
+            }
+        }
+        return zodObj
+    } catch (e) {
+        throw new Error(e)
+    }
+}
+
+/**
+ * Flatten nested object
+ * @param {ICommonObject} obj
+ * @param {string} parentKey
+ * @returns {ICommonObject}
+ */
+export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
+    let result: any = {}
+
+    Object.keys(obj).forEach((key) => {
+        const value = obj[key]
+        const _key = parentKey ? parentKey + '.' + key : key
+        if (typeof value === 'object') {
+            result = { ...result, ...flattenObject(value, _key) }
+        } else {
+            result[_key] = value
+        }
+    })
+
+    return result
+}
+
+/**
+ * Convert BaseMessage to IMessage
+ * @param {BaseMessage[]} messages
+ * @returns {IMessage[]}
+ */
+export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[] => {
+    const formatmessages: IMessage[] = []
+    for (const m of messages) {
+        if (m._getType() === 'human') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'userMessage'
+            })
+        } else if (m._getType() === 'ai') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'apiMessage'
+            })
+        } else if (m._getType() === 'system') {
+            formatmessages.push({
+                message: m.content as string,
+                type: 'apiMessage'
+            })
+        }
+    }
+    return formatmessages
+}
+
+/**
+ * Convert MultiOptions String to String Array
+ * @param {string} inputString
+ * @returns {string[]}
+ */
+export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
+    let ArrayString: string[] = []
+    try {
+        ArrayString = JSON.parse(inputString)
+    } catch (e) {
+        ArrayString = []
+    }
+    return ArrayString
+}
+
+/**
+ * Get variables
+ * @param {DataSource} appDataSource
+ * @param {IDatabaseEntity} databaseEntities
+ * @param {INodeData} nodeData
+ */
+export const getVars = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData) => {
+    const variables = ((await appDataSource.getRepository(databaseEntities['Variable']).find()) as IVariable[]) ?? []
+
+    // override variables defined in overrideConfig
+    // nodeData.inputs.variables is an Object, check each property and override the variable
+    if (nodeData?.inputs?.vars) {
+        for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.vars)) {
+            const foundVar = variables.find((v) => v.name === propertyName)
+            if (foundVar) {
+                // even if the variable was defined as runtime, we override it with static value
+                foundVar.type = 'static'
+                foundVar.value = nodeData.inputs.vars[propertyName]
+            } else {
+                // add it the variables, if not found locally in the db
+                variables.push({ name: propertyName, type: 'static', value: nodeData.inputs.vars[propertyName] })
+            }
+        }
+    }
+
+    return variables
+}
+
+/**
+ * Prepare sandbox variables
+ * @param {IVariable[]} variables
+ */
+export const prepareSandboxVars = (variables: IVariable[]) => {
+    let vars = {}
+    if (variables) {
+        for (const item of variables) {
+            let value = item.value
+
+            // read from .env file
+            if (item.type === 'runtime') {
+                value = process.env[item.name] ?? ''
+            }
+
+            Object.defineProperty(vars, item.name, {
+                enumerable: true,
+                configurable: true,
+                writable: true,
+                value: value
+            })
+        }
+    }
+    return vars
+}
+
+/**
+ * Prepare storage path
+ */
+export const getStoragePath = (): string => {
+    return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
 }
