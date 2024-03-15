@@ -269,7 +269,7 @@ importers:
         specifier: 6.2.0
         version: 6.2.0
       mysql2:
-        specifier: ^3.5.1
+        specifier: ^3.9.2
         version: 3.9.2
       node-fetch:
         specifier: ^2.6.11
@@ -446,9 +446,9 @@ importers:
       multer:
         specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.1
-      mysql:
-        specifier: ^2.18.1
-        version: 2.18.1
+      mysql2:
+        specifier: ^3.9.2
+        version: 3.9.2
       openai:
         specifier: ^4.20.0
         version: 4.28.4
@@ -472,7 +472,7 @@ importers:
         version: 5.1.7
       typeorm:
         specifier: ^0.3.6
-        version: 0.3.20(pg@8.11.3)(sqlite3@5.1.7)(ts-node@10.9.2)
+        version: 0.3.20(mysql2@3.9.2)(pg@8.11.3)(sqlite3@5.1.7)(ts-node@10.9.2)
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -10764,10 +10764,6 @@ packages:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
     dev: true
 
-  /bignumber.js@9.0.0:
-    resolution: {integrity: sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==}
-    dev: false
-
   /bignumber.js@9.1.2:
     resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
     dev: false
@@ -15226,7 +15222,7 @@ packages:
     resolution: {integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw==}
     engines: {node: '>= 4.0'}
     os: [darwin]
-    deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
+    deprecated: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
     dependencies:
       bindings: 1.5.0
       nan: 2.19.0
@@ -17173,7 +17169,7 @@ packages:
     dev: false
 
   /is-property@1.0.2:
-    resolution: {integrity: sha512-Ks/IoX00TtClbGQr4TWXemAnktAQvYB7HzcCxDGqEZU6oCmb2INHuOoKxbtR+HFkmYWBKv/dOZtGRiAjDhj92g==}
+    resolution: {integrity: sha1-V/4cTkhHTt1lsJkR8msc1Ald2oQ=}
     dev: false
 
   /is-regex@1.1.4:
@@ -20964,16 +20960,6 @@ packages:
       named-placeholders: 1.1.3
       seq-queue: 0.0.5
       sqlstring: 2.3.3
-    dev: false
-
-  /mysql@2.18.1:
-    resolution: {integrity: sha512-Bca+gk2YWmqp2Uf6k5NFEurwY/0td0cpebAucFpY/3jhrwrVGuxU2uQFCHjU19SJfje0yQvi+rVWdq78hR5lig==}
-    engines: {node: '>= 0.6'}
-    dependencies:
-      bignumber.js: 9.0.0
-      readable-stream: 2.3.7
-      safe-buffer: 5.1.2
-      sqlstring: 2.3.1
     dev: false
 
   /mz@2.7.0:
@@ -24777,18 +24763,6 @@ packages:
       string_decoder: 0.10.31
     dev: false
 
-  /readable-stream@2.3.7:
-    resolution: {integrity: sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==}
-    dependencies:
-      core-util-is: 1.0.3
-      inherits: 2.0.4
-      isarray: 1.0.0
-      process-nextick-args: 2.0.1
-      safe-buffer: 5.1.2
-      string_decoder: 1.1.1
-      util-deprecate: 1.0.2
-    dev: false
-
   /readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
     dependencies:
@@ -25799,7 +25773,7 @@ packages:
       - supports-color
 
   /seq-queue@0.0.5:
-    resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
+    resolution: {integrity: sha1-1WgS4cAXpuTnw+Ojeh2m143TyT4=}
     dev: false
 
   /serialize-javascript@4.0.0:
@@ -26474,11 +26448,6 @@ packages:
     transitivePeerDependencies:
       - bluebird
       - supports-color
-    dev: false
-
-  /sqlstring@2.3.1:
-    resolution: {integrity: sha512-ooAzh/7dxIG5+uDik1z/Rd1vli0+38izZhGzSa34FwR7IbelPWCCKSNIl8jlL/F7ERvy8CB2jNeM1E9i9mXMAQ==}
-    engines: {node: '>= 0.6'}
     dev: false
 
   /sqlstring@2.3.3:
@@ -27944,7 +27913,7 @@ packages:
       - supports-color
     dev: false
 
-  /typeorm@0.3.20(pg@8.11.3)(sqlite3@5.1.7)(ts-node@10.9.2):
+  /typeorm@0.3.20(mysql2@3.9.2)(pg@8.11.3)(sqlite3@5.1.7)(ts-node@10.9.2):
     resolution: {integrity: sha512-sJ0T08dV5eoZroaq9uPKBoNcGslHBR4E4y+EBHs//SiGbblGe7IeduP/IH4ddCcj0qp3PHwDwGnuvqEAnKlq/Q==}
     engines: {node: '>=16.13.0'}
     hasBin: true
@@ -28012,6 +27981,7 @@ packages:
       dotenv: 16.4.5
       glob: 10.3.10
       mkdirp: 2.1.6
+      mysql2: 3.9.2
       pg: 8.11.3
       reflect-metadata: 0.2.1
       sha.js: 2.4.11
