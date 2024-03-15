@@ -25,9 +25,11 @@ export class Tool implements ITool {
     @Column({ nullable: true, type: 'text' })
     func?: string
 
+    @Column({type:'timestamp with time zone'})
     @CreateDateColumn()
     createdDate: Date
 
+    @Column({type:'timestamp with time zone'})
     @UpdateDateColumn()
     updatedDate: Date
 }

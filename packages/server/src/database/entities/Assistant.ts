@@ -10,15 +10,17 @@ export class Assistant implements IAssistant {
     @Column({ type: 'text' })
     details: string
 
-    @Column()
+    @Column({ type: 'uuid'})
     credential: string
 
     @Column({ nullable: true })
     iconSrc?: string
 
+    @Column({ type: 'timestamp with time zone' })
     @CreateDateColumn()
     createdDate: Date
 
+    @Column({ type: 'timestamp with time zone' })
     @UpdateDateColumn()
     updatedDate: Date
 }
