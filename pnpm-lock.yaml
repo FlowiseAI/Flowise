@@ -1,4 +1,4 @@
-lockfileVersion: 5.4
+lockfileVersion: 6.0
 
 onlyBuiltDependencies:
     - faiss-node
