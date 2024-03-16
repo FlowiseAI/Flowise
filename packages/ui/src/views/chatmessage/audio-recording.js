@@ -2,7 +2,7 @@
  * @fileoverview This file contains the API to handle audio recording.
  * Originally from 'https://ralzohairi.medium.com/audio-recording-in-javascript-96eed45b75ee'
  */
-import { isIOS, isSafari } from "react-device-detect";
+import { isIOS, isSafari } from 'react-device-detect'
 
 // audio-recording.js ---------------
 let microphoneButton, elapsedTimeTag
