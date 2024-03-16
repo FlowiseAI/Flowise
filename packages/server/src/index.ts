@@ -2044,7 +2044,6 @@ export class App {
                 fileUploads = incomingInput.uploads
                 for (let i = 0; i < fileUploads.length; i += 1) {
                     const upload = fileUploads[i]
-                    console.log('0..saving file...' + upload.type + '...' + upload.mime + '...')
 
                     if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                         const filename = upload.name
@@ -2056,15 +2055,13 @@ export class App {
                         const splitDataURI = upload.data.split(',')
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                         fs.writeFileSync(filePath, bf)
-                        console.log('00..saved file...' + filePath)
                         // Omit upload.data since we don't store the content in database
                         upload.type = 'stored-file'
                         fileUploads[i] = omit(upload, ['data'])
                     }
 
                     // Run Speech to Text conversion
-                    if (upload.mime === 'audio/webm') {
-                        console.log('1..Running Speech to Text')
+                    if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4') {
                         let speechToTextConfig: ICommonObject = {}
                         if (chatflow.speechToText) {
                             const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -2077,7 +2074,6 @@ export class App {
                                 }
                             }
                         }
-                        console.log('2...' + JSON.stringify(speechToTextConfig))
                         if (speechToTextConfig) {
                             const options: ICommonObject = {
                                 chatId,
@@ -2085,7 +2081,6 @@ export class App {
                                 appDataSource: this.AppDataSource,
                                 databaseEntities: databaseEntities
                             }
-                            console.log('3...' + JSON.stringify(options))
                             const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                             if (speechToTextResult) {
                                 incomingInput.question = speechToTextResult
