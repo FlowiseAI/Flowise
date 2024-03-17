@@ -1,10 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
-import path from "path";
-import { getStoragePath } from "../../../src";
-import fs from "fs";
-import { TextLoader } from "langchain/document_loaders/fs/text";
+import path from 'path'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
 
 class Csv_DocumentLoaders implements INode {
     label: string
