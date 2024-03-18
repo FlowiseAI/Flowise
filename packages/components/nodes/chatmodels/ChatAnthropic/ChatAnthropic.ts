@@ -3,7 +3,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatAnthropic } from './FlowiseChatAntrhopic'
+import { ChatAnthropic } from './FlowiseChatAnthropic'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -20,7 +20,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
@@ -45,6 +45,11 @@ class ChatAnthropic_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
+                        label: 'claude-3-haiku',
+                        name: 'claude-3-haiku-20240307',
+                        description: 'Fastest and most compact model, designed for near-instant responsiveness'
+                    },
+                    {
                         label: 'claude-3-opus',
                         name: 'claude-3-opus-20240229',
                         description: 'Most powerful model for highly complex tasks'
@@ -55,66 +60,22 @@ class ChatAnthropic_ChatModels implements INode {
                         description: 'Ideal balance of intelligence and speed for enterprise workloads'
                     },
                     {
-                        label: 'claude-2',
-                        name: 'claude-2',
+                        label: 'claude-2.0 (legacy)',
+                        name: 'claude-2.0',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
                     },
                     {
-                        label: 'claude-2.1',
+                        label: 'claude-2.1 (legacy)',
                         name: 'claude-2.1',
                         description: 'Claude 2 latest full version'
                     },
                     {
-                        label: 'claude-instant-1',
-                        name: 'claude-instant-1',
+                        label: 'claude-instant-1.2 (legacy)',
+                        name: 'claude-instant-1.2',
                         description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
-                    },
-                    {
-                        label: 'claude-v1',
-                        name: 'claude-v1'
-                    },
-                    {
-                        label: 'claude-v1-100k',
-                        name: 'claude-v1-100k'
-                    },
-                    {
-                        label: 'claude-v1.0',
-                        name: 'claude-v1.0'
-                    },
-                    {
-                        label: 'claude-v1.2',
-                        name: 'claude-v1.2'
-                    },
-                    {
-                        label: 'claude-v1.3',
-                        name: 'claude-v1.3'
-                    },
-                    {
-                        label: 'claude-v1.3-100k',
-                        name: 'claude-v1.3-100k'
-                    },
-                    {
-                        label: 'claude-instant-v1',
-                        name: 'claude-instant-v1'
-                    },
-                    {
-                        label: 'claude-instant-v1-100k',
-                        name: 'claude-instant-v1-100k'
-                    },
-                    {
-                        label: 'claude-instant-v1.0',
-                        name: 'claude-instant-v1.0'
-                    },
-                    {
-                        label: 'claude-instant-v1.1',
-                        name: 'claude-instant-v1.1'
-                    },
-                    {
-                        label: 'claude-instant-v1.1-100k',
-                        name: 'claude-instant-v1.1-100k'
                     }
                 ],
-                default: 'claude-2',
+                default: 'claude-3-haiku',
                 optional: true
             },
             {
