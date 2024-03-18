@@ -480,9 +480,18 @@ export class App {
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
 
             try {
-                // Delete all  uploads corresponding to this chatflow
+                // Delete all uploads corresponding to this chatflow
                 const directory = path.join(getStoragePath(), req.params.id)
                 deleteFolderRecursive(directory)
+
+                // Delete all chat messages
+                await this.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: req.params.id })
+
+                // Delete all chat feedback
+                await this.AppDataSource.getRepository(ChatMessageFeedback).delete({ chatflowid: req.params.id })
+
+                // Delete all upsert history
+                await this.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: req.params.id })
             } catch (e) {
                 logger.error(`[server]: Error deleting file storage for chatflow ${req.params.id}: ${e}`)
             }
@@ -1394,8 +1403,14 @@ export class App {
             await this.upsertVector(req, res, true)
         })
 
+        this.app.patch('/api/v1/upsert-history', async (req: Request, res: Response) => {
+            const ids = req.body.ids ?? []
+            const results = await this.AppDataSource.getRepository(UpsertHistory).delete(ids)
+            return res.json(results)
+        })
+
         // Get all upsert history from chatflowid
-        this.app.get('/api/v1/vector/upsert/:id', async (req: Request, res: Response) => {
+        this.app.get('/api/v1/upsert-history/:id', async (req: Request, res: Response) => {
             const sortOrder = req.query?.order as string | undefined
             const chatflowid = req.params?.id as string | undefined
             const startDate = req.query?.startDate as string | undefined

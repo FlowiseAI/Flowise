@@ -265,9 +265,14 @@ export const getFileName = (fileBase64: string): string => {
  */
 export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<string, any>): ICommonObject[] => {
     const existingUpsertFlowData = upsertHistory['flowData'] ?? []
-    const nodeInputs: ICommonObject = {}
+    const paramValues: ICommonObject[] = []
 
     for (const input in nodeData.inputs) {
+        const inputParam = nodeData.inputParams.find((inp) => inp.name === input)
+        if (!inputParam) continue
+
+        let paramValue: ICommonObject = {}
+
         if (!nodeData.inputs[input]) {
             continue
         }
@@ -278,13 +283,34 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
         ) {
             continue
         }
+        // Get file name instead of the base64 string
         if (nodeData.category === 'Document Loaders' && nodeData.inputParams.find((inp) => inp.name === input)?.type === 'file') {
-            nodeInputs[input] = getFileName(nodeData.inputs[input])
+            paramValue = {
+                label: inputParam?.label,
+                name: inputParam?.name,
+                type: inputParam?.type,
+                value: getFileName(nodeData.inputs[input])
+            }
+            paramValues.push(paramValue)
             continue
         }
-        nodeInputs[input] = nodeData.inputs[input]
+
+        paramValue = {
+            label: inputParam?.label,
+            name: inputParam?.name,
+            type: inputParam?.type,
+            value: nodeData.inputs[input]
+        }
+        paramValues.push(paramValue)
     }
-    const newFlowData = { node: nodeData.label, id: nodeData.id, inputs: nodeInputs }
+
+    const newFlowData = {
+        label: nodeData.label,
+        name: nodeData.name,
+        category: nodeData.category,
+        id: nodeData.id,
+        paramValues
+    }
     existingUpsertFlowData.push(newFlowData)
     return existingUpsertFlowData
 }

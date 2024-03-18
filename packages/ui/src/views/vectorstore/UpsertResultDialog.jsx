@@ -35,7 +35,7 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                             gap: 5
                         }}
                     >
@@ -43,7 +43,6 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
                         <StatsCard title='Updated' stat={dialogProps.numUpdated ?? 0} />
                         <StatsCard title='Skipped' stat={dialogProps.numSkipped ?? 0} />
                         <StatsCard title='Deleted' stat={dialogProps.numDeleted ?? 0} />
-                        <StatsCard title='Total' stat={dialogProps.totalKeys ?? dialogProps.numAdded ?? 0} />
                     </div>
                     {dialogProps.addedDocs && dialogProps.addedDocs.length > 0 && (
                         <Typography sx={{ mt: 2, mb: 2, fontWeight: 500 }}>{dialogProps.numAdded} Added Documents</Typography>
