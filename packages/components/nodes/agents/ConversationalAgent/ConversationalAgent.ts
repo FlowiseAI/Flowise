@@ -9,7 +9,7 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { IVisionChatModal, FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IVisionChatModal, FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
@@ -120,12 +120,28 @@ class ConversationalAgent_Agents implements INode {
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let res: ChainValues = {}
+        let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            if (res.sourceDocuments) {
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            if (res.sourceDocuments) {
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
+            }
         }
 
         await memory.addChatMessages(
@@ -142,7 +158,20 @@ class ConversationalAgent_Agents implements INode {
             this.sessionId
         )
 
-        return res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 

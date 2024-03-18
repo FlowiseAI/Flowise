@@ -905,7 +905,13 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = ['openAIFunctionAgent', 'csvAgent', 'airtableAgent', 'conversationalRetrievalAgent']
+        const whitelistAgents = [
+            'openAIFunctionAgent',
+            'mistralAIFunctionAgent',
+            'csvAgent',
+            'airtableAgent',
+            'conversationalRetrievalAgent'
+        ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Engine') {
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
