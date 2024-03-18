@@ -1801,13 +1801,11 @@ export class App {
             }
 
             query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                fromDate: fromDate ?? new Date(new Date().setHours(0, 0, 0, 0)),
+                fromDate: fromDate ?? new Date(new Date(new Date().setMonth(-1)).setHours(0, 0, 0, 0)),
                 toDate: toDate ?? new Date(new Date().setHours(23, 59, 59, 999))
             })
 
             query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
-
-            const [sql, parameters] = query.getQueryAndParameters()
 
             const messages = await query.getMany()
             return messages
