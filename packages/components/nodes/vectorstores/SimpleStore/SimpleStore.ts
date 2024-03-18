@@ -2,7 +2,7 @@ import path from 'path'
 import { flatten } from 'lodash'
 import { storageContextFromDefaults, serviceContextFromDefaults, VectorStoreIndex, Document } from 'llamaindex'
 import { Document as LCDocument } from 'langchain/document'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getUserHome } from '../../../src'
 
 class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
@@ -79,7 +79,7 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<void> {
+        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
             const basePath = nodeData.inputs?.basePath as string
             const docs = nodeData.inputs?.document as LCDocument[]
             const embeddings = nodeData.inputs?.embeddings
@@ -105,6 +105,7 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
 
             try {
                 await VectorStoreIndex.fromDocuments(llamadocs, { serviceContext, storageContext })
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

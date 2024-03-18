@@ -3,7 +3,7 @@ import { createClient, SearchOptions, RedisClientOptions } from 'redis'
 import { Embeddings } from '@langchain/core/embeddings'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/community/vectorstores/redis'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { escapeAllStrings, escapeSpecialChars, unEscapeSpecialChars } from './utils'
 
@@ -138,7 +138,7 @@ class Redis_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const indexName = nodeData.inputs?.indexName as string
             let contentKey = nodeData.inputs?.contentKey as string
@@ -203,6 +203,8 @@ class Redis_VectorStores implements INode {
                         filter
                     )
                 }
+
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

@@ -3,7 +3,7 @@ import { DataType, ErrorCode, MetricType, IndexType } from '@zilliz/milvus2-sdk-
 import { Document } from '@langchain/core/documents'
 import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
 import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 interface InsertRow {
@@ -109,7 +109,7 @@ class Milvus_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             // server setup
             const address = nodeData.inputs?.milvusServerUrl as string
             const collectionName = nodeData.inputs?.milvusCollection as string
@@ -147,6 +147,8 @@ class Milvus_VectorStores implements INode {
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: string) => {
                     return await similaritySearchVectorWithScore(query, k, vectorStore, undefined, filter)
                 }
+
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

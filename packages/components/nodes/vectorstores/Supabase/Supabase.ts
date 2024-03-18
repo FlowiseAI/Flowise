@@ -3,9 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { index } from '../../../src/indexing'
 
 class Supabase_VectorStores implements INode {
     label: string
@@ -24,7 +25,7 @@ class Supabase_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase'
         this.name = 'supabase'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
@@ -49,6 +50,13 @@ class Supabase_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Supabase Project URL',
@@ -99,12 +107,13 @@ class Supabase_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
             const tableName = nodeData.inputs?.tableName as string
             const queryName = nodeData.inputs?.queryName as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
@@ -120,11 +129,32 @@ class Supabase_VectorStores implements INode {
             }
 
             try {
-                await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
-                    client,
-                    tableName: tableName,
-                    queryName: queryName
-                })
+                if (recordManager) {
+                    const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
+                        client,
+                        tableName: tableName,
+                        queryName: queryName
+                    })
+                    await recordManager.createSchema()
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: tableName + '_' + queryName
+                        }
+                    })
+                    return res
+                } else {
+                    await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
+                        client,
+                        tableName: tableName,
+                        queryName: queryName
+                    })
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }

@@ -3,7 +3,7 @@ import { IDocument, ZepClient } from '@getzep/zep-cloud'
 import { IZepConfig, ZepVectorStore } from '@getzep/zep-cloud/langchain'
 import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { FakeEmbeddings } from 'langchain/embeddings/fake'
@@ -89,7 +89,7 @@ class Zep_CloudVectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const zepCollection = nodeData.inputs?.zepCollection as string
             const docs = nodeData.inputs?.document as Document[]
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -109,6 +109,7 @@ class Zep_CloudVectorStores implements INode {
             }
             try {
                 await ZepVectorStore.fromDocuments(finalDocs, new FakeEmbeddings(), zepConfig)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

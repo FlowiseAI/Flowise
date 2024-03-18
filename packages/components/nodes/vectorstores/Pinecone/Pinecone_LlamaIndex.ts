@@ -13,7 +13,7 @@ import {
 import { FetchResponse, Index, Pinecone, ScoredPineconeRecord } from '@pinecone-database/pinecone'
 import { flatten } from 'lodash'
 import { Document as LCDocument } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { flattenObject, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class PineconeLlamaIndex_VectorStores implements INode {
@@ -110,7 +110,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const indexName = nodeData.inputs?.pineconeIndex as string
             const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
             const docs = nodeData.inputs?.document as LCDocument[]
@@ -144,6 +144,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
             try {
                 await VectorStoreIndex.fromDocuments(llamadocs, { serviceContext, storageContext })
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

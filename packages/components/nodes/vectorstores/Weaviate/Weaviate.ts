@@ -1,11 +1,12 @@
 import { flatten } from 'lodash'
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
-import { WeaviateLibArgs, WeaviateStore } from '@langchain/community/vectorstores/weaviate'
+import { WeaviateLibArgs, WeaviateStore } from '@langchain/weaviate'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { index } from '../../../src/indexing'
 
 class Weaviate_VectorStores implements INode {
     label: string
@@ -24,7 +25,7 @@ class Weaviate_VectorStores implements INode {
     constructor() {
         this.label = 'Weaviate'
         this.name = 'weaviate'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Weaviate'
         this.icon = 'weaviate.png'
         this.category = 'Vector Stores'
@@ -52,6 +53,13 @@ class Weaviate_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Weaviate Scheme',
@@ -125,7 +133,7 @@ class Weaviate_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const weaviateScheme = nodeData.inputs?.weaviateScheme as string
             const weaviateHost = nodeData.inputs?.weaviateHost as string
             const weaviateIndex = nodeData.inputs?.weaviateIndex as string
@@ -133,6 +141,7 @@ class Weaviate_VectorStores implements INode {
             const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
@@ -154,6 +163,7 @@ class Weaviate_VectorStores implements INode {
             }
 
             const obj: WeaviateLibArgs = {
+                //@ts-ignore
                 client,
                 indexName: weaviateIndex
             }
@@ -162,7 +172,24 @@ class Weaviate_VectorStores implements INode {
             if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
 
             try {
-                await WeaviateStore.fromDocuments(finalDocs, embeddings, obj)
+                if (recordManager) {
+                    const vectorStore = await WeaviateStore.fromExistingIndex(embeddings, obj)
+                    await recordManager.createSchema()
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: weaviateTextKey ? weaviateIndex + '_' + weaviateTextKey : weaviateIndex
+                        }
+                    })
+                    return res
+                } else {
+                    await WeaviateStore.fromDocuments(finalDocs, embeddings, obj)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }
@@ -189,6 +216,7 @@ class Weaviate_VectorStores implements INode {
         const client: WeaviateClient = weaviate.client(clientConfig)
 
         const obj: WeaviateLibArgs = {
+            //@ts-ignore
             client,
             indexName: weaviateIndex
         }
