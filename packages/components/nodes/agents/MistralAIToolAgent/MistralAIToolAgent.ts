@@ -3,17 +3,18 @@ import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI, formatToOpenAIFunction } from '@langchain/openai'
+import { ChatOpenAI } from '@langchain/openai'
+import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { OpenAIFunctionsAgentOutputParser } from 'langchain/agents/openai/output_parser'
+import { OpenAIToolsAgentOutputParser } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
-import { Moderation, checkInputs } from '../../moderation/Moderation'
+import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class OpenAIFunctionAgent_Agents implements INode {
+class MistralAIToolAgent_Agents implements INode {
     label: string
     name: string
     version: number
@@ -23,22 +24,22 @@ class OpenAIFunctionAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    badge?: string
     sessionId?: string
+    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'OpenAI Function Agent'
-        this.name = 'openAIFunctionAgent'
-        this.version = 4.0
+        this.label = 'MistralAI Tool Agent'
+        this.name = 'mistralAIToolAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.icon = 'function.svg'
-        this.description = `An agent that uses OpenAI Function Calling to pick the tool and args to call`
+        this.icon = 'MistralAI.svg'
+        this.badge = 'NEW'
+        this.description = `Agent that uses MistralAI Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
-        this.badge = 'DEPRECATING'
         this.inputs = [
             {
-                label: 'Allowed Tools',
+                label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
                 list: true
@@ -49,7 +50,7 @@ class OpenAIFunctionAgent_Agents implements INode {
                 type: 'BaseChatMemory'
             },
             {
-                label: 'OpenAI/Azure Chat Model',
+                label: 'MistralAI Chat Model',
                 name: 'model',
                 type: 'BaseChatModel'
             },
@@ -87,7 +88,7 @@ class OpenAIFunctionAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
@@ -173,8 +174,8 @@ const prepareAgent = (
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
-    const modelWithFunctions = model.bind({
-        functions: [...tools.map((tool: any) => formatToOpenAIFunction(tool))]
+    const llmWithTools = model.bind({
+        tools: tools.map(convertToOpenAITool)
     })
 
     const runnableAgent = RunnableSequence.from([
@@ -187,8 +188,8 @@ const prepareAgent = (
             }
         },
         prompt,
-        modelWithFunctions,
-        new OpenAIFunctionsAgentOutputParser()
+        llmWithTools,
+        new OpenAIToolsAgentOutputParser()
     ])
 
     const executor = AgentExecutor.fromAgentAndTools({
@@ -203,4 +204,4 @@ const prepareAgent = (
     return executor
 }
 
-module.exports = { nodeClass: OpenAIFunctionAgent_Agents }
+module.exports = { nodeClass: MistralAIToolAgent_Agents }

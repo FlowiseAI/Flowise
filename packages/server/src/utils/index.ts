@@ -907,10 +907,11 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         // Agent that are available to stream
         const whitelistAgents = [
             'openAIFunctionAgent',
-            'mistralAIFunctionAgent',
+            'mistralAIToolAgent',
             'csvAgent',
             'airtableAgent',
-            'conversationalRetrievalAgent'
+            'conversationalRetrievalAgent',
+            'openAIToolAgent'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Engine') {
