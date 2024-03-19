@@ -93,6 +93,16 @@ export interface IVariable {
     createdDate: Date
 }
 
+export interface ILead {
+    id: string
+    name?: string
+    email?: string
+    phone?: string
+    chatflowid: string
+    chatId: string
+    createdDate: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
