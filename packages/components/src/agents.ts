@@ -20,6 +20,7 @@ import {
     StoppingMethod
 } from 'langchain/agents'
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
+import { IUsedTool } from './Interface'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 type AgentFinish = {
@@ -341,11 +342,13 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         const steps: AgentStep[] = []
         let iterations = 0
         let sourceDocuments: Array<Document> = []
+        const usedTools: IUsedTool[] = []
 
         const getOutput = async (finishStep: AgentFinish): Promise<AgentExecutorOutput> => {
             const { returnValues } = finishStep
             const additional = await this.agent.prepareForOutput(returnValues, steps)
             if (sourceDocuments.length) additional.sourceDocuments = flatten(sourceDocuments)
+            if (usedTools.length) additional.usedTools = usedTools
 
             if (this.returnIntermediateSteps) {
                 return { ...returnValues, intermediateSteps: steps, ...additional }
@@ -410,18 +413,27 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - tags?: string[]
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
-                        observation = tool
-                            ? await (tool as any).call(
-                                  this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
-                                  runManager?.getChild(),
-                                  undefined,
-                                  {
-                                      sessionId: this.sessionId,
-                                      chatId: this.chatId,
-                                      input: this.input
-                                  }
-                              )
-                            : `${action.tool} is not a valid tool, try another one.`
+                        if (tool) {
+                            observation = await (tool as any).call(
+                                this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
+                                runManager?.getChild(),
+                                undefined,
+                                {
+                                    sessionId: this.sessionId,
+                                    chatId: this.chatId,
+                                    input: this.input
+                                }
+                            )
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: observation.includes(SOURCE_DOCUMENTS_PREFIX)
+                                    ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                                    : observation
+                            })
+                        } else {
+                            observation = `${action.tool} is not a valid tool, try another one.`
+                        }
                     } catch (e) {
                         if (e instanceof ToolInputParsingException) {
                             if (this.handleParsingErrors === true) {
@@ -777,5 +789,38 @@ Final Answer: the final answer to the original input question`
         return renderTemplate(this.FORMAT_INSTRUCTIONS, 'f-string', {
             tool_names: this.toolNames.join(', ')
         })
+    }
+}
+
+export class XMLAgentOutputParser extends AgentActionOutputParser {
+    lc_namespace = ['langchain', 'agents', 'xml']
+
+    static lc_name() {
+        return 'XMLAgentOutputParser'
+    }
+
+    /**
+     * Parses the output text from the agent and returns an AgentAction or
+     * AgentFinish object.
+     * @param text The output text from the agent.
+     * @returns An AgentAction or AgentFinish object.
+     */
+    async parse(text: string): Promise<AgentAction | AgentFinish> {
+        if (text.includes('</tool>')) {
+            const [tool, toolInput] = text.split('</tool>')
+            const _tool = tool.split('<tool>')[1]
+            const _toolInput = toolInput.split('<tool_input>')[1]
+            return { tool: _tool, toolInput: _toolInput, log: text }
+        } else if (text.includes('<final_answer>')) {
+            const [, answer] = text.split('<final_answer>')
+            return { returnValues: { output: answer }, log: text }
+        } else {
+            // Instead of throwing Error, we return a AgentFinish object
+            return { returnValues: { output: text }, log: text }
+        }
+    }
+
+    getFormatInstructions(): string {
+        throw new Error('getFormatInstructions not implemented inside XMLAgentOutputParser.')
     }
 }

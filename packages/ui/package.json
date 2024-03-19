@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.6.0",
+    "version": "1.6.2",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -22,9 +22,11 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
+        "axios": "^0.27.2",
         "clsx": "^1.1.1",
-        "flowise-embed": "*",
-        "flowise-embed-react": "*",
+        "dotenv": "^16.0.0",
+        "flowise-embed": "latest",
+        "flowise-embed-react": "latest",
         "flowise-react-json-view": "*",
         "formik": "^2.2.6",
         "framer-motion": "^4.1.13",
@@ -53,14 +55,14 @@
         "remark-gfm": "^3.0.1",
         "remark-math": "^5.1.1",
         "socket.io-client": "^4.6.1",
+        "uuid": "^9.0.1",
         "yup": "^0.32.9"
     },
     "scripts": {
-        "start": "craco start",
-        "dev": "craco start",
-        "build": "craco build",
-        "test": "craco test",
-        "eject": "craco eject"
+        "dev": "vite",
+        "build": "vite build",
+        "clean": "rimraf build",
+        "nuke": "rimraf build node_modules .turbo"
     },
     "babel": {
         "presets": [
@@ -82,13 +84,17 @@
     "devDependencies": {
         "@babel/eslint-parser": "^7.15.8",
         "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-        "@craco/craco": "^7.1.0",
         "@testing-library/jest-dom": "^5.11.10",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^12.8.3",
+        "@vitejs/plugin-react": "^4.2.0",
         "pretty-quick": "^3.1.3",
         "react-scripts": "^5.0.1",
+        "rimraf": "^5.0.5",
         "sass": "^1.42.1",
-        "typescript": "^4.8.4"
+        "typescript": "^4.8.4",
+        "vite": "^5.0.2",
+        "vite-plugin-pwa": "^0.17.0",
+        "vite-plugin-react-js-support": "^1.0.7"
     }
 }

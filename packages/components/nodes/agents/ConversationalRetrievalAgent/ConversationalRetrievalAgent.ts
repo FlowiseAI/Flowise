@@ -25,6 +25,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge?: string
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
@@ -33,6 +34,7 @@ class ConversationalRetrievalAgent_Agents implements INode {
         this.version = 4.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
+        this.badge = 'DEPRECATING'
         this.icon = 'agent.svg'
         this.description = `An agent optimized for retrieval during conversation, answering questions based on past dialogue, all using OpenAI's Function Calling`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]

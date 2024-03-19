@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -11,19 +11,19 @@
     ],
     "scripts": {
         "build": "turbo run build",
-        "build-force": "turbo run build --force",
+        "build-force": "pnpm clean && turbo run build --force",
         "dev": "turbo run dev --parallel",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
-        "clean": "npm exec -ws -- rimraf dist build",
+        "clean": "pnpm --filter \"./packages/**\" clean",
+        "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-        "test": "turbo run test",
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
-        "lint-fix": "yarn lint --fix",
+        "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "yarn typeorm migration:create"
+        "migration:create": "pnpm typeorm migration:create"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
@@ -43,16 +43,24 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-unused-imports": "^2.0.0",
         "husky": "^8.0.1",
+        "kill-port": "^2.0.1",
         "lint-staged": "^13.0.3",
         "prettier": "^2.7.1",
         "pretty-quick": "^3.1.3",
         "rimraf": "^3.0.2",
         "run-script-os": "^1.1.6",
-        "turbo": "^1.7.4",
+        "turbo": "1.10.16",
         "typescript": "^4.8.4"
     },
+    "packageManager": "pnpm@8.14.0",
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "faiss-node",
+            "sqlite3"
+        ]
+    },
     "engines": {
-        "node": ">=18.15.0"
+        "node": ">=18.15.0 <19.0.0 || ^20"
     },
     "resolutions": {
         "@qdrant/openapi-typescript-fetch": "1.2.1"
