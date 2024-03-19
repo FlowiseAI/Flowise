@@ -1,8 +1,9 @@
-import { AnthropicInput, ChatAnthropic } from '@langchain/anthropic'
+import { AnthropicInput, ChatAnthropic as LangchainChatAnthropic } from '@langchain/anthropic'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ChatAnthropic } from './FlowiseChatAnthropic'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -19,12 +20,12 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 3.0
+        this.version = 5.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around ChatAnthropic large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatAnthropic)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatAnthropic)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -44,66 +45,37 @@ class ChatAnthropic_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'claude-2',
-                        name: 'claude-2',
+                        label: 'claude-3-haiku',
+                        name: 'claude-3-haiku-20240307',
+                        description: 'Fastest and most compact model, designed for near-instant responsiveness'
+                    },
+                    {
+                        label: 'claude-3-opus',
+                        name: 'claude-3-opus-20240229',
+                        description: 'Most powerful model for highly complex tasks'
+                    },
+                    {
+                        label: 'claude-3-sonnet',
+                        name: 'claude-3-sonnet-20240229',
+                        description: 'Ideal balance of intelligence and speed for enterprise workloads'
+                    },
+                    {
+                        label: 'claude-2.0 (legacy)',
+                        name: 'claude-2.0',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
                     },
                     {
-                        label: 'claude-2.1',
+                        label: 'claude-2.1 (legacy)',
                         name: 'claude-2.1',
                         description: 'Claude 2 latest full version'
                     },
                     {
-                        label: 'claude-instant-1',
-                        name: 'claude-instant-1',
+                        label: 'claude-instant-1.2 (legacy)',
+                        name: 'claude-instant-1.2',
                         description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
-                    },
-                    {
-                        label: 'claude-v1',
-                        name: 'claude-v1'
-                    },
-                    {
-                        label: 'claude-v1-100k',
-                        name: 'claude-v1-100k'
-                    },
-                    {
-                        label: 'claude-v1.0',
-                        name: 'claude-v1.0'
-                    },
-                    {
-                        label: 'claude-v1.2',
-                        name: 'claude-v1.2'
-                    },
-                    {
-                        label: 'claude-v1.3',
-                        name: 'claude-v1.3'
-                    },
-                    {
-                        label: 'claude-v1.3-100k',
-                        name: 'claude-v1.3-100k'
-                    },
-                    {
-                        label: 'claude-instant-v1',
-                        name: 'claude-instant-v1'
-                    },
-                    {
-                        label: 'claude-instant-v1-100k',
-                        name: 'claude-instant-v1-100k'
-                    },
-                    {
-                        label: 'claude-instant-v1.0',
-                        name: 'claude-instant-v1.0'
-                    },
-                    {
-                        label: 'claude-instant-v1.1',
-                        name: 'claude-instant-v1.1'
-                    },
-                    {
-                        label: 'claude-instant-v1.1-100k',
-                        name: 'claude-instant-v1.1-100k'
                     }
                 ],
-                default: 'claude-2',
+                default: 'claude-3-haiku',
                 optional: true
             },
             {
@@ -137,6 +109,15 @@ class ChatAnthropic_ChatModels implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                default: false,
+                optional: true
             }
         ]
     }
@@ -153,6 +134,8 @@ class ChatAnthropic_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
 
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+
         const obj: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
@@ -165,7 +148,14 @@ class ChatAnthropic_ChatModels implements INode {
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
 
-        const model = new ChatAnthropic(obj)
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false
+            }
+        }
+
+        const model = new ChatAnthropic(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }

@@ -29,6 +29,9 @@ export class ChatMessage implements IChatMessage {
     @Column({ nullable: true, type: 'text' })
     agentReasoning?: string
 
+    @Column({ nullable: true, type: 'text' })
+    fileUploads?: string
+
     @Column()
     chatType: string
 

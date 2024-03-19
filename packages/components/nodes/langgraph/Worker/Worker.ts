@@ -100,7 +100,7 @@ async function createAgent(llm: ChatOpenAI | OllamaFunctions, tools: any[], syst
         ' Do not ask for clarification.' +
         ' Your other team members (and other teams) will collaborate with you with their own specialties.' +
         ' You are chosen for a reason! You are one of the following team members: {team_members}.'
-    const toolNames = tools.map((t) => t.name).join(', ')
+    const toolNames = tools.length ? tools.map((t) => t.name).join(', ') : ''
     const prompt = ChatPromptTemplate.fromMessages([
         ['system', combinedPrompt],
         new MessagesPlaceholder('messages'),
@@ -108,14 +108,14 @@ async function createAgent(llm: ChatOpenAI | OllamaFunctions, tools: any[], syst
         [
             'system',
             [
-                'Supervisor instructions: {instructions}\n' +
-                    `Remember, you individually can only use these tools: ${toolNames}` +
-                    '\n\nEnd if you have already completed the requested task. Communicate the work completed.'
+                'Supervisor instructions: {instructions}\n' + tools.length
+                    ? `Remember, you individually can only use these tools: ${toolNames}`
+                    : '' + '\n\nEnd if you have already completed the requested task. Communicate the work completed.'
             ].join('\n')
         ]
     ])
 
-    const modelWithTools = llm.bind({ tools: tools.map(convertToOpenAITool) })
+    const modelWithTools = tools.length ? llm.bind({ tools: tools.map(convertToOpenAITool) }) : llm.bind({ tools: undefined })
 
     const agent = RunnableSequence.from([
         //@ts-ignore

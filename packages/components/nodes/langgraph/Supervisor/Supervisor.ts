@@ -54,7 +54,8 @@ class Supervisor_LangGraph implements INode {
                 label: 'Chat Model',
                 name: 'llm',
                 type: 'BaseChatModel',
-                description: 'Only compatible with Chat Model with Function Calling: ChatOpenAI, AzureChatOpenAI, OllamaFunctions'
+                description:
+                    'Only compatible with Chat Model with Function Calling: ChatOpenAI, AzureChatOpenAI, ChatMistral, OllamaFunctions'
             },
             {
                 label: 'Recursion Limit',

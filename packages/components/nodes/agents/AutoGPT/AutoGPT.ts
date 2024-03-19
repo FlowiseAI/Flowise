@@ -7,6 +7,8 @@ import { PromptTemplate } from '@langchain/core/prompts'
 import { AutoGPT } from 'langchain/experimental/autogpt'
 import { LLMChain } from 'langchain/chains'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 type ObjectTool = StructuredTool
 const FINISH_NAME = 'finish'
@@ -25,7 +27,7 @@ class AutoGPT_Agents implements INode {
     constructor() {
         this.label = 'AutoGPT'
         this.name = 'autoGPT'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AutoGPT'
         this.category = 'Agents'
         this.icon = 'autogpt.svg'
@@ -68,6 +70,14 @@ class AutoGPT_Agents implements INode {
                 type: 'number',
                 default: 5,
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -92,9 +102,21 @@ class AutoGPT_Agents implements INode {
         return autogpt
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string> {
+    async run(nodeData: INodeData, input: string): Promise<string | object> {
         const executor = nodeData.instance as AutoGPT
         const model = nodeData.inputs?.model as BaseChatModel
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the AutoGPT agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         try {
             let totalAssistantReply = ''

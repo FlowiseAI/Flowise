@@ -1,15 +1,11 @@
-import { BedrockChat } from '@langchain/community/chat_models/bedrock'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { BaseBedrockInput } from 'langchain/dist/util/bedrock'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { BedrockChat } from './FlowiseAWSChatBedrock'
 
 /**
- * I had to run the following to build the component
- * and get the icon copied over to the dist directory
- * Flowise/packages/components > yarn build
- *
  * @author Michael Connor <mlconnor@yahoo.com>
  */
 class AWSChatBedrock_ChatModels implements INode {
@@ -27,7 +23,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS ChatBedrock'
         this.name = 'awsChatBedrock'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'AWSChatBedrock'
         this.icon = 'aws.svg'
         this.category = 'Chat Models'
@@ -95,12 +91,17 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'model',
                 type: 'options',
                 options: [
+                    { label: 'anthropic.claude-3-haiku', name: 'anthropic.claude-3-haiku-20240307-v1:0' },
+                    { label: 'anthropic.claude-3-sonnet', name: 'anthropic.claude-3-sonnet-20240229-v1:0' },
                     { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
-                    { label: 'anthropic.claude-v1', name: 'anthropic.claude-v1' },
+                    { label: 'anthropic.claude-v2:1', name: 'anthropic.claude-v2:1' },
                     { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' },
-                    { label: 'meta.llama2-13b-chat-v1', name: 'meta.llama2-13b-chat-v1' }
+                    { label: 'meta.llama2-13b-chat-v1', name: 'meta.llama2-13b-chat-v1' },
+                    { label: 'meta.llama2-70b-chat-v1', name: 'meta.llama2-70b-chat-v1' },
+                    { label: 'mistral.mistral-7b-instruct-v0:2', name: 'mistral.mistral-7b-instruct-v0:2' },
+                    { label: 'mistral.mixtral-8x7b-instruct-v0:1', name: 'mistral.mixtral-8x7b-instruct-v0:1' }
                 ],
-                default: 'anthropic.claude-v2'
+                default: 'anthropic.claude-3-haiku'
             },
             {
                 label: 'Custom Model Name',
@@ -128,6 +129,15 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 default: 200
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Only works with claude-3-* models when image is being uploaded from chat. Compatible with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                default: false,
+                optional: true
             }
         ]
     }
@@ -170,7 +180,16 @@ class AWSChatBedrock_ChatModels implements INode {
         }
         if (cache) obj.cache = cache
 
-        const amazonBedrock = new BedrockChat(obj)
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false
+            }
+        }
+
+        const amazonBedrock = new BedrockChat(nodeData.id, obj)
+        if (obj.model.includes('anthropic.claude-3')) amazonBedrock.setMultiModalOption(multiModalOption)
         return amazonBedrock
     }
 }

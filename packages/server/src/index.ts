@@ -5,12 +5,13 @@ import cors from 'cors'
 import http from 'http'
 import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
+import contentDisposition from 'content-disposition'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -20,8 +21,10 @@ import {
     ICredentialReturnResponse,
     chatType,
     IChatMessage,
+    IChatMessageFeedback,
     IDepthQueue,
-    INodeDirectedGraph
+    INodeDirectedGraph,
+    IUploadFileSizeAndTypes
 } from './Interface'
 import {
     getNodeModulesPackagePath,
@@ -46,6 +49,7 @@ import {
     getAllConnectedNodes,
     clearSessionMemory,
     findMemoryNode,
+    deleteFolderRecursive,
     getTelemetryFlowObj,
     getAppVersion
 } from './utils'
@@ -54,6 +58,7 @@ import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
+import { ChatMessageFeedback } from './database/entities/ChatMessageFeedback'
 import { Credential } from './database/entities/Credential'
 import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
@@ -64,9 +69,13 @@ import {
     ICommonObject,
     IMessage,
     INodeOptionsValue,
+    INodeParams,
     handleEscapeCharacters,
+    convertSpeechToText,
+    xmlScrape,
     webCrawl,
-    xmlScrape
+    getStoragePath,
+    IFileUpload
 } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
@@ -84,7 +93,7 @@ export class App {
     chatflowPool: ChatflowPool
     cachePool: CachePool
     telemetry: Telemetry
-    AppDataSource = getDataSource()
+    AppDataSource: DataSource = getDataSource()
 
     constructor() {
         this.app = express()
@@ -177,7 +186,10 @@ export class App {
                 '/api/v1/node-icon/',
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
+                '/api/v1/chatflows-uploads',
                 '/api/v1/openai-assistants-file',
+                '/api/v1/feedback',
+                '/api/v1/get-upload-file',
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
@@ -317,7 +329,10 @@ export class App {
         // execute custom function node
         this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
             const body = req.body
-            const nodeData = { inputs: body }
+            const functionInputVariables = Object.fromEntries(
+                [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
+            )
+            const nodeData = { inputs: { functionInputVariables, ...body } }
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
                 try {
                     const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
@@ -398,10 +413,13 @@ export class App {
                 id: req.params.id
             })
             if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-            if (chatflow.chatbotConfig) {
+            const uploadsConfig = await this.getUploadsConfig(req.params.id)
+            // even if chatbotConfig is not set but uploads are enabled
+            // send uploadsConfig to the chatbot
+            if (chatflow.chatbotConfig || uploadsConfig) {
                 try {
-                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    return res.json(parsedConfig)
+                    const parsedConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
+                    return res.json({ ...parsedConfig, uploads: uploadsConfig })
                 } catch (e) {
                     return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
                 }
@@ -461,6 +479,15 @@ export class App {
         // Delete chatflow via id
         this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
+
+            try {
+                // Delete all  uploads corresponding to this chatflow
+                const directory = path.join(getStoragePath(), req.params.id)
+                deleteFolderRecursive(directory)
+            } catch (e) {
+                logger.error(`[server]: Error deleting file storage for chatflow ${req.params.id}: ${e}`)
+            }
+
             return res.json(results)
         })
 
@@ -521,6 +548,16 @@ export class App {
             return res.json(obj)
         })
 
+        // Check if chatflow valid for uploads
+        this.app.get('/api/v1/chatflows-uploads/:id', async (req: Request, res: Response) => {
+            try {
+                const uploadsConfig = await this.getUploadsConfig(req.params.id)
+                return res.json(uploadsConfig)
+            } catch (e) {
+                return res.status(500).send(e)
+            }
+        })
+
         // ----------------------------------------
         // ChatMessage
         // ----------------------------------------
@@ -534,6 +571,7 @@ export class App {
             const messageId = req.query?.messageId as string | undefined
             const startDate = req.query?.startDate as string | undefined
             const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
             let chatTypeFilter = req.query?.chatType as chatType | undefined
 
             if (chatTypeFilter) {
@@ -560,14 +598,35 @@ export class App {
                 sessionId,
                 startDate,
                 endDate,
-                messageId
+                messageId,
+                feedback
             )
             return res.json(chatmessages)
         })
 
         // Get internal chatmessages from chatflowid
         this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
-            const chatmessages = await this.getChatMessage(req.params.id, chatType.INTERNAL)
+            const sortOrder = req.query?.order as string | undefined
+            const chatId = req.query?.chatId as string | undefined
+            const memoryType = req.query?.memoryType as string | undefined
+            const sessionId = req.query?.sessionId as string | undefined
+            const messageId = req.query?.messageId as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+            const feedback = req.query?.feedback as boolean | undefined
+
+            const chatmessages = await this.getChatMessage(
+                req.params.id,
+                chatType.INTERNAL,
+                sortOrder,
+                chatId,
+                memoryType,
+                sessionId,
+                startDate,
+                endDate,
+                messageId,
+                feedback
+            )
             return res.json(chatmessages)
         })
 
@@ -618,8 +677,106 @@ export class App {
             if (sessionId) deleteOptions.sessionId = sessionId
             if (chatType) deleteOptions.chatType = chatType
 
+            // remove all related feedback records
+            const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
+            await this.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
+
+            // Delete all uploads corresponding to this chatflow/chatId
+            if (chatId) {
+                try {
+                    const directory = path.join(getStoragePath(), chatflowid, chatId)
+                    deleteFolderRecursive(directory)
+                } catch (e) {
+                    logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
+                }
+            }
+
             const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
             return res.json(results)
+        })
+
+        // ----------------------------------------
+        // Chat Message Feedback
+        // ----------------------------------------
+
+        // Get all chatmessage feedback from chatflowid
+        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const chatId = req.query?.chatId as string | undefined
+            const sortOrder = req.query?.order as string | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            const feedback = await this.getChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate)
+
+            return res.json(feedback)
+        })
+
+        // Add chatmessage feedback for chatflowid
+        this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const body = req.body
+            const results = await this.addChatMessageFeedback(body)
+            return res.json(results)
+        })
+
+        // Update chatmessage feedback for id
+        this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
+            const id = req.params.id
+            const body = req.body
+            await this.updateChatMessageFeedback(id, body)
+            return res.json({ status: 'OK' })
+        })
+
+        // ----------------------------------------
+        // stats
+        // ----------------------------------------
+        //
+        // get stats for showing in chatflow
+        this.app.get('/api/v1/stats/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            let chatTypeFilter = req.query?.chatType as chatType | undefined
+            const startDate = req.query?.startDate as string | undefined
+            const endDate = req.query?.endDate as string | undefined
+
+            if (chatTypeFilter) {
+                try {
+                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
+                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = undefined
+                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
+                        chatTypeFilter = chatType.EXTERNAL
+                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                        chatTypeFilter = chatType.INTERNAL
+                    }
+                } catch (e) {
+                    return res.status(500).send(e)
+                }
+            }
+
+            const chatmessages = (await this.getChatMessage(
+                chatflowid,
+                chatTypeFilter,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                startDate,
+                endDate,
+                '',
+                true
+            )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
+            const totalMessages = chatmessages.length
+
+            const totalFeedback = chatmessages.filter((message) => message?.feedback).length
+            const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length
+
+            const results = {
+                totalMessages,
+                totalFeedback,
+                positiveFeedback
+            }
+
+            res.json(results)
         })
 
         // ----------------------------------------
@@ -1100,6 +1257,11 @@ export class App {
             }
         })
 
+        function streamFileToUser(res: Response, filePath: string) {
+            const fileStream = fs.createReadStream(filePath)
+            fileStream.pipe(res)
+        }
+
         // Download file from assistant
         this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
             const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
@@ -1109,9 +1271,48 @@ export class App {
             if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
             //only return from the .flowise openai-assistant folder
             if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
-            res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
-            const fileStream = fs.createReadStream(filePath)
-            fileStream.pipe(res)
+
+            if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
+                streamFileToUser(res, filePath)
+            } else {
+                return res.status(404).send(`File ${req.body.fileName} not found`)
+            }
+        })
+
+        this.app.get('/api/v1/get-upload-path', async (req: Request, res: Response) => {
+            return res.json({
+                storagePath: getStoragePath()
+            })
+        })
+
+        // stream uploaded image
+        this.app.get('/api/v1/get-upload-file', async (req: Request, res: Response) => {
+            try {
+                if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {
+                    return res.status(500).send(`Invalid file path`)
+                }
+                const chatflowId = req.query.chatflowId as string
+                const chatId = req.query.chatId as string
+                const fileName = req.query.fileName as string
+
+                const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
+                //raise error if file path is not absolute
+                if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
+                //raise error if file path contains '..'
+                if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
+                //only return from the storage folder
+                if (!filePath.startsWith(getStoragePath())) return res.status(500).send(`Invalid file path`)
+
+                if (fs.existsSync(filePath)) {
+                    res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
+                    streamFileToUser(res, filePath)
+                } else {
+                    return res.status(404).send(`File ${fileName} not found`)
+                }
+            } catch (error) {
+                return res.status(500).send(`Invalid file path`)
+            }
         })
 
         // ----------------------------------------
@@ -1169,18 +1370,22 @@ export class App {
         // ----------------------------------------
 
         this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
-            const url = decodeURIComponent(req.query.url as string)
-            const relativeLinksMethod = req.query.relativeLinksMethod as string
-            if (!relativeLinksMethod) {
-                return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+            try {
+                const url = decodeURIComponent(req.query.url as string)
+                const relativeLinksMethod = req.query.relativeLinksMethod as string
+                if (!relativeLinksMethod) {
+                    return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
+                }
+
+                const limit = parseInt(req.query.limit as string)
+                if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
+                const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
+                if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
+
+                res.json({ status: 'OK', links })
+            } catch (e: any) {
+                return res.status(500).send('Could not fetch links from the URL.')
             }
-
-            const limit = parseInt(req.query.limit as string)
-            if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-            const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
-            if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
-
-            res.json({ status: 'OK', links })
         })
 
         // ----------------------------------------
@@ -1239,7 +1444,36 @@ export class App {
             upload.array('files'),
             (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
             async (req: Request, res: Response) => {
-                await this.buildChatflow(req, res, socketIO)
+                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+                    id: req.params.id
+                })
+                if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+                let isDomainAllowed = true
+                logger.info(`[server]: Request originated from ${req.headers.origin}`)
+                if (chatflow.chatbotConfig) {
+                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+                    // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
+                    const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
+                    if (isValidAllowedOrigins) {
+                        const originHeader = req.headers.origin as string
+                        const origin = new URL(originHeader).host
+                        isDomainAllowed =
+                            parsedConfig.allowedOrigins.filter((domain: string) => {
+                                try {
+                                    const allowedOrigin = new URL(domain).host
+                                    return origin === allowedOrigin
+                                } catch (e) {
+                                    return false
+                                }
+                            }).length > 0
+                    }
+                }
+
+                if (isDomainAllowed) {
+                    await this.buildChatflow(req, res, socketIO)
+                } else {
+                    return res.status(401).send(`This site is not allowed to access this chatbot`)
+                }
             }
         )
 
@@ -1291,13 +1525,12 @@ export class App {
                 }
                 templates.push(template)
             })
-            const FlowiseDocsQnA = templates.find((tmp) => tmp.name === 'Flowise Docs QnA')
-            const FlowiseDocsQnAIndex = templates.findIndex((tmp) => tmp.name === 'Flowise Docs QnA')
-            if (FlowiseDocsQnA && FlowiseDocsQnAIndex > 0) {
-                templates.splice(FlowiseDocsQnAIndex, 1)
-                templates.unshift(FlowiseDocsQnA)
+            const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
+            const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
+            if (FlowiseDocsQnAIndex > 0) {
+                sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
             }
-            return res.json(templates.sort((a, b) => a.templateName.localeCompare(b.templateName)))
+            return res.json(sortedTemplates)
         })
 
         // ----------------------------------------
@@ -1444,6 +1677,74 @@ export class App {
     }
 
     /**
+     * Method that checks if uploads are enabled in the chatflow
+     * @param {string} chatflowid
+     */
+    async getUploadsConfig(chatflowid: string): Promise<any> {
+        const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowid
+        })
+        if (!chatflow) return `Chatflow ${chatflowid} not found`
+
+        const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
+        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI']
+
+        const flowObj = JSON.parse(chatflow.flowData)
+        const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
+
+        let isSpeechToTextEnabled = false
+        if (chatflow.speechToText) {
+            const speechToTextProviders = JSON.parse(chatflow.speechToText)
+            for (const provider in speechToTextProviders) {
+                if (provider !== 'none') {
+                    const providerObj = speechToTextProviders[provider]
+                    if (providerObj.status) {
+                        isSpeechToTextEnabled = true
+                        break
+                    }
+                }
+            }
+        }
+
+        let isImageUploadAllowed = false
+        const nodes: IReactFlowNode[] = flowObj.nodes
+
+        /*
+         * Condition for isImageUploadAllowed
+         * 1.) one of the uploadAllowedNodes exists
+         * 2.) one of the uploadProcessingNodes exists + allowImageUploads is ON
+         */
+        if (!nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
+            return {
+                isSpeechToTextEnabled,
+                isImageUploadAllowed: false,
+                imgUploadSizeAndTypes
+            }
+        }
+
+        nodes.forEach((node: IReactFlowNode) => {
+            if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
+                // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
+                node.data.inputParams.map((param: INodeParams) => {
+                    if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
+                        imgUploadSizeAndTypes.push({
+                            fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                            maxUploadSize: 5
+                        })
+                        isImageUploadAllowed = true
+                    }
+                })
+            }
+        })
+
+        return {
+            isSpeechToTextEnabled,
+            isImageUploadAllowed,
+            imgUploadSizeAndTypes
+        }
+    }
+
+    /**
      * Method that get chat messages.
      * @param {string} chatflowid
      * @param {chatType} chatType
@@ -1453,6 +1754,7 @@ export class App {
      * @param {string} sessionId
      * @param {string} startDate
      * @param {string} endDate
+     * @param {boolean} feedback
      */
     async getChatMessage(
         chatflowid: string,
@@ -1463,7 +1765,8 @@ export class App {
         sessionId?: string,
         startDate?: string,
         endDate?: string,
-        messageId?: string
+        messageId?: string,
+        feedback?: boolean
     ): Promise<ChatMessage[]> {
         const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
             const date = new Date(dateTimeStr)
@@ -1479,6 +1782,40 @@ export class App {
 
         let toDate
         if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
+
+        if (feedback) {
+            const query = this.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
+
+            // do the join with chat message feedback based on messageId for each chat message in the chatflow
+            query
+                .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
+                .where('chat_message.chatflowid = :chatflowid', { chatflowid })
+
+            // based on which parameters are available add `andWhere` clauses to the query
+            if (chatType) {
+                query.andWhere('chat_message.chatType = :chatType', { chatType })
+            }
+            if (chatId) {
+                query.andWhere('chat_message.chatId = :chatId', { chatId })
+            }
+            if (memoryType) {
+                query.andWhere('chat_message.memoryType = :memoryType', { memoryType })
+            }
+            if (sessionId) {
+                query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
+            }
+
+            // set date range
+            query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
+                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                toDate: toDate ?? new Date()
+            })
+            // sort
+            query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+
+            const messages = await query.getMany()
+            return messages
+        }
 
         return await this.AppDataSource.getRepository(ChatMessage).find({
             where: {
@@ -1504,6 +1841,8 @@ export class App {
     async addChatMessage(chatMessage: Partial<IChatMessage>): Promise<ChatMessage> {
         const newChatMessage = new ChatMessage()
         Object.assign(newChatMessage, chatMessage)
+
+        if (!newChatMessage.createdDate) newChatMessage.createdDate = new Date()
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
@@ -1601,6 +1940,62 @@ export class App {
             logger.error('[server]: Error:', e)
             throw new Error(e.message)
         }
+    }
+
+    /**
+     * Method that get chat messages.
+     * @param {string} chatflowid
+     * @param {string} sortOrder
+     * @param {string} chatId
+     * @param {string} startDate
+     * @param {string} endDate
+     */
+    async getChatMessageFeedback(
+        chatflowid: string,
+        chatId?: string,
+        sortOrder: string = 'ASC',
+        startDate?: string,
+        endDate?: string
+    ): Promise<ChatMessageFeedback[]> {
+        let fromDate
+        if (startDate) fromDate = new Date(startDate)
+
+        let toDate
+        if (endDate) toDate = new Date(endDate)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).find({
+            where: {
+                chatflowid,
+                chatId,
+                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
+        })
+    }
+
+    /**
+     * Method that add chat message feedback.
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
+
+        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
+        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
+    }
+
+    /**
+     * Method that updates chat message feedback.
+     * @param {string} id
+     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
+     */
+    async updateChatMessageFeedback(id: string, chatMessageFeedback: Partial<IChatMessageFeedback>) {
+        const newChatMessageFeedback = new ChatMessageFeedback()
+        Object.assign(newChatMessageFeedback, chatMessageFeedback)
+
+        await this.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
     }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {
@@ -1748,6 +2143,57 @@ export class App {
             if (!isInternal) {
                 const isKeyValidated = await this.validateKey(req, chatflow)
                 if (!isKeyValidated) return res.status(401).send('Unauthorized')
+            }
+
+            let fileUploads: IFileUpload[] = []
+            if (incomingInput.uploads) {
+                fileUploads = incomingInput.uploads
+                for (let i = 0; i < fileUploads.length; i += 1) {
+                    const upload = fileUploads[i]
+                    if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
+                        const filename = upload.name
+                        const dir = path.join(getStoragePath(), chatflowid, chatId)
+                        if (!fs.existsSync(dir)) {
+                            fs.mkdirSync(dir, { recursive: true })
+                        }
+                        const filePath = path.join(dir, filename)
+                        const splitDataURI = upload.data.split(',')
+                        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                        fs.writeFileSync(filePath, bf)
+
+                        // Omit upload.data since we don't store the content in database
+                        upload.type = 'stored-file'
+                        fileUploads[i] = omit(upload, ['data'])
+                    }
+
+                    // Run Speech to Text conversion
+                    if (upload.mime === 'audio/webm') {
+                        let speechToTextConfig: ICommonObject = {}
+                        if (chatflow.speechToText) {
+                            const speechToTextProviders = JSON.parse(chatflow.speechToText)
+                            for (const provider in speechToTextProviders) {
+                                const providerObj = speechToTextProviders[provider]
+                                if (providerObj.status) {
+                                    speechToTextConfig = providerObj
+                                    speechToTextConfig['name'] = provider
+                                    break
+                                }
+                            }
+                        }
+                        if (speechToTextConfig) {
+                            const options: ICommonObject = {
+                                chatId,
+                                chatflowid,
+                                appDataSource: this.AppDataSource,
+                                databaseEntities: databaseEntities
+                            }
+                            const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
+                            if (speechToTextResult) {
+                                incomingInput.question = speechToTextResult
+                            }
+                        }
+                    }
+                }
             }
 
             let isStreamValid = false
@@ -1971,7 +2417,10 @@ export class App {
                     chatflowid,
                     this.AppDataSource,
                     incomingInput?.overrideConfig,
-                    this.cachePool
+                    this.cachePool,
+                    false,
+                    undefined,
+                    incomingInput.uploads
                 )
 
                 const nodeToExecute =
@@ -2010,6 +2459,7 @@ export class App {
                       appDataSource: this.AppDataSource,
                       databaseEntities,
                       analytic: chatflow.analytic,
+                      uploads: incomingInput.uploads,
                       socketIO,
                       socketIOClientId: incomingInput.socketIOClientId
                   })
@@ -2020,7 +2470,8 @@ export class App {
                       logger,
                       appDataSource: this.AppDataSource,
                       databaseEntities,
-                      analytic: chatflow.analytic
+                      analytic: chatflow.analytic,
+                      uploads: incomingInput.uploads
                   })
 
             result = typeof result === 'string' ? { text: result } : result
@@ -2038,7 +2489,8 @@ export class App {
                 chatId,
                 memoryType,
                 sessionId,
-                createdDate: userMessageDateTime
+                createdDate: userMessageDateTime,
+                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
             }
             await this.addChatMessage(userMessage)
 
@@ -2060,7 +2512,6 @@ export class App {
             if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
             if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
             const chatMessage = await this.addChatMessage(apiMessage)
-            result.chatMessageId = chatMessage.id
 
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             await this.telemetry.sendTelemetry('prediction_sent', {
@@ -2072,7 +2523,11 @@ export class App {
             })
 
             // Prepare response
+            // return the question in the response
+            // this is used when input text is empty but question is in audio format
+            result.question = incomingInput.question
             result.chatId = chatId
+            result.chatMessageId = chatMessage.id
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
 
