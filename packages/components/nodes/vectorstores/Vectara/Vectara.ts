@@ -14,7 +14,6 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { getStoragePath } from '../../../src'
 import fs from 'fs'
 import path from 'path'
-import { TextLoader } from "langchain/document_loaders/fs/text";
 
 class Vectara_VectorStores implements INode {
     label: string
