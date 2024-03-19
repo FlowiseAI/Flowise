@@ -16,11 +16,11 @@ export class Assistant implements IAssistant {
     @Column({ nullable: true })
     iconSrc?: string
 
-    @Column({ type: 'timestamp with time zone' })
+    @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
 
-    @Column({ type: 'timestamp with time zone' })
+    @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
 }

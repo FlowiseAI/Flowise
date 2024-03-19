@@ -16,11 +16,11 @@ export class Variable implements IVariable {
     @Column({ default: 'string', type: 'text' })
     type: string
 
-    @Column({type:'timestamp with time zone'})
+    @Column({type:'timestamp'})
     @CreateDateColumn()
     createdDate: Date
 
-    @Column({type:'timestamp with time zone'})
+    @Column({type:'timestamp'})
     @UpdateDateColumn()
     updatedDate: Date
 }

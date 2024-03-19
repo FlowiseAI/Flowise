@@ -34,11 +34,11 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     speechToText?: string
 
-    @Column({type:'timestamp with time zone'})
+    @Column({type:'timestamp'})
     @CreateDateColumn()
     createdDate: Date
 
-    @Column({type:'timestamp with time zone'})
+    @Column({type:'timestamp'})
     @UpdateDateColumn()
     updatedDate: Date
 
