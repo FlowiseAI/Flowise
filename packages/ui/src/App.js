@@ -33,6 +33,27 @@ const App = () => {
             case 'u5.start-ai.ru':
                 ymID = 95948140
                 break
+            case 'u6.start-ai.ru':
+                ymID = 96465123
+                break
+            case 'u7.start-ai.ru':
+                ymID = 96465137
+                break
+            case 'u8.start-ai.ru':
+                ymID = 96465147
+                break
+            case 'u9.start-ai.ru':
+                ymID = 96465152
+                break
+            case 'u10.start-ai.ru':
+                ymID = 96465160
+                break
+            case 'u11.start-ai.ru':
+                ymID = 96465177
+                break
+            case 'u12.start-ai.ru':
+                ymID = 96465190
+                break
         }
         useEffect(() => {
             // Функция инициализации метрики

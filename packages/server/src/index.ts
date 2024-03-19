@@ -1907,22 +1907,22 @@ export async function start(): Promise<void> {
             port = parseInt(process.env.PORT || '', 10) || 3000
             break
         case 'STARTAI_ONE':
-            port = parseInt(process.env.PORT || '', 10) || 3021
+            port = parseInt(process.env.PORT_ONE || '', 10) || 3021
             break
         case 'STARTAI_TWO':
-            port = parseInt(process.env.PORT || '', 10) || 3022
+            port = parseInt(process.env.PORT_TWO || '', 10) || 3022
             break
         case 'STARTAI_THREE':
-            port = parseInt(process.env.PORT || '', 10) || 3023
+            port = parseInt(process.env.PORT_THREE || '', 10) || 3023
             break
         case 'STARTAI_FOUR':
-            port = parseInt(process.env.PORT || '', 10) || 3024
+            port = parseInt(process.env.PORT_FOUR || '', 10) || 3024
             break
         case 'STARTAI_FIVE':
-            port = parseInt(process.env.PORT || '', 10) || 3025
+            port = parseInt(process.env.PORT_FIVE || '', 10) || 3025
             break
         case 'STARTAI_TEST':
-            port = parseInt(process.env.PORT || '', 10) || 3026
+            port = parseInt(process.env.PORT_TEST || '', 10) || 3026
             break
         case 'STARTAI_SIX':
             port = parseInt(process.env.PORT_SIX || '', 10) || 3027
@@ -1932,6 +1932,18 @@ export async function start(): Promise<void> {
             break
         case 'STARTAI_EIGHT':
             port = parseInt(process.env.PORT_EIGHT || '', 10) || 3029
+            break
+        case 'STARTAI_NINE':
+            port = parseInt(process.env.PORT_NINE || '', 10) || 3030
+            break
+        case 'STARTAI_TEN':
+            port = parseInt(process.env.PORT_TEN || '', 10) || 3031
+            break
+        case 'STARTAI_ELEVEN':
+            port = parseInt(process.env.PORT_ELEVEN || '', 10) || 3032
+            break
+        case 'STARTAI_TWELVE':
+            port = parseInt(process.env.PORT_TWELVE || '', 10) || 3033
             break
         default:
             // Действия по умолчанию, если NODE_ENV не соответствует ни одному из условий
