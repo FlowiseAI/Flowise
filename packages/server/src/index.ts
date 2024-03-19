@@ -84,6 +84,7 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { Lead } from './database/entities/Lead'
 
 export class App {
     app: express.Application
@@ -1519,6 +1520,31 @@ export class App {
                 sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
             }
             return res.json(sortedTemplates)
+        })
+
+        // ----------------------------------------
+        // Leads
+        // ----------------------------------------
+        this.app.get('/api/v1/leads/:id', async (req: Request, res: Response) => {
+            const chatflowid = req.params.id
+            const leads = await getDataSource().getRepository(Lead).find({
+                where: {
+                    chatflowid
+                }
+            })
+            return res.json(leads)
+        })
+
+        this.app.post('/api/v1/leads/', async (req: Request, res: Response) => {
+            const body = req.body
+            const chatId = body.chatId ?? uuidv4()
+
+            const newLead = new Lead()
+            Object.assign(newLead, body)
+            Object.assign(newLead, { chatId })
+            const lead = this.AppDataSource.getRepository(Lead).create(newLead)
+            const results = await this.AppDataSource.getRepository(Lead).save(lead)
+            return res.json(results)
         })
 
         // ----------------------------------------
