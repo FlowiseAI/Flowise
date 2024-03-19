@@ -11,6 +11,10 @@ import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
+import path from 'path'
+import { TextLoader } from "langchain/document_loaders/fs/text";
 
 class Vectara_VectorStores implements INode {
     label: string
@@ -182,20 +186,37 @@ class Vectara_VectorStores implements INode {
                 }
             }
 
-            let files: string[] = []
-            if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-                files = JSON.parse(fileBase64)
-            } else {
-                files = [fileBase64]
-            }
-
             const vectaraFiles: VectaraFile[] = []
-            for (const file of files) {
-                const splitDataURI = file.split(',')
-                splitDataURI.pop()
-                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                const blob = new Blob([bf])
-                vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
+            let files: string[] = []
+            if (fileBase64.startsWith('FILE-STORAGE::')) {
+                const fileName = fileBase64.replace('FILE-STORAGE::', '')
+                if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                    files = JSON.parse(fileName)
+                } else {
+                    files = [fileName]
+                }
+                const chatflowid = options.chatflowid
+
+                for (const file of files) {
+                    const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+                    const fileData = fs.readFileSync(fileInStorage)
+                    const blob = new Blob([fileData])
+                    vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
+                }
+            } else {
+                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                    files = JSON.parse(fileBase64)
+                } else {
+                    files = [fileBase64]
+                }
+
+                for (const file of files) {
+                    const splitDataURI = file.split(',')
+                    splitDataURI.pop()
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                    const blob = new Blob([bf])
+                    vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
+                }
             }
 
             try {
