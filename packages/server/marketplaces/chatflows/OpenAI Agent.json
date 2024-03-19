@@ -1,11 +1,11 @@
 {
     "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
-    "categories": "Buffer Memory,Custom Tool, SerpAPI,OpenAI Function,Calculator Tool,ChatOpenAI,Langchain",
+    "categories": "Buffer Memory,Custom Tool, SerpAPI,OpenAI Tool Agent,Calculator Tool,ChatOpenAI,Langchain",
     "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
-            "height": 143,
+            "height": 142,
             "id": "calculator_0",
             "position": {
                 "x": 288.06681362611545,
@@ -101,7 +101,7 @@
         },
         {
             "width": 300,
-            "height": 277,
+            "height": 276,
             "id": "customTool_0",
             "position": {
                 "x": 883.9529939431576,
@@ -150,7 +150,7 @@
         },
         {
             "width": 300,
-            "height": 277,
+            "height": 276,
             "id": "serper_0",
             "position": {
                 "x": 504.3508341937219,
@@ -197,91 +197,7 @@
         },
         {
             "width": 300,
-            "height": 383,
-            "id": "openAIFunctionAgent_0",
-            "position": {
-                "x": 1241.9739093293213,
-                "y": 359.3158950327101
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIFunctionAgent_0",
-                "label": "OpenAI Function Agent",
-                "name": "openAIFunctionAgent",
-                "version": 4,
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
-                "category": "Agents",
-                "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
-                "inputParams": [
-                    {
-                        "label": "System Message",
-                        "name": "systemMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIFunctionAgent_0-input-systemMessage-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "openAIFunctionAgent_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseChatMemory",
-                        "id": "openAIFunctionAgent_0-input-memory-BaseChatMemory"
-                    },
-                    {
-                        "label": "OpenAI/Azure Chat Model",
-                        "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
-                    },
-                    {
-                        "label": "Input Moderation",
-                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-                        "name": "inputModeration",
-                        "type": "Moderation",
-                        "optional": true,
-                        "list": true,
-                        "id": "openAIFunctionAgent_0-input-inputModeration-Moderation"
-                    }
-                ],
-                "inputs": {
-                    "inputModeration": "",
-                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"],
-                    "memory": "{{bufferMemory_0.data.instance}}",
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "systemMessage": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAIFunctionAgent_0-output-openAIFunctionAgent-AgentExecutor|BaseChain",
-                        "name": "openAIFunctionAgent",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1241.9739093293213,
-                "y": 359.3158950327101
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 817.8210275868742,
@@ -512,63 +428,133 @@
                 "y": 627.7677030233751
             },
             "dragging": false
+        },
+        {
+            "id": "openAIToolAgent_0",
+            "position": {
+                "x": 1248.5254972140808,
+                "y": 343.77259824664554
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIToolAgent_0",
+                "label": "OpenAI Tool Agent",
+                "version": 1,
+                "name": "openAIToolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIToolAgent_0-input-systemMessage-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "openAIToolAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "OpenAI/Azure Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "openAIToolAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{customTool_0.data.instance}}", "{{serper_0.data.instance}}", "{{calculator_0.data.instance}}"],
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "systemMessage": "",
+                    "inputModeration": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIToolAgent_0-output-openAIToolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "openAIToolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 433,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1248.5254972140808,
+                "y": 343.77259824664554
+            },
+            "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "calculator_0",
-            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
+            "source": "customTool_0",
+            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
         },
         {
             "source": "serper_0",
             "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
         },
         {
-            "source": "customTool_0",
-            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
         },
         {
             "source": "bufferMemory_0",
             "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-memory-BaseChatMemory",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIFunctionAgent_0-openAIFunctionAgent_0-input-memory-BaseChatMemory",
-            "data": {
-                "label": ""
-            }
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIToolAgent_0-openAIToolAgent_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIToolAgent_0-openAIToolAgent_0-input-model-BaseChatModel"
         }
     ]
 }
