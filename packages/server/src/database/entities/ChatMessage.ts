@@ -11,7 +11,7 @@ export class ChatMessage implements IChatMessage {
     role: MessageType
 
     @Index()
-    @Column()
+    @Column({ type: 'uuid' })
     chatflowid: string
 
     @Column({ type: 'text' })
@@ -32,15 +32,16 @@ export class ChatMessage implements IChatMessage {
     @Column()
     chatType: string
 
-    @Column()
+    @Column({ type: 'uuid' })
     chatId: string
 
     @Column({ nullable: true })
     memoryType?: string
 
-    @Column({ nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     sessionId?: string
 
+    @Column({type:'timestamp'})
     @CreateDateColumn()
     createdDate: Date
 }
