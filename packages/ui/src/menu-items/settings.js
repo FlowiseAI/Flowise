@@ -1,5 +1,5 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconMessage, IconAdjustmentsHorizontal } from '@tabler/icons'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconMessage, IconAdjustmentsHorizontal, IconUsers } from '@tabler/icons'
 
 // constant
 const icons = {
@@ -8,7 +8,8 @@ const icons = {
     IconFileExport,
     IconCopy,
     IconMessage,
-    IconAdjustmentsHorizontal
+    IconAdjustmentsHorizontal,
+    IconUsers
 }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
@@ -24,6 +25,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconMessage
+        },
+        {
+            id: 'viewLeads',
+            title: 'View Leads',
+            type: 'item',
+            url: '',
+            icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
