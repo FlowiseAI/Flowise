@@ -6,6 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { DataSource } from 'typeorm'
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -98,8 +99,13 @@ class Pinecone_VectorStores implements INode {
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
             const index = nodeData.inputs?.pineconeIndex as string
-            const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
+            const pineconeNamespace = variables?.find(v => v.name === "customer_id")?.value || nodeData.inputs?.pineconeNamespace as string
+
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
 
@@ -135,8 +141,12 @@ class Pinecone_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
         const index = nodeData.inputs?.pineconeIndex as string
-        const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
+        const pineconeNamespace = variables?.find(v => v.name === "customer_id")?.value || nodeData.inputs?.pineconeNamespace as string
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
