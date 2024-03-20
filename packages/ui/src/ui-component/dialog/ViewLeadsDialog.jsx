@@ -29,10 +29,6 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import useApi from '@/hooks/useApi'
 import leadsApi from '@/api/lead'
 
-// Utils
-// import { getOS } from '@/utils/genericHelper'
-import useNotifier from '@/utils/useNotifier'
-
 import '@/views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -53,13 +49,24 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
-    useNotifier()
-
     const [leads, setLeads] = useState([])
 
     const getLeadsApi = useApi(leadsApi.getLeads)
 
-    const exportMessages = async () => {}
+    const exportMessages = async () => {
+        const exportData = {
+            leads
+        }
+        const dataStr = JSON.stringify(exportData, null, 2)
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
+        const exportFileDefaultName = `${dialogProps.chatflow.id}-leads.json`
+
+        let linkElement = document.createElement('a')
+        linkElement.setAttribute('href', dataUri)
+        linkElement.setAttribute('download', exportFileDefaultName)
+        linkElement.click()
+    }
 
     useEffect(() => {
         if (getLeadsApi.data) {
