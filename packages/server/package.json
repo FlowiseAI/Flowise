@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -33,6 +33,7 @@
         "postpack": "shx rm -f oclif.manifest.json",
         "prepack": "pnpm build && oclif manifest && oclif readme",
         "typeorm": "typeorm-ts-node-commonjs",
+        "typeorm:migration-generate": "pnpm typeorm migration:generate -d ./src/utils/typeormDataSource.ts",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
     },

@@ -1701,7 +1701,7 @@ export class App {
         if (!chatflow) return `Chatflow ${chatflowid} not found`
 
         const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic']
+        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI']
 
         const flowObj = JSON.parse(chatflow.flowData)
         const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
@@ -1791,6 +1791,12 @@ export class App {
             return date
         }
 
+        const aMonthAgo = () => {
+            const date = new Date()
+            date.setMonth(new Date().getMonth() - 1)
+            return date
+        }
+
         let fromDate
         if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
 
@@ -1821,7 +1827,7 @@ export class App {
 
             // set date range
             query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                fromDate: fromDate ?? aMonthAgo(),
                 toDate: toDate ?? new Date()
             })
             // sort
