@@ -16,8 +16,8 @@ class Confluence_DocumentLoaders implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Confluence'
-        this.name = 'confluence'
+        this.label = 'Confluence Server/Data Center'
+        this.name = 'confluenceServerDC'
         this.version = 1.0
         this.type = 'Document'
         this.icon = 'confluence.svg'
@@ -28,7 +28,7 @@ class Confluence_DocumentLoaders implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['confluenceApi']
+            credentialNames: ['confluenceServerDCApi']
         }
         this.inputs = [
             {
@@ -41,15 +41,15 @@ class Confluence_DocumentLoaders implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                placeholder: 'https://example.atlassian.net/wiki'
+                placeholder: 'https://confluence.domain.net'
             },
             {
                 label: 'Space Key',
                 name: 'spaceKey',
                 type: 'string',
-                placeholder: '~EXAMPLE362906de5d343d49dcdbae5dEXAMPLE',
+                placeholder: 'MARKETING',
                 description:
-                    'Refer to <a target="_blank" href="https://community.atlassian.com/t5/Confluence-questions/How-to-find-the-key-for-a-space/qaq-p/864760">official guide</a> on how to get Confluence Space Key'
+                    'Refer to <a target="_blank" href="https://confluence.atlassian.com/doc/space-keys-829076188.html">official guide</a> on how to get Confluence Space Key'
             },
             {
                 label: 'Limit',
@@ -76,12 +76,10 @@ class Confluence_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
-        const username = getCredentialParam('username', credentialData, nodeData)
+        const personalAccessToken = getCredentialParam('personalAccessToken', credentialData, nodeData)
 
         const confluenceOptions: ConfluencePagesLoaderParams = {
-            username,
-            accessToken,
+            personalAccessToken,
             baseUrl,
             spaceKey,
             limit
