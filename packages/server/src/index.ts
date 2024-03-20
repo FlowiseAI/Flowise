@@ -218,6 +218,15 @@ export class App {
             const returnData = []
             for (const nodeName in this.nodesPool.componentNodes) {
                 const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
+                if (process.env.FILE_DATASOURCE_ENABLED === 'true') {
+                    if (clonedNode.inputs) {
+                        for (const inputName in clonedNode.inputs) {
+                            if (clonedNode.inputs[inputName].type === 'file') {
+                                clonedNode.inputs[inputName].hidden = true
+                            }
+                        }
+                    }
+                }
                 returnData.push(clonedNode)
             }
             return res.json(returnData)
@@ -236,7 +245,8 @@ export class App {
         // Get specific component node via name
         this.app.get('/api/v1/nodes/:name', (req: Request, res: Response) => {
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
-                return res.json(this.nodesPool.componentNodes[req.params.name])
+                const componentNode = this.nodesPool.componentNodes[req.params.name]
+                return res.json(componentNode)
             } else {
                 throw new Error(`Node ${req.params.name} not found`)
             }
