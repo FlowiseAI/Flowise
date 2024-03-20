@@ -263,7 +263,12 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        // Get the subpath from the environment, or assume it's at the root.
+        // Modified to default to /aichatbot.
+        const appPath = process.env.SUBPATH ?? '/aichatbot'
+
+        this.app.use(appPath, express.static(uiBuildPath))
+        this.app.use(appPath, indexRouter)
 
         // All other requests not handled will return React app
         this.app.use((req: Request, res: Response) => {
@@ -295,13 +300,15 @@ export async function start(): Promise<void> {
 
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
+    const basesubpath = process.env.SUBPATH || '/aichatbot'
+    const subpath = `${basesubpath}${basesubpath === '/' ? '' : '/'}socket.io`
     const server = http.createServer(serverApp.app)
 
     await serverApp.initDatabase()
     await serverApp.config()
 
     server.listen(port, host, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}${process.env.SUBPATH ?? '/aichatbot'}`)
     })
 }
 

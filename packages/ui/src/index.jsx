@@ -2,6 +2,7 @@ import React from 'react'
 import App from '@/App'
 import { store } from '@/store'
 import { createRoot } from 'react-dom/client'
+import { subpath } from '@/store/constant'
 
 // style + assets
 import '@/assets/scss/style.scss'
@@ -19,7 +20,7 @@ const root = createRoot(container)
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <BrowserRouter>
+            <BrowserRouter basename={subpath}>
                 <SnackbarProvider>
                     <ConfirmContextProvider>
                         <ReactFlowContext>

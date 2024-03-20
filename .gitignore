@@ -104,3 +104,7 @@
 ## S/MIME message
 *.smime
 *.vsix
+
+## logi
+**/LogiSymphony*
+**/Logi Symphony*

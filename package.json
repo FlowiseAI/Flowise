@@ -2,7 +2,7 @@
     "name": "flowise",
     "version": "2.2.4",
     "private": true,
-    "homepage": "https://flowiseai.com",
+    "homepage": "/aichatbot",
     "workspaces": [
         "packages/*",
         "flowise",
