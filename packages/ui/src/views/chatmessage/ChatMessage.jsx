@@ -71,7 +71,7 @@ import leadsApi from '@/api/lead'
 import useApi from '@/hooks/useApi'
 
 // Const
-import { baseURL, maxScroll } from '@/store/constant'
+import { coreURL, maxScroll, subpath } from '@/store/constant'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Utils
@@ -793,7 +793,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             }
 
             // SocketIO
-            socket = socketIOClient(baseURL)
+            socket = socketIOClient(coreURL, { path: subpath + '/socket.io' })
 
             socket.on('connect', () => {
                 setSocketIOClientId(socket.id)
@@ -1647,12 +1647,12 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                 <div className='recording-control-buttons-container'>
                                     <IconButton onClick={onRecordingCancelled} size='small'>
                                         <IconX
-                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
                                         />
                                     </IconButton>
                                     <IconButton onClick={onRecordingStopped} size='small'>
                                         <IconSend
-                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
                                         />
                                     </IconButton>
                                 </div>
@@ -1680,7 +1680,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                     <InputAdornment position='start' sx={{ pl: 2 }}>
                                         <IconButton onClick={handleUploadClick} type='button' disabled={getInputDisabled()} edge='start'>
                                             <IconPhotoPlus
-                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
                                             />
                                         </IconButton>
                                     </InputAdornment>
@@ -1698,7 +1698,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                             >
                                                 <IconMicrophone
                                                     className={'start-recording-button'}
-                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
                                                 />
                                             </IconButton>
                                         </InputAdornment>
@@ -1714,7 +1714,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                     // Send icon SVG in input field
                                                     <IconSend
                                                         color={
-                                                            getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                            getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'
                                                         }
                                                     />
                                                 )}
@@ -1732,7 +1732,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                     ? '#9e9e9e'
                                                                     : customization.isDarkMode
                                                                     ? 'white'
-                                                                    : '#1e88e5'
+                                                                    : '#278838'
                                                             }
                                                         />
                                                     </IconButton>

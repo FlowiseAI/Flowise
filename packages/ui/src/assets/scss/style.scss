@@ -120,3 +120,80 @@
         transform: translateX(10px);
     }
 }
+
+// ==============================|| Logi Symphony CSS ||============================== //
+
+/* Material UI overrides */
+
+/* Button base, button contained */
+.MuiButton-contained {
+    border-radius: 3px;
+    border-width: 1px;
+    box-sizing: border-box;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    height: 40px;
+    line-height: 17px;
+    padding: 0 16px;
+    text-align: center;
+}
+
+/* Button - contained primary */
+.MuiButton-containedPrimary {
+    background-color: $primary-green;
+    border-color: transparent;
+    color: $neutrals-white;
+
+    &:hover,
+    &:hover:focus {
+        background-color: $secondary-green-dark;
+    }
+
+    &:active,
+    &:active:focus {
+        background-color: $secondary-green-darker;
+    }
+
+    &[disabled] {
+        background-color: $secondary-green-light;
+        color: $neutrals-white;
+    }
+
+    &:focus {
+        border-color: $neutrals-primary;
+        box-shadow: 0px 0px 0px 3px rgba(39, 136, 56, 0.3);
+    }
+}
+
+/* Button - contained secondary */
+.MuiButton-containedSecondary {
+    background-color: $neutrals-white;
+    border-color: $utility-border-grey;
+    color: $neutrals-secondary;
+
+    &:hover,
+    &:hover:focus {
+        background-color: $utility-state-blue-lighter;
+        border-color: $utility-state-blue;
+        color: $utility-state-blue;
+    }
+
+    &:active,
+    &:active:focus {
+        background-color: $utility-state-blue-light;
+        border-color: $utility-state-blue;
+        color: 4neutrals-primary;
+    }
+
+    &[disabled] {
+        background-color: $neutrals-disabled-grey;
+        border-color: transparent;
+        color: $utility-border-grey;
+    }
+
+    &:focus {
+        border-color: $neutrals-primary;
+        box-shadow: 0px 0px 0px 3px rgba(66, 153, 226, 0.6);
+    }
+}

@@ -79,6 +79,13 @@ export class App {
     }
 
     async config(socketIO?: Server) {
+        // Logi Symphony authorization check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const importPath = './utils/LogiSymphony/logisymphony'
+            const logiSymphony = await import(importPath)
+            await logiSymphony.setupRequestAuthorization(this.app)
+        }
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -167,7 +174,12 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        // Get the subpath from the environment, or assume it's at the root.
+        // Modified to default to /aichatbot.
+        const appPath = process.env.SUBPATH ?? '/aichatbot'
+
+        this.app.use(appPath, express.static(uiBuildPath))
+        this.app.use(appPath, indexRouter)
 
         // All other requests not handled will return React app
         this.app.use((req: Request, res: Response) => {
@@ -200,9 +212,12 @@ export async function start(): Promise<void> {
 
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
+    const basesubpath = process.env.SUBPATH || '/aichatbot'
+    const subpath = `${basesubpath}${basesubpath === '/' ? '' : '/'}socket.io`
     const server = http.createServer(serverApp.app)
 
     const io = new Server(server, {
+        path: subpath,
         cors: getCorsOptions()
     })
 
@@ -210,7 +225,7 @@ export async function start(): Promise<void> {
     await serverApp.config(io)
 
     server.listen(port, host, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}${process.env.SUBPATH ?? '/aichatbot'}`)
     })
 }
 

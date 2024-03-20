@@ -94,8 +94,8 @@ export default function themePalette(theme) {
             deployDark: theme.colors?.primaryDark,
             saveLight: theme.colors?.secondaryLight,
             saveDark: theme.colors?.secondaryDark,
-            settingsLight: theme.colors?.grey300,
-            settingsDark: theme.colors?.grey700
+            settingsLight: theme.colors?.secondaryLight,
+            settingsDark: theme.colors?.secondaryDark
         },
         codeEditor: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primaryLight

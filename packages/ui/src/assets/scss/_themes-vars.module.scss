@@ -83,6 +83,46 @@ $darkTextTitle: #d7dcec;
 $darkTextPrimary: #bdc8f0;
 $darkTextSecondary: #8492c4;
 
+// ==============================|| Logi Symphony COLORS ||============================== //
+
+/* Neutral colors */
+$neutrals-primary: #001737;
+$neutrals-secondary: #546176;
+$neutrals-tertiary: #67788e;
+$neutrals-line-grey: #dee1ea;
+$neutrals-background-grey: #edf0f3;
+$neutrals-disabled-grey: #f4f6f8;
+$neutrals-grey-light: #f8f9fa;
+$neutrals-white: #ffffff;
+/* Primary colors */
+$primary-brand-blue: #007ac9;
+$primary-green: #278838;
+$primary-destructive-red: #c31818;
+/* Secondary colors */
+$secondary-green-light: #92c39b;
+$secondary-green-dark: #1f6d2d;
+$secondary-green-darker: #175222;
+$secondary-destructive-dark: #9c1313;
+$secondary-destructive-darker: #750e0e;
+/* Utility colors */
+$utility-border-grey: #b8c5d5;
+$utility-state-blue: #007ac9;
+$utility-state-blue-darker: #00568d;
+$utility-state-blue-light: #a1d1ef;
+$utility-state-blue-light-darker: #92caed;
+$utility-state-blue-lighter: #e8f4fc;
+$utility-error-red: #c31818;
+$utility-error-red-light: #ffd4d4;
+$utility-error-red-lighter: #fcf3f3;
+$utility-warning-orange: #f2994a;
+$utility-warning-orange-light: #efc6a2;
+$utility-warning-orange-lighter: #feefe2;
+/* Standalone colors */
+$standalone-dark-gray: #3a3a38;
+/* Filters */
+$neutrals-secondary-to-primary: brightness(0.21) saturate(8) hue-rotate(-4deg);
+$neutrals-secondary-to-utility-state-blue: saturate(8) brightness(0.97) hue-rotate(-21deg);
+
 // ==============================|| JAVASCRIPT ||============================== //
 
 :export {
@@ -170,4 +210,21 @@ $darkTextSecondary: #8492c4;
 
     // transparent
     transparent: $transparent;
+
+    // ==============================|| Logi Symphony COLORS ||============================== //
+
+    // primary
+    primaryMain: $primary-green;
+    primaryLight: $neutrals-white;
+    primary200: $neutrals-secondary;
+
+    // secondary
+    secondaryLight: $neutrals-white;
+    secondaryMain: $neutrals-secondary;
+    secondaryDark: $neutrals-secondary;
+
+    // teal
+    tealLight: $utility-state-blue-light;
+    tealMain: $primary-brand-blue;
+    tealDark: $utility-state-blue-darker;
 }
