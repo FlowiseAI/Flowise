@@ -12,6 +12,9 @@ import FileDownloadIcon from '@mui/icons-material/Downloading'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileCategoryIcon from '@mui/icons-material/Category'
 import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
+import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined'
+import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
+import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons'
@@ -29,6 +32,9 @@ import StarterPromptsDialog from '@/ui-component/dialog/StarterPromptsDialog'
 
 import { generateExportFlowData } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
+import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
+import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -82,6 +88,12 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
     const open = Boolean(anchorEl)
     const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
+    const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
+    const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
+    const [allowedDomainsDialogOpen, setAllowedDomainsDialogOpen] = useState(false)
+    const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
+    const [speechToTextDialogOpen, setSpeechToTextDialogOpen] = useState(false)
+    const [speechToTextDialogProps, setSpeechToTextDialogProps] = useState({})
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -105,9 +117,31 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
         setConversationStartersDialogOpen(true)
     }
 
-    const saveFlowStarterPrompts = async () => {
-        setConversationStartersDialogOpen(false)
-        await updateFlowsApi.request()
+    const handleFlowChatFeedback = () => {
+        setAnchorEl(null)
+        setChatFeedbackDialogProps({
+            title: 'Chat Feedback - ' + chatflow.name,
+            chatflow: chatflow
+        })
+        setChatFeedbackDialogOpen(true)
+    }
+
+    const handleAllowedDomains = () => {
+        setAnchorEl(null)
+        setAllowedDomainsDialogProps({
+            title: 'Allowed Domains - ' + chatflow.name,
+            chatflow: chatflow
+        })
+        setAllowedDomainsDialogOpen(true)
+    }
+
+    const handleSpeechToText = () => {
+        setAnchorEl(null)
+        setSpeechToTextDialogProps({
+            title: 'Speech To Text - ' + chatflow.name,
+            chatflow: chatflow
+        })
+        setSpeechToTextDialogOpen(true)
     }
 
     const saveFlowRename = async (chatflowName) => {
@@ -275,6 +309,18 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                     <PictureInPictureAltIcon />
                     Starter Prompts
                 </MenuItem>
+                <MenuItem onClick={handleFlowChatFeedback} disableRipple>
+                    <ThumbsUpDownOutlinedIcon />
+                    Chat Feedback
+                </MenuItem>
+                <MenuItem onClick={handleAllowedDomains} disableRipple>
+                    <VpnLockOutlinedIcon />
+                    Allowed Domains
+                </MenuItem>
+                <MenuItem onClick={handleSpeechToText} disableRipple>
+                    <MicNoneOutlinedIcon />
+                    Speech To Text
+                </MenuItem>
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
                     Update Category
@@ -304,8 +350,22 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             <StarterPromptsDialog
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
-                onConfirm={saveFlowStarterPrompts}
                 onCancel={() => setConversationStartersDialogOpen(false)}
+            />
+            <ChatFeedbackDialog
+                show={chatFeedbackDialogOpen}
+                dialogProps={chatFeedbackDialogProps}
+                onCancel={() => setChatFeedbackDialogOpen(false)}
+            />
+            <AllowedDomainsDialog
+                show={allowedDomainsDialogOpen}
+                dialogProps={allowedDomainsDialogProps}
+                onCancel={() => setAllowedDomainsDialogOpen(false)}
+            />
+            <SpeechToTextDialog
+                show={speechToTextDialogOpen}
+                dialogProps={speechToTextDialogProps}
+                onCancel={() => setSpeechToTextDialogOpen(false)}
             />
         </div>
     )

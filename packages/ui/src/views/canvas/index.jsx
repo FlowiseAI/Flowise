@@ -526,7 +526,7 @@ const Canvas = () => {
                                 onConnect={onConnect}
                                 onInit={setReactFlowInstance}
                                 fitView
-                                deleteKeyCode={canvas.canvasDialogShow ? null : ['Backspace', 'Delete']}
+                                deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
                             >
                                 <Controls

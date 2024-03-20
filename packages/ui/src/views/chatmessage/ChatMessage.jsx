@@ -23,7 +23,7 @@ import {
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX } from '@tabler/icons'
+import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX, IconTool } from '@tabler/icons'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import audioUploadSVG from '@/assets/images/wave-sound.jpg'
@@ -340,6 +340,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         })
     }
 
+    const updateLastMessageUsedTools = (usedTools) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].usedTools = usedTools
+            return allMessages
+        })
+    }
+
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
@@ -596,6 +605,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
             socket.on('sourceDocuments', updateLastMessageSourceDocuments)
 
+            socket.on('usedTools', updateLastMessageUsedTools)
+
             socket.on('token', updateLastMessage)
         }
 
@@ -770,6 +781,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                             sx={{ mr: 1, mt: 1 }}
                                                             variant='outlined'
                                                             clickable
+                                                            icon={<IconTool size={15} />}
                                                             onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                         />
                                                     )

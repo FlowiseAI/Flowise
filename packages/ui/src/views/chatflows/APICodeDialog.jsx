@@ -23,7 +23,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
-import Configuration from './Configuration'
 
 // Const
 import { baseURL } from '@/store/constant'
@@ -84,7 +83,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot', 'Configuration']
+    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
@@ -721,7 +720,6 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                         {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
                             <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} />
                         )}
-                        {codeLang === 'Configuration' && <Configuration />}
                     </TabPanel>
                 ))}
             </DialogContent>

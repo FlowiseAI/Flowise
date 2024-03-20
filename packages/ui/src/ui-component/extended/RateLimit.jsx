@@ -18,7 +18,7 @@ import chatflowsApi from '@/api/chatflows'
 import useNotifier from '@/utils/useNotifier'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
-const Configuration = () => {
+const RateLimit = () => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
@@ -59,7 +59,7 @@ const Configuration = () => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'API Configuration Saved',
+                    message: 'Rate Limit Configuration Saved',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -78,7 +78,7 @@ const Configuration = () => {
                 ? error.response.data || `${error.response.status}: ${error.response.statusText}`
                 : error.message
             enqueueSnackbar({
-                message: `Failed to save API Configuration: ${errorData}`,
+                message: `Failed to save Rate Limit Configuration: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -131,7 +131,7 @@ const Configuration = () => {
     return (
         <>
             {/*Rate Limit*/}
-            <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
+            <Typography variant='h4' sx={{ mb: 1 }}>
                 Rate Limit{' '}
                 <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}
@@ -151,8 +151,8 @@ const Configuration = () => {
     )
 }
 
-Configuration.propTypes = {
+RateLimit.propTypes = {
     isSessionMemory: PropTypes.bool
 }
 
-export default Configuration
+export default RateLimit
