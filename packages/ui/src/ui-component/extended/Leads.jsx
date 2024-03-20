@@ -103,22 +103,36 @@ const Leads = ({ dialogProps }) => {
                 }}
             >
                 <SwitchInput label='Enable Lead Capture' onChange={(value) => handleChange('status', value)} value={leadsConfig.status} />
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+                    <Typography>Form Title</Typography>
+                    <OutlinedInput
+                        id='form-title'
+                        type='text'
+                        fullWidth
+                        value={leadsConfig.title}
+                        placeholder='Let us know where we can reach you'
+                        name='form-title'
+                        onChange={(e) => {
+                            handleChange('title', e.target.value)
+                        }}
+                    />
+                </Box>
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+                    <Typography>Message on lead capture</Typography>
+                    <OutlinedInput
+                        id='success-message'
+                        type='text'
+                        fullWidth
+                        value={leadsConfig.successMessage}
+                        placeholder='Thank you for submitting your contact information!'
+                        name='form-title'
+                        onChange={(e) => {
+                            handleChange('successMessage', e.target.value)
+                        }}
+                    />
+                </Box>
                 <Typography variant='h4'>Form fields</Typography>
                 <Box sx={{ width: '100%' }}>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                        <Typography>Title</Typography>
-                        <OutlinedInput
-                            id='form-title'
-                            type='text'
-                            fullWidth
-                            value={leadsConfig.title}
-                            placeholder='Let us know where we can reach you'
-                            name='form-title'
-                            onChange={(e) => {
-                                handleChange('title', e.target.value)
-                            }}
-                        />
-                    </Box>
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
                         <SwitchInput label='Name' onChange={(value) => handleChange('name', value)} value={leadsConfig.name} />
                         <SwitchInput label='Email Address' onChange={(value) => handleChange('email', value)} value={leadsConfig.email} />

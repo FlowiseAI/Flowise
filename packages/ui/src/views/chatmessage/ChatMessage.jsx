@@ -17,7 +17,6 @@ import {
     Chip,
     CircularProgress,
     Divider,
-    FormControl,
     IconButton,
     InputAdornment,
     OutlinedInput,
@@ -755,6 +754,12 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             if (!chatId) setChatId(data.chatId)
             localStorage.setItem(`${chatflowid}_LEAD`, true)
             setIsLeadSaving(false)
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type !== 'leadCaptureMessage') return allMessages
+                allMessages[allMessages.length - 1].message = leadsConfig.successMessage
+                return allMessages
+            })
         }
     }
 
