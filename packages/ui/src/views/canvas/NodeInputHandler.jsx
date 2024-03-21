@@ -200,6 +200,9 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         updateNodeInternals(data.id)
     }, [data.id, position, updateNodeInternals])
 
+    const showToolDialog = showAsyncOptionDialog === 'selectedTool'
+    const showAssistantDialog = showAsyncOptionDialog === 'selectedAssistant'
+
     return (
         <div ref={ref}>
             {inputAnchor && (
@@ -495,24 +498,30 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                     </Box>
                 </>
             )}
-            <ToolDialog
-                show={showAsyncOptionDialog === 'selectedTool'}
-                dialogProps={asyncOptionEditDialogProps}
-                onCancel={() => setAsyncOptionEditDialog('')}
-                onConfirm={onConfirmAsyncOption}
-            ></ToolDialog>
-            <AssistantDialog
-                show={showAsyncOptionDialog === 'selectedAssistant'}
-                dialogProps={asyncOptionEditDialogProps}
-                onCancel={() => setAsyncOptionEditDialog('')}
-                onConfirm={onConfirmAsyncOption}
-            ></AssistantDialog>
-            <ExpandTextDialog
-                show={showExpandDialog}
-                dialogProps={expandDialogProps}
-                onCancel={() => setShowExpandDialog(false)}
-                onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
-            ></ExpandTextDialog>
+            {showToolDialog && (
+                <ToolDialog
+                    show={showToolDialog}
+                    dialogProps={asyncOptionEditDialogProps}
+                    onCancel={() => setAsyncOptionEditDialog('')}
+                    onConfirm={onConfirmAsyncOption}
+                />
+            )}
+            {showAssistantDialog && (
+                <AssistantDialog
+                    show={showAssistantDialog}
+                    dialogProps={asyncOptionEditDialogProps}
+                    onCancel={() => setAsyncOptionEditDialog('')}
+                    onConfirm={onConfirmAsyncOption}
+                />
+            )}
+            {showExpandDialog && (
+                <ExpandTextDialog
+                    show={showExpandDialog}
+                    dialogProps={expandDialogProps}
+                    onCancel={() => setShowExpandDialog(false)}
+                    onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
+                />
+            )}
         </div>
     )
 }
