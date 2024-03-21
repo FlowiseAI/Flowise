@@ -461,7 +461,7 @@ export class App {
 
             await this.telemetry.sendTelemetry('chatflow_created', {
                 version: await getAppVersion(),
-                chatlowId: results.id,
+                chatflowId: results.id,
                 flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
             })
 
@@ -1793,6 +1793,12 @@ export class App {
             return date
         }
 
+        const aMonthAgo = () => {
+            const date = new Date()
+            date.setMonth(new Date().getMonth() - 1)
+            return date
+        }
+
         let fromDate
         if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
 
@@ -1823,7 +1829,7 @@ export class App {
 
             // set date range
             query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                fromDate: fromDate ?? new Date().setMonth(new Date().getMonth() - 1),
+                fromDate: fromDate ?? aMonthAgo(),
                 toDate: toDate ?? new Date()
             })
             // sort
@@ -2026,7 +2032,7 @@ export class App {
 
             await this.telemetry.sendTelemetry('vector_upserted', {
                 version: await getAppVersion(),
-                chatlowId: chatflowid,
+                chatflowId: chatflowid,
                 type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges),
                 stopNodeId
@@ -2382,7 +2388,7 @@ export class App {
             logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
             await this.telemetry.sendTelemetry('prediction_sent', {
                 version: await getAppVersion(),
-                chatlowId: chatflowid,
+                chatflowId: chatflowid,
                 chatId,
                 type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
