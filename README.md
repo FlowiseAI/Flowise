@@ -74,8 +74,13 @@ switch (process.env.NODE_ENV) {
 ## Фикс если возникают ошибки с типами в TS или в @oclif/core
 
 ### - удалить node_modules в корне, в packages\server, packages\ui, packages\components
-### - удалить файлы yarn.lock, package.lock 
+
+### - удалить файлы yarn.lock, package.lock
+
 ### - сделать yarn clear cache
+
 ### - при ошибки в @oclif/core сделать yarn add @oclif/core@1.26.2
+
 ### - yarn install
+
 ### - yarn build

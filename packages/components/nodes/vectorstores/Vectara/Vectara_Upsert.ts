@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from '@langchain/community/vectorstores/vectara'
+import { Document } from '@langchain/core/documents'
 import { flatten } from 'lodash'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class VectaraUpsert_VectorStores implements INode {
     label: string

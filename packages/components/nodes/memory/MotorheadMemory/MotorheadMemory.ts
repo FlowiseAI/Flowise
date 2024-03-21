@@ -3,7 +3,7 @@ import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCre
 import { ICommonObject } from '../../../src'
 import { MotorheadMemory, MotorheadMemoryInput, InputValues, OutputValues } from 'langchain/memory'
 import fetch from 'node-fetch'
-import { AIMessage, BaseMessage, ChatMessage, HumanMessage } from 'langchain/schema'
+import { AIMessage, BaseMessage, ChatMessage, HumanMessage } from '@langchain/core/messages'
 
 type MotorheadMessage = {
     content: string
@@ -141,7 +141,7 @@ class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     }
 
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         try {
             const resp = await this.caller.call(fetch, `${this.url}/sessions/${id}/memory`, {
                 //@ts-ignore
@@ -172,7 +172,7 @@ class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
         const inputValues = { [this.inputKey ?? 'input']: input?.text }
@@ -182,7 +182,7 @@ class MotorheadMemoryExtended extends MotorheadMemory implements MemoryMethods {
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.clear(id)
     }
 }

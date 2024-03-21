@@ -1402,5 +1402,111 @@ export const translationObject = {
     'Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database':
         'Обновляйте встроенные данные и выполняйте поиск по сходству или MMR с помощью Pinecone, ведущей полностью управляемой размещенной базы данных векторов.',
     'Welcome to Skyworld Hotel, where your dreams take flight and your stay soars to new heights. Nestled amidst breathtaking cityscape views, our upscale establishment offers an unparalleled blend of luxury and comfort. Our rooms are elegantly appointed, featuring modern amenities and plush furnishings to ensure your relaxation.\n\nIndulge in culinary delights at our rooftop restaurant, offering a gastronomic journey with panoramic vistas. Skyworld Hotel boasts state-of-the-art conference facilities, perfect for business travelers, and an inviting spa for relaxation seekers. Our attentive staff is dedicated to ensuring your every need is met, making your stay memorable.\n\nCentrally located, we offer easy access to local attractions, making us an ideal choice for both leisure and business travelers. Experience the world of hospitality like never before at Skyworld Hotel.':
-        'Добро пожаловать в отель Skyworld, где ваши мечты осуществятся, а ваше пребывание поднимется на новую высоту. Наш высококлассный отель, расположенный среди захватывающих дух городских пейзажей, предлагает непревзойденное сочетание роскоши и комфорта. Наши номера элегантно обставлены, оснащены современными удобствами и роскошной мебелью, обеспечивающей ваш отдых.\n\nНаслаждайтесь кулинарными изысками в нашем ресторане на крыше, который предлагает гастрономическое путешествие с панорамными видами. Отель Skyworld может похвастаться самыми современными конференц-залами, идеально подходящими для деловых путешественников, а также привлекательным спа-центром для любителей отдыха. Наш внимательный персонал постарается удовлетворить все ваши потребности, сделав ваше пребывание незабываемым.\n\nМы расположены в центре города, поэтому мы предлагаем легкий доступ к местным достопримечательностям, что делает нас идеальным выбором как для туристов, так и для деловых путешественников. Окунитесь в мир гостеприимства, как никогда раньше, в отеле Skyworld.'
+        'Добро пожаловать в отель Skyworld, где ваши мечты осуществятся, а ваше пребывание поднимется на новую высоту. Наш высококлассный отель, расположенный среди захватывающих дух городских пейзажей, предлагает непревзойденное сочетание роскоши и комфорта. Наши номера элегантно обставлены, оснащены современными удобствами и роскошной мебелью, обеспечивающей ваш отдых.\n\nНаслаждайтесь кулинарными изысками в нашем ресторане на крыше, который предлагает гастрономическое путешествие с панорамными видами. Отель Skyworld может похвастаться самыми современными конференц-залами, идеально подходящими для деловых путешественников, а также привлекательным спа-центром для любителей отдыха. Наш внимательный персонал постарается удовлетворить все ваши потребности, сделав ваше пребывание незабываемым.\n\nМы расположены в центре города, поэтому мы предлагаем легкий доступ к местным достопримечательностям, что делает нас идеальным выбором как для туристов, так и для деловых путешественников. Окунитесь в мир гостеприимства, как никогда раньше, в отеле Skyworld.',
+    'Agent that uses MistralAI Function Calling to pick the tools and args to call':
+        'Агент, который использует вызов функций MistralAI для выбора инструментов и аргументов для вызова.',
+    'MistralAI Chat Model': 'Модель чата MistralAI',
+    'Agent that uses OpenAI Function Calling to pick the tools and args to call':
+        'Агент, который использует вызов функций OpenAI для выбора инструментов и аргументов для вызова.',
+    'Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)':
+        'Агент, предназначенный для LLM, которые хороши для рассуждений/написания XML (например, Anthropic Claude)',
+    'Prompt must include input variables: {tools}, {chat_history}, {input} and {agent_scratchpad}':
+        'Запрос должен включать входные переменные: {tools}, {chat_history}, {input} и {agent_scratchpad}.',
+    'Wrapper around Azure OpenAI Chat LLM specific for LlamaIndex':
+        'Оболочка Azure OpenAI Chat LLM, специально разработанная для LlamaIndex',
+    timeout: 'тайм-аут',
+    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent':
+        'Автоматически использует gpt-4-vision-preview при загрузке изображения из чата. Работает только с LLMChain, Conversation Chain, ReAct Agent и Conversational Agent.',
+    'Image Resolution': 'Разрешение изображения',
+    'Allow Image Uploads': 'Разрешить загрузку изображений',
+    'This parameter controls the resolution in which the model views the image.':
+        'Этот параметр управляет разрешением, в котором модель просматривает изображение.',
+    'Wrapper around ChatAnthropic LLM specific for LlamaIndex': 'Оболочка ChatAnthropic LLM, специально разработанная для LlamaIndex',
+    'Most powerful model for highly complex tasks': 'Самая мощная модель для очень сложных задач',
+    'Ideal balance of intelligence and speed for enterprise workloads':
+        'Идеальный баланс интеллекта и скорости для корпоративных рабочих нагрузок',
+    'Fastest and most compact model, designed for near-instant responsiveness':
+        'Самая быстрая и компактная модель, обеспечивающая практически мгновенное реагирование.',
+    'Wrapper around OpenAI Chat LLM specific for LlamaIndex': 'Оболочка OpenAI Chat LLM, специально разработанная для LlamaIndex',
+    'Wrapper around Groq API with LPU Inference Engine': 'Обертка API Groq с механизмом вывода LPU',
+    'Array of document objects containing metadata and pageContent': 'Массив объектов документа, содержащих метаданные и pageContent.',
+    'Concatenated string from pageContent of documents': 'Объединенная строка из страницыСодержимое документов',
+    'Azure OpenAI API embeddings specific for LlamaIndex': 'Внедрения API Azure OpenAI, специфичные для LlamaIndex',
+    'OpenAI Embedding specific for LlamaIndex': 'Встраивание OpenAI специально для LlamaIndex',
+    'Answer question based on retrieved documents (context) with built-in memory to remember conversation':
+        'Ответьте на вопрос на основе полученных документов (контекста) со встроенной памятью, чтобы запомнить разговор.',
+    'Context Chat Engine': 'Механизм контекстного чата',
+    'Simple Chat Engine': 'Простой чат-движок',
+    'Simple engine to handle back and forth conversations': 'Простой механизм для обработки двусторонних разговоров',
+    'Query Engine': 'Механизм запросов',
+    'Simple query engine built to answer question over your data, without memory':
+        'Простой механизм запросов, созданный для ответа на вопросы по вашим данным без использования памяти.',
+    'Response Synthesizer': 'Синтезатор ответов',
+    'ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target="_blank" href="https://ts.llamaindex.ai/modules/low_level/response_synthesizer">more</a>':
+        'ResponseSynthesizer отвечает за отправку запроса, узлов и шаблонов подсказок в LLM для генерации ответа. См. <a target="_blank" href="https://ts.llamaindex.ai/modules/low_level/response_synthesizer">подробнее</a>',
+    'Sub Question Query Engine': 'Механизм запросов подвопросов',
+    'Breaks complex query into sub questions for each relevant data source, then gather all the intermediate reponses and synthesizes a final response':
+        'Разбивает сложный запрос на подвопросы для каждого соответствующего источника данных, затем собирает все промежуточные ответы и синтезирует окончательный ответ.',
+    'QueryEngine Tools': 'Инструменты QueryEngine',
+    'Please install huggingface as a dependency with, e.g. `pnpm add @huggingface/inference`':
+        'Пожалуйста, установите Huggingface в качестве зависимости, например. `pnpm добавить @huggingface/inference`',
+    'Zep Memory - Open Source': 'Zep Memory — открытый исходный код',
+    'Zep Memory - Cloud': 'Zep Memory — Облако',
+    'Advanced Structured Output Parser': 'Расширенный анализатор структурированного вывода',
+    'Parse the output of an LLM call into a given structure by providing a Zod schema.':
+        'Разберите выходные данные вызова LLM в заданную структуру, предоставив схему Zod.',
+    'Compact and Refine': 'Компактный и изысканный',
+    'CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.':
+        'CompactRefine — это небольшая вариация Refine, которая сначала сжимает фрагменты текста в минимально возможное количество фрагментов.',
+    'Refine Prompt': 'Refine подсказки',
+    'Prompt can contains no variables, or up to 3 variables. Variables must be {existingAnswer}, {context} and {query}':
+        'Подсказка может не содержать переменных или содержать до трех переменных. Переменные должны быть {existingAnswer}, {context} и {query}.',
+    'Text QA Prompt': 'Текстовая подсказка по обеспечению качества',
+    'Prompt can contains no variables, or up to 2 variables. Variables must be {context} and {query}':
+        'Подсказка может не содержать переменных или содержать до двух переменных. Переменные должны быть {context} и {query}.',
+    Refine: 'Refine',
+    'Create and refine an answer by sequentially going through each retrieved text chunk. This makes a separate LLM call per Node. Good for more detailed answers.':
+        'Создайте и уточните ответ, последовательно просматривая каждый полученный фрагмент текста. Это делает отдельный вызов LLM для каждого узла. Хорошо для более подробных ответов.',
+    'Simple Response Builder': 'Простой конструктор ответов',
+    'Apply a query to a collection of text chunks, gathering the responses in an array, and return a combined string of all responses. Useful for individual queries on each text chunk.':
+        'Примените запрос к коллекции фрагментов текста, собрав ответы в массив, и верните объединенную строку всех ответов. Полезно для отдельных запросов по каждому фрагменту текста.',
+    'Given a set of text chunks and the query, recursively construct a tree and return the root node as the response. Good for summarization purposes.':
+        'Учитывая набор текстовых фрагментов и запрос, рекурсивно постройте дерево и верните корневой узел в качестве ответа. Подходит для целей обобщения.',
+    'Value is a large dictionary, should explore its keys directly.':
+        'Значение — это большой словарь, поэтому следует напрямую исследовать его ключи.',
+    'Pinecone Retriever': 'Ретривер Pinecone',
+    'Pinecone Vector Store Index': 'Индекс векторного магазина Pinecone',
+    SimpleStore: 'SimpleStore',
+    'Upsert embedded data to local path and perform similarity search':
+        'Перенесите внедренные данные в локальный путь и выполните поиск по сходству.',
+    'Path to store persist embeddings indexes with persistence. If not specified, default to same path where database is stored':
+        'Путь для хранения постоянных индексов внедрения. Если не указано, по умолчанию используется тот же путь, где хранится база данных.',
+    'SimpleStore Vector Store Index': 'Индекс векторного магазина SimpleStore',
+    'SimpleStore Retriever': 'SimpleStore Retriever',
+    'Zep Load Existing Index - Open Source': 'Существующий индекс Zep Load — с открытым исходным кодом',
+    'Zep Upsert Document - Open Source': 'Документ Zep Upsert — открытый исходный код',
+    'Zep Collection - Open Source': 'Коллекция Zep — открытый исходный код',
+    'Zep Collection - Cloud': 'Коллекция Zep – Облако',
+    'Return response as a JSON structure as specified by a Zod schema': 'Вернуть ответ в виде структуры JSON, как указано в схеме Zod.',
+    'Few Shot Prompt,ChatOpenAI,LLM Chain,Langchain': 'Несколько подсказок, ChatOpenAI, LLM Chain, Langchain',
+    'Use OpenAI Tool Agent and Chain to automatically decide which API to call, generating url and body request from conversation':
+        'Используйте агент и цепочку инструментов OpenAI, чтобы автоматически решать, какой API вызывать, генерируя URL-адрес и запрос тела из разговора.',
+    'BabyAGI,ChatOpenAI,Pinecone,Langchain': 'BabyAGI,ChatOpenAI,Сосновая шишка,Langchain',
+    'Stateless query engine designed to answer question over your data using LlamaIndex':
+        'Механизм запросов без сохранения состояния, предназначенный для ответа на вопросы по вашим данным с использованием LlamaIndex.',
+    'Simple chat engine to handle back and forth conversations using LlamaIndex':
+        'Простой механизм чата для ведения двусторонних разговоров с использованием LlamaIndex.',
+    'Breaks down query into sub questions for each relevant data source, then combine into final response':
+        'Разбивает запрос на подвопросы для каждого соответствующего источника данных, а затем объединяет их в окончательный ответ.',
+    Chatflow: 'Чат',
+    Tool: 'Инструмент',
+    'Split flows based on if else condition': 'Разделение потоков на основе условия if else',
+    'Answer question based on retrieved documents (context) with built-in memory to remember conversation using LlamaIndex':
+        'Ответьте на вопрос на основе полученных документов (контекста) со встроенной памятью, чтобы запомнить разговор, используя LlamaIndex.',
+    'Tool used to invoke query engine': 'Инструмент, используемый для вызова механизма запросов',
+    'Base QueryEngine': 'Базовый QueryEngine',
+    'Tool Name': 'Название инструмента',
+    'Tool Description': 'Описание инструмента',
+    'Wrapper around Chat YandexGPT large language models that use the Chat endpoint':
+        'Обертка вокруг больших языковых моделей Chat YandexGPT, которые используют конечную точку чата.'
 }

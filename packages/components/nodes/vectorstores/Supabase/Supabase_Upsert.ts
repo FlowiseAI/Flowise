@@ -1,10 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { flatten } from 'lodash'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class SupabaseUpsert_VectorStores implements INode {
     label: string

@@ -1,9 +1,9 @@
 import { flatten } from 'lodash'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { AstraDBVectorStore, AstraLibArgs } from '@langchain/community/vectorstores/astradb'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
-import { AstraDBVectorStore, AstraLibArgs } from '@langchain/community/vectorstores/astradb'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Astra_VectorStores implements INode {

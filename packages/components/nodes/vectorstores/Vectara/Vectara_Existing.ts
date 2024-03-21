@@ -1,6 +1,6 @@
+import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from '@langchain/community/vectorstores/vectara'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig } from 'langchain/vectorstores/vectara'
 
 class VectaraExisting_VectorStores implements INode {
     label: string

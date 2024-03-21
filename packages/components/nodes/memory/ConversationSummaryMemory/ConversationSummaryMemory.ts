@@ -1,8 +1,8 @@
 import { FlowiseSummaryMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
 import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { BaseMessage } from '@langchain/core/messages'
 import { ConversationSummaryMemory, ConversationSummaryMemoryInput } from 'langchain/memory'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { BaseMessage } from 'langchain/schema'
 
 class ConversationSummaryMemory_Memory implements INode {
     label: string

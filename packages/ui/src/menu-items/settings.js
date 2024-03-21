@@ -1,9 +1,15 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff } from '@tabler/icons'
-import { translationObject } from 'translate'
+import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconMessage, IconAdjustmentsHorizontal } from '@tabler/icons'
 
 // constant
-const icons = { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconSearch, IconMessage, IconPictureInPictureOff }
+const icons = {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconMessage,
+    IconAdjustmentsHorizontal
+}
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 const settings = {
@@ -12,18 +18,18 @@ const settings = {
     type: 'group',
     children: [
         {
-            id: 'conversationStarters',
-            title: translationObject['Starter Prompts'] || 'Starter Prompts',
-            type: 'item',
-            url: '',
-            icon: icons.IconPictureInPictureOff
-        },
-        {
             id: 'viewMessages',
             title: 'Просмотр сообщений',
             type: 'item',
             url: '',
             icon: icons.IconMessage
+        },
+        {
+            id: 'chatflowConfiguration',
+            title: 'Конфигурация',
+            type: 'item',
+            url: '',
+            icon: icons.IconAdjustmentsHorizontal
         },
         {
             id: 'duplicateChatflow',
@@ -45,13 +51,6 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileExport
-        },
-        {
-            id: 'analyseChatflow',
-            title: 'Анализ Проекта',
-            type: 'item',
-            url: '',
-            icon: icons.IconSearch
         },
         {
             id: 'deleteChatflow',

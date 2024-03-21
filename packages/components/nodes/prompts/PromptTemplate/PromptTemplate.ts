@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
-import { PromptTemplateInput } from 'langchain/prompts'
+import { PromptTemplateInput } from '@langchain/core/prompts'
 
 class PromptTemplate_Prompts implements INode {
     label: string

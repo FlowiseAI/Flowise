@@ -1,9 +1,10 @@
 // assets
 import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconTable, IconVariable } from '@tabler/icons'
-import { ReactComponent as IconKeys } from 'assets/images/IconKey.svg'
-import { ReactComponent as IconSmile } from 'assets/images/smile.svg'
-import { ReactComponent as IconCollection } from 'assets/images/collection.svg'
-import { ReactComponent as IconLocks } from 'assets/images/lock.svg'
+// import IconKeys from '@/assets/images/IconKey.svg'
+// import IconSmile from '@/assets/images/smile.svg'
+// import IconCollection from '@/assets/images/collection.svg'
+// import IconLocks from '@/assets/images/lock.svg'
+
 // constant
 const icons = {
     IconHierarchy,
@@ -15,8 +16,6 @@ const icons = {
     IconTable,
     IconVariable
 }
-
-// constant
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -30,7 +29,7 @@ const dashboard = {
             title: 'Проекты',
             type: 'item',
             url: '/chatflows',
-            icon: IconCollection,
+            icon: icons.IconHierarchy,
             breadcrumbs: true
         },
         {
@@ -54,7 +53,7 @@ const dashboard = {
             title: 'Ассистенты ',
             type: 'item',
             url: '/assistants',
-            icon: IconSmile,
+            icon: icons.IconHierarchy,
             breadcrumbs: true
         },
         {
@@ -63,7 +62,7 @@ const dashboard = {
             title: 'Учетные данные',
             type: 'item',
             url: '/credentials',
-            icon: IconLocks,
+            icon: icons.IconHierarchy,
             breadcrumbs: true
         },
         {
@@ -79,7 +78,7 @@ const dashboard = {
             title: 'API-ключи',
             type: 'item',
             url: '/apikey',
-            icon: IconKeys,
+            icon: icons.IconHierarchy,
             breadcrumbs: true
         }
     ]

@@ -1,14 +1,17 @@
-import { ChainValues, AgentStep, BaseMessage } from 'langchain/schema'
-import { getBaseClasses } from '../../../src/utils'
 import { flatten } from 'lodash'
-import { RunnableSequence } from 'langchain/schema/runnable'
-import { formatToOpenAIFunction } from 'langchain/tools'
-import { ChatOpenAI } from 'langchain/chat_models/openai'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { ChatPromptTemplate, MessagesPlaceholder } from 'langchain/prompts'
+import { BaseMessage } from '@langchain/core/messages'
+import { ChainValues } from '@langchain/core/utils/types'
+import { AgentStep } from '@langchain/core/agents'
+import { RunnableSequence } from '@langchain/core/runnables'
+import { ChatOpenAI, formatToOpenAIFunction } from '@langchain/openai'
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { OpenAIFunctionsAgentOutputParser } from 'langchain/agents/openai/output_parser'
+import { getBaseClasses } from '../../../src/utils'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
+import { Moderation, checkInputs } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 class OpenAIFunctionAgent_Agents implements INode {
     label: string
@@ -20,17 +23,19 @@ class OpenAIFunctionAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge?: string
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'OpenAI Function Agent'
         this.name = 'openAIFunctionAgent'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'function.svg'
-        this.description = `An agent that uses Function Calling to pick the tool and args to call`
+        this.description = `An agent that uses OpenAI Function Calling to pick the tool and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.badge = 'DEPRECATING'
         this.inputs = [
             {
                 label: 'Allowed Tools',
@@ -55,6 +60,14 @@ class OpenAIFunctionAgent_Agents implements INode {
                 rows: 4,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -66,6 +79,19 @@ class OpenAIFunctionAgent_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the OpenAI Function Agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
@@ -73,6 +99,7 @@ class OpenAIFunctionAgent_Agents implements INode {
 
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
@@ -81,10 +108,17 @@ class OpenAIFunctionAgent_Agents implements INode {
                 options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
                 sourceDocuments = res.sourceDocuments
             }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
             }
         }
 
@@ -102,7 +136,20 @@ class OpenAIFunctionAgent_Agents implements INode {
             this.sessionId
         )
 
-        return sourceDocuments.length ? { text: res?.output, sourceDocuments: flatten(sourceDocuments) } : res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 

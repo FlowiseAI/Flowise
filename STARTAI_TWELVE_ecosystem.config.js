@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: 'STARTAI_TWELVE',
-            script: './node_modules/npm/bin/npm-cli.js',
+            script: './node_modules/pnpm/bin/pnpm.cjs',
             args: 'start',
             watch: false,
             env: {

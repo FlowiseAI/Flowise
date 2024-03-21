@@ -1,10 +1,10 @@
-import { ICommonObject, INode, INodeData } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { flatten } from 'lodash'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/community/vectorstores/redis'
 import { RedisSearchBase } from './RedisSearchBase'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
+import { ICommonObject, INode, INodeData } from '../../../src/Interface'
 import { escapeAllStrings } from './utils'
 
 class RedisUpsert_VectorStores extends RedisSearchBase implements INode {

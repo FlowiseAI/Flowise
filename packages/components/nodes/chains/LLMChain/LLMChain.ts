@@ -1,13 +1,15 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel, BaseLanguageModelCallOptions } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
-import { BaseLLMOutputParser } from 'langchain/schema/output_parser'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
+import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
+import { HumanMessage } from '@langchain/core/messages'
+import { ChatPromptTemplate, FewShotPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { OutputFixingParser } from 'langchain/output_parsers'
+import { LLMChain } from 'langchain/chains'
+import { IVisionChatModal, ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { additionalCallbacks, ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
+import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
 class LLMChain_Chains implements INode {
     label: string
@@ -161,12 +163,6 @@ const runPrediction = async (
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
-    /**
-     * Apply string transformation to reverse converted special chars:
-     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
-     * TO: { "value": "hello i am ben\n\n\thow are you?" }
-     */
-    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
 
     if (moderations && moderations.length > 0) {
         try {
@@ -176,6 +172,60 @@ const runPrediction = async (
             await new Promise((resolve) => setTimeout(resolve, 500))
             streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
             return formatResponse(e.message)
+        }
+    }
+
+    /**
+     * Apply string transformation to reverse converted special chars:
+     * FROM: { "value": "hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?" }
+     * TO: { "value": "hello i am ben\n\n\thow are you?" }
+     */
+    const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+
+    if (llmSupportsVision(chain.llm)) {
+        const visionChatModel = chain.llm as IVisionChatModal
+        const messageContent = addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
+        if (messageContent?.length) {
+            // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
+            visionChatModel.setVisionModel()
+            // Add image to the message
+            if (chain.prompt instanceof PromptTemplate) {
+                const existingPromptTemplate = chain.prompt.template as string
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: existingPromptTemplate
+                    }
+                ])
+                msg.inputVariables = chain.prompt.inputVariables
+                chain.prompt = ChatPromptTemplate.fromMessages([msg])
+            } else if (chain.prompt instanceof ChatPromptTemplate) {
+                if (chain.prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                    const lastMessage = chain.prompt.promptMessages.pop() as HumanMessagePromptTemplate
+                    const template = (lastMessage.prompt as PromptTemplate).template as string
+                    const msg = HumanMessagePromptTemplate.fromTemplate([
+                        ...messageContent,
+                        {
+                            text: template
+                        }
+                    ])
+                    msg.inputVariables = lastMessage.inputVariables
+                    chain.prompt.promptMessages.push(msg)
+                } else {
+                    chain.prompt.promptMessages.push(new HumanMessage({ content: messageContent }))
+                }
+            } else if (chain.prompt instanceof FewShotPromptTemplate) {
+                let existingFewShotPromptTemplate = chain.prompt.examplePrompt.template as string
+                let newFewShotPromptTemplate = ChatPromptTemplate.fromMessages([
+                    HumanMessagePromptTemplate.fromTemplate(existingFewShotPromptTemplate)
+                ])
+                newFewShotPromptTemplate.promptMessages.push(new HumanMessage({ content: messageContent }))
+                // @ts-ignore
+                chain.prompt.examplePrompt = newFewShotPromptTemplate
+            }
+        } else {
+            // revert to previous values if image upload is empty
+            visionChatModel.revertToOriginalModel()
         }
     }
 

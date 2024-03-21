@@ -1,6 +1,8 @@
 {
     "description": "QnA chain using Ollama local LLM, LocalAI embedding model, and Faiss local vector store",
     "badge": "POPULAR",
+    "categories": "Text File,ChatOllama,Conversational Retrieval QA Chain,Faiss,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -83,7 +85,7 @@
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
-                "version": 2,
+                "version": 3,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
@@ -142,9 +144,19 @@
                         "optional": true,
                         "description": "If left empty, a default BufferMemory will be used",
                         "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOllama_0.data.instance}}",
                     "vectorStoreRetriever": "{{faiss_0.data.instance}}",
                     "memory": "",
@@ -224,10 +236,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "textFile_0-output-document-Document",
+                                "id": "textFile_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "textFile_0-output-text-string|json",
@@ -649,11 +661,11 @@
         },
         {
             "source": "textFile_0",
-            "sourceHandle": "textFile_0-output-document-Document",
+            "sourceHandle": "textFile_0-output-document-Document|json",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "textFile_0-textFile_0-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "id": "textFile_0-textFile_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }

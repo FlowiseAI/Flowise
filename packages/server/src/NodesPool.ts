@@ -4,6 +4,7 @@ import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
 import { ICommonObject } from 'flowise-components'
+import logger from './utils/logger'
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
@@ -28,36 +29,40 @@ export class NodesPool {
         return Promise.all(
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.js')) {
-                    const nodeModule = await require(file)
+                    try {
+                        const nodeModule = await require(file)
 
-                    if (nodeModule.nodeClass) {
-                        const newNodeInstance = new nodeModule.nodeClass()
-                        newNodeInstance.filePath = file
+                        if (nodeModule.nodeClass) {
+                            const newNodeInstance = new nodeModule.nodeClass()
+                            newNodeInstance.filePath = file
 
-                        // Replace file icon with absolute path
-                        if (
-                            newNodeInstance.icon &&
-                            (newNodeInstance.icon.endsWith('.svg') ||
-                                newNodeInstance.icon.endsWith('.png') ||
-                                newNodeInstance.icon.endsWith('.jpg'))
-                        ) {
-                            const filePath = file.replace(/\\/g, '/').split('/')
-                            filePath.pop()
-                            const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
-                            newNodeInstance.icon = nodeIconAbsolutePath
+                            // Replace file icon with absolute path
+                            if (
+                                newNodeInstance.icon &&
+                                (newNodeInstance.icon.endsWith('.svg') ||
+                                    newNodeInstance.icon.endsWith('.png') ||
+                                    newNodeInstance.icon.endsWith('.jpg'))
+                            ) {
+                                const filePath = file.replace(/\\/g, '/').split('/')
+                                filePath.pop()
+                                const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
+                                newNodeInstance.icon = nodeIconAbsolutePath
 
-                            // Store icon path for componentCredentials
-                            if (newNodeInstance.credential) {
-                                for (const credName of newNodeInstance.credential.credentialNames) {
-                                    this.credentialIconPath[credName] = nodeIconAbsolutePath
+                                // Store icon path for componentCredentials
+                                if (newNodeInstance.credential) {
+                                    for (const credName of newNodeInstance.credential.credentialNames) {
+                                        this.credentialIconPath[credName] = nodeIconAbsolutePath
+                                    }
                                 }
                             }
-                        }
 
-                        const skipCategories = ['Analytic']
-                        if (!skipCategories.includes(newNodeInstance.category)) {
-                            this.componentNodes[newNodeInstance.name] = newNodeInstance
+                            const skipCategories = ['Analytic', 'SpeechToText']
+                            if (!skipCategories.includes(newNodeInstance.category)) {
+                                this.componentNodes[newNodeInstance.name] = newNodeInstance
+                            }
                         }
+                    } catch (err) {
+                        logger.error(`❌ [server]: Error during initDatabase with file ${file}:`, err)
                     }
                 }
             })

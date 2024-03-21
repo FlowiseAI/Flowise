@@ -1,7 +1,7 @@
 import { MongoClient, Collection, Document } from 'mongodb'
-import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
+import { MongoDBChatMessageHistory } from '@langchain/community/stores/message/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
@@ -154,7 +154,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.collection) return []
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const document = await this.collection.findOne({ sessionId: id })
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
@@ -164,7 +164,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.collection) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
 
@@ -196,7 +196,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         if (!this.collection) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.collection.deleteOne({ sessionId: id })
         await this.clear()
     }

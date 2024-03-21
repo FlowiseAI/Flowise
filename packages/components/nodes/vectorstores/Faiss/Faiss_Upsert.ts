@@ -1,9 +1,9 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses } from '../../../src/utils'
-import { FaissStore } from 'langchain/vectorstores/faiss'
 import { flatten } from 'lodash'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
 
 class FaissUpsert_VectorStores implements INode {
     label: string

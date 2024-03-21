@@ -1,9 +1,9 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { BaseRetriever } from 'langchain/schema/retriever'
-import { Embeddings } from 'langchain/embeddings/base'
+import { BaseRetriever } from '@langchain/core/retrievers'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter'
 import { handleEscapeCharacters } from '../../../src/utils'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class EmbeddingsFilterRetriever_Retrievers implements INode {
     label: string
@@ -78,11 +78,13 @@ class EmbeddingsFilterRetriever_Retrievers implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: ['Document']
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: ['Document', 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]

@@ -1,17 +1,21 @@
-import { BaseTracer, Run, BaseCallbackHandler, LangChainTracer } from 'langchain/callbacks'
-import { AgentAction, ChainValues } from 'langchain/schema'
 import { Logger } from 'winston'
+import { v4 as uuidv4 } from 'uuid'
 import { Server } from 'socket.io'
 import { Client } from 'langsmith'
-import { LLMonitorHandler, LLMonitorHandlerFields } from 'langchain/callbacks/handlers/llmonitor'
-import { getCredentialData, getCredentialParam } from './utils'
-import { ICommonObject, INodeData } from './Interface'
 import CallbackHandler from 'langfuse-langchain'
-import { LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
+import lunary from 'lunary'
 import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
 import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
-import monitor from 'llmonitor'
-import { v4 as uuidv4 } from 'uuid'
+
+import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
+import { LangChainTracer, LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
+import { BaseTracer, Run } from '@langchain/core/tracers/base'
+import { ChainValues } from '@langchain/core/utils/types'
+import { AgentAction } from '@langchain/core/agents'
+import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
+
+import { getCredentialData, getCredentialParam } from './utils'
+import { ICommonObject, INodeData } from './Interface'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -257,7 +261,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     let langFuseOptions: any = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
-                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
+                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+                        sdkIntegration: 'Flowise'
                     }
                     if (release) langFuseOptions.release = release
                     if (options.chatId) langFuseOptions.sessionId = options.chatId
@@ -268,20 +273,20 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)
-                } else if (provider === 'llmonitor') {
-                    const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, nodeData)
-                    const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, nodeData)
+                } else if (provider === 'lunary') {
+                    const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, nodeData)
+                    const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeData)
 
-                    let llmonitorFields: LLMonitorHandlerFields = {
-                        appId: llmonitorAppId,
-                        apiUrl: llmonitorEndpoint ?? 'https://app.llmonitor.com'
+                    let lunaryFields = {
+                        appId: lunaryAppId,
+                        apiUrl: lunaryEndpoint ?? 'https://app.lunary.ai'
                     }
 
-                    if (nodeData?.inputs?.analytics?.llmonitor) {
-                        llmonitorFields = { ...llmonitorFields, ...nodeData?.inputs?.analytics?.llmonitor }
+                    if (nodeData?.inputs?.analytics?.lunary) {
+                        lunaryFields = { ...lunaryFields, ...nodeData?.inputs?.analytics?.lunary }
                     }
 
-                    const handler = new LLMonitorHandler(llmonitorFields)
+                    const handler = new LunaryHandler(lunaryFields)
                     callbacks.push(handler)
                 }
             }
@@ -336,19 +341,20 @@ export class AnalyticHandler {
                             secretKey: langFuseSecretKey,
                             publicKey: langFusePublicKey,
                             baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+                            sdkIntegration: 'Flowise',
                             release
                         })
                         this.handlers['langFuse'] = { client: langfuse }
-                    } else if (provider === 'llmonitor') {
-                        const llmonitorAppId = getCredentialParam('llmonitorAppId', credentialData, this.nodeData)
-                        const llmonitorEndpoint = getCredentialParam('llmonitorEndpoint', credentialData, this.nodeData)
+                    } else if (provider === 'lunary') {
+                        const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
+                        const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, this.nodeData)
 
-                        monitor.init({
-                            appId: llmonitorAppId,
-                            apiUrl: llmonitorEndpoint
+                        lunary.init({
+                            appId: lunaryAppId,
+                            apiUrl: lunaryEndpoint
                         })
 
-                        this.handlers['llmonitor'] = { client: monitor }
+                        this.handlers['lunary'] = { client: lunary }
                     }
                 }
             }
@@ -361,7 +367,7 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            llmonitor: {}
+            lunary: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -427,8 +433,8 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
 
             if (monitor) {
                 const runId = uuidv4()
@@ -437,10 +443,10 @@ export class AnalyticHandler {
                     name,
                     userId: this.options.chatId,
                     input,
-                    ...this.nodeData?.inputs?.analytics?.llmonitor
+                    ...this.nodeData?.inputs?.analytics?.lunary
                 })
-                this.handlers['llmonitor'].chainEvent = { [runId]: runId }
-                returnIds['llmonitor'].chainEvent = runId
+                this.handlers['lunary'].chainEvent = { [runId]: runId }
+                returnIds['lunary'].chainEvent = runId
             }
         }
 
@@ -473,9 +479,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const chainEventId = returnIds['llmonitor'].chainEvent
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const chainEventId = returnIds['lunary'].chainEvent
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && chainEventId) {
                 await monitor.trackEvent('chain', 'end', {
@@ -514,9 +520,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const chainEventId = returnIds['llmonitor'].chainEvent
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const chainEventId = returnIds['lunary'].chainEvent
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && chainEventId) {
                 await monitor.trackEvent('chain', 'end', {
@@ -531,7 +537,7 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            llmonitor: {}
+            lunary: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -562,9 +568,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const monitor = this.handlers['llmonitor'].client
-            const chainEventId: string = this.handlers['llmonitor'].chainEvent[parentIds['llmonitor'].chainEvent]
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
+            const chainEventId: string = this.handlers['lunary'].chainEvent[parentIds['lunary'].chainEvent]
 
             if (monitor && chainEventId) {
                 const runId = uuidv4()
@@ -575,8 +581,8 @@ export class AnalyticHandler {
                     userId: this.options.chatId,
                     input
                 })
-                this.handlers['llmonitor'].llmEvent = { [runId]: runId }
-                returnIds['llmonitor'].llmEvent = runId
+                this.handlers['lunary'].llmEvent = { [runId]: runId }
+                returnIds['lunary'].llmEvent = runId
             }
         }
 
@@ -605,9 +611,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const llmEventId: string = this.handlers['llmonitor'].llmEvent[returnIds['llmonitor'].llmEvent]
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const llmEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].llmEvent]
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && llmEventId) {
                 await monitor.trackEvent('llm', 'end', {
@@ -640,9 +646,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const llmEventId: string = this.handlers['llmonitor'].llmEvent[returnIds['llmonitor'].llmEvent]
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const llmEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].llmEvent]
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && llmEventId) {
                 await monitor.trackEvent('llm', 'end', {
@@ -657,7 +663,7 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            llmonitor: {}
+            lunary: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -688,9 +694,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const monitor = this.handlers['llmonitor'].client
-            const chainEventId: string = this.handlers['llmonitor'].chainEvent[parentIds['llmonitor'].chainEvent]
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const monitor = this.handlers['lunary'].client
+            const chainEventId: string = this.handlers['lunary'].chainEvent[parentIds['lunary'].chainEvent]
 
             if (monitor && chainEventId) {
                 const runId = uuidv4()
@@ -701,8 +707,8 @@ export class AnalyticHandler {
                     userId: this.options.chatId,
                     input
                 })
-                this.handlers['llmonitor'].toolEvent = { [runId]: runId }
-                returnIds['llmonitor'].toolEvent = runId
+                this.handlers['lunary'].toolEvent = { [runId]: runId }
+                returnIds['lunary'].toolEvent = runId
             }
         }
 
@@ -731,9 +737,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const toolEventId: string = this.handlers['llmonitor'].toolEvent[returnIds['llmonitor'].toolEvent]
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const toolEventId: string = this.handlers['lunary'].toolEvent[returnIds['lunary'].toolEvent]
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && toolEventId) {
                 await monitor.trackEvent('tool', 'end', {
@@ -766,9 +772,9 @@ export class AnalyticHandler {
             }
         }
 
-        if (Object.prototype.hasOwnProperty.call(this.handlers, 'llmonitor')) {
-            const toolEventId: string = this.handlers['llmonitor'].llmEvent[returnIds['llmonitor'].toolEvent]
-            const monitor = this.handlers['llmonitor'].client
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
+            const toolEventId: string = this.handlers['lunary'].llmEvent[returnIds['lunary'].toolEvent]
+            const monitor = this.handlers['lunary'].client
 
             if (monitor && toolEventId) {
                 await monitor.trackEvent('tool', 'end', {
