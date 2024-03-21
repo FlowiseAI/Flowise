@@ -6,13 +6,14 @@ import {
     Box,
     Chip,
     Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Stack,
+    Tooltip,
     Typography,
     useTheme
 } from '@mui/material'
@@ -75,18 +76,23 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                         {data.filter(filterFunction).map((row, index) => (
                             <StyledTableRow key={index}>
                                 <StyledTableCell key='0'>
-                                    <Typography
-                                        sx={{
-                                            fontSize: 14,
-                                            fontWeight: 500,
-                                            overflowWrap: 'break-word',
-                                            whiteSpace: 'pre-line'
-                                        }}
-                                    >
-                                        <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
-                                            {row.templateName || row.name}
-                                        </Link>
-                                    </Typography>
+                                    <Tooltip title={row.templateName || row.name}>
+                                        <Typography
+                                            sx={{
+                                                display: '-webkit-box',
+                                                fontSize: 14,
+                                                fontWeight: 500,
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                textOverflow: 'ellipsis',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                {row.templateName || row.name}
+                                            </Link>
+                                        </Typography>
+                                    </Tooltip>
                                 </StyledTableCell>
                                 <StyledTableCell key='1'>
                                     <div

@@ -46,12 +46,14 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                 >
                     <Box sx={{ height: '100%', p: 2.25 }}>
                         <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
-                            <Box display='flex' flexDirection='column'>
+                            <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
                                 <div
                                     style={{
+                                        width: '100%',
                                         display: 'flex',
                                         flexDirection: 'row',
-                                        alignItems: 'center'
+                                        alignItems: 'center',
+                                        overflow: 'hidden'
                                     }}
                                 >
                                     {data.iconSrc && (
@@ -59,6 +61,8 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                             style={{
                                                 width: 35,
                                                 height: 35,
+                                                display: 'flex',
+                                                flexShrink: 0,
                                                 marginRight: 10,
                                                 borderRadius: '50%',
                                                 background: `url(${data.iconSrc})`,
@@ -73,6 +77,8 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                             style={{
                                                 width: 35,
                                                 height: 35,
+                                                display: 'flex',
+                                                flexShrink: 0,
                                                 marginRight: 10,
                                                 borderRadius: '50%',
                                                 background: data.color
@@ -80,7 +86,15 @@ const ItemCard = ({ isLoading, data, images, onClick }) => {
                                         ></div>
                                     )}
                                     <Typography
-                                        sx={{ fontSize: '1.25rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                        sx={{
+                                            display: '-webkit-box',
+                                            fontSize: '1.25rem',
+                                            fontWeight: 500,
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            textOverflow: 'ellipsis',
+                                            overflow: 'hidden'
+                                        }}
                                     >
                                         {data.templateName || data.name}
                                     </Typography>

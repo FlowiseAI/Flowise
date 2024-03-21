@@ -73,7 +73,15 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                                 <StyledTableRow key={index}>
                                     <StyledTableCell key='0'>
                                         <Typography
-                                            sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                                            sx={{
+                                                display: '-webkit-box',
+                                                fontSize: 14,
+                                                fontWeight: 500,
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                textOverflow: 'ellipsis',
+                                                overflow: 'hidden'
+                                            }}
                                         >
                                             <Button onClick={() => openTemplate(row)} sx={{ textAlign: 'left' }}>
                                                 {row.templateName || row.name}
