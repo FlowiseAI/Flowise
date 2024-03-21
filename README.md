@@ -2,11 +2,11 @@
 
 ## запуск проекта
 
-### - yarn install
+### - pnpm install
 
-### - yarn build
+### - pnpm build
 
-### - yarn start
+### - pnpm start
 
 ## PM2
 
@@ -45,9 +45,9 @@ switch (process.env.NODE_ENV) {
 }
 ```
 
-### - yarn install
+### - pnpm install
 
-### - yarn build
+### - pnpm build
 
 ## Первый вариант запуска
 
