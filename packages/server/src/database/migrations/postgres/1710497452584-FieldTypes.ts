@@ -5,13 +5,10 @@ export class FieldTypes1710497452584 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatflowid" type uuid USING "chatflowid"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type uuid USING "chatId"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" type uuid USING "sessionId"::uuid`)
 
         await queryRunner.query(`ALTER TABLE "assistant" ALTER COLUMN "credential" type uuid USING "credential"::uuid`)
 
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatflowid" type uuid USING "chatflowid"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatId" type uuid USING "chatId"::uuid`)
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "messageId" type uuid USING "messageId"::uuid`)
 
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ADD CONSTRAINT "UQ_6352078b5a294f2d22179ea7955" UNIQUE ("messageId")`)
@@ -29,13 +26,10 @@ export class FieldTypes1710497452584 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" DROP CONSTRAINT "UQ_6352078b5a294f2d22179ea7955"`)
 
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatflowid" type varchar USING "chatflowid"::varchar`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" type varchar USING "sessionId"::varchar`)
 
         await queryRunner.query(`ALTER TABLE "assistant" ALTER COLUMN "credential" type varchar USING "credential"::varchar`)
 
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatflowid" type varchar USING "chatflowid"::varchar`)
-        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "messageId" type varchar USING "messageId"::varchar`)
     }
 }
