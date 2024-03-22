@@ -48,6 +48,7 @@ services:
             - REDIS_KEY=${REDIS_KEY}
             - REDIS_CA=${REDIS_CA}
             - LOGI_SYMPHONY_URL=${LOGI_SYMPHONY_URL}
+            - LOGI_SYMPHONY_VDD_URL=${LOGI_SYMPHONY_VDD_URL}
         ports:
             - '${PORT}:${PORT}'
         volumes:
