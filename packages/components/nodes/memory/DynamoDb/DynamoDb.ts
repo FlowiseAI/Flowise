@@ -225,7 +225,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
         const tableName = this.tableName
 
-        const messageAttributeName = this.messageAttributeName ?? 'messages'
+        const messageAttributeName = this.messageAttributeName ? this.messageAttributeName : 'messages'
         const params: GetItemCommandInput = {
             TableName: tableName,
             Key: dynamoKey
