@@ -4,7 +4,6 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import path from 'path'
 import { getStoragePath } from '../../../src'
 import fs from 'fs'
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
 
 class VectaraUpload_VectorStores implements INode {
     label: string

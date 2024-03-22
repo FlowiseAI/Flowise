@@ -218,15 +218,15 @@ export class App {
             const returnData = []
             for (const nodeName in this.nodesPool.componentNodes) {
                 const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
-                if (process.env.FILE_DATASOURCE_ENABLED === 'true') {
-                    if (clonedNode.inputs) {
-                        for (const inputName in clonedNode.inputs) {
-                            if (clonedNode.inputs[inputName].type === 'file') {
-                                clonedNode.inputs[inputName].hidden = true
-                            }
-                        }
-                    }
-                }
+                // if (process.env.FILE_DATASOURCE_ENABLED === 'true') {
+                //     if (clonedNode.inputs) {
+                //         for (const inputName in clonedNode.inputs) {
+                //             if (clonedNode.inputs[inputName].type === 'file') {
+                //                 clonedNode.inputs[inputName].hidden = true
+                //             }
+                //         }
+                //     }
+                // }
                 returnData.push(clonedNode)
             }
             return res.json(returnData)
