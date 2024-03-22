@@ -105,7 +105,7 @@ class CSV_Agents implements INode {
             for (const file of files) {
                 const fileInStorage = path.join(getStoragePath(), chatflowid, file)
                 const fileData = fs.readFileSync(fileInStorage)
-                base64String += fileData.toString()
+                base64String += fileData.toString('base64')
             }
         } else {
             if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
