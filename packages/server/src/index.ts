@@ -1304,6 +1304,47 @@ export class App {
         })
 
         // ----------------------------------------
+        // Document Store
+        // ----------------------------------------
+
+        // Get all documents
+        this.app.get('/api/v1/documentStores', async (req: Request, res: Response) => {
+            const documents: any[] = []
+            let obj = {
+                id: '0',
+                name: 'Q&A',
+                description: 'Collection of documents for Q&A',
+                contentType: 'text',
+                textSplitter: 'recursive-splitter',
+                codeLanguage: ''
+            }
+            documents.push(obj)
+            obj = {
+                id: '1',
+                name: 'my code',
+                description: 'Flowise Code',
+                contentType: 'code',
+                textSplitter: 'recursive-splitter',
+                codeLanguage: 'typescript'
+            }
+            documents.push(obj)
+            return res.json(documents)
+        })
+
+        // Get specific store
+        this.app.get('/api/v1/documentStores/:id', async (req: Request, res: Response) => {
+            let obj = {
+                id: '0',
+                name: 'Q&A',
+                description: 'Collection of documents for Q&A',
+                contentType: 'text',
+                textSplitter: 'recursive-splitter',
+                codeLanguage: ''
+            }
+            return res.json(obj)
+        })
+
+        // ----------------------------------------
         // Configuration
         // ----------------------------------------
 
