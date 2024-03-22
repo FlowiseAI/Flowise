@@ -20,6 +20,7 @@ import {
     StoppingMethod
 } from 'langchain/agents'
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
+import { IUsedTool } from './Interface'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 type AgentFinish = {
@@ -341,11 +342,13 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         const steps: AgentStep[] = []
         let iterations = 0
         let sourceDocuments: Array<Document> = []
+        const usedTools: IUsedTool[] = []
 
         const getOutput = async (finishStep: AgentFinish): Promise<AgentExecutorOutput> => {
             const { returnValues } = finishStep
             const additional = await this.agent.prepareForOutput(returnValues, steps)
             if (sourceDocuments.length) additional.sourceDocuments = flatten(sourceDocuments)
+            if (usedTools.length) additional.usedTools = usedTools
 
             if (this.returnIntermediateSteps) {
                 return { ...returnValues, intermediateSteps: steps, ...additional }
@@ -410,18 +413,27 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - tags?: string[]
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
-                        observation = tool
-                            ? await (tool as any).call(
-                                  this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
-                                  runManager?.getChild(),
-                                  undefined,
-                                  {
-                                      sessionId: this.sessionId,
-                                      chatId: this.chatId,
-                                      input: this.input
-                                  }
-                              )
-                            : `${action.tool} is not a valid tool, try another one.`
+                        if (tool) {
+                            observation = await (tool as any).call(
+                                this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
+                                runManager?.getChild(),
+                                undefined,
+                                {
+                                    sessionId: this.sessionId,
+                                    chatId: this.chatId,
+                                    input: this.input
+                                }
+                            )
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: observation.includes(SOURCE_DOCUMENTS_PREFIX)
+                                    ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                                    : observation
+                            })
+                        } else {
+                            observation = `${action.tool} is not a valid tool, try another one.`
+                        }
                     } catch (e) {
                         if (e instanceof ToolInputParsingException) {
                             if (this.handleParsingErrors === true) {

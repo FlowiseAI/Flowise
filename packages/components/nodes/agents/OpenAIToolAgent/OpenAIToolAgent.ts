@@ -1,21 +1,20 @@
 import { flatten } from 'lodash'
 import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
-import { AgentStep } from '@langchain/core/agents'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI, formatToOpenAIFunction } from '@langchain/openai'
+import { ChatOpenAI } from '@langchain/openai'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { OpenAIFunctionsAgentOutputParser } from 'langchain/agents/openai/output_parser'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
+import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
+import { OpenAIToolsAgentOutputParser, type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
-import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { AgentExecutor } from '../../../src/agents'
+import { Moderation, checkInputs } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-const defaultMessage = `Do your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary.`
-
-class ConversationalRetrievalAgent_Agents implements INode {
+class OpenAIToolAgent_Agents implements INode {
     label: string
     name: string
     version: number
@@ -25,22 +24,22 @@ class ConversationalRetrievalAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    badge?: string
     sessionId?: string
+    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'Conversational Retrieval Agent'
-        this.name = 'conversationalRetrievalAgent'
-        this.version = 4.0
+        this.label = 'OpenAI Tool Agent'
+        this.name = 'openAIToolAgent'
+        this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.badge = 'DEPRECATING'
-        this.icon = 'agent.svg'
-        this.description = `An agent optimized for retrieval during conversation, answering questions based on past dialogue, all using OpenAI's Function Calling`
+        this.icon = 'function.svg'
+        this.description = `Agent that uses OpenAI Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.badge = 'NEW'
         this.inputs = [
             {
-                label: 'Allowed Tools',
+                label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
                 list: true
@@ -59,7 +58,6 @@ class ConversationalRetrievalAgent_Agents implements INode {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
-                default: defaultMessage,
                 rows: 4,
                 optional: true,
                 additionalParams: true
@@ -80,13 +78,13 @@ class ConversationalRetrievalAgent_Agents implements INode {
         return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
         if (moderations && moderations.length > 0) {
             try {
-                // Use the output of the moderation chain as input for the BabyAGI agent
+                // Use the output of the moderation chain as input for the OpenAI Function Agent
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
@@ -101,12 +99,28 @@ class ConversationalRetrievalAgent_Agents implements INode {
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let res: ChainValues = {}
+        let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            if (res.sourceDocuments) {
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            if (res.sourceDocuments) {
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
+            }
         }
 
         await memory.addChatMessages(
@@ -123,7 +137,20 @@ class ConversationalRetrievalAgent_Agents implements INode {
             this.sessionId
         )
 
-        return res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 
@@ -141,28 +168,26 @@ const prepareAgent = (
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['ai', systemMessage ? systemMessage : defaultMessage],
+        ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
         new MessagesPlaceholder(memoryKey),
         ['human', `{${inputKey}}`],
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
-    const modelWithFunctions = model.bind({
-        functions: [...tools.map((tool: any) => formatToOpenAIFunction(tool))]
-    })
+    const modelWithTools = model.bind({ tools: tools.map(convertToOpenAITool) })
 
     const runnableAgent = RunnableSequence.from([
         {
-            [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
-            agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
-            [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
+            [inputKey]: (i: { input: string; steps: ToolsAgentStep[] }) => i.input,
+            agent_scratchpad: (i: { input: string; steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(i.steps),
+            [memoryKey]: async (_: { input: string; steps: ToolsAgentStep[] }) => {
                 const messages = (await memory.getChatMessages(flowObj?.sessionId, true, chatHistory)) as BaseMessage[]
                 return messages ?? []
             }
         },
         prompt,
-        modelWithFunctions,
-        new OpenAIFunctionsAgentOutputParser()
+        modelWithTools,
+        new OpenAIToolsAgentOutputParser()
     ])
 
     const executor = AgentExecutor.fromAgentAndTools({
@@ -171,11 +196,10 @@ const prepareAgent = (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        returnIntermediateSteps: true,
         verbose: process.env.DEBUG === 'true' ? true : false
     })
 
     return executor
 }
 
-module.exports = { nodeClass: ConversationalRetrievalAgent_Agents }
+module.exports = { nodeClass: OpenAIToolAgent_Agents }
