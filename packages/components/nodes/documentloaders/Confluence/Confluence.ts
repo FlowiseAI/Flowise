@@ -93,8 +93,6 @@ class Confluence_DocumentLoaders implements INode {
         } else if (personalAccessToken) {
             // Confluence Server/Data Center credentials
             confluenceOptions.personalAccessToken = personalAccessToken;
-        } else {
-            throw new Error('No valid credentials provided for Confluence.');
         }
 
         const loader = new ConfluencePagesLoader(confluenceOptions)
