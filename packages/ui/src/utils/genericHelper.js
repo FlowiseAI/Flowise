@@ -629,3 +629,22 @@ export const getOS = () => {
 
     return os
 }
+
+export const formatBytes = (number) => {
+    if (number == null || number === undefined || number <= 0) {
+        return '0 Bytes'
+    }
+    var scaleCounter = 0
+    var scaleInitials = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
+    while (number >= 1024 && scaleCounter < scaleInitials.length - 1) {
+        number /= 1024
+        scaleCounter++
+    }
+    if (scaleCounter >= scaleInitials.length) scaleCounter = scaleInitials.length - 1
+    let compactNumber = number
+        .toFixed(2)
+        .replace(/\.?0+$/, '')
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    compactNumber += scaleInitials[scaleCounter]
+    return compactNumber.trim()
+}

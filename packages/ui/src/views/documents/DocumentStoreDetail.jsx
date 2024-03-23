@@ -2,7 +2,20 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Typography } from '@mui/material'
+import {
+    Grid,
+    Box,
+    Stack,
+    Typography,
+    TableContainer,
+    Paper,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    IconButton
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -16,21 +29,29 @@ import documentsApi from '@/api/documents'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconEdit } from '@tabler/icons'
+import { IconPlus, IconEdit, IconTrash } from '@tabler/icons'
 import AddDocStoreDialog from '@/views/documents/AddDocStoreDialog'
 import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
+import moment from 'moment/moment'
+import { formatBytes } from '@/utils/genericHelper'
+import { useNavigate } from 'react-router-dom'
 
 // ==============================|| DOCUMENTS ||============================== //
 
-const Documents = () => {
+const DocumentStoreDetails = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const navigate = useNavigate()
 
     const getSpecificDocumentStore = useApi(documentsApi.getSpecificDocumentStore)
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
+
+    const openChunks = (id) => {
+        navigate('/documentStores/' + storeId + '/' + id)
+    }
 
     const onUploadFile = (file) => {
         try {
@@ -123,9 +144,53 @@ const Documents = () => {
                     </Grid>
                 </Stack>
                 {!getSpecificDocumentStore.loading && getSpecificDocumentStore.data && (
-                    <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
+                    <Typography sx={{ wordWrap: 'break-word' }} variant='h4'>
                         {getSpecificDocumentStore.data?.description}
                     </Typography>
+                )}
+                {getSpecificDocumentStore.data?.files.length > 0 && (
+                    <TableContainer component={Paper}>
+                        <Table aria-label='documents table'>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Size</TableCell>
+                                    <TableCell>Uploaded</TableCell>
+                                    <TableCell>Chunks</TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {getSpecificDocumentStore.data?.files.map((file, index) => (
+                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell component='th' scope='row'>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <Button onClick={() => openChunks(file.id)} sx={{ textAlign: 'left' }}>
+                                                    {file.name}
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{formatBytes(file.size)}</TableCell>
+                                        <TableCell>{moment(file.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
+                                        <TableCell>
+                                            {file.totalChunks} {file.totalChunks > 1 ? 'chunks' : 'chunk'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <IconButton title='Delete' color='error' onClick={() => deleteVariable(file)}>
+                                                <IconTrash />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 )}
             </MainCard>
             {showDialog && (
@@ -140,4 +205,4 @@ const Documents = () => {
     )
 }
 
-export default Documents
+export default DocumentStoreDetails

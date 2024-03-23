@@ -74,7 +74,8 @@ import {
     xmlScrape,
     webCrawl,
     getStoragePath,
-    IFileUpload
+    IFileUpload,
+    DocumentStore
 } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
@@ -1315,8 +1316,10 @@ export class App {
                 name: 'Q&A',
                 description: 'Collection of documents for Q&A',
                 contentType: 'text',
-                textSplitter: 'recursive-splitter',
-                codeLanguage: ''
+                splitter: 'recursive-splitter',
+                codeLanguage: '',
+                folderPath: 'qa',
+                totalDocs: 4
             }
             documents.push(obj)
             obj = {
@@ -1324,8 +1327,10 @@ export class App {
                 name: 'my code',
                 description: 'Flowise Code',
                 contentType: 'code',
-                textSplitter: 'recursive-splitter',
-                codeLanguage: 'typescript'
+                splitter: 'recursive-splitter',
+                folderPath: '',
+                codeLanguage: 'typescript',
+                totalDocs: 1
             }
             documents.push(obj)
             return res.json(documents)
@@ -1333,15 +1338,41 @@ export class App {
 
         // Get specific store
         this.app.get('/api/v1/documentStores/:id', async (req: Request, res: Response) => {
-            let obj = {
+            let obj: any = {
                 id: '0',
                 name: 'Q&A',
                 description: 'Collection of documents for Q&A',
                 contentType: 'text',
-                textSplitter: 'recursive-splitter',
-                codeLanguage: ''
+                splitter: 'recursive-splitter',
+                codeLanguage: '',
+                folderPath: 'qa',
+                totalDocs: 0
             }
-            return res.json(obj)
+            const dir = path.join(getStoragePath(), 'datasource', obj.folderPath)
+            // Get an array of all files for the given directory using fs.readdirSync
+            const fileList = fs.readdirSync(dir)
+            const files: any[] = []
+            // Create the full path of the file/directory by concatenating the passed directory and file/directory name
+            for (const file of fileList) {
+                const name = `${dir}/${file}`
+                // Check if the current file/directory is a directory using fs.statSync
+                const stats = fs.statSync(name)
+                if (!stats.isDirectory()) {
+                    files.push({
+                        id: '' + files.length,
+                        path: name,
+                        name: file,
+                        size: stats.size,
+                        uploaded: stats.birthtime,
+                        totalChunks: 0
+                    })
+                }
+            }
+            obj.files = files
+            obj.totalFiles = files.length
+            obj.noOfDocs = 50
+            let objWithChunks = await new DocumentStore().fetchChunks(obj)
+            return res.json(objWithChunks)
         })
 
         // ----------------------------------------

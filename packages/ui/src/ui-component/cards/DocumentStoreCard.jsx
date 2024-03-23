@@ -29,7 +29,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
-const DocumentStoreCard = ({ isLoading, data, images, onClick }) => {
+const DocumentStoreCard = ({ isLoading, data, onClick }) => {
     return (
         <>
             {isLoading ? (
@@ -50,7 +50,7 @@ const DocumentStoreCard = ({ isLoading, data, images, onClick }) => {
                         </CardContent>
                         <CardActions style={{ padding: 1, marginTop: 20 }}>
                             <Typography sx={{ mb: 1.5 }} color='text.secondary'>
-                                0: Docs (Type: {data.contentType})
+                                {data.totalDocs}: Docs (Type: {data.contentType})
                             </Typography>
                         </CardActions>
                     </Card>
@@ -63,7 +63,6 @@ const DocumentStoreCard = ({ isLoading, data, images, onClick }) => {
 DocumentStoreCard.propTypes = {
     isLoading: PropTypes.bool,
     data: PropTypes.object,
-    images: PropTypes.array,
     onClick: PropTypes.func
 }
 
