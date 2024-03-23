@@ -16,8 +16,8 @@ class Confluence_DocumentLoaders implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Confluence Server/Data Center'
-        this.name = 'confluenceServerDC'
+        this.label = 'Confluence'
+        this.name = 'confluence'
         this.version = 1.0
         this.type = 'Document'
         this.icon = 'confluence.svg'
@@ -28,7 +28,7 @@ class Confluence_DocumentLoaders implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['confluenceServerDCApi']
+            credentialNames: ['confluenceCloudApi', 'confluenceServerDCApi']
         }
         this.inputs = [
             {
@@ -41,15 +41,15 @@ class Confluence_DocumentLoaders implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                placeholder: 'https://confluence.domain.net'
+                placeholder: 'https://example.atlassian.net/wiki'
             },
             {
                 label: 'Space Key',
                 name: 'spaceKey',
                 type: 'string',
-                placeholder: 'MARKETING',
+                placeholder: '~EXAMPLE362906de5d343d49dcdbae5dEXAMPLE',
                 description:
-                    'Refer to <a target="_blank" href="https://confluence.atlassian.com/doc/space-keys-829076188.html">official guide</a> on how to get Confluence Space Key'
+                    'Refer to <a target="_blank" href="https://community.atlassian.com/t5/Confluence-questions/How-to-find-the-key-for-a-space/qaq-p/864760">official guide</a> on how to get Confluence Space Key'
             },
             {
                 label: 'Limit',
@@ -76,13 +76,25 @@ class Confluence_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const personalAccessToken = getCredentialParam('personalAccessToken', credentialData, nodeData)
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const personalAccessToken = getCredentialParam('personalAccessToken', credentialData, nodeData);
+        const username = getCredentialParam('username', credentialData, nodeData)
 
-        const confluenceOptions: ConfluencePagesLoaderParams = {
-            personalAccessToken,
+        let confluenceOptions: ConfluencePagesLoaderParams = {
             baseUrl,
             spaceKey,
-            limit
+            limit,
+        };
+
+        if (accessToken) {
+            // Confluence Cloud credentials
+            confluenceOptions.username = username;
+            confluenceOptions.accessToken = accessToken;
+        } else if (personalAccessToken) {
+            // Confluence Server/Data Center credentials
+            confluenceOptions.personalAccessToken = personalAccessToken;
+        } else {
+            throw new Error('No valid credentials provided for Confluence.');
         }
 
         const loader = new ConfluencePagesLoader(confluenceOptions)
