@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Grid, Box, Stack, Typography } from '@mui/material'
+import { styled, useTheme } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -16,8 +16,29 @@ import useApi from '@/hooks/useApi'
 
 // icons
 import Link from '@mui/material/Link'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
 
 // ==============================|| DOCUMENTS ||============================== //
+
+const CardWrapper = styled(MainCard)(({ theme }) => ({
+    background: theme.palette.card.main,
+    color: theme.darkTextPrimary,
+    overflow: 'auto',
+    position: 'relative',
+    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+    cursor: 'pointer',
+    '&:hover': {
+        background: theme.palette.card.hover,
+        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
+    },
+    maxHeight: '250px',
+    minHeight: '250px',
+    maxWidth: '100%',
+    overflowWrap: 'break-word',
+    whiteSpace: 'pre-line',
+    padding: 1
+}))
 
 const DocumentStoreChunks = () => {
     const theme = useTheme()
@@ -66,41 +87,30 @@ const DocumentStoreChunks = () => {
                             <Link underline='always' key='2' color='inherit' href='/documentStores/${storeId}'>
                                 {getSpecificDocumentStore.data?.name}
                             </Link>
-                            {' >'} {fileName}
+                            {' >'} {fileName} ({totalChunks} Chunks)
                         </h1>
                     </Grid>
                 </Stack>
 
                 <Box sx={{ p: 1 }}>
-                    <TableContainer style={{ marginTop: '30', border: 1 }} component={Paper}>
-                        <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
-                            <caption>Showing {totalChunks} Documents.</caption>
-                            <TableHead>
-                                <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
-                                    <TableCell component='h3' scope='row' style={{ width: '10%' }} key='0'>
-                                        {' '}
-                                    </TableCell>
-                                    <TableCell component='h3' style={{ width: '75%' }} key='1'>
-                                        Content
-                                    </TableCell>
-                                    <TableCell style={{ width: '15%' }} key='2'>
-                                        Length
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {documentChunks?.map((row, index) => (
-                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                        <TableCell key='0' component='th' scope='row'>
-                                            {index + 1}
-                                        </TableCell>
-                                        <TableCell key='1'>{row.pageContent}</TableCell>
-                                        <TableCell key='2'>{row.pageContent.length}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    <Grid container spacing={2}>
+                        {documentChunks?.map((row, index) => (
+                            <Grid item lg={3} md={4} sm={6} xs={12} key={index}>
+                                <CardWrapper>
+                                    <Card key={index} style={{ padding: 0 }}>
+                                        <CardContent style={{ padding: 0 }}>
+                                            <Typography color='textSecondary' gutterBottom>
+                                                {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                            </Typography>
+                                            <Typography sx={{ wordWrap: 'break-word' }} variant='body2' style={{ fontSize: 10 }}>
+                                                {row.pageContent}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                </CardWrapper>
+                            </Grid>
+                        ))}
+                    </Grid>
                 </Box>
             </MainCard>
         </>
