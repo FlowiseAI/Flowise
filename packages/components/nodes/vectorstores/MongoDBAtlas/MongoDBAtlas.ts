@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { MongoClient } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
+import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
@@ -136,22 +136,23 @@ class MongoDBAtlas_VectorStores implements INode {
             }
 
             const mongoClient = new MongoClient(mongoDBConnectUrl)
-            const collection = mongoClient.db(databaseName).collection(collectionName)
-
-            if (!textKey || textKey === '') textKey = 'text'
-            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
-
-            const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
-                collection,
-                indexName,
-                textKey,
-                embeddingKey
-            })
-
             try {
+                const collection = mongoClient.db(databaseName).collection(collectionName)
+
+                if (!textKey || textKey === '') textKey = 'text'
+                if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+
+                const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
+                    collection,
+                    indexName,
+                    textKey,
+                    embeddingKey
+                })
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
             } catch (e) {
                 throw new Error(e)
+            } finally {
+                await mongoClient.close()
             }
         }
     }
@@ -168,19 +169,23 @@ class MongoDBAtlas_VectorStores implements INode {
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
         const mongoClient = new MongoClient(mongoDBConnectUrl)
-        const collection = mongoClient.db(databaseName).collection(collectionName)
+        try {
+            const collection = mongoClient.db(databaseName).collection(collectionName)
 
-        if (!textKey || textKey === '') textKey = 'text'
-        if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+            if (!textKey || textKey === '') textKey = 'text'
+            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
 
-        const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
-            collection,
-            indexName,
-            textKey,
-            embeddingKey
-        })
+            const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
+                collection,
+                indexName,
+                textKey,
+                embeddingKey
+            })
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+            return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        } finally {
+            await mongoClient.close()
+        }
     }
 }
 
