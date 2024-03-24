@@ -146,7 +146,7 @@ class Pinecone_VectorStores implements INode {
         const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
         const index = nodeData.inputs?.pineconeIndex as string
-        const pineconeNamespace = variables?.find((v) => v.name === 'customer_id')?.value || (nodeData.inputs?.pineconeNamespace as string)
+        const pineconeNamespace = variables?.find((v) => v.name === 'pineconeNamespace')?.value || (nodeData.inputs?.pineconeNamespace as string)
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
