@@ -36,7 +36,11 @@
         "typeorm:migration-generate": "pnpm typeorm migration:generate -d ./src/utils/typeormDataSource.ts",
         "typeorm:migration-run": "pnpm typeorm migration:run -d ./src/utils/typeormDataSource.ts",
         "watch": "tsc --watch",
-        "version": "oclif readme && git add README.md"
+        "version": "oclif readme && git add README.md",
+        "cypress:open": "cypress open",
+        "cypress:run": "cypress run",
+        "e2e": "start-server-and-test dev http://localhost:3000 cypress:run",
+        "cypress:ci": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
@@ -86,11 +90,13 @@
         "@types/multer": "^1.4.7",
         "@types/sanitize-html": "^2.9.5",
         "concurrently": "^7.1.0",
+        "cypress": "^13.7.1",
         "nodemon": "^2.0.22",
         "oclif": "^3",
         "rimraf": "^5.0.5",
         "run-script-os": "^1.1.6",
         "shx": "^0.3.3",
+        "start-server-and-test": "^2.0.3",
         "ts-node": "^10.7.0",
         "tsc-watch": "^6.0.4",
         "typescript": "^4.8.4"
