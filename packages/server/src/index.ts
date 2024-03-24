@@ -84,6 +84,7 @@ import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import flowiseApiV1Router from './routes'
 
 export class App {
     app: express.Application
@@ -1590,11 +1591,6 @@ export class App {
             }
             return res.json(keys)
         }
-        // Get api keys
-        this.app.get('/api/v1/apikey', async (req: Request, res: Response) => {
-            const keys = await getAPIKeys()
-            return addChatflowsCount(keys, res)
-        })
 
         // Add new api key
         this.app.post('/api/v1/apikey', async (req: Request, res: Response) => {
@@ -1624,6 +1620,8 @@ export class App {
                 return res.status(500).send(err?.message)
             }
         })
+
+        this.app.use('/api/v1', flowiseApiV1Router)
 
         // ----------------------------------------
         // Serve UI static
