@@ -1,4 +1,4 @@
-import { addAPIKey, getAPIKeys } from '../../utils/apiKey'
+import { addAPIKey, getAPIKeys, updateAPIKey } from '../../utils/apiKey'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
 
 const getAllApiKeys = async () => {
@@ -21,7 +21,19 @@ const createApiKey = async (keyName: string) => {
     }
 }
 
+// Update api key
+const updateApiKey = async (id: string, keyName: string) => {
+    try {
+        const keys = await updateAPIKey(id, keyName)
+        const dbResponse = await addChatflowsCount(keys)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: apikeysService.updateApiKey - ${error}`)
+    }
+}
+
 export default {
     createApiKey,
-    getAllApiKeys
+    getAllApiKeys,
+    updateApiKey
 }

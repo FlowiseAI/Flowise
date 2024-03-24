@@ -9,6 +9,7 @@ router.post('/', apikeyController.createApiKey)
 router.get('/', apikeyController.getAllApiKeys)
 
 // UPDATE
+router.put('/:id', apikeyController.updateApiKey)
 
 // DELETE
 
