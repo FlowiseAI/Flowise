@@ -34,6 +34,7 @@
         "prepack": "pnpm build && oclif manifest && oclif readme",
         "typeorm": "typeorm-ts-node-commonjs",
         "typeorm:migration-generate": "pnpm typeorm migration:generate -d ./src/utils/typeormDataSource.ts",
+        "typeorm:migration-run": "pnpm typeorm migration:run -d ./src/utils/typeormDataSource.ts",
         "watch": "tsc --watch",
         "version": "oclif readme && git add README.md"
     },
