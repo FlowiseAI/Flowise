@@ -27,10 +27,10 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
 const updateApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: apikeysController.updateApiKey - id not provided!`)
+            throw new Error(`Error: apikeyController.updateApiKey - id not provided!`)
         }
         if (typeof req.body.keyName === 'undefined' || req.body.keyName === '') {
-            throw new Error(`Error: apikeysController.updateApiKey - keyName not provided!`)
+            throw new Error(`Error: apikeyController.updateApiKey - keyName not provided!`)
         }
         const apiResponse = await apikeyService.updateApiKey(req.params.id, req.body.keyName)
         return res.json(apiResponse)
@@ -39,8 +39,22 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+// Delete api key
+const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: apikeyController.deleteApiKey - id not provided!`)
+        }
+        const apiResponse = await apikeyService.deleteApiKey(req.params.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createApiKey,
+    deleteApiKey,
     getAllApiKeys,
     updateApiKey
 }

@@ -77,7 +77,7 @@ import {
     IFileUpload
 } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
-import { compareKeys, deleteAPIKey, getApiKey, getAPIKeys } from './utils/apiKey'
+import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
@@ -1591,12 +1591,6 @@ export class App {
             }
             return res.json(keys)
         }
-
-        // Delete new api key
-        this.app.delete('/api/v1/apikey/:id', async (req: Request, res: Response) => {
-            const keys = await deleteAPIKey(req.params.id)
-            return addChatflowsCount(keys, res)
-        })
 
         // Verify api key
         this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
