@@ -3,6 +3,7 @@ import apikeyController from '../../controllers/apikey'
 const router = express.Router()
 
 // CREATE
+router.post('/', apikeyController.createApiKey)
 
 // READ
 router.get('/', apikeyController.getAllApiKeys)
