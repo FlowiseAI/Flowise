@@ -6,7 +6,7 @@ export class FieldTypes1710497452584 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatflowid" type uuid USING "chatflowid"::uuid`)
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" varchar uuid USING "sessionId"::varchar`)
+        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" type varchar USING "sessionId"::varchar`)
 
         await queryRunner.query(`ALTER TABLE "assistant" ALTER COLUMN "credential" type uuid USING "credential"::uuid`)
 
@@ -16,9 +16,9 @@ export class FieldTypes1710497452584 implements MigrationInterface {
 
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ADD CONSTRAINT "UQ_6352078b5a294f2d22179ea7955" UNIQUE ("messageId")`)
 
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d229" ON "chat_message" ("chatflowid") `)
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d230" ON "chat_message_feedback" ("chatflowid") `)
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_9acddcb7a2b51fe37669049fc6" ON "chat_message_feedback" ("chatId") `)
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d229" ON "chat_message" ("chatflowid")`)
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d230" ON "chat_message_feedback" ("chatflowid")`)
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_9acddcb7a2b51fe37669049fc6" ON "chat_message_feedback" ("chatId")`)
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
