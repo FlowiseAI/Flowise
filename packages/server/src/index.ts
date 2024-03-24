@@ -1567,31 +1567,6 @@ export class App {
         // API Keys
         // ----------------------------------------
 
-        const addChatflowsCount = async (keys: any, res: Response) => {
-            if (keys) {
-                const updatedKeys: any[] = []
-                //iterate through keys and get chatflows
-                for (const key of keys) {
-                    const chatflows = await this.AppDataSource.getRepository(ChatFlow)
-                        .createQueryBuilder('cf')
-                        .where('cf.apikeyid = :apikeyid', { apikeyid: key.id })
-                        .getMany()
-                    const linkedChatFlows: any[] = []
-                    chatflows.map((cf) => {
-                        linkedChatFlows.push({
-                            flowName: cf.name,
-                            category: cf.category,
-                            updatedDate: cf.updatedDate
-                        })
-                    })
-                    key.chatFlows = linkedChatFlows
-                    updatedKeys.push(key)
-                }
-                return res.json(updatedKeys)
-            }
-            return res.json(keys)
-        }
-
         // Verify api key
         this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
             try {
