@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import chatflowsService from '../../services/chatflows'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { createRateLimiter } from '../../utils/rateLimit'
 
 const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -53,9 +54,31 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.updateChatflow - id not provided!`)
+        }
+        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        if (!chatflow) {
+            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        }
+        const body = req.body
+        const updateChatFlow = new ChatFlow()
+        Object.assign(updateChatFlow, body)
+        updateChatFlow.id = chatflow.id
+        createRateLimiter(updateChatFlow)
+        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteChatflow,
     getAllChatflows,
     getChatflowById,
-    saveChatflow
+    saveChatflow,
+    updateChatflow
 }

@@ -76,7 +76,7 @@ import {
     getStoragePath,
     IFileUpload
 } from 'flowise-components'
-import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
+import { getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
@@ -408,37 +408,6 @@ export class App {
                 }
             }
             return res.status(200).send('OK')
-        })
-
-        // Update chatflow
-        this.app.put('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-
-            if (!chatflow) {
-                res.status(404).send(`Chatflow ${req.params.id} not found`)
-                return
-            }
-
-            const body = req.body
-            const updateChatFlow = new ChatFlow()
-            Object.assign(updateChatFlow, body)
-
-            updateChatFlow.id = chatflow.id
-            createRateLimiter(updateChatFlow)
-
-            this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-            const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
-
-            // chatFlowPool is initialized only when a flow is opened
-            // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
-            if (this.chatflowPool) {
-                // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
-                this.chatflowPool.updateInSync(chatflow.id, false)
-            }
-
-            return res.json(result)
         })
 
         // Check if chatflow valid for streaming

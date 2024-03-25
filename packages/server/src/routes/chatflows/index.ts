@@ -10,6 +10,7 @@ router.get('/', chatflowsController.getAllChatflows)
 router.get('/:id', chatflowsController.getChatflowById)
 
 // UPDATE
+router.put('/:id', chatflowsController.updateChatflow)
 
 // DELETE
 router.delete('/:id', chatflowsController.deleteChatflow)

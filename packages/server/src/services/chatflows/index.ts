@@ -68,9 +68,27 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
+const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const newDbChatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+        // chatFlowPool is initialized only when a flow is opened
+        // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
+        if (flowXpresApp.chatflowPool) {
+            // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
+            flowXpresApp.chatflowPool.updateInSync(chatflow.id, false)
+        }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.updateChatflow - ${error}`)
+    }
+}
+
 export default {
     deleteChatflow,
     getAllChatflows,
     getChatflowById,
-    saveChatflow
+    saveChatflow,
+    updateChatflow
 }
