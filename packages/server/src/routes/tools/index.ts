@@ -11,7 +11,9 @@ router.get('/', toolsController.getAllTools)
 router.get('/:id', toolsController.getToolById)
 
 // UPDATE
+router.put('/:id', toolsController.updateTool)
 
 // DELETE
+router.delete('/:id', toolsController.deleteTool)
 
 export default router

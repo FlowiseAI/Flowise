@@ -58,7 +58,6 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { ChatMessageFeedback } from './database/entities/ChatMessageFeedback'
 import { Credential } from './database/entities/Credential'
-import { Tool } from './database/entities/Tool'
 import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
@@ -665,37 +664,6 @@ export class App {
             }
 
             res.json(results)
-        })
-
-        // ----------------------------------------
-        // Tools
-        // ----------------------------------------
-
-        // Update tool
-        this.app.put('/api/v1/tools/:id', async (req: Request, res: Response) => {
-            const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
-                id: req.params.id
-            })
-
-            if (!tool) {
-                res.status(404).send(`Tool ${req.params.id} not found`)
-                return
-            }
-
-            const body = req.body
-            const updateTool = new Tool()
-            Object.assign(updateTool, body)
-
-            this.AppDataSource.getRepository(Tool).merge(tool, updateTool)
-            const result = await this.AppDataSource.getRepository(Tool).save(tool)
-
-            return res.json(result)
-        })
-
-        // Delete tool
-        this.app.delete('/api/v1/tools/:id', async (req: Request, res: Response) => {
-            const results = await this.AppDataSource.getRepository(Tool).delete({ id: req.params.id })
-            return res.json(results)
         })
 
         // ----------------------------------------

@@ -16,7 +16,19 @@ const creatTool = async (requestBody: any): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.getAllTools - ${error}`)
+        throw new Error(`Error: toolsService.creatTool - ${error}`)
+    }
+}
+
+const deleteTool = async (toolId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).delete({
+            id: toolId
+        })
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: toolsService.deleteTool - ${error}`)
     }
 }
 
@@ -49,8 +61,33 @@ const getToolById = async (toolId: string): Promise<any> => {
     }
 }
 
+const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const tool = await flowXpresApp.AppDataSource.getRepository(Tool).findOneBy({
+            id: toolId
+        })
+        if (!tool) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Tool ${toolId} not found`
+            }
+        }
+        const updateTool = new Tool()
+        Object.assign(updateTool, toolBody)
+        await flowXpresApp.AppDataSource.getRepository(Tool).merge(tool, updateTool)
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).save(tool)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: toolsService.getToolById - ${error}`)
+    }
+}
+
 export default {
     creatTool,
+    deleteTool,
     getAllTools,
-    getToolById
+    getToolById,
+    updateTool
 }
