@@ -37,8 +37,27 @@ const getCredentialById = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+const updateCredential = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: credentialsController.updateCredential - id not provided!`)
+        }
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: credentialsController.updateCredential - body not provided!`)
+        }
+        const apiResponse = await credentialsService.updateCredential(req.params.id, req.body)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createCredential,
     getAllCredentials,
-    getCredentialById
+    getCredentialById,
+    updateCredential
 }

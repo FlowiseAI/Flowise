@@ -10,6 +10,7 @@ router.get('/', credentialsController.getAllCredentials)
 router.get('/:id', credentialsController.getCredentialById)
 
 // UPDATE
+router.put('/:id', credentialsController.updateCredential)
 
 // DELETE
 

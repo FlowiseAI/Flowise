@@ -77,8 +77,31 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
     }
 }
 
+const updateCredential = async (credentialId: string, requestBody: any): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+            id: credentialId
+        })
+        if (!credential) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Credential ${credentialId} not found`
+            }
+        }
+        const updateCredential = await transformToCredentialEntity(requestBody)
+        await flowXpresApp.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).save(credential)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: credentialsService.updateCredential - ${error}`)
+    }
+}
+
 export default {
     createCredential,
     getAllCredentials,
-    getCredentialById
+    getCredentialById,
+    updateCredential
 }

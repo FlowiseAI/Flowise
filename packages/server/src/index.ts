@@ -38,7 +38,6 @@ import {
     isSameOverrideConfig,
     isFlowValidForStream,
     databaseEntities,
-    transformToCredentialEntity,
     decryptCredentialData,
     replaceInputsWithConfig,
     getEncryptionKey,
@@ -671,22 +670,6 @@ export class App {
         // ----------------------------------------
         // Credentials
         // ----------------------------------------
-
-        // Update credential
-        this.app.put('/api/v1/credentials/:id', async (req: Request, res: Response) => {
-            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                id: req.params.id
-            })
-
-            if (!credential) return res.status(404).send(`Credential ${req.params.id} not found`)
-
-            const body = req.body
-            const updateCredential = await transformToCredentialEntity(body)
-            this.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
-            const result = await this.AppDataSource.getRepository(Credential).save(credential)
-
-            return res.json(result)
-        })
 
         // Delete all credentials from chatflowid
         this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
