@@ -2,6 +2,18 @@ import { Request, Response, NextFunction } from 'express'
 import chatflowsService from '../../services/chatflows'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 
+const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.deleteChatflow - id not provided!`)
+        }
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await chatflowsService.getAllChatflows()
@@ -42,6 +54,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 }
 
 export default {
+    deleteChatflow,
     getAllChatflows,
     getChatflowById,
     saveChatflow

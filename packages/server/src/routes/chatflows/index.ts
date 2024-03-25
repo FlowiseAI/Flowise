@@ -12,5 +12,6 @@ router.get('/:id', chatflowsController.getChatflowById)
 // UPDATE
 
 // DELETE
+router.delete('/:id', chatflowsController.deleteChatflow)
 
 export default router

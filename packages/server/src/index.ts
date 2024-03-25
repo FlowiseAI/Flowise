@@ -441,21 +441,6 @@ export class App {
             return res.json(result)
         })
 
-        // Delete chatflow via id
-        this.app.delete('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
-            const results = await this.AppDataSource.getRepository(ChatFlow).delete({ id: req.params.id })
-
-            try {
-                // Delete all  uploads corresponding to this chatflow
-                const directory = path.join(getStoragePath(), req.params.id)
-                deleteFolderRecursive(directory)
-            } catch (e) {
-                logger.error(`[server]: Error deleting file storage for chatflow ${req.params.id}: ${e}`)
-            }
-
-            return res.json(results)
-        })
-
         // Check if chatflow valid for streaming
         this.app.get('/api/v1/chatflows-streaming/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
