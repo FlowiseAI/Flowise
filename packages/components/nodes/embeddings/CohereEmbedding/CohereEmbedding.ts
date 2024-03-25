@@ -37,31 +37,38 @@ class CohereEmbedding_Embeddings implements INode {
                 options: [
                     {
                         label: 'embed-english-v3.0',
-                        name: 'embed-english-v3.0'
+                        name: 'embed-english-v3.0',
+                        description: 'Embedding Dimensions: 1024'
                     },
                     {
                         label: 'embed-english-light-v3.0',
-                        name: 'embed-english-light-v3.0'
+                        name: 'embed-english-light-v3.0',
+                        description: 'Embedding Dimensions: 384'
                     },
                     {
                         label: 'embed-multilingual-v3.0',
-                        name: 'embed-multilingual-v3.0'
+                        name: 'embed-multilingual-v3.0',
+                        description: 'Embedding Dimensions: 1024'
                     },
                     {
                         label: 'embed-multilingual-light-v3.0',
-                        name: 'embed-multilingual-light-v3.0'
+                        name: 'embed-multilingual-light-v3.0',
+                        description: 'Embedding Dimensions: 384'
                     },
                     {
                         label: 'embed-english-v2.0',
-                        name: 'embed-english-v2.0'
+                        name: 'embed-english-v2.0',
+                        description: 'Embedding Dimensions: 4096'
                     },
                     {
                         label: 'embed-english-light-v2.0',
-                        name: 'embed-english-light-v2.0'
+                        name: 'embed-english-light-v2.0',
+                        description: 'Embedding Dimensions: 1024'
                     },
                     {
                         label: 'embed-multilingual-v2.0',
-                        name: 'embed-multilingual-v2.0'
+                        name: 'embed-multilingual-v2.0',
+                        description: 'Embedding Dimensions: 768'
                     }
                 ],
                 default: 'embed-english-v2.0',
