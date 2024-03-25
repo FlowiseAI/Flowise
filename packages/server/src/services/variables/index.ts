@@ -12,6 +12,16 @@ const createVariable = async (newVariable: Variable) => {
     }
 }
 
+const deleteVariable = async (variableId: string) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).delete({ id: variableId })
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: variablesServices.createVariable - ${error}`)
+    }
+}
+
 const getAllVariables = async () => {
     try {
         const flowXpresApp = getRunningExpressApp()
@@ -47,6 +57,7 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
 
 export default {
     createVariable,
+    deleteVariable,
     getAllVariables,
     getVariableById,
     updateVariable

@@ -13,5 +13,6 @@ router.get('/', variablesController.getAllVariables)
 router.put('/:id', variablesController.updateVariable)
 
 // DELETE
+router.delete('/:id', variablesController.deleteVariable)
 
 export default router

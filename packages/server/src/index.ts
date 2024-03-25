@@ -83,7 +83,6 @@ import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
-import { Variable } from './database/entities/Variable'
 import flowiseApiV1Router from './routes'
 
 export class App {
@@ -1520,16 +1519,6 @@ export class App {
                 sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
             }
             return res.json(sortedTemplates)
-        })
-
-        // ----------------------------------------
-        // Variables
-        // ----------------------------------------
-
-        // Delete variable via id
-        this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
-            const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })
-            return res.json(results)
         })
 
         // ----------------------------------------

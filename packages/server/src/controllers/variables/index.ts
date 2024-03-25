@@ -17,6 +17,18 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
+const deleteVariable = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error('Error: variablesController.deleteVariable - id not provided!')
+        }
+        const apiResponse = await variablesService.deleteVariable(req.params.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await variablesService.getAllVariables()
@@ -50,6 +62,7 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
 
 export default {
     createVariable,
+    deleteVariable,
     getAllVariables,
     updateVariable
 }
