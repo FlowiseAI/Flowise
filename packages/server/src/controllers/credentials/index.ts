@@ -13,6 +13,21 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+const deleteCredentials = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: credentialsController.deleteCredentials - id not provided!`)
+        }
+        const apiResponse = await credentialsService.deleteCredentials(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getAllCredentials = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName)
@@ -57,6 +72,7 @@ const updateCredential = async (req: Request, res: Response, next: NextFunction)
 
 export default {
     createCredential,
+    deleteCredentials,
     getAllCredentials,
     getCredentialById,
     updateCredential

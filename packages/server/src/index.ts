@@ -668,16 +668,6 @@ export class App {
         })
 
         // ----------------------------------------
-        // Credentials
-        // ----------------------------------------
-
-        // Delete all credentials from chatflowid
-        this.app.delete('/api/v1/credentials/:id', async (req: Request, res: Response) => {
-            const results = await this.AppDataSource.getRepository(Credential).delete({ id: req.params.id })
-            return res.json(results)
-        })
-
-        // ----------------------------------------
         // Tools
         // ----------------------------------------
 

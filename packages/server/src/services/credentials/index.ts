@@ -16,6 +16,24 @@ const createCredential = async (requestBody: any) => {
     }
 }
 
+// Delete all credentials from chatflowid
+const deleteCredentials = async (credentialId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).delete({ id: credentialId })
+        if (!dbResponse) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Credential ${credentialId} not found`
+            }
+        }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: credentialsService.deleteCredential - ${error}`)
+    }
+}
+
 const getAllCredentials = async (paramCredentialName: any) => {
     try {
         const flowXpresApp = getRunningExpressApp()
@@ -101,6 +119,7 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
 
 export default {
     createCredential,
+    deleteCredentials,
     getAllCredentials,
     getCredentialById,
     updateCredential

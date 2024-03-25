@@ -13,5 +13,6 @@ router.get('/:id', credentialsController.getCredentialById)
 router.put('/:id', credentialsController.updateCredential)
 
 // DELETE
+router.delete('/:id', credentialsController.deleteCredentials)
 
 export default router
