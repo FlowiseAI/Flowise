@@ -5,15 +5,15 @@ import { IVisionChatModal, IMultiModalOption } from '../../../src'
 
 export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     configuredModel: string
-    configuredMaxToken: number
+    configuredMaxToken?: number
     multiModalOption: IMultiModalOption
     id: string
 
     constructor(id: string, fields: BaseBedrockInput & BaseChatModelParams) {
         super(fields)
         this.id = id
-        this.configuredModel = fields?.model || 'anthropic.claude-3-haiku-20240307-v1:0'
-        this.configuredMaxToken = fields?.maxTokens ?? 256
+        this.configuredModel = fields?.model || ''
+        this.configuredMaxToken = fields?.maxTokens
     }
 
     revertToOriginalModel(): void {
@@ -28,7 +28,7 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     setVisionModel(): void {
         if (!this.model.startsWith('claude-3')) {
             super.model = 'anthropic.claude-3-haiku-20240307-v1:0'
-            super.maxTokens = 1024
+            super.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 1024
         }
     }
 }
