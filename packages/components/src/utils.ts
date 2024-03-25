@@ -505,8 +505,8 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
             return {}
         }
 
-        const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOne({
-            where: [{ id: selectedCredentialId }, { name: selectedCredentialId }]
+        const credential = await appDataSource.getRepository(databaseEntities['Credential']).findOneBy({
+            id: selectedCredentialId
         })
 
         if (!credential) return {}

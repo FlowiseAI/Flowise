@@ -2,10 +2,9 @@ import type { ClientOptions } from 'openai'
 import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, AzureOpenAIInput, LegacyOpenAIInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams, IDatabaseEntity } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam, getVars } from '../../../src/utils'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
-import { DataSource } from 'typeorm'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -222,11 +221,10 @@ class ChatOpenAI_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
 
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
-        const variables = await getVars(appDataSource, databaseEntities, nodeData)
-        const credentialId = variables?.find((v) => v.name === 'customer_id')?.value || nodeData.credential || ''
-        const credentialData = await getCredentialData(credentialId, options)
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
+        }
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         const cache = nodeData.inputs?.cache as BaseCache
