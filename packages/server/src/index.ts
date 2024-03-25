@@ -1526,16 +1526,6 @@ export class App {
         // Variables
         // ----------------------------------------
 
-        // Create new variable
-        this.app.post('/api/v1/variables', async (req: Request, res: Response) => {
-            const body = req.body
-            const newVariable = new Variable()
-            Object.assign(newVariable, body)
-            const variable = this.AppDataSource.getRepository(Variable).create(newVariable)
-            const results = await this.AppDataSource.getRepository(Variable).save(variable)
-            return res.json(results)
-        })
-
         // Update variable
         this.app.put('/api/v1/variables/:id', async (req: Request, res: Response) => {
             const variable = await this.AppDataSource.getRepository(Variable).findOneBy({

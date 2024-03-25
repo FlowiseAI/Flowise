@@ -4,6 +4,7 @@ import variablesController from '../../controllers/variables'
 const router = express.Router()
 
 // CREATE
+router.post('/', variablesController.createVariable)
 
 // READ
 router.get('/', variablesController.getAllVariables)
