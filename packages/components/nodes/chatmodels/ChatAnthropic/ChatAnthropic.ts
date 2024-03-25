@@ -125,7 +125,7 @@ class ChatAnthropic_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
+        const maxTokens = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
@@ -143,7 +143,7 @@ class ChatAnthropic_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (maxTokensToSample) obj.maxTokensToSample = parseInt(maxTokensToSample, 10)
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache

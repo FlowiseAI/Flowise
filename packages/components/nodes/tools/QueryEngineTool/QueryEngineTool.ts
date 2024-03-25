@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { BaseQueryEngine } from 'llamaindex'
+import { QueryEngineTool } from 'llamaindex'
 
 class QueryEngine_Tools implements INode {
     label: string
@@ -22,7 +22,7 @@ class QueryEngine_Tools implements INode {
         this.category = 'Tools'
         this.tags = ['LlamaIndex']
         this.description = 'Tool used to invoke query engine'
-        this.baseClasses = [this.type]
+        this.baseClasses = [this.type, 'Tool_LlamaIndex']
         this.inputs = [
             {
                 label: 'Base QueryEngine',
@@ -45,16 +45,16 @@ class QueryEngine_Tools implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const baseQueryEngine = nodeData.inputs?.baseQueryEngine as BaseQueryEngine
+        const baseQueryEngine = nodeData.inputs?.baseQueryEngine
         const toolName = nodeData.inputs?.toolName as string
         const toolDesc = nodeData.inputs?.toolDesc as string
-        const queryEngineTool = {
+        const queryEngineTool = new QueryEngineTool({
             queryEngine: baseQueryEngine,
             metadata: {
                 name: toolName,
                 description: toolDesc
             }
-        }
+        })
 
         return queryEngineTool
     }
