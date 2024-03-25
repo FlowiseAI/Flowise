@@ -410,24 +410,6 @@ export class App {
             return res.status(200).send('OK')
         })
 
-        // Save chatflow
-        this.app.post('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const body = req.body
-            const newChatFlow = new ChatFlow()
-            Object.assign(newChatFlow, body)
-
-            const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-            const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
-
-            await this.telemetry.sendTelemetry('chatflow_created', {
-                version: await getAppVersion(),
-                chatflowId: results.id,
-                flowGraph: getTelemetryFlowObj(JSON.parse(results.flowData)?.nodes, JSON.parse(results.flowData)?.edges)
-            })
-
-            return res.json(results)
-        })
-
         // Update chatflow
         this.app.put('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({

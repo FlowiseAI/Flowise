@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import chatflowsService from '../../services/chatflows'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -25,7 +26,23 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
     }
 }
 
+const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: chatflowsRouter.saveChatflow - body not provided!`)
+        }
+        const body = req.body
+        const newChatFlow = new ChatFlow()
+        Object.assign(newChatFlow, body)
+        const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     getAllChatflows,
-    getChatflowById
+    getChatflowById,
+    saveChatflow
 }

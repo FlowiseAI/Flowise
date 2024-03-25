@@ -3,6 +3,7 @@ import chatflowsController from '../../controllers/chatflows'
 const router = express.Router()
 
 // CREATE
+router.post('/', chatflowsController.saveChatflow)
 
 // READ
 router.get('/', chatflowsController.getAllChatflows)
