@@ -7,6 +7,7 @@ const router = express.Router()
 
 // READ
 router.get('/', toolsController.getAllTools)
+router.get('/:id', toolsController.getToolById)
 
 // UPDATE
 

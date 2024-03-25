@@ -671,14 +671,6 @@ export class App {
         // Tools
         // ----------------------------------------
 
-        // Get specific tool
-        this.app.get('/api/v1/tools/:id', async (req: Request, res: Response) => {
-            const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
-                id: req.params.id
-            })
-            return res.json(tool)
-        })
-
         // Add tool
         this.app.post('/api/v1/tools', async (req: Request, res: Response) => {
             const body = req.body

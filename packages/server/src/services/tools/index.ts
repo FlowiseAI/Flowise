@@ -11,6 +11,26 @@ const getAllTools = async (): Promise<any> => {
     }
 }
 
+const getToolById = async (toolId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).findOneBy({
+            id: toolId
+        })
+        if (!dbResponse) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Tool ${toolId} not found`
+            }
+        }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: toolsService.getToolById - ${error}`)
+    }
+}
+
 export default {
-    getAllTools
+    getAllTools,
+    getToolById
 }
