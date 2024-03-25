@@ -682,35 +682,6 @@ export class App {
             return res.json(results)
         })
 
-        // Get all credentials
-        this.app.get('/api/v1/credentials', async (req: Request, res: Response) => {
-            if (req.query.credentialName) {
-                let returnCredentials = []
-                if (Array.isArray(req.query.credentialName)) {
-                    for (let i = 0; i < req.query.credentialName.length; i += 1) {
-                        const name = req.query.credentialName[i] as string
-                        const credentials = await this.AppDataSource.getRepository(Credential).findBy({
-                            credentialName: name
-                        })
-                        returnCredentials.push(...credentials)
-                    }
-                } else {
-                    const credentials = await this.AppDataSource.getRepository(Credential).findBy({
-                        credentialName: req.query.credentialName as string
-                    })
-                    returnCredentials = [...credentials]
-                }
-                return res.json(returnCredentials)
-            } else {
-                const credentials = await this.AppDataSource.getRepository(Credential).find()
-                const returnCredentials = []
-                for (const credential of credentials) {
-                    returnCredentials.push(omit(credential, ['encryptedData']))
-                }
-                return res.json(returnCredentials)
-            }
-        })
-
         // Get specific credential
         this.app.get('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
