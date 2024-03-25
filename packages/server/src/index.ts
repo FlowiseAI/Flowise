@@ -671,24 +671,6 @@ export class App {
         // Tools
         // ----------------------------------------
 
-        // Add tool
-        this.app.post('/api/v1/tools', async (req: Request, res: Response) => {
-            const body = req.body
-            const newTool = new Tool()
-            Object.assign(newTool, body)
-
-            const tool = this.AppDataSource.getRepository(Tool).create(newTool)
-            const results = await this.AppDataSource.getRepository(Tool).save(tool)
-
-            await this.telemetry.sendTelemetry('tool_created', {
-                version: await getAppVersion(),
-                toolId: results.id,
-                toolName: results.name
-            })
-
-            return res.json(results)
-        })
-
         // Update tool
         this.app.put('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const tool = await this.AppDataSource.getRepository(Tool).findOneBy({

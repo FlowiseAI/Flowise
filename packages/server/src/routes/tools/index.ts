@@ -4,6 +4,7 @@ import toolsController from '../../controllers/tools'
 const router = express.Router()
 
 // CREATE
+router.post('/', toolsController.creatTool)
 
 // READ
 router.get('/', toolsController.getAllTools)
