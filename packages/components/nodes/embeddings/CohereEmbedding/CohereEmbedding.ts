@@ -78,7 +78,8 @@ class CohereEmbedding_Embeddings implements INode {
                 label: 'Type',
                 name: 'inputType',
                 type: 'options',
-                description: 'Specifies the type of input passed to the model. Required for embedding models v3 and higher.',
+                description:
+                    'Specifies the type of input passed to the model. Required for embedding models v3 and higher. <a target="_blank" href="https://docs.cohere.com/reference/embed">Official Docs</a>',
                 options: [
                     {
                         label: 'search_document',
