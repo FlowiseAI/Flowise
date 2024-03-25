@@ -360,12 +360,6 @@ export class App {
         // Chatflows
         // ----------------------------------------
 
-        // Get all chatflows
-        this.app.get('/api/v1/chatflows', async (req: Request, res: Response) => {
-            const chatflows: IChatFlow[] = await getAllChatFlow()
-            return res.json(chatflows)
-        })
-
         // Get specific chatflow via api key
         this.app.get('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
             try {
