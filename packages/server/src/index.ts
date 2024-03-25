@@ -671,12 +671,6 @@ export class App {
         // Tools
         // ----------------------------------------
 
-        // Get all tools
-        this.app.get('/api/v1/tools', async (req: Request, res: Response) => {
-            const tools = await this.AppDataSource.getRepository(Tool).find()
-            return res.json(tools)
-        })
-
         // Get specific tool
         this.app.get('/api/v1/tools/:id', async (req: Request, res: Response) => {
             const tool = await this.AppDataSource.getRepository(Tool).findOneBy({
