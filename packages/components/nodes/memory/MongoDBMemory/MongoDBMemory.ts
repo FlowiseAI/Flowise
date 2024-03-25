@@ -10,7 +10,7 @@ let mongoUrl: string
 
 const getMongoClient = async (newMongoUrl: string) => {
     if (!mongoClientSingleton) {
-        // if client doesn't exists
+        // if client does not exist
         mongoClientSingleton = new MongoClient(newMongoUrl)
         mongoUrl = newMongoUrl
         return mongoClientSingleton
