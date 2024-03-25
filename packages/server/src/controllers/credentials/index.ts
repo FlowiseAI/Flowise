@@ -22,7 +22,23 @@ const getAllCredentials = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+const getCredentialById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: credentialsController.getCredentialById - id not provided!`)
+        }
+        const apiResponse = await credentialsService.getCredentialById(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createCredential,
-    getAllCredentials
+    getAllCredentials,
+    getCredentialById
 }

@@ -1,7 +1,8 @@
 import { omit } from 'lodash'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
-import { transformToCredentialEntity } from '../../utils'
+import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
+import { ICredentialReturnResponse } from '../../Interface'
 
 const createCredential = async (requestBody: any) => {
     try {
@@ -46,7 +47,38 @@ const getAllCredentials = async (paramCredentialName: any) => {
     }
 }
 
+const getCredentialById = async (credentialId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+            id: credentialId
+        })
+        if (!credential) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Credential ${credentialId} not found`
+            }
+        }
+        // Decrpyt credentialData
+        const decryptedCredentialData = await decryptCredentialData(
+            credential.encryptedData,
+            credential.credentialName,
+            flowXpresApp.nodesPool.componentCredentials
+        )
+        const returnCredential: ICredentialReturnResponse = {
+            ...credential,
+            plainDataObj: decryptedCredentialData
+        }
+        const dbResponse = omit(returnCredential, ['encryptedData'])
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: credentialsService.createCredential - ${error}`)
+    }
+}
+
 export default {
     createCredential,
-    getAllCredentials
+    getAllCredentials,
+    getCredentialById
 }

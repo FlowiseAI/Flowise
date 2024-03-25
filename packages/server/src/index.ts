@@ -18,7 +18,6 @@ import {
     IReactFlowNode,
     IReactFlowObject,
     INodeData,
-    ICredentialReturnResponse,
     chatType,
     IChatMessage,
     IChatMessageFeedback,
@@ -672,27 +671,6 @@ export class App {
         // ----------------------------------------
         // Credentials
         // ----------------------------------------
-
-        // Get specific credential
-        this.app.get('/api/v1/credentials/:id', async (req: Request, res: Response) => {
-            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                id: req.params.id
-            })
-
-            if (!credential) return res.status(404).send(`Credential ${req.params.id} not found`)
-
-            // Decrpyt credentialData
-            const decryptedCredentialData = await decryptCredentialData(
-                credential.encryptedData,
-                credential.credentialName,
-                this.nodesPool.componentCredentials
-            )
-            const returnCredential: ICredentialReturnResponse = {
-                ...credential,
-                plainDataObj: decryptedCredentialData
-            }
-            return res.json(omit(returnCredential, ['encryptedData']))
-        })
 
         // Update credential
         this.app.put('/api/v1/credentials/:id', async (req: Request, res: Response) => {
