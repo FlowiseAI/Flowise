@@ -1525,10 +1525,6 @@ export class App {
         // ----------------------------------------
         // Variables
         // ----------------------------------------
-        this.app.get('/api/v1/variables', async (req: Request, res: Response) => {
-            const variables = await getDataSource().getRepository(Variable).find()
-            return res.json(variables)
-        })
 
         // Create new variable
         this.app.post('/api/v1/variables', async (req: Request, res: Response) => {
