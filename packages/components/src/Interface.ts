@@ -274,9 +274,8 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
 export interface IVisionChatModal {
     id: string
     configuredModel: string
-    configuredMaxToken: number
     multiModalOption: IMultiModalOption
-
+    configuredMaxToken?: number
     setVisionModel(): void
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
