@@ -12,6 +12,26 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
     }
 }
 
+const getChatflowById = async (chatflowId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (!dbResponse) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Chatflow ${chatflowId} not found in the database!`
+            }
+        }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.getAllChatflows - ${error}`)
+    }
+}
+
 export default {
-    getAllChatflows
+    getAllChatflows,
+    getChatflowById
 }

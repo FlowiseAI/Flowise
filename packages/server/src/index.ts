@@ -379,15 +379,6 @@ export class App {
             }
         })
 
-        // Get specific chatflow via id
-        this.app.get('/api/v1/chatflows/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (chatflow) return res.json(chatflow)
-            return res.status(404).send(`Chatflow ${req.params.id} not found`)
-        })
-
         // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
         this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
