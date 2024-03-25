@@ -8,6 +8,7 @@ router.post('/', chatflowsController.saveChatflow)
 // READ
 router.get('/', chatflowsController.getAllChatflows)
 router.get('/:id', chatflowsController.getChatflowById)
+router.get('/apikey/:apikey', chatflowsController.getChatflowByApiKey)
 
 // UPDATE
 router.put('/:id', chatflowsController.updateChatflow)

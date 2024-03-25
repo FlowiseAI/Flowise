@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import chatflowsService from '../../services/chatflows'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { createRateLimiter } from '../../utils/rateLimit'
+import { getApiKey } from '../../utils/apiKey'
 
 const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -18,6 +19,26 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await chatflowsService.getAllChatflows()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+// Get specific chatflow via api key
+const getChatflowByApiKey = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.apiKey === 'undefined' || req.params.apiKey === '') {
+            throw new Error(`Error: chatflowsRouter.getChatflowById - apiKey not provided!`)
+        }
+        const apiKey = await getApiKey(req.params.apiKey)
+        if (!apiKey) {
+            return res.status(401).send('Unauthorized')
+        }
+        const apiResponse = await chatflowsService.getChatflowByApiKey(apiKey.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -78,6 +99,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 export default {
     deleteChatflow,
     getAllChatflows,
+    getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
     updateChatflow

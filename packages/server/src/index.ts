@@ -360,25 +360,6 @@ export class App {
         // Chatflows
         // ----------------------------------------
 
-        // Get specific chatflow via api key
-        this.app.get('/api/v1/chatflows/apikey/:apiKey', async (req: Request, res: Response) => {
-            try {
-                const apiKey = await getApiKey(req.params.apiKey)
-                if (!apiKey) return res.status(401).send('Unauthorized')
-                const chatflows = await this.AppDataSource.getRepository(ChatFlow)
-                    .createQueryBuilder('cf')
-                    .where('cf.apikeyid = :apikeyid', { apikeyid: apiKey.id })
-                    .orWhere('cf.apikeyid IS NULL')
-                    .orWhere('cf.apikeyid = ""')
-                    .orderBy('cf.name', 'ASC')
-                    .getMany()
-                if (chatflows.length >= 1) return res.status(200).send(chatflows)
-                return res.status(404).send('Chatflow not found')
-            } catch (err: any) {
-                return res.status(500).send(err?.message)
-            }
-        })
-
         // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
         this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
             const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({

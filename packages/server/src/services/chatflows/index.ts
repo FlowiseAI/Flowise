@@ -33,6 +33,29 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
     }
 }
 
+const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('cf')
+            .where('cf.apikeyid = :apikeyid', { apikeyid: apiKeyId })
+            .orWhere('cf.apikeyid IS NULL')
+            .orWhere('cf.apikeyid = ""')
+            .orderBy('cf.name', 'ASC')
+            .getMany()
+        if (dbResponse.length < 1) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Chatflow not found in the database!`
+            }
+        }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.getChatflowByApiKey - ${error}`)
+    }
+}
+
 const getChatflowById = async (chatflowId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
@@ -88,6 +111,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 export default {
     deleteChatflow,
     getAllChatflows,
+    getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
     updateChatflow
