@@ -673,15 +673,6 @@ export class App {
         // Credentials
         // ----------------------------------------
 
-        // Create new credential
-        this.app.post('/api/v1/credentials', async (req: Request, res: Response) => {
-            const body = req.body
-            const newCredential = await transformToCredentialEntity(body)
-            const credential = this.AppDataSource.getRepository(Credential).create(newCredential)
-            const results = await this.AppDataSource.getRepository(Credential).save(credential)
-            return res.json(results)
-        })
-
         // Get specific credential
         this.app.get('/api/v1/credentials/:id', async (req: Request, res: Response) => {
             const credential = await this.AppDataSource.getRepository(Credential).findOneBy({

@@ -1,6 +1,19 @@
 import { omit } from 'lodash'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
+import { transformToCredentialEntity } from '../../utils'
+
+const createCredential = async (requestBody: any) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const newCredential = await transformToCredentialEntity(requestBody)
+        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).create(newCredential)
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).save(credential)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: credentialsService.createCredential - ${error}`)
+    }
+}
 
 const getAllCredentials = async (paramCredentialName: any) => {
     try {
@@ -34,5 +47,6 @@ const getAllCredentials = async (paramCredentialName: any) => {
 }
 
 export default {
+    createCredential,
     getAllCredentials
 }
