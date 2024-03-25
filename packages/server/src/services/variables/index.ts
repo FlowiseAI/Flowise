@@ -22,7 +22,32 @@ const getAllVariables = async () => {
     }
 }
 
+const getVariableById = async (variableId: string) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).findOneBy({
+            id: variableId
+        })
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: variablesServices.getVariableById - ${error}`)
+    }
+}
+
+const updateVariable = async (variable: Variable, updatedVariable: Variable) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const tmpUpdatedVariable = await flowXpresApp.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: variablesServices.updateVariable - ${error}`)
+    }
+}
+
 export default {
     createVariable,
-    getAllVariables
+    getAllVariables,
+    getVariableById,
+    updateVariable
 }

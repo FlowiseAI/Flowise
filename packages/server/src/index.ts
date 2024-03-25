@@ -1526,23 +1526,6 @@ export class App {
         // Variables
         // ----------------------------------------
 
-        // Update variable
-        this.app.put('/api/v1/variables/:id', async (req: Request, res: Response) => {
-            const variable = await this.AppDataSource.getRepository(Variable).findOneBy({
-                id: req.params.id
-            })
-
-            if (!variable) return res.status(404).send(`Variable ${req.params.id} not found`)
-
-            const body = req.body
-            const updateVariable = new Variable()
-            Object.assign(updateVariable, body)
-            this.AppDataSource.getRepository(Variable).merge(variable, updateVariable)
-            const result = await this.AppDataSource.getRepository(Variable).save(variable)
-
-            return res.json(result)
-        })
-
         // Delete variable via id
         this.app.delete('/api/v1/variables/:id', async (req: Request, res: Response) => {
             const results = await this.AppDataSource.getRepository(Variable).delete({ id: req.params.id })

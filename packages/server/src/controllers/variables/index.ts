@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import variablesServices from '../../services/variables'
+import variablesService from '../../services/variables'
 import { Variable } from '../../database/entities/Variable'
 
 const createVariable = async (req: Request, res: Response, next: NextFunction) => {
@@ -10,7 +10,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
         const body = req.body
         const newVariable = new Variable()
         Object.assign(newVariable, body)
-        const apiResponse = await variablesServices.createVariable(newVariable)
+        const apiResponse = await variablesService.createVariable(newVariable)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -19,7 +19,29 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await variablesServices.getAllVariables()
+        const apiResponse = await variablesService.getAllVariables()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateVariable = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error('Error: variablesController.updateVariable - id not provided!')
+        }
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: variablesController.updateVariable - body not provided!')
+        }
+        const variable = await variablesService.getVariableById(req.params.id)
+        if (!variable) {
+            return res.status(404).send(`Variable ${req.params.id} not found in the database`)
+        }
+        const body = req.body
+        const updatedVariable = new Variable()
+        Object.assign(updatedVariable, body)
+        const apiResponse = await variablesService.updateVariable(variable, updatedVariable)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -28,5 +50,6 @@ const getAllVariables = async (req: Request, res: Response, next: NextFunction) 
 
 export default {
     createVariable,
-    getAllVariables
+    getAllVariables,
+    updateVariable
 }

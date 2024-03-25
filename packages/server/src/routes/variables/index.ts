@@ -10,6 +10,7 @@ router.post('/', variablesController.createVariable)
 router.get('/', variablesController.getAllVariables)
 
 // UPDATE
+router.put('/:id', variablesController.updateVariable)
 
 // DELETE
 
