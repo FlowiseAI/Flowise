@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VoyageEmbeddings } from 'langchain/embeddings/voyage'
+import { VoyageEmbeddings, VoyageEmbeddingsParams } from 'langchain/embeddings/voyage'
 
 class VoyageAIEmbedding_Embeddings implements INode {
     label: string
@@ -17,11 +17,11 @@ class VoyageAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'VoyageAI Embeddings'
         this.name = 'voyageAIEmbeddings'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'VoyageAIEmbeddings'
         this.icon = 'voyageai.png'
         this.category = 'Embeddings'
-        this.description = 'Voyage API to generate embeddings for a given text'
+        this.description = 'Voyage AI API to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(VoyageEmbeddings)]
         this.credential = {
             label: 'Connect Credential',
@@ -63,11 +63,20 @@ class VoyageAIEmbedding_Embeddings implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('voyageAIApi', credentialData, nodeData)
         const modelName = nodeData.inputs?.modelName as string
 
-        const model = new VoyageEmbeddings({ apiKey: apiKey, modelName: modelName })
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const voyageAiApiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        const voyageAiEndpoint = getCredentialParam('endpoint', credentialData, nodeData)
+
+        const obj: Partial<VoyageEmbeddingsParams> & { apiKey?: string } = {
+            apiKey: voyageAiApiKey
+        }
+
+        if (modelName) obj.modelName = modelName
+
+        const model = new VoyageEmbeddings(obj)
+        if (voyageAiEndpoint) model.apiUrl = voyageAiEndpoint
         return model
     }
 }

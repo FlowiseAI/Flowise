@@ -12,10 +12,16 @@ class VoyageAIApi implements INodeCredential {
         this.name = 'voyageAIApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://docs.voyageai.com/docs/api-key-and-installation">official guide</a> on how to create API key on VoyageAI'
+            'Refer to <a target="_blank" href="https://docs.voyageai.com/install/#authentication-with-api-keys">official guide</a> on how to get an API Key'
         this.inputs = [
             {
-                label: 'API Key',
+                label: 'Voyage AI Endpoint',
+                name: 'endpoint',
+                type: 'string',
+                default: 'https://api.voyageai.com/v1/embeddings'
+            },
+            {
+                label: 'Voyage AI API Key',
                 name: 'apiKey',
                 type: 'password'
             }
