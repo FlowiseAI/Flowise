@@ -81,6 +81,7 @@ const Variables = () => {
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add',
+            customBtnId: 'btn_confirmAddingVariable',
             data: {}
         }
         setVariableDialogProps(dialogProp)
@@ -207,6 +208,7 @@ const Variables = () => {
                                         sx={{ color: 'white', mr: 1, height: 37 }}
                                         onClick={addNew}
                                         startIcon={<IconPlus />}
+                                        id='btn_createVariable'
                                     >
                                         Add Variable
                                     </StyledButton>
