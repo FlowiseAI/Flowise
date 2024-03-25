@@ -12,7 +12,7 @@ const createVariable = async (newVariable: Variable) => {
     }
 }
 
-const deleteVariable = async (variableId: string) => {
+const deleteVariable = async (variableId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
         const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).delete({ id: variableId })
