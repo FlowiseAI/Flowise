@@ -43,7 +43,6 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
         }
 
         if (isDomainAllowed) {
-            //@ts-ignore
             const apiResponse = await utilBuildChatflow(req, req.io)
             if (apiResponse.executionError) {
                 return res.status(apiResponse.status).send(apiResponse.msg)

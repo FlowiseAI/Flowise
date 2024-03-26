@@ -22,6 +22,14 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 
+declare global {
+    namespace Express {
+        interface Request {
+            io?: Server
+        }
+    }
+}
+
 export class App {
     app: express.Application
     nodesPool: NodesPool
@@ -106,7 +114,6 @@ export class App {
 
         // Make io accessible to our router
         this.app.use((req, res, next) => {
-            //@ts-ignore
             req.io = socketIO
             next()
         })
