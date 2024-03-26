@@ -2050,6 +2050,7 @@ export class App {
                 fileUploads = incomingInput.uploads
                 for (let i = 0; i < fileUploads.length; i += 1) {
                     const upload = fileUploads[i]
+
                     if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                         const filename = upload.name
                         const dir = path.join(getStoragePath(), chatflowid, chatId)
@@ -2060,14 +2061,13 @@ export class App {
                         const splitDataURI = upload.data.split(',')
                         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                         fs.writeFileSync(filePath, bf)
-
                         // Omit upload.data since we don't store the content in database
                         upload.type = 'stored-file'
                         fileUploads[i] = omit(upload, ['data'])
                     }
 
                     // Run Speech to Text conversion
-                    if (upload.mime === 'audio/webm') {
+                    if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4') {
                         let speechToTextConfig: ICommonObject = {}
                         if (chatflow.speechToText) {
                             const speechToTextProviders = JSON.parse(chatflow.speechToText)

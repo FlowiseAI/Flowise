@@ -10,7 +10,6 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
         const credentialId = speechToTextConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
         const filePath = path.join(getStoragePath(), options.chatflowid, options.chatId, upload.name)
-
         const audio_file = fs.createReadStream(filePath)
 
         if (speechToTextConfig.name === 'openAIWhisper') {
@@ -18,7 +17,6 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 apiKey: credentialData.openAIApiKey
             }
             const openAIClient = new OpenAIClient(openAIClientOptions)
-
             const transcription = await openAIClient.audio.transcriptions.create({
                 file: audio_file,
                 model: 'whisper-1',
