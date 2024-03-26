@@ -1,4 +1,3 @@
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { chatType } from '../../Interface'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
@@ -8,17 +7,12 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 const getChatflowStats = async (
     chatflowid: string,
     chatTypeFilter: chatType | undefined,
-    sortOrder: string = 'ASC',
-    chatId?: string,
-    memoryType?: string,
-    sessionId?: string,
     startDate?: string,
     endDate?: string,
     messageId?: string,
     feedback?: boolean
 ): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
         const chatmessages = (await utilGetChatMessage(
             chatflowid,
             chatTypeFilter,
@@ -28,8 +22,8 @@ const getChatflowStats = async (
             undefined,
             startDate,
             endDate,
-            '',
-            true
+            messageId,
+            feedback
         )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
         const totalMessages = chatmessages.length
         const totalFeedback = chatmessages.filter((message) => message?.feedback).length

@@ -14,7 +14,7 @@ import {
     getTelemetryFlowObj,
     getStartingNodes
 } from '../utils'
-import { validateKey } from './validateKey'
+import { utilValidateKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -31,7 +31,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
         if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
 
         if (!isInternal) {
-            const isKeyValidated = await validateKey(req, chatflow)
+            const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isKeyValidated) return res.status(401).send('Unauthorized')
         }
 

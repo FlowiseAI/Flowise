@@ -25,18 +25,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
                 return res.status(500).send(e)
             }
         }
-        const apiResponse = await statsService.getChatflowStats(
-            chatflowid,
-            chatTypeFilter,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            startDate,
-            endDate,
-            '',
-            true
-        )
+        const apiResponse = await statsService.getChatflowStats(chatflowid, chatTypeFilter, startDate, endDate, '', true)
         if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
