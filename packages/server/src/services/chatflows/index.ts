@@ -2,9 +2,103 @@ import path from 'path'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { IChatFlow } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { getAppVersion, getTelemetryFlowObj, deleteFolderRecursive } from '../../utils'
+import {
+    getAppVersion,
+    getTelemetryFlowObj,
+    deleteFolderRecursive,
+    isFlowValidForStream,
+    constructGraphs,
+    getEndingNodes
+} from '../../utils'
 import logger from '../../utils/logger'
 import { getStoragePath } from 'flowise-components'
+import { IReactFlowObject } from '../../Interface'
+
+// Check if chatflow valid for streaming
+const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        //**
+        const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (!chatflow) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Chatflow ${chatflowId} not found`
+            }
+        }
+
+        /*** Get Ending Node with Directed Graph  ***/
+        const flowData = chatflow.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = parsedFlowData.nodes
+        const edges = parsedFlowData.edges
+        const { graph, nodeDependencies } = constructGraphs(nodes, edges)
+
+        const endingNodeIds = getEndingNodes(nodeDependencies, graph)
+        if (!endingNodeIds.length) {
+            return {
+                executionError: true,
+                status: 500,
+                msg: `Ending nodes not found`
+            }
+        }
+
+        const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+        let isStreaming = false
+        let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+
+        for (const endingNode of endingNodes) {
+            const endingNodeData = endingNode.data
+            if (!endingNodeData) {
+                return {
+                    executionError: true,
+                    status: 500,
+                    msg: `Ending node ${endingNode.id} data not found`
+                }
+            }
+
+            const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
+
+            if (!isEndingNode) {
+                if (
+                    endingNodeData &&
+                    endingNodeData.category !== 'Chains' &&
+                    endingNodeData.category !== 'Agents' &&
+                    endingNodeData.category !== 'Engine'
+                ) {
+                    return {
+                        executionError: true,
+                        status: 500,
+                        msg: `Ending node must be either a Chain or Agent`
+                    }
+                }
+            }
+
+            isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
+        }
+
+        // Once custom function ending node exists, flow is always unavailable to stream
+        const dbResponse = { isStreaming: isEndingNodeExists ? false : isStreaming }
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.checkIfChatflowIsValidForStreaming - ${error}`)
+    }
+}
+
+// Check if chatflow valid for uploads
+const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.getUploadsConfig(chatflowId)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.checkIfChatflowIsValidForUploads - ${error}`)
+    }
+}
 
 const deleteChatflow = async (chatflowId: string): Promise<any> => {
     try {
@@ -109,6 +203,8 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 }
 
 export default {
+    checkIfChatflowIsValidForStreaming,
+    checkIfChatflowIsValidForUploads,
     deleteChatflow,
     getAllChatflows,
     getChatflowByApiKey,

@@ -368,63 +368,6 @@ export class App {
             return res.status(200).send('OK')
         })
 
-        // Check if chatflow valid for streaming
-        this.app.get('/api/v1/chatflows-streaming/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-
-            /*** Get Ending Node with Directed Graph  ***/
-            const flowData = chatflow.flowData
-            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-            const nodes = parsedFlowData.nodes
-            const edges = parsedFlowData.edges
-            const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-
-            const endingNodeIds = getEndingNodes(nodeDependencies, graph)
-            if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
-
-            const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
-
-            let isStreaming = false
-            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
-
-            for (const endingNode of endingNodes) {
-                const endingNodeData = endingNode.data
-                if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
-
-                const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
-
-                if (!isEndingNode) {
-                    if (
-                        endingNodeData &&
-                        endingNodeData.category !== 'Chains' &&
-                        endingNodeData.category !== 'Agents' &&
-                        endingNodeData.category !== 'Engine'
-                    ) {
-                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
-                    }
-                }
-
-                isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
-            }
-
-            // Once custom function ending node exists, flow is always unavailable to stream
-            const obj = { isStreaming: isEndingNodeExists ? false : isStreaming }
-            return res.json(obj)
-        })
-
-        // Check if chatflow valid for uploads
-        this.app.get('/api/v1/chatflows-uploads/:id', async (req: Request, res: Response) => {
-            try {
-                const uploadsConfig = await this.getUploadsConfig(req.params.id)
-                return res.json(uploadsConfig)
-            } catch (e) {
-                return res.status(500).send(e)
-            }
-        })
-
         // ----------------------------------------
         // ChatMessage
         // ----------------------------------------

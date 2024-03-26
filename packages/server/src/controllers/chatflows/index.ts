@@ -4,6 +4,36 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { createRateLimiter } from '../../utils/rateLimit'
 import { getApiKey } from '../../utils/apiKey'
 
+const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.checkIfChatflowIsValidForStreaming - id not provided!`)
+        }
+        const apiResponse = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.checkIfChatflowIsValidForUploads - id not provided!`)
+        }
+        const apiResponse = await chatflowsService.checkIfChatflowIsValidForUploads(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
@@ -97,6 +127,8 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 }
 
 export default {
+    checkIfChatflowIsValidForStreaming,
+    checkIfChatflowIsValidForUploads,
     deleteChatflow,
     getAllChatflows,
     getChatflowByApiKey,
