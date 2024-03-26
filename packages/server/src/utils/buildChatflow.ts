@@ -1,61 +1,122 @@
-import { v4 as uuidv4 } from 'uuid'
-import * as fs from 'fs'
-import { Request, Response } from 'express'
-import logger from '../utils/logger'
-import { IncomingInput, INodeData, IReactFlowObject, IChatMessage, chatType, IReactFlowNode, IDepthQueue } from '../Interface'
-import telemetryService from '../services/telemetry'
+import { Request } from 'express'
+import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 'flowise-components'
+import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
+import path from 'path'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { validateKey } from '../utils/validateKey'
-import { addChatMessage } from '../utils/addChatMesage'
-import { ICommonObject, IMessage } from 'flowise-components'
+import { Server } from 'socket.io'
+import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import {
     mapMimeTypeToInputField,
-    getStartingNodes,
-    findMemoryNode,
-    getMemorySessionId,
     isFlowValidForStream,
     buildFlow,
-    resolveVariables,
     getTelemetryFlowObj,
-    isStartNodeDependOnInput,
-    replaceInputsWithConfig,
     getAppVersion,
+    resolveVariables,
     getSessionChatHistory,
-    databaseEntities,
-    constructGraphs,
+    findMemoryNode,
+    replaceInputsWithConfig,
+    getStartingNodes,
+    isStartNodeDependOnInput,
+    getMemorySessionId,
+    isSameOverrideConfig,
     getEndingNodes,
-    isSameOverrideConfig
+    constructGraphs
 } from '../utils'
-import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { utilValidateKey } from './validateKey'
+import { databaseEntities } from '.'
+import { v4 as uuidv4 } from 'uuid'
+import { omit } from 'lodash'
+import * as fs from 'fs'
+import logger from './logger'
+import { utilAddChatMessage } from './addChatMesage'
 
 /**
  * Build Chatflow
  * @param {Request} req
- * @param {Response} res
  * @param {Server} socketIO
  * @param {boolean} isInternal
  * @param {boolean} isUpsert
  */
-//@ts-ignore
-export const buildChatflow = async (req: Request, res: Response, socketIO?: Server, isInternal: boolean = false) => {
+export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInternal: boolean = false): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
         const chatflowid = req.params.id
         let incomingInput: IncomingInput = req.body
-
         let nodeToExecuteData: INodeData
-
         const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
-        if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
+        if (!chatflow) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Chatflow ${chatflowid} not found`
+            }
+        }
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
 
         if (!isInternal) {
-            const isKeyValidated = await validateKey(req, chatflow)
-            if (!isKeyValidated) return res.status(401).send('Unauthorized')
+            const isKeyValidated = await utilValidateKey(req, chatflow)
+            if (!isKeyValidated) {
+                return {
+                    executionError: true,
+                    status: 404,
+                    msg: `Unauthorized`
+                }
+            }
+        }
+
+        let fileUploads: IFileUpload[] = []
+        if (incomingInput.uploads) {
+            fileUploads = incomingInput.uploads
+            for (let i = 0; i < fileUploads.length; i += 1) {
+                const upload = fileUploads[i]
+                if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
+                    const filename = upload.name
+                    const dir = path.join(getStoragePath(), chatflowid, chatId)
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true })
+                    }
+                    const filePath = path.join(dir, filename)
+                    const splitDataURI = upload.data.split(',')
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                    fs.writeFileSync(filePath, bf)
+
+                    // Omit upload.data since we don't store the content in database
+                    upload.type = 'stored-file'
+                    fileUploads[i] = omit(upload, ['data'])
+                }
+
+                // Run Speech to Text conversion
+                if (upload.mime === 'audio/webm') {
+                    let speechToTextConfig: ICommonObject = {}
+                    if (chatflow.speechToText) {
+                        const speechToTextProviders = JSON.parse(chatflow.speechToText)
+                        for (const provider in speechToTextProviders) {
+                            const providerObj = speechToTextProviders[provider]
+                            if (providerObj.status) {
+                                speechToTextConfig = providerObj
+                                speechToTextConfig['name'] = provider
+                                break
+                            }
+                        }
+                    }
+                    if (speechToTextConfig) {
+                        const options: ICommonObject = {
+                            chatId,
+                            chatflowid,
+                            appDataSource: flowXpresApp.AppDataSource,
+                            databaseEntities: databaseEntities
+                        }
+                        const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
+                        if (speechToTextResult) {
+                            incomingInput.question = speechToTextResult
+                        }
+                    }
+                }
+            }
         }
 
         let isStreamValid = false
@@ -127,7 +188,13 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
             const { graph, nodeDependencies } = constructGraphs(nodes, edges)
             const directedGraph = graph
             const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
-            if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
+            if (!endingNodeIds.length) {
+                return {
+                    executionError: true,
+                    status: 500,
+                    msg: `Ending nodes not found`
+                }
+            }
 
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
 
@@ -135,7 +202,13 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
 
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
-                if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
+                if (!endingNodeData) {
+                    return {
+                        executionError: true,
+                        status: 500,
+                        msg: `Ending node ${endingNode.id} data not found`
+                    }
+                }
 
                 const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
@@ -146,7 +219,11 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
                         endingNodeData.category !== 'Agents' &&
                         endingNodeData.category !== 'Engine'
                     ) {
-                        return res.status(500).send(`Ending node must be either a Chain or Agent`)
+                        return {
+                            executionError: true,
+                            status: 500,
+                            msg: `Ending node must be either a Chain or Agent`
+                        }
                     }
 
                     if (
@@ -154,11 +231,11 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
                         Object.keys(endingNodeData.outputs).length &&
                         !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
                     ) {
-                        return res
-                            .status(500)
-                            .send(
-                                `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                            )
+                        return {
+                            executionError: true,
+                            status: 500,
+                            msg: `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                        }
                     }
                 }
 
@@ -199,9 +276,9 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
             let startingNodeIds: string[] = []
             let depthQueue: IDepthQueue = {}
             for (const endingNodeId of endingNodeIds) {
-                const res = getStartingNodes(nonDirectedGraph, endingNodeId)
-                startingNodeIds.push(...res.startingNodeIds)
-                depthQueue = Object.assign(depthQueue, res.depthQueue)
+                const resx = getStartingNodes(nonDirectedGraph, endingNodeId)
+                startingNodeIds.push(...resx.startingNodeIds)
+                depthQueue = Object.assign(depthQueue, resx.depthQueue)
             }
             startingNodeIds = [...new Set(startingNodeIds)]
 
@@ -223,14 +300,23 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
                 chatflowid,
                 flowXpresApp.AppDataSource,
                 incomingInput?.overrideConfig,
-                flowXpresApp.cachePool
+                flowXpresApp.cachePool,
+                false,
+                undefined,
+                incomingInput.uploads
             )
 
             const nodeToExecute =
                 endingNodeIds.length === 1
                     ? reactFlowNodes.find((node: IReactFlowNode) => endingNodeIds[0] === node.id)
                     : reactFlowNodes[reactFlowNodes.length - 1]
-            if (!nodeToExecute) return res.status(404).send(`Node not found`)
+            if (!nodeToExecute) {
+                return {
+                    executionError: true,
+                    status: 404,
+                    msg: `Node not found`
+                }
+            }
 
             if (incomingInput.overrideConfig) {
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
@@ -257,6 +343,7 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
                   appDataSource: flowXpresApp.AppDataSource,
                   databaseEntities,
                   analytic: chatflow.analytic,
+                  uploads: incomingInput.uploads,
                   socketIO,
                   socketIOClientId: incomingInput.socketIOClientId
               })
@@ -267,9 +354,9 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
                   logger,
                   appDataSource: flowXpresApp.AppDataSource,
                   databaseEntities,
-                  analytic: chatflow.analytic
+                  analytic: chatflow.analytic,
+                  uploads: incomingInput.uploads
               })
-
         result = typeof result === 'string' ? { text: result } : result
 
         // Retrieve threadId from assistant if exists
@@ -285,9 +372,10 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
             chatId,
             memoryType,
             sessionId,
-            createdDate: userMessageDateTime
+            createdDate: userMessageDateTime,
+            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
         }
-        await addChatMessage(userMessage)
+        await utilAddChatMessage(userMessage)
 
         let resultText = ''
         if (result.text) resultText = result.text
@@ -306,28 +394,33 @@ export const buildChatflow = async (req: Request, res: Response, socketIO?: Serv
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-        const chatMessage = await addChatMessage(apiMessage)
-        result.chatMessageId = chatMessage.id
+        const chatMessage = await utilAddChatMessage(apiMessage)
 
         logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-        await telemetryService.createEvent({
-            name: `prediction_sent`,
-            data: {
-                version: await getAppVersion(),
-                chatlowId: chatflowid,
-                chatId,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
-            }
+        await flowXpresApp.telemetry.sendTelemetry('prediction_sent', {
+            version: await getAppVersion(),
+            chatflowId: chatflowid,
+            chatId,
+            type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
         // Prepare response
+        // return the question in the response
+        // this is used when input text is empty but question is in audio format
+        result.question = incomingInput.question
         result.chatId = chatId
+        result.chatMessageId = chatMessage.id
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
-        return res.json(result)
+
+        return result
     } catch (e: any) {
         logger.error('[server]: Error:', e)
-        return res.status(500).send(e.message)
+        return {
+            executionError: true,
+            status: 500,
+            msg: e.message
+        }
     }
 }

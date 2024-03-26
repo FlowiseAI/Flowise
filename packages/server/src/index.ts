@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express'
+import express, { Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
 import cors from 'cors'
@@ -8,17 +8,14 @@ import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
-import { v4 as uuidv4 } from 'uuid'
 import { DataSource } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
     IReactFlowNode,
     IReactFlowObject,
-    INodeData,
     chatType,
     IChatMessage,
-    IDepthQueue,
     INodeDirectedGraph,
     IUploadFileSizeAndTypes
 } from './Interface'
@@ -26,33 +23,24 @@ import {
     getNodeModulesPackagePath,
     getStartingNodes,
     buildFlow,
-    getEndingNodes,
     constructGraphs,
-    resolveVariables,
-    isStartNodeDependOnInput,
     mapMimeTypeToInputField,
-    isSameOverrideConfig,
-    isFlowValidForStream,
-    databaseEntities,
-    replaceInputsWithConfig,
     getEncryptionKey,
     getMemorySessionId,
-    getSessionChatHistory,
     getAllConnectedNodes,
     findMemoryNode,
     getTelemetryFlowObj,
     getAppVersion
 } from './utils'
-import { omit } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { ICommonObject, IMessage, INodeParams, convertSpeechToText, getStoragePath, IFileUpload } from 'flowise-components'
-import { getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
-import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
+import { ICommonObject, INodeParams } from 'flowise-components'
+import { initializeRateLimiter } from './utils/rateLimit'
+import { getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
@@ -171,50 +159,6 @@ export class App {
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
-        // Send input message and get prediction result (External)
-        this.app.post(
-            '/api/v1/prediction/:id',
-            upload.array('files'),
-            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
-            async (req: Request, res: Response) => {
-                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                    id: req.params.id
-                })
-                if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-                let isDomainAllowed = true
-                logger.info(`[server]: Request originated from ${req.headers.origin}`)
-                if (chatflow.chatbotConfig) {
-                    const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
-                    const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
-                    if (isValidAllowedOrigins) {
-                        const originHeader = req.headers.origin as string
-                        const origin = new URL(originHeader).host
-                        isDomainAllowed =
-                            parsedConfig.allowedOrigins.filter((domain: string) => {
-                                try {
-                                    const allowedOrigin = new URL(domain).host
-                                    return origin === allowedOrigin
-                                } catch (e) {
-                                    return false
-                                }
-                            }).length > 0
-                    }
-                }
-
-                if (isDomainAllowed) {
-                    await this.buildChatflow(req, res, socketIO)
-                } else {
-                    return res.status(401).send(`This site is not allowed to access this chatbot`)
-                }
-            }
-        )
-
-        // Send input message and get prediction result (Internal)
-        this.app.post('/api/v1/internal-prediction/:id', async (req: Request, res: Response) => {
-            await this.buildChatflow(req, res, socketIO, true)
-        })
-
         // ----------------------------------------
         // Marketplaces
         // ----------------------------------------
@@ -297,29 +241,6 @@ export class App {
         this.app.use((req, res) => {
             res.sendFile(uiHtmlPath)
         })
-    }
-
-    /**
-     * Validate API Key
-     * @param {Request} req
-     * @param {Response} res
-     * @param {ChatFlow} chatflow
-     */
-    async validateKey(req: Request, chatflow: ChatFlow) {
-        const chatFlowApiKeyId = chatflow.apikeyid
-        if (!chatFlowApiKeyId) return true
-
-        const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
-        if (chatFlowApiKeyId && !authorizationHeader) return false
-
-        const suppliedKey = authorizationHeader.split(`Bearer `).pop()
-        if (suppliedKey) {
-            const keys = await getAPIKeys()
-            const apiSecret = keys.find((key) => key.id === chatFlowApiKeyId)?.apiSecret
-            if (!compareKeys(apiSecret, suppliedKey)) return false
-            return true
-        }
-        return false
     }
 
     /**
@@ -517,371 +438,6 @@ export class App {
             })
 
             return res.status(201).send('Successfully Upserted')
-        } catch (e: any) {
-            logger.error('[server]: Error:', e)
-            return res.status(500).send(e.message)
-        }
-    }
-
-    /**
-     * Build Chatflow
-     * @param {Request} req
-     * @param {Response} res
-     * @param {Server} socketIO
-     * @param {boolean} isInternal
-     * @param {boolean} isUpsert
-     */
-    async buildChatflow(req: Request, res: Response, socketIO?: Server, isInternal: boolean = false) {
-        try {
-            const chatflowid = req.params.id
-            let incomingInput: IncomingInput = req.body
-
-            let nodeToExecuteData: INodeData
-
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: chatflowid
-            })
-            if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
-
-            const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
-            const userMessageDateTime = new Date()
-
-            if (!isInternal) {
-                const isKeyValidated = await this.validateKey(req, chatflow)
-                if (!isKeyValidated) return res.status(401).send('Unauthorized')
-            }
-
-            let fileUploads: IFileUpload[] = []
-            if (incomingInput.uploads) {
-                fileUploads = incomingInput.uploads
-                for (let i = 0; i < fileUploads.length; i += 1) {
-                    const upload = fileUploads[i]
-                    if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
-                        const filename = upload.name
-                        const dir = path.join(getStoragePath(), chatflowid, chatId)
-                        if (!fs.existsSync(dir)) {
-                            fs.mkdirSync(dir, { recursive: true })
-                        }
-                        const filePath = path.join(dir, filename)
-                        const splitDataURI = upload.data.split(',')
-                        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                        fs.writeFileSync(filePath, bf)
-
-                        // Omit upload.data since we don't store the content in database
-                        upload.type = 'stored-file'
-                        fileUploads[i] = omit(upload, ['data'])
-                    }
-
-                    // Run Speech to Text conversion
-                    if (upload.mime === 'audio/webm') {
-                        let speechToTextConfig: ICommonObject = {}
-                        if (chatflow.speechToText) {
-                            const speechToTextProviders = JSON.parse(chatflow.speechToText)
-                            for (const provider in speechToTextProviders) {
-                                const providerObj = speechToTextProviders[provider]
-                                if (providerObj.status) {
-                                    speechToTextConfig = providerObj
-                                    speechToTextConfig['name'] = provider
-                                    break
-                                }
-                            }
-                        }
-                        if (speechToTextConfig) {
-                            const options: ICommonObject = {
-                                chatId,
-                                chatflowid,
-                                appDataSource: this.AppDataSource,
-                                databaseEntities: databaseEntities
-                            }
-                            const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
-                            if (speechToTextResult) {
-                                incomingInput.question = speechToTextResult
-                            }
-                        }
-                    }
-                }
-            }
-
-            let isStreamValid = false
-
-            const files = (req.files as any[]) || []
-
-            if (files.length) {
-                const overrideConfig: ICommonObject = { ...req.body }
-                for (const file of files) {
-                    const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                    const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
-
-                    const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                    if (overrideConfig[fileInputField]) {
-                        overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                    } else {
-                        overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                    }
-                }
-                incomingInput = {
-                    question: req.body.question ?? 'hello',
-                    overrideConfig,
-                    history: [],
-                    socketIOClientId: req.body.socketIOClientId
-                }
-            }
-
-            /*** Get chatflows and prepare data  ***/
-            const flowData = chatflow.flowData
-            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-            const nodes = parsedFlowData.nodes
-            const edges = parsedFlowData.edges
-
-            // Get session ID
-            const memoryNode = findMemoryNode(nodes, edges)
-            const memoryType = memoryNode?.data.label
-            let sessionId = undefined
-            if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
-
-            /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
-             * - Node Data already exists in pool
-             * - Still in sync (i.e the flow has not been modified since)
-             * - Existing overrideConfig and new overrideConfig are the same
-             * - Flow doesn't start with/contain nodes that depend on incomingInput.question
-             * TODO: convert overrideConfig to hash when we no longer store base64 string but filepath
-             ***/
-            const isFlowReusable = () => {
-                return (
-                    Object.prototype.hasOwnProperty.call(this.chatflowPool.activeChatflows, chatflowid) &&
-                    this.chatflowPool.activeChatflows[chatflowid].inSync &&
-                    this.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
-                    isSameOverrideConfig(
-                        isInternal,
-                        this.chatflowPool.activeChatflows[chatflowid].overrideConfig,
-                        incomingInput.overrideConfig
-                    ) &&
-                    !isStartNodeDependOnInput(this.chatflowPool.activeChatflows[chatflowid].startingNodes, nodes)
-                )
-            }
-
-            if (isFlowReusable()) {
-                nodeToExecuteData = this.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
-                isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
-                logger.debug(
-                    `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
-                )
-            } else {
-                /*** Get Ending Node with Directed Graph  ***/
-                const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-                const directedGraph = graph
-                const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
-                if (!endingNodeIds.length) return res.status(500).send(`Ending nodes not found`)
-
-                const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
-
-                let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
-
-                for (const endingNode of endingNodes) {
-                    const endingNodeData = endingNode.data
-                    if (!endingNodeData) return res.status(500).send(`Ending node ${endingNode.id} data not found`)
-
-                    const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
-
-                    if (!isEndingNode) {
-                        if (
-                            endingNodeData &&
-                            endingNodeData.category !== 'Chains' &&
-                            endingNodeData.category !== 'Agents' &&
-                            endingNodeData.category !== 'Engine'
-                        ) {
-                            return res.status(500).send(`Ending node must be either a Chain or Agent`)
-                        }
-
-                        if (
-                            endingNodeData.outputs &&
-                            Object.keys(endingNodeData.outputs).length &&
-                            !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
-                        ) {
-                            return res
-                                .status(500)
-                                .send(
-                                    `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                                )
-                        }
-                    }
-
-                    isStreamValid = isFlowValidForStream(nodes, endingNodeData)
-                }
-
-                // Once custom function ending node exists, flow is always unavailable to stream
-                isStreamValid = isEndingNodeExists ? false : isStreamValid
-
-                let chatHistory: IMessage[] = incomingInput.history ?? []
-
-                // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
-                for (const endingNode of endingNodes) {
-                    const endingNodeData = endingNode.data
-
-                    if (!endingNodeData.inputs?.memory) continue
-
-                    const memoryNodeId = endingNodeData.inputs?.memory.split('.')[0].replace('{{', '')
-                    const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
-
-                    if (!memoryNode) continue
-
-                    if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                        chatHistory = await getSessionChatHistory(
-                            memoryNode,
-                            this.nodesPool.componentNodes,
-                            incomingInput,
-                            this.AppDataSource,
-                            databaseEntities,
-                            logger
-                        )
-                    }
-                }
-
-                /*** Get Starting Nodes with Reversed Graph ***/
-                const constructedObj = constructGraphs(nodes, edges, { isReversed: true })
-                const nonDirectedGraph = constructedObj.graph
-                let startingNodeIds: string[] = []
-                let depthQueue: IDepthQueue = {}
-                for (const endingNodeId of endingNodeIds) {
-                    const res = getStartingNodes(nonDirectedGraph, endingNodeId)
-                    startingNodeIds.push(...res.startingNodeIds)
-                    depthQueue = Object.assign(depthQueue, res.depthQueue)
-                }
-                startingNodeIds = [...new Set(startingNodeIds)]
-
-                const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
-
-                logger.debug(`[server]: Start building chatflow ${chatflowid}`)
-                /*** BFS to traverse from Starting Nodes to Ending Node ***/
-                const reactFlowNodes = await buildFlow(
-                    startingNodeIds,
-                    nodes,
-                    edges,
-                    graph,
-                    depthQueue,
-                    this.nodesPool.componentNodes,
-                    incomingInput.question,
-                    chatHistory,
-                    chatId,
-                    sessionId ?? '',
-                    chatflowid,
-                    this.AppDataSource,
-                    incomingInput?.overrideConfig,
-                    this.cachePool,
-                    false,
-                    undefined,
-                    incomingInput.uploads
-                )
-
-                const nodeToExecute =
-                    endingNodeIds.length === 1
-                        ? reactFlowNodes.find((node: IReactFlowNode) => endingNodeIds[0] === node.id)
-                        : reactFlowNodes[reactFlowNodes.length - 1]
-                if (!nodeToExecute) return res.status(404).send(`Node not found`)
-
-                if (incomingInput.overrideConfig) {
-                    nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
-                }
-
-                const reactFlowNodeData: INodeData = resolveVariables(
-                    nodeToExecute.data,
-                    reactFlowNodes,
-                    incomingInput.question,
-                    chatHistory
-                )
-                nodeToExecuteData = reactFlowNodeData
-
-                this.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
-            }
-
-            logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-
-            const nodeInstanceFilePath = this.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
-            const nodeModule = await import(nodeInstanceFilePath)
-            const nodeInstance = new nodeModule.nodeClass({ sessionId })
-
-            let result = isStreamValid
-                ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatId,
-                      chatflowid,
-                      chatHistory: incomingInput.history,
-                      logger,
-                      appDataSource: this.AppDataSource,
-                      databaseEntities,
-                      analytic: chatflow.analytic,
-                      uploads: incomingInput.uploads,
-                      socketIO,
-                      socketIOClientId: incomingInput.socketIOClientId
-                  })
-                : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                      chatId,
-                      chatflowid,
-                      chatHistory: incomingInput.history,
-                      logger,
-                      appDataSource: this.AppDataSource,
-                      databaseEntities,
-                      analytic: chatflow.analytic,
-                      uploads: incomingInput.uploads
-                  })
-
-            result = typeof result === 'string' ? { text: result } : result
-
-            // Retrieve threadId from assistant if exists
-            if (typeof result === 'object' && result.assistant) {
-                sessionId = result.assistant.threadId
-            }
-
-            const userMessage: Omit<IChatMessage, 'id'> = {
-                role: 'userMessage',
-                content: incomingInput.question,
-                chatflowid,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
-                chatId,
-                memoryType,
-                sessionId,
-                createdDate: userMessageDateTime,
-                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
-            }
-            await this.addChatMessage(userMessage)
-
-            let resultText = ''
-            if (result.text) resultText = result.text
-            else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
-            else resultText = JSON.stringify(result, null, 2)
-
-            const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
-                role: 'apiMessage',
-                content: resultText,
-                chatflowid,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
-                chatId,
-                memoryType,
-                sessionId
-            }
-            if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
-            if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
-            if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-            const chatMessage = await this.addChatMessage(apiMessage)
-
-            logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-            await this.telemetry.sendTelemetry('prediction_sent', {
-                version: await getAppVersion(),
-                chatflowId: chatflowid,
-                chatId,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
-            })
-
-            // Prepare response
-            // return the question in the response
-            // this is used when input text is empty but question is in audio format
-            result.question = incomingInput.question
-            result.chatId = chatId
-            result.chatMessageId = chatMessage.id
-            if (sessionId) result.sessionId = sessionId
-            if (memoryType) result.memoryType = memoryType
-
-            return res.json(result)
         } catch (e: any) {
             logger.error('[server]: Error:', e)
             return res.status(500).send(e.message)

@@ -2,15 +2,58 @@ import { Request, Response, NextFunction } from 'express'
 import multer from 'multer'
 import path from 'path'
 import { getRateLimiter } from '../../utils/rateLimit'
-import { buildChatflow } from '../../utils/buildChatflow'
-// import { Server } from 'socket.io'
+import chatflowsService from '../../services/chatflows'
+import logger from '../../utils/logger'
+import { utilBuildChatflow } from '../../utils/buildChatflow'
 
 const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await buildChatflow(req, res, socketIO)
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: predictionsController.createPrediction - id not provided!`)
+        }
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: predictionsController.createPrediction - body not provided!`)
+        }
+        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        if (!chatflow) {
+            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        }
+        let isDomainAllowed = true
+        logger.info(`[server]: Request originated from ${req.headers.origin}`)
+        if (chatflow.chatbotConfig) {
+            const parsedConfig = JSON.parse(chatflow.chatbotConfig)
+            // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
+            const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
+            if (isValidAllowedOrigins) {
+                const originHeader = req.headers.origin as string
+                const origin = new URL(originHeader).host
+                isDomainAllowed =
+                    parsedConfig.allowedOrigins.filter((domain: string) => {
+                        try {
+                            const allowedOrigin = new URL(domain).host
+                            return origin === allowedOrigin
+                        } catch (e) {
+                            return false
+                        }
+                    }).length > 0
+            }
+        }
+
+        if (isDomainAllowed) {
+            //@ts-ignore
+            const apiResponse = await utilBuildChatflow(req, socketIO)
+            if (apiResponse.executionError) {
+                return res.status(apiResponse.status).send(apiResponse.msg)
+            }
+            return {
+                status: 'OK'
+            }
+        } else {
+            return res.status(401).send(`This site is not allowed to access this chatbot`)
+        }
     } catch (error) {
         next(error)
     }

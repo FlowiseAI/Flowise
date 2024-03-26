@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import { buildChatflow } from '../../utils/buildChatflow'
+import { utilBuildChatflow } from '../../utils/buildChatflow'
 
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await buildChatflow(req, res, socketIO, true)
+        const apiResponse = await utilBuildChatflow(req, socketIO, true)
+        return res.json(apiResponse)
     } catch (error) {
         next(error)
     }

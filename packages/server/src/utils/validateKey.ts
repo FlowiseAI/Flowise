@@ -8,7 +8,7 @@ import { getAPIKeys, compareKeys } from './apiKey'
  * @param {Response} res
  * @param {ChatFlow} chatflow
  */
-export const validateKey = async (req: Request, chatflow: ChatFlow) => {
+export const utilValidateKey = async (req: Request, chatflow: ChatFlow) => {
     const chatFlowApiKeyId = chatflow.apikeyid
     if (!chatFlowApiKeyId) return true
 
