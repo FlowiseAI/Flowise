@@ -1,10 +1,9 @@
 import express from 'express'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
-import createError from 'http-errors'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
@@ -161,9 +160,9 @@ export class App {
 
         this.app.use('/', express.static(uiBuildPath))
 
-        // All other requests not handled will forward to error handler
-        this.app.use((req: Request, res: Response, next: NextFunction) => {
-            next(createError(404))
+        // All other requests not handled will return React app
+        this.app.use((req: Request, res: Response) => {
+            res.sendFile(uiHtmlPath)
         })
 
         // Error handling
