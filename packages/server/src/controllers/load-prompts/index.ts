@@ -7,6 +7,9 @@ const createPrompt = async (req: Request, res: Response, next: NextFunction) => 
             throw new Error(`Error: loadPromptsController.createPrompt - promptName not provided!`)
         }
         const apiResponse = await loadPromptsService.createPrompt(req.body.promptName as string)
+        if (apiResponse.executionError) {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

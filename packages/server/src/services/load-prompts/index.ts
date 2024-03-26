@@ -1,7 +1,7 @@
 import { Client } from 'langchainhub'
 import { parsePrompt } from '../../utils/hub'
 
-const createPrompt = async (promptName: string) => {
+const createPrompt = async (promptName: string): Promise<any> => {
     try {
         let hub = new Client()
         const prompt = await hub.pull(promptName)
