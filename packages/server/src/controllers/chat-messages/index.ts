@@ -3,7 +3,6 @@ import { chatType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
 
-// Add chatmessages for chatflowid
 const createChatMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined' || req.body === '') {
@@ -16,19 +15,8 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
     }
 }
 
-// Get all chatmessages from chatflowid
 const getAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error('Error: chatMessagesController.getAllChatMessages - id not provided!')
-        }
-        const sortOrder = req.query?.order as string | undefined
-        const chatId = req.query?.chatId as string | undefined
-        const memoryType = req.query?.memoryType as string | undefined
-        const sessionId = req.query?.sessionId as string | undefined
-        const messageId = req.query?.messageId as string | undefined
-        const startDate = req.query?.startDate as string | undefined
-        const endDate = req.query?.endDate as string | undefined
         let chatTypeFilter = req.query?.chatType as chatType | undefined
         if (chatTypeFilter) {
             try {
@@ -44,6 +32,17 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
                 return res.status(500).send(e)
             }
         }
+        const sortOrder = req.query?.order as string | undefined
+        const chatId = req.query?.chatId as string | undefined
+        const memoryType = req.query?.memoryType as string | undefined
+        const sessionId = req.query?.sessionId as string | undefined
+        const messageId = req.query?.messageId as string | undefined
+        const startDate = req.query?.startDate as string | undefined
+        const endDate = req.query?.endDate as string | undefined
+        const feedback = req.query?.feedback as boolean | undefined
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatMessageController.getAllChatMessages - id not provided!`)
+        }
         const apiResponse = await chatMessagesService.getAllChatMessages(
             req.params.id,
             chatTypeFilter,
@@ -53,21 +52,43 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             sessionId,
             startDate,
             endDate,
-            messageId
+            messageId,
+            feedback
         )
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
     }
 }
 
-// Get internal chatmessages from chatflowid
 const getAllInternalChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error('Error: chatMessagesController.getAllInternalChatMessages - id not provided!')
+        const sortOrder = req.query?.order as string | undefined
+        const chatId = req.query?.chatId as string | undefined
+        const memoryType = req.query?.memoryType as string | undefined
+        const sessionId = req.query?.sessionId as string | undefined
+        const messageId = req.query?.messageId as string | undefined
+        const startDate = req.query?.startDate as string | undefined
+        const endDate = req.query?.endDate as string | undefined
+        const feedback = req.query?.feedback as boolean | undefined
+        const apiResponse = await chatMessagesService.getAllInternalChatMessages(
+            req.params.id,
+            chatType.INTERNAL,
+            sortOrder,
+            chatId,
+            memoryType,
+            sessionId,
+            startDate,
+            endDate,
+            messageId,
+            feedback
+        )
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
         }
-        const apiResponse = await chatMessagesService.getAllInternalChatMessages(req.params.id, chatType.INTERNAL)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

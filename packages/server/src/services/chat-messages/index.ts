@@ -2,6 +2,7 @@ import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import { chatType, IChatMessage } from '../../Interface'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { utilGetChatMessage } from '../../utils/getChatMessage'
 
 /**
  * Method that add chat messages.
@@ -78,28 +79,31 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
     }
 }
 
+// Get all chatmessages from chatflowid
 const getAllChatMessages = async (
-    chatflowid: string,
-    chatType: chatType | undefined,
+    chatflowId: string,
+    chatTypeFilter: chatType | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
     sessionId?: string,
     startDate?: string,
     endDate?: string,
-    messageId?: string
-) => {
+    messageId?: string,
+    feedback?: boolean
+): Promise<any> => {
     try {
-        const dbResponse = await __getChatMessage(
-            chatflowid,
-            chatType,
+        const dbResponse = await utilGetChatMessage(
+            chatflowId,
+            chatTypeFilter,
             sortOrder,
             chatId,
             memoryType,
             sessionId,
             startDate,
             endDate,
-            messageId
+            messageId,
+            feedback
         )
         return dbResponse
     } catch (error) {
@@ -107,9 +111,32 @@ const getAllChatMessages = async (
     }
 }
 
-const getAllInternalChatMessages = async (chatflowid: string, chatType: chatType | undefined) => {
+// Get internal chatmessages from chatflowid
+const getAllInternalChatMessages = async (
+    chatflowId: string,
+    chatTypeFilter: chatType | undefined,
+    sortOrder: string = 'ASC',
+    chatId?: string,
+    memoryType?: string,
+    sessionId?: string,
+    startDate?: string,
+    endDate?: string,
+    messageId?: string,
+    feedback?: boolean
+): Promise<any> => {
     try {
-        const dbResponse = await __getChatMessage(chatflowid, chatType)
+        const dbResponse = await utilGetChatMessage(
+            chatflowId,
+            chatTypeFilter,
+            sortOrder,
+            chatId,
+            memoryType,
+            sessionId,
+            startDate,
+            endDate,
+            messageId,
+            feedback
+        )
         return dbResponse
     } catch (error) {
         throw new Error(`Error: chatMessagesService.getAllInternalChatMessages - ${error}`)

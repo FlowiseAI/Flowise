@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { DataSource, FindOptionsWhere, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -192,78 +192,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // ChatMessage
-        // ----------------------------------------
-
-        // Get all chatmessages from chatflowid
-        this.app.get('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const sortOrder = req.query?.order as string | undefined
-            const chatId = req.query?.chatId as string | undefined
-            const memoryType = req.query?.memoryType as string | undefined
-            const sessionId = req.query?.sessionId as string | undefined
-            const messageId = req.query?.messageId as string | undefined
-            const startDate = req.query?.startDate as string | undefined
-            const endDate = req.query?.endDate as string | undefined
-            const feedback = req.query?.feedback as boolean | undefined
-            let chatTypeFilter = req.query?.chatType as chatType | undefined
-
-            if (chatTypeFilter) {
-                try {
-                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
-                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                        chatTypeFilter = undefined
-                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
-                        chatTypeFilter = chatType.EXTERNAL
-                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                        chatTypeFilter = chatType.INTERNAL
-                    }
-                } catch (e) {
-                    return res.status(500).send(e)
-                }
-            }
-
-            const chatmessages = await this.getChatMessage(
-                req.params.id,
-                chatTypeFilter,
-                sortOrder,
-                chatId,
-                memoryType,
-                sessionId,
-                startDate,
-                endDate,
-                messageId,
-                feedback
-            )
-            return res.json(chatmessages)
-        })
-
-        // Get internal chatmessages from chatflowid
-        this.app.get('/api/v1/internal-chatmessage/:id', async (req: Request, res: Response) => {
-            const sortOrder = req.query?.order as string | undefined
-            const chatId = req.query?.chatId as string | undefined
-            const memoryType = req.query?.memoryType as string | undefined
-            const sessionId = req.query?.sessionId as string | undefined
-            const messageId = req.query?.messageId as string | undefined
-            const startDate = req.query?.startDate as string | undefined
-            const endDate = req.query?.endDate as string | undefined
-            const feedback = req.query?.feedback as boolean | undefined
-
-            const chatmessages = await this.getChatMessage(
-                req.params.id,
-                chatType.INTERNAL,
-                sortOrder,
-                chatId,
-                memoryType,
-                sessionId,
-                startDate,
-                endDate,
-                messageId,
-                feedback
-            )
-            return res.json(chatmessages)
-        })
 
         // Add chatmessages for chatflowid
         this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
@@ -862,102 +790,6 @@ export class App {
             isImageUploadAllowed,
             imgUploadSizeAndTypes
         }
-    }
-
-    /**
-     * Method that get chat messages.
-     * @param {string} chatflowid
-     * @param {chatType} chatType
-     * @param {string} sortOrder
-     * @param {string} chatId
-     * @param {string} memoryType
-     * @param {string} sessionId
-     * @param {string} startDate
-     * @param {string} endDate
-     * @param {boolean} feedback
-     */
-    async getChatMessage(
-        chatflowid: string,
-        chatType: chatType | undefined,
-        sortOrder: string = 'ASC',
-        chatId?: string,
-        memoryType?: string,
-        sessionId?: string,
-        startDate?: string,
-        endDate?: string,
-        messageId?: string,
-        feedback?: boolean
-    ): Promise<ChatMessage[]> {
-        const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-            const date = new Date(dateTimeStr)
-            if (isNaN(date.getTime())) {
-                return undefined
-            }
-            setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-            return date
-        }
-
-        const aMonthAgo = () => {
-            const date = new Date()
-            date.setMonth(new Date().getMonth() - 1)
-            return date
-        }
-
-        let fromDate
-        if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
-
-        let toDate
-        if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
-
-        if (feedback) {
-            const query = this.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
-
-            // do the join with chat message feedback based on messageId for each chat message in the chatflow
-            query
-                .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
-                .where('chat_message.chatflowid = :chatflowid', { chatflowid })
-
-            // based on which parameters are available add `andWhere` clauses to the query
-            if (chatType) {
-                query.andWhere('chat_message.chatType = :chatType', { chatType })
-            }
-            if (chatId) {
-                query.andWhere('chat_message.chatId = :chatId', { chatId })
-            }
-            if (memoryType) {
-                query.andWhere('chat_message.memoryType = :memoryType', { memoryType })
-            }
-            if (sessionId) {
-                query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
-            }
-
-            // set date range
-            query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-                fromDate: fromDate ?? aMonthAgo(),
-                toDate: toDate ?? new Date()
-            })
-            // sort
-            query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
-
-            const messages = await query.getMany()
-            return messages
-        }
-
-        return await this.AppDataSource.getRepository(ChatMessage).find({
-            where: {
-                chatflowid,
-                chatType,
-                chatId,
-                memoryType: memoryType ?? undefined,
-                sessionId: sessionId ?? undefined,
-                ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
-                ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
-                id: messageId ?? undefined
-            },
-            order: {
-                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-            }
-        })
     }
 
     /**
