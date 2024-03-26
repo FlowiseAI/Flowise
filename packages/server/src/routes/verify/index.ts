@@ -1,14 +1,8 @@
 import express from 'express'
-import apikeysController from '../../controllers/apikeys'
+import apikeyController from '../../controllers/apikey'
 const router = express.Router()
 
-// CREATE
-
 // READ
-router.get('/apikey/:apikey', apikeysController.verifyApiKey)
-
-// UPDATE
-
-// DELETE
+router.get('/apikey/:apikey', apikeyController.verifyApiKey)
 
 export default router

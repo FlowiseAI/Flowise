@@ -52,9 +52,26 @@ const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+// Verify api key
+const verifyApiKey = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.apiKey === 'undefined' || req.params.apiKey === '') {
+            throw new Error(`Error: apikeyController.verifyApiKey - apiKey not provided!`)
+        }
+        const apiResponse = await apikeyService.verifyApiKey(req.params.apiKey)
+        if (apiResponse.executionError) {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createApiKey,
     deleteApiKey,
     getAllApiKeys,
-    updateApiKey
+    updateApiKey,
+    verifyApiKey
 }

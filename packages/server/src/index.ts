@@ -1,8 +1,7 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
-import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
@@ -18,7 +17,7 @@ import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { INodeParams } from 'flowise-components'
 import { initializeRateLimiter } from './utils/rateLimit'
-import { getApiKey, getAPIKeys } from './utils/apiKey'
+import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
@@ -134,68 +133,6 @@ export class App {
                 } else next()
             })
         }
-
-        // Get all templates for marketplaces
-        this.app.get('/api/v1/marketplaces/templates', async (req: Request, res: Response) => {
-            let marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'chatflows')
-            let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            let templates: any[] = []
-            jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', 'chatflows', file)
-                const fileData = fs.readFileSync(filePath)
-                const fileDataObj = JSON.parse(fileData.toString())
-                const template = {
-                    id: index,
-                    templateName: file.split('.json')[0],
-                    flowData: fileData.toString(),
-                    badge: fileDataObj?.badge,
-                    framework: fileDataObj?.framework,
-                    categories: fileDataObj?.categories,
-                    type: 'Chatflow',
-                    description: fileDataObj?.description || ''
-                }
-                templates.push(template)
-            })
-
-            marketplaceDir = path.join(__dirname, '..', 'marketplaces', 'tools')
-            jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-            jsonsInDir.forEach((file, index) => {
-                const filePath = path.join(__dirname, '..', 'marketplaces', 'tools', file)
-                const fileData = fs.readFileSync(filePath)
-                const fileDataObj = JSON.parse(fileData.toString())
-                const template = {
-                    ...fileDataObj,
-                    id: index,
-                    type: 'Tool',
-                    framework: fileDataObj?.framework,
-                    badge: fileDataObj?.badge,
-                    categories: '',
-                    templateName: file.split('.json')[0]
-                }
-                templates.push(template)
-            })
-            const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
-            const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
-            if (FlowiseDocsQnAIndex > 0) {
-                sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
-            }
-            return res.json(sortedTemplates)
-        })
-
-        // ----------------------------------------
-        // API Keys
-        // ----------------------------------------
-
-        // Verify api key
-        this.app.get('/api/v1/verify/apikey/:apiKey', async (req: Request, res: Response) => {
-            try {
-                const apiKey = await getApiKey(req.params.apiKey)
-                if (!apiKey) return res.status(401).send('Unauthorized')
-                return res.status(200).send('OK')
-            } catch (err: any) {
-                return res.status(500).send(err?.message)
-            }
-        })
 
         this.app.use('/api/v1', flowiseApiV1Router)
 

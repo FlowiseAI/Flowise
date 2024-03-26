@@ -1,5 +1,6 @@
 import { addAPIKey, deleteAPIKey, getAPIKeys, updateAPIKey } from '../../utils/apiKey'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
+import { getApiKey } from '../../utils/apiKey'
 
 const getAllApiKeys = async () => {
     try {
@@ -42,9 +43,27 @@ const deleteApiKey = async (id: string) => {
     }
 }
 
+const verifyApiKey = async (paramApiKey: string): Promise<any> => {
+    try {
+        const apiKey = await getApiKey(paramApiKey)
+        if (!apiKey) {
+            return {
+                executionError: true,
+                status: 401,
+                msg: `Unauthorized`
+            }
+        }
+        const dbResponse = 'OK'
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: apikeyService.verifyApiKey - ${error}`)
+    }
+}
+
 export default {
     createApiKey,
     deleteApiKey,
     getAllApiKeys,
-    updateApiKey
+    updateApiKey,
+    verifyApiKey
 }
