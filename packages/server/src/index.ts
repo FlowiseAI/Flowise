@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, Between } from 'typeorm'
+import { DataSource, Between } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -45,9 +45,7 @@ import {
     getUserHome,
     getSessionChatHistory,
     getAllConnectedNodes,
-    clearSessionMemory,
     findMemoryNode,
-    deleteFolderRecursive,
     getTelemetryFlowObj,
     getAppVersion
 } from './utils'
@@ -192,64 +190,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // Delete all chatmessages from chatId
-        this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const chatflowid = req.params.id
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: chatflowid
-            })
-            if (!chatflow) {
-                res.status(404).send(`Chatflow ${chatflowid} not found`)
-                return
-            }
-            const chatId = req.query?.chatId as string
-            const memoryType = req.query?.memoryType as string | undefined
-            const sessionId = req.query?.sessionId as string | undefined
-            const chatType = req.query?.chatType as string | undefined
-            const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
-
-            const flowData = chatflow.flowData
-            const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-            const nodes = parsedFlowData.nodes
-
-            try {
-                await clearSessionMemory(
-                    nodes,
-                    this.nodesPool.componentNodes,
-                    chatId,
-                    this.AppDataSource,
-                    sessionId,
-                    memoryType,
-                    isClearFromViewMessageDialog
-                )
-            } catch (e) {
-                return res.status(500).send('Error clearing chat messages')
-            }
-
-            const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
-            if (chatId) deleteOptions.chatId = chatId
-            if (memoryType) deleteOptions.memoryType = memoryType
-            if (sessionId) deleteOptions.sessionId = sessionId
-            if (chatType) deleteOptions.chatType = chatType
-
-            // remove all related feedback records
-            const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
-            await this.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
-
-            // Delete all uploads corresponding to this chatflow/chatId
-            if (chatId) {
-                try {
-                    const directory = path.join(getStoragePath(), chatflowid, chatId)
-                    deleteFolderRecursive(directory)
-                } catch (e) {
-                    logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
-                }
-            }
-
-            const results = await this.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
-            return res.json(results)
-        })
 
         // ----------------------------------------
         // Chat Message Feedback

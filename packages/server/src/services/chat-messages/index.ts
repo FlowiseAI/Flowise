@@ -1,6 +1,14 @@
+import { FindOptionsWhere } from 'typeorm'
+import path from 'path'
 import { chatType, IChatMessage } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { getStoragePath } from 'flowise-components'
+import { deleteFolderRecursive } from '../../utils'
+import logger from '../../utils/logger'
+import { ChatMessage } from '../../database/entities/ChatMessage'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -76,8 +84,33 @@ const getAllInternalChatMessages = async (
     }
 }
 
+const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteOptions: FindOptionsWhere<ChatMessage>): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+
+        // remove all related feedback records
+        const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
+        await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
+
+        // Delete all uploads corresponding to this chatflow/chatId
+        if (chatId) {
+            try {
+                const directory = path.join(getStoragePath(), chatflowid, chatId)
+                deleteFolderRecursive(directory)
+            } catch (e) {
+                logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
+            }
+        }
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
+        return dbResponse
+    } catch (error) {
+        throw new Error(`Error: chatMessagesService.removeAllChatMessages - ${error}`)
+    }
+}
+
 export default {
     createChatMessage,
     getAllChatMessages,
-    getAllInternalChatMessages
+    getAllInternalChatMessages,
+    removeAllChatMessages
 }

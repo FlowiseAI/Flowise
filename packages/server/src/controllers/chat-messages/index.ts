@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import { chatType } from '../../Interface'
+import { chatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
+import { clearSessionMemory } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { FindOptionsWhere } from 'typeorm'
+import { ChatMessage } from '../../database/entities/ChatMessage'
 
 const createChatMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -98,23 +102,43 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
 //Delete all chatmessages from chatId
 const removeAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const flowXpresApp = getRunningExpressApp()
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
             throw new Error('Error: chatMessagesController.removeAllChatMessages - id not provided!')
         }
-        const chatflowId = req.params.id
+        const chatflowid = req.params.id
+        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        if (!chatflow) {
+            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+        }
         const chatId = req.query?.chatId as string
-        const chatType = req.query?.chatType as string | undefined
-        const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
         const memoryType = req.query?.memoryType as string | undefined
         const sessionId = req.query?.sessionId as string | undefined
-        const apiResponse = await chatflowsService.removeAllChatMessages(
-            chatflowId,
-            chatId,
-            chatType,
-            isClearFromViewMessageDialog,
-            memoryType,
-            sessionId
-        )
+        const chatType = req.query?.chatType as string | undefined
+        const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
+        const flowData = chatflow.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = parsedFlowData.nodes
+        try {
+            await clearSessionMemory(
+                nodes,
+                flowXpresApp.nodesPool.componentNodes,
+                chatId,
+                flowXpresApp.AppDataSource,
+                sessionId,
+                memoryType,
+                isClearFromViewMessageDialog
+            )
+        } catch (e) {
+            return res.status(500).send('Error clearing chat messages')
+        }
+
+        const deleteOptions: FindOptionsWhere<ChatMessage> = { chatflowid }
+        if (chatId) deleteOptions.chatId = chatId
+        if (memoryType) deleteOptions.memoryType = memoryType
+        if (sessionId) deleteOptions.sessionId = sessionId
+        if (chatType) deleteOptions.chatType = chatType
+        const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)
         if (typeof apiResponse.executionError !== 'undefined') {
             res.status(apiResponse.status).send(apiResponse.msg)
         }
