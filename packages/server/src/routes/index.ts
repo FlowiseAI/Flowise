@@ -14,6 +14,7 @@ import flowConfigRouter from './flow-config'
 import internalChatmessagesRouter from './internal-chat-messages'
 import internalPredictionRouter from './internal-predictions'
 import ipRouter from './ip'
+import getUploadFileRouter from './get-upload-file'
 import getUploadPathRouter from './get-upload-path'
 import loadPromptRouter from './load-prompts'
 import marketplacesRouter from './marketplaces'
@@ -52,6 +53,7 @@ router.use('/flow-config', flowConfigRouter)
 router.use('/internal-chatmessage', internalChatmessagesRouter)
 router.use('/internal-prediction', internalPredictionRouter)
 router.use('/ip', ipRouter)
+router.use('/get-upload-file', getUploadFileRouter)
 router.use('/get-upload-path', getUploadPathRouter)
 router.use('/load-prompt', loadPromptRouter)
 router.use('/marketplaces', marketplacesRouter)
