@@ -3,6 +3,7 @@ import path from 'path'
 import * as fs from 'fs'
 import openaiAssistantsService from '../../services/openai-assistants'
 import { getUserHome } from '../../utils'
+import contentDisposition from 'content-disposition'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -49,9 +50,13 @@ const getFileFromAssistant = async (req: Request, res: Response, next: NextFunct
         if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
         //only return from the .flowise openai-assistant folder
         if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
-        res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(filePath))
-        const fileStream = fs.createReadStream(filePath)
-        fileStream.pipe(res)
+        if (fs.existsSync(filePath)) {
+            res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
+            const fileStream = fs.createReadStream(filePath)
+            fileStream.pipe(res)
+        } else {
+            return res.status(404).send(`File ${req.body.fileName} not found`)
+        }
     } catch (error) {
         next(error)
     }

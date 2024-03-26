@@ -5,10 +5,4 @@ const router = express.Router()
 // CREATE
 router.post('/', openaiAssistantsController.getFileFromAssistant)
 
-// READ
-
-// UPDATE
-
-// DELETE
-
 export default router

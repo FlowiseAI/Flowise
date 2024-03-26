@@ -39,7 +39,6 @@ import {
     replaceInputsWithConfig,
     getEncryptionKey,
     getMemorySessionId,
-    getUserHome,
     getSessionChatHistory,
     getAllConnectedNodes,
     findMemoryNode,
@@ -190,24 +189,6 @@ export class App {
             const fileStream = fs.createReadStream(filePath)
             fileStream.pipe(res)
         }
-
-        // Download file from assistant
-        this.app.post('/api/v1/openai-assistants-file', async (req: Request, res: Response) => {
-            const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
-            //raise error if file path is not absolute
-            if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
-            //raise error if file path contains '..'
-            if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
-            //only return from the .flowise openai-assistant folder
-            if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
-
-            if (fs.existsSync(filePath)) {
-                res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
-                streamFileToUser(res, filePath)
-            } else {
-                return res.status(404).send(`File ${req.body.fileName} not found`)
-            }
-        })
 
         this.app.get('/api/v1/get-upload-path', async (req: Request, res: Response) => {
             return res.json({
