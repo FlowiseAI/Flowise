@@ -209,16 +209,6 @@ export class App {
         // Components
         // ----------------------------------------
 
-        // Get all component nodes
-        this.app.get('/api/v1/nodes', (req: Request, res: Response) => {
-            const returnData = []
-            for (const nodeName in this.nodesPool.componentNodes) {
-                const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
-                returnData.push(clonedNode)
-            }
-            return res.json(returnData)
-        })
-
         // Get all component credentials
         this.app.get('/api/v1/components-credentials', async (req: Request, res: Response) => {
             const returnData = []
@@ -227,15 +217,6 @@ export class App {
                 returnData.push(clonedCred)
             }
             return res.json(returnData)
-        })
-
-        // Get specific component node via name
-        this.app.get('/api/v1/nodes/:name', (req: Request, res: Response) => {
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
-                return res.json(this.nodesPool.componentNodes[req.params.name])
-            } else {
-                throw new Error(`Node ${req.params.name} not found`)
-            }
         })
 
         // Get component credential via name
