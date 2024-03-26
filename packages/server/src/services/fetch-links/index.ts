@@ -1,6 +1,6 @@
 import { webCrawl, xmlScrape } from 'flowise-components'
 
-const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, queryLimit: string) => {
+const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, queryLimit: string): Promise<any> => {
     try {
         const url = decodeURIComponent(requestUrl)
         if (!relativeLinksMethod) {

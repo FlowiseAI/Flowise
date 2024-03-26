@@ -50,16 +50,7 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import {
-    ICommonObject,
-    IMessage,
-    INodeParams,
-    convertSpeechToText,
-    xmlScrape,
-    webCrawl,
-    getStoragePath,
-    IFileUpload
-} from 'flowise-components'
+import { ICommonObject, IMessage, INodeParams, convertSpeechToText, getStoragePath, IFileUpload } from 'flowise-components'
 import { getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
@@ -182,29 +173,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // Scraper
-        // ----------------------------------------
-
-        this.app.get('/api/v1/fetch-links', async (req: Request, res: Response) => {
-            try {
-                const url = decodeURIComponent(req.query.url as string)
-                const relativeLinksMethod = req.query.relativeLinksMethod as string
-                if (!relativeLinksMethod) {
-                    return res.status(500).send('Please choose a Relative Links Method in Additional Parameters.')
-                }
-
-                const limit = parseInt(req.query.limit as string)
-                if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
-                const links: string[] = relativeLinksMethod === 'webCrawl' ? await webCrawl(url, limit) : await xmlScrape(url, limit)
-                if (process.env.DEBUG === 'true') console.info(`Finish ${relativeLinksMethod}`)
-
-                res.json({ status: 'OK', links })
-            } catch (e: any) {
-                return res.status(500).send('Could not fetch links from the URL.')
-            }
-        })
 
         // ----------------------------------------
         // Upsert
