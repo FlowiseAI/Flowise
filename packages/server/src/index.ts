@@ -55,8 +55,6 @@ import { getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import axios from 'axios'
-import { Client } from 'langchainhub'
-import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 
@@ -173,20 +171,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // Prompt from Hub
-        // ----------------------------------------
-        this.app.post('/api/v1/load-prompt', async (req: Request, res: Response) => {
-            try {
-                let hub = new Client()
-                const prompt = await hub.pull(req.body.promptName)
-                const templates = parsePrompt(prompt)
-                return res.json({ status: 'OK', prompt: req.body.promptName, templates: templates })
-            } catch (e: any) {
-                return res.json({ status: 'ERROR', prompt: req.body.promptName, error: e?.message })
-            }
-        })
 
         this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
             try {
