@@ -174,10 +174,6 @@ export class App {
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
-        this.app.post('/api/v1/vector/internal-upsert/:id', async (req: Request, res: Response) => {
-            await this.upsertVector(req, res, true)
-        })
-
         // ----------------------------------------
         // Prompt from Hub
         // ----------------------------------------
