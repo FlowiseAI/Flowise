@@ -202,6 +202,68 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
     }
 }
 
+// Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
+const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (dbResponse && dbResponse.isPublic) {
+            return dbResponse
+        } else if (dbResponse && !dbResponse.isPublic) {
+            return {
+                executionError: true,
+                status: 401,
+                msg: `Unauthorized`
+            }
+        }
+        return {
+            executionError: true,
+            status: 404,
+            msg: `Chatflow ${chatflowId} not found`
+        }
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.getSinglePublicChatflow - ${error}`)
+    }
+}
+
+// Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
+// Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
+const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (!dbResponse) {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Chatflow ${chatflowId} not found`
+            }
+        }
+        const uploadsConfig = await flowXpresApp.getUploadsConfig(chatflowId)
+        // even if chatbotConfig is not set but uploads are enabled
+        // send uploadsConfig to the chatbot
+        if (dbResponse.chatbotConfig || uploadsConfig) {
+            try {
+                const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
+                return { ...parsedConfig, uploads: uploadsConfig }
+            } catch (e) {
+                return {
+                    executionError: true,
+                    status: 500,
+                    msg: `Error parsing Chatbot Config for Chatflow ${chatflowId}`
+                }
+            }
+        }
+        return 'OK'
+    } catch (error) {
+        throw new Error(`Error: chatflowsService.getSinglePublicChatbotConfig - ${error}`)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -210,5 +272,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    updateChatflow
+    updateChatflow,
+    getSinglePublicChatflow,
+    getSinglePublicChatbotConfig
 }

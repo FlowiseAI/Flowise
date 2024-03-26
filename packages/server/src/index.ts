@@ -194,41 +194,6 @@ export class App {
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
         // ----------------------------------------
-        // Chatflows
-        // ----------------------------------------
-
-        // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
-        this.app.get('/api/v1/public-chatflows/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (chatflow && chatflow.isPublic) return res.json(chatflow)
-            else if (chatflow && !chatflow.isPublic) return res.status(401).send(`Unauthorized`)
-            return res.status(404).send(`Chatflow ${req.params.id} not found`)
-        })
-
-        // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
-        // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
-        this.app.get('/api/v1/public-chatbotConfig/:id', async (req: Request, res: Response) => {
-            const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: req.params.id
-            })
-            if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
-            const uploadsConfig = await this.getUploadsConfig(req.params.id)
-            // even if chatbotConfig is not set but uploads are enabled
-            // send uploadsConfig to the chatbot
-            if (chatflow.chatbotConfig || uploadsConfig) {
-                try {
-                    const parsedConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
-                    return res.json({ ...parsedConfig, uploads: uploadsConfig })
-                } catch (e) {
-                    return res.status(500).send(`Error parsing Chatbot Config for Chatflow ${req.params.id}`)
-                }
-            }
-            return res.status(200).send('OK')
-        })
-
-        // ----------------------------------------
         // ChatMessage
         // ----------------------------------------
 

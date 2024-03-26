@@ -126,6 +126,36 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
+const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.updateChatflow - id not provided!`)
+        }
+        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error(`Error: chatflowsRouter.getSinglePublicChatbotConfig - id not provided!`)
+        }
+        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -134,5 +164,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    updateChatflow
+    updateChatflow,
+    getSinglePublicChatflow,
+    getSinglePublicChatbotConfig
 }
