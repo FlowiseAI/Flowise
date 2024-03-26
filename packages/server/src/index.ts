@@ -7,12 +7,11 @@ import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { DataSource } from 'typeorm'
-import { IChatFlow, IReactFlowNode, IChatMessage, IUploadFileSizeAndTypes } from './Interface'
+import { IChatFlow, IReactFlowNode, IUploadFileSizeAndTypes } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatMessage } from './database/entities/ChatMessage'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import { INodeParams } from 'flowise-components'
@@ -231,20 +230,6 @@ export class App {
             isImageUploadAllowed,
             imgUploadSizeAndTypes
         }
-    }
-
-    /**
-     * Method that add chat messages.
-     * @param {Partial<IChatMessage>} chatMessage
-     */
-    async addChatMessage(chatMessage: Partial<IChatMessage>): Promise<ChatMessage> {
-        const newChatMessage = new ChatMessage()
-        Object.assign(newChatMessage, chatMessage)
-
-        if (!newChatMessage.createdDate) newChatMessage.createdDate = new Date()
-
-        const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-        return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
     }
 
     async stopApp() {
