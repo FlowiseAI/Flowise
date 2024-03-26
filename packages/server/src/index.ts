@@ -174,19 +174,6 @@ export class App {
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
-        // ----------------------------------------
-        // Upsert
-        // ----------------------------------------
-
-        this.app.post(
-            '/api/v1/vector/upsert/:id',
-            upload.array('files'),
-            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
-            async (req: Request, res: Response) => {
-                await this.upsertVector(req, res)
-            }
-        )
-
         this.app.post('/api/v1/vector/internal-upsert/:id', async (req: Request, res: Response) => {
             await this.upsertVector(req, res, true)
         })

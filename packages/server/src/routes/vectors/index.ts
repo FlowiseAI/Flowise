@@ -11,10 +11,4 @@ router.post(
 )
 router.post('/internal-upsert/:id', vectorsController.createInternalUpsert)
 
-// READ
-
-// UPDATE
-
-// DELETE
-
 export default router

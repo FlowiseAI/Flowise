@@ -120,7 +120,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
 
         const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
-        flowXpresApp.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+        await flowXpresApp.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
         await telemetryService.createEvent({
             name: `vector_upserted`,
             data: {
