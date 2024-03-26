@@ -5,8 +5,6 @@ import {
     GetItemCommandInput,
     UpdateItemCommand,
     UpdateItemCommandInput,
-    DeleteItemCommand,
-    DeleteItemCommandInput,
     AttributeValue
 } from '@aws-sdk/client-dynamodb'
 import { DynamoDBChatMessageHistory } from '@langchain/community/stores/message/dynamodb'
@@ -30,7 +28,7 @@ export type IChatMessage = {
     type: string
 }
 
-class DynamoDb_Memory implements INode {
+class ChatTitle_Memory implements INode {
     label: string
     name: string
     version: number
@@ -43,13 +41,13 @@ class DynamoDb_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'DynamoDB Chat Memory'
-        this.name = 'DynamoDBChatMemory'
-        this.version = 1.0
-        this.type = 'DynamoDBChatMemory'
-        this.icon = 'dynamodb.svg'
+        this.label = 'Fireflower Chat Title Generator'
+        this.name = 'ChatTitle'
+        this.version = 1.1
+        this.type = 'ChatTitle'
+        this.icon = 'fireflower-logo.svg'
         this.category = 'Memory'
-        this.description = 'Stores the conversation in dynamo db table'
+        this.description = 'Retrieves conversation and generates title'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
         this.credential = {
             label: 'Connect Credential',
@@ -66,36 +64,37 @@ class DynamoDb_Memory implements INode {
             {
                 label: 'Partition Key',
                 name: 'partitionKey',
-                type: 'string'
+                type: 'string',
+                default: 'PK'
             },
             {
                 label: 'Sort Key',
                 name: 'sortKey',
-                type: 'string'
+                type: 'string',
+                default: 'SK'
             },
             {
                 label: 'Region',
                 name: 'region',
                 type: 'string',
                 description: 'The aws region in which table is located',
-                placeholder: 'us-east-1'
+                default: 'us-west-2'
             },
             {
-                label: 'Session ID',
+                label: 'Chat ID',
                 name: 'sessionId',
                 type: 'string',
-                description:
-                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>',
-                default: '',
+                description: 'This is what will be used as the Sort Key',
+                default: 'chat123',
                 additionalParams: true,
-                optional: true
+                optional: false
             },
             {
                 label: 'User ID',
                 name: 'userId',
                 type: 'string',
                 description: 'This is what will be used as the Partition Key.',
-                default: 'user',
+                default: 'user123',
                 additionalParams: true,
                 optional: true
             },
@@ -103,18 +102,18 @@ class DynamoDb_Memory implements INode {
                 label: 'Memory Key',
                 name: 'memoryKey',
                 type: 'string',
-                default: 'chat_history',
+                default: 'messages',
                 additionalParams: true
             }
         ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return initializeDynamoDB(nodeData, options)
+        return initializeChatTitle(nodeData, options)
     }
 }
 
-const initializeDynamoDB = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
+const initializeChatTitle = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const tableName = nodeData.inputs?.tableName as string
     const partitionKey = nodeData.inputs?.partitionKey as string
     const sortKey = nodeData.inputs?.sortKey as string
@@ -228,55 +227,22 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         dynamoKey: Record<string, AttributeValue> = {},
         messageAttributeName = 'messages'
       ) {
+
+        // skip the human data. We only want the AI one that contains the LLM response
+        if (messages[0].type == 'human'){
+            return;
+        }
+
         const params: UpdateItemCommandInput = {
           TableName: tableName,
           Key: {
             [this.partitionKey]: { S: this.userId },
             [this.sortKey]: { S: this.sessionId }
           },
-          ExpressionAttributeNames: {
-            '#m': messageAttributeName,
-            '#c': 'chatId',
-            '#u': 'updatedAt',
-            '#t': 'title'
-          },
+          UpdateExpression: "SET title = :newTitle",
           ExpressionAttributeValues: {
-            ':empty_list': {
-              L: []
-            },
-            ':m': {
-              L: messages.map((message) => {
-                const dynamoSerializedMessage: DynamoDBSerializedChatMessage = {
-                  M: {
-                    type: {
-                      S: message.type
-                    },
-                    text: {
-                      S: message.data.content
-                    },
-                    createdAt: {
-                      S: new Date().toISOString()
-                    },
-                  }
-                };
-                if (message.data.role) {
-                  dynamoSerializedMessage.M.role = { S: message.data.role };
-                }
-                return dynamoSerializedMessage;
-              })
-            },
-            ':chatId': {
-              S: this.sessionId.slice(5)
-            },
-            ':updatedAt': {
-              S: new Date().toISOString()
-            },
-            ':title': {
-              S: 'untitled'
-            }
+            ":newTitle": { S: messages[0].data.content },
           },
-          UpdateExpression:
-            'SET #m = list_append(if_not_exists(#m, :empty_list), :m), #c = :chatId, #u = :updatedAt, #t = if_not_exists(#t, :title)'
         };
       
         await client.send(new UpdateItemCommand(params));
@@ -314,40 +280,6 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
-    // async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
-    //     if (!this.dynamodbClient) return []
-
-    //     const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
-    //     const tableName = this.tableName
-    //     const messageAttributeName = this.messageAttributeName ? this.messageAttributeName : 'messages'
-
-    //     // get just what we need. narrow it down to only chat/attributes/messages
-    //     const params: GetItemCommandInput = {
-    //         TableName: tableName,
-    //         Key: {
-    //             [this.partitionKey]: { S: this.userId },
-    //             [this.sortKey]: { S: this.sessionId }
-    //         },
-    //         ProjectionExpression: '#attr.messages',
-    //         ExpressionAttributeNames: { '#attr': 'attributes' }
-    //     }
-
-    //     const response = await this.dynamodbClient.send(new GetItemCommand(params))
-    //     // const items = response.Item ? response.Item[messageAttributeName]?.L ?? [] : []
-    //     const items = response.Item?.attributes?.M?.messages?.L ?? []
-    //     const messages = items
-    //         .map((item) => ({
-    //             type: item.M?.type.S,
-    //             data: {
-    //                 role: item.M?.role?.S,
-    //                 content: item.M?.text.S
-    //             }
-    //         }))
-    //         .filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
-    //     const baseMessages = messages.map(mapStoredMessageToChatMessage)
-    //     return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
-    // }
-
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.dynamodbClient) return
 
@@ -372,23 +304,8 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
-        if (!this.dynamodbClient) return
-
-        const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
-        const tableName = this.tableName
-
-        const params: DeleteItemCommandInput = {
-            TableName: tableName,
-            // Key: dynamoKey
-            // Key: {"PK": {"S": "USER#JOSH"}, "SK": {"S": "CHAT#CHAT2"}}
-            Key: {
-                [this.partitionKey]: { S: this.userId },
-                [this.sortKey]: { S: this.sessionId }
-            }
-        }
-        await this.dynamodbClient.send(new DeleteItemCommand(params))
-        await this.clear()
+        return
     }
 }
 
-module.exports = { nodeClass: DynamoDb_Memory }
+module.exports = { nodeClass: ChatTitle_Memory }

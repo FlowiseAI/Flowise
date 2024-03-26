@@ -21,6 +21,11 @@ class DynamodbMemoryApi implements INodeCredential {
                 label: 'Secret Access Key',
                 name: 'secretAccessKey',
                 type: 'password'
+            },
+            {
+                label: 'API Session Key',
+                name: 'apiSessionKey',
+                type: 'password'
             }
         ]
     }
