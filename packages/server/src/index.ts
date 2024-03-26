@@ -54,7 +54,6 @@ import { ICommonObject, IMessage, INodeParams, convertSpeechToText, getStoragePa
 import { getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { compareKeys, getApiKey, getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
-import axios from 'axios'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 
@@ -171,25 +170,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        this.app.post('/api/v1/prompts-list', async (req: Request, res: Response) => {
-            try {
-                const tags = req.body.tags ? `tags=${req.body.tags}` : ''
-                // Default to 100, TODO: add pagination and use offset & limit
-                const url = `https://api.hub.langchain.com/repos/?limit=100&${tags}has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false`
-                axios.get(url).then((response) => {
-                    if (response.data.repos) {
-                        return res.json({ status: 'OK', repos: response.data.repos })
-                    }
-                })
-            } catch (e: any) {
-                return res.json({ status: 'ERROR', repos: [] })
-            }
-        })
-
-        // ----------------------------------------
-        // Prediction
-        // ----------------------------------------
 
         // Send input message and get prediction result (External)
         this.app.post(

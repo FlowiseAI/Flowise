@@ -5,10 +5,4 @@ const router = express.Router()
 // CREATE
 router.post('/:id', internalPredictionsController.createInternalPrediction)
 
-// READ
-
-// UPDATE
-
-// DELETE
-
 export default router

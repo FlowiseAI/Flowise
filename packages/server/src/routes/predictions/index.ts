@@ -10,10 +10,4 @@ router.post(
     predictionsController.createPrediction
 )
 
-// READ
-
-// UPDATE
-
-// DELETE
-
 export default router

@@ -5,10 +5,4 @@ const router = express.Router()
 // CREATE
 router.post('/', promptsListController.createPromptsList)
 
-// READ
-
-// UPDATE
-
-// DELETE
-
 export default router
