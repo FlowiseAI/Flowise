@@ -8,7 +8,7 @@ import { Credential } from '../../database/entities/Credential'
 // ----------------------------------------
 
 // List available assistants
-const getAllOpenaiAssistants = async (credentialId: string) => {
+const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
         const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({

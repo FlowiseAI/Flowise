@@ -10,7 +10,6 @@ import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
-import OpenAI from 'openai'
 import { DataSource } from 'typeorm'
 import {
     IChatFlow,
@@ -37,7 +36,6 @@ import {
     isSameOverrideConfig,
     isFlowValidForStream,
     databaseEntities,
-    decryptCredentialData,
     replaceInputsWithConfig,
     getEncryptionKey,
     getMemorySessionId,
@@ -53,7 +51,6 @@ import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
-import { Credential } from './database/entities/Credential'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import {
@@ -188,26 +185,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // List available assistants
-        this.app.get('/api/v1/openai-assistants', async (req: Request, res: Response) => {
-            const credentialId = req.query.credential as string
-            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                id: credentialId
-            })
-
-            if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
-
-            // Decrpyt credentialData
-            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-            const openAIApiKey = decryptedCredentialData['openAIApiKey']
-            if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
-
-            const openai = new OpenAI({ apiKey: openAIApiKey })
-            const retrievedAssistants = await openai.beta.assistants.list()
-
-            return res.json(retrievedAssistants.data)
-        })
 
         function streamFileToUser(res: Response, filePath: string) {
             const fileStream = fs.createReadStream(filePath)
