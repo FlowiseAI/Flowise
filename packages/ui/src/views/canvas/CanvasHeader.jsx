@@ -27,6 +27,7 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { SET_CHATFLOW } from '@/store/actions'
+import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -45,6 +46,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [apiDialogProps, setAPIDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
+    const [viewLeadsDialogOpen, setViewLeadsDialogOpen] = useState(false)
+    const [viewLeadsDialogProps, setViewLeadsDialogProps] = useState({})
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
 
@@ -62,6 +65,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setViewMessagesDialogOpen(true)
+        } else if (setting === 'viewLeads') {
+            setViewLeadsDialogProps({
+                title: 'View Leads',
+                chatflow: chatflow
+            })
+            setViewLeadsDialogOpen(true)
         } else if (setting === 'chatflowConfiguration') {
             setChatflowConfigurationDialogProps({
                 title: 'Chatflow Configuration',
@@ -387,6 +396,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 dialogProps={viewMessagesDialogProps}
                 onCancel={() => setViewMessagesDialogOpen(false)}
             />
+            <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
             <ChatflowConfigurationDialog
                 key='chatflowConfiguration'
                 show={chatflowConfigurationDialogOpen}

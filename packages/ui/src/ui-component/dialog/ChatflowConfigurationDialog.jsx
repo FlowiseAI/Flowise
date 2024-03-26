@@ -8,6 +8,7 @@ import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
+import Leads from '@/ui-component/extended/Leads'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -33,6 +34,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Analyse Chatflow',
         id: 'analyseChatflow'
+    },
+    {
+        label: 'Leads',
+        id: 'leads'
     }
 ]
 
@@ -105,6 +110,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
+                        {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
