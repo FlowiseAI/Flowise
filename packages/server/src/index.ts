@@ -7,53 +7,52 @@ import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import contentDisposition from 'content-disposition'
 import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
+import logger, { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { Between, DataSource, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
 import {
-    IChatFlow,
-    IncomingInput,
-    IReactFlowNode,
-    IReactFlowObject,
-    INodeData,
-    ICredentialReturnResponse,
     chatType,
+    IChatFlow,
     IChatMessage,
     IChatMessageFeedback,
+    ICredentialReturnResponse,
     IDepthQueue,
+    IncomingInput,
+    INodeData,
     INodeDirectedGraph,
+    IReactFlowNode,
+    IReactFlowObject,
     IUploadFileSizeAndTypes
 } from './Interface'
 import {
-    getNodeModulesPackagePath,
-    getStartingNodes,
     buildFlow,
-    getEndingNodes,
+    clearSessionMemory,
     constructGraphs,
-    resolveVariables,
+    databaseEntities,
+    decryptCredentialData,
+    deleteFolderRecursive,
+    findAvailableConfigs,
+    findMemoryNode,
+    getAllConnectedNodes,
+    getAppVersion,
+    getEncryptionKey,
+    getEndingNodes,
+    getMemorySessionId,
+    getNodeModulesPackagePath,
+    getSessionChatHistory,
+    getStartingNodes,
+    getTelemetryFlowObj,
+    getUserHome,
+    isFlowValidForStream,
+    isSameOverrideConfig,
     isStartNodeDependOnInput,
     mapMimeTypeToInputField,
-    findAvailableConfigs,
-    isSameOverrideConfig,
-    isFlowValidForStream,
-    databaseEntities,
-    transformToCredentialEntity,
-    decryptCredentialData,
     replaceInputsWithConfig,
-    getEncryptionKey,
-    getMemorySessionId,
-    getUserHome,
-    getSessionChatHistory,
-    getAllConnectedNodes,
-    clearSessionMemory,
-    findMemoryNode,
-    deleteFolderRecursive,
-    getTelemetryFlowObj,
-    getAppVersion
+    resolveVariables,
+    transformToCredentialEntity
 } from './utils'
-import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
+import { cloneDeep, isEqual, omit, uniqWith } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -65,25 +64,26 @@ import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import {
+    convertSpeechToText,
+    getStoragePath,
+    handleEscapeCharacters,
     ICommonObject,
+    IFileUpload,
     IMessage,
     INodeOptionsValue,
     INodeParams,
-    handleEscapeCharacters,
-    convertSpeechToText,
-    xmlScrape,
     webCrawl,
-    getStoragePath,
-    IFileUpload
+    xmlScrape
 } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { containsBase64File, updateFlowDataWithFilePaths } from './utils/FileRepository'
 
 export class App {
     app: express.Application
@@ -218,6 +218,15 @@ export class App {
             const returnData = []
             for (const nodeName in this.nodesPool.componentNodes) {
                 const clonedNode = cloneDeep(this.nodesPool.componentNodes[nodeName])
+                // if (process.env.FILE_DATASOURCE_ENABLED === 'true') {
+                //     if (clonedNode.inputs) {
+                //         for (const inputName in clonedNode.inputs) {
+                //             if (clonedNode.inputs[inputName].type === 'file') {
+                //                 clonedNode.inputs[inputName].hidden = true
+                //             }
+                //         }
+                //     }
+                // }
                 returnData.push(clonedNode)
             }
             return res.json(returnData)
@@ -236,7 +245,8 @@ export class App {
         // Get specific component node via name
         this.app.get('/api/v1/nodes/:name', (req: Request, res: Response) => {
             if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
-                return res.json(this.nodesPool.componentNodes[req.params.name])
+                const componentNode = this.nodesPool.componentNodes[req.params.name]
+                return res.json(componentNode)
             } else {
                 throw new Error(`Node ${req.params.name} not found`)
             }
@@ -430,9 +440,24 @@ export class App {
             const body = req.body
             const newChatFlow = new ChatFlow()
             Object.assign(newChatFlow, body)
+            let results: ChatFlow
+            if (containsBase64File(newChatFlow)) {
+                // we need a 2-step process, as we need to save the chatflow first and then update the file paths
+                // this is because we need the chatflow id to create the file paths
 
-            const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-            const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+                // step 1 - save with empty flowData
+                const incomingFlowData = newChatFlow.flowData
+                newChatFlow.flowData = JSON.stringify({})
+                const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+                const step1Results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+                // step 2 - convert base64 to file paths and update the chatflow
+                step1Results.flowData = updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
+                results = await this.AppDataSource.getRepository(ChatFlow).save(step1Results)
+            } else {
+                const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+                results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
+            }
 
             await this.telemetry.sendTelemetry('chatflow_created', {
                 version: await getAppVersion(),
@@ -457,6 +482,9 @@ export class App {
             const body = req.body
             const updateChatFlow = new ChatFlow()
             Object.assign(updateChatFlow, body)
+            if (containsBase64File(updateChatFlow)) {
+                updateChatFlow.flowData = updateFlowDataWithFilePaths(req.params.id, updateChatFlow.flowData)
+            }
 
             updateChatFlow.id = chatflow.id
             createRateLimiter(updateChatFlow)

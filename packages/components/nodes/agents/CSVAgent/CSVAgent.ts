@@ -7,6 +7,9 @@ import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import path from 'path'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
 
 class CSV_Agents implements INode {
     label: string
@@ -88,19 +91,34 @@ class CSV_Agents implements INode {
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let files: string[] = []
-
-        if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
-            files = JSON.parse(csvFileBase64)
-        } else {
-            files = [csvFileBase64]
-        }
-
         let base64String = ''
 
-        for (const file of files) {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            base64String += splitDataURI.pop() ?? ''
+        if (csvFileBase64.startsWith('FILE-STORAGE::')) {
+            const fileName = csvFileBase64.replace('FILE-STORAGE::', '')
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
+            } else {
+                files = [fileName]
+            }
+            const chatflowid = options.chatflowid
+
+            for (const file of files) {
+                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+                const fileData = fs.readFileSync(fileInStorage)
+                base64String += fileData.toString('base64')
+            }
+        } else {
+            if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
+                files = JSON.parse(csvFileBase64)
+            } else {
+                files = [csvFileBase64]
+            }
+
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                base64String += splitDataURI.pop() ?? ''
+            }
         }
 
         const pyodide = await LoadPyodide()
