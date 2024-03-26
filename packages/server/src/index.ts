@@ -1,8 +1,10 @@
 import express from 'express'
+import { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
+import createError from 'http-errors'
 import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
@@ -20,6 +22,7 @@ import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
+import errorHandler from './middlewares/errors'
 
 declare global {
     namespace Express {
@@ -111,7 +114,7 @@ export class App {
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
 
-        // Make io accessible to our router
+        // Make io accessible to our router on req.io
         this.app.use((req, res, next) => {
             req.io = socketIO
             next()
@@ -158,10 +161,13 @@ export class App {
 
         this.app.use('/', express.static(uiBuildPath))
 
-        // All other requests not handled will return React app
-        this.app.use((req, res) => {
-            res.sendFile(uiHtmlPath)
+        // All other requests not handled will forward to error handler
+        this.app.use((req: Request, res: Response, next: NextFunction) => {
+            next(createError(404))
         })
+
+        // Error handling
+        this.app.use(errorHandler)
     }
 
     /**

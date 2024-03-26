@@ -436,6 +436,9 @@ importers:
             flowise-ui:
                 specifier: workspace:^
                 version: link:../ui
+            http-errors:
+                specifier: ^2.0.0
+                version: 2.0.0
             lodash:
                 specifier: ^4.17.21
                 version: 4.17.21
