@@ -1,14 +1,12 @@
-import { ChatFlow } from '../../database/entities/ChatFlow'
 import { findAvailableConfigs } from '../../utils'
 import { IReactFlowObject } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import chatflowsService from '../chatflows'
 
-const getSingleFlowConfig = async (chatflowId: string) => {
+const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
-        const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowId
-        })
+        const chatflow = await chatflowsService.getChatflowById(chatflowId)
         if (!chatflow) {
             return {
                 executionError: true,
