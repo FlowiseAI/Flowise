@@ -53,7 +53,6 @@ import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatMessage } from './database/entities/ChatMessage'
-import { ChatMessageFeedback } from './database/entities/ChatMessageFeedback'
 import { Credential } from './database/entities/Credential'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
@@ -189,58 +188,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // stats
-        // ----------------------------------------
-        //
-        // get stats for showing in chatflow
-        this.app.get('/api/v1/stats/:id', async (req: Request, res: Response) => {
-            const chatflowid = req.params.id
-            let chatTypeFilter = req.query?.chatType as chatType | undefined
-            const startDate = req.query?.startDate as string | undefined
-            const endDate = req.query?.endDate as string | undefined
-
-            if (chatTypeFilter) {
-                try {
-                    const chatTypeFilterArray = JSON.parse(chatTypeFilter)
-                    if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                        chatTypeFilter = undefined
-                    } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
-                        chatTypeFilter = chatType.EXTERNAL
-                    } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                        chatTypeFilter = chatType.INTERNAL
-                    }
-                } catch (e) {
-                    return res.status(500).send(e)
-                }
-            }
-
-            const chatmessages = (await this.getChatMessage(
-                chatflowid,
-                chatTypeFilter,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                startDate,
-                endDate,
-                '',
-                true
-            )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
-            const totalMessages = chatmessages.length
-
-            const totalFeedback = chatmessages.filter((message) => message?.feedback).length
-            const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length
-
-            const results = {
-                totalMessages,
-                totalFeedback,
-                positiveFeedback
-            }
-
-            res.json(results)
-        })
 
         // ----------------------------------------
         // Assistant
