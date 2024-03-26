@@ -51,7 +51,7 @@ import {
     getTelemetryFlowObj,
     getAppVersion
 } from './utils'
-import { cloneDeep, omit } from 'lodash'
+import { omit } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -63,9 +63,7 @@ import { CachePool } from './CachePool'
 import {
     ICommonObject,
     IMessage,
-    INodeOptionsValue,
     INodeParams,
-    handleEscapeCharacters,
     convertSpeechToText,
     xmlScrape,
     webCrawl,
@@ -194,144 +192,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // Configure number of proxies in Host Environment
-        // ----------------------------------------
-        this.app.get('/api/v1/ip', (request, response) => {
-            response.send({
-                ip: request.ip,
-                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
-            })
-        })
-
-        // ----------------------------------------
-        // Components
-        // ----------------------------------------
-
-        // Get all component credentials
-        this.app.get('/api/v1/components-credentials', async (req: Request, res: Response) => {
-            const returnData = []
-            for (const credName in this.nodesPool.componentCredentials) {
-                const clonedCred = cloneDeep(this.nodesPool.componentCredentials[credName])
-                returnData.push(clonedCred)
-            }
-            return res.json(returnData)
-        })
-
-        // Get component credential via name
-        this.app.get('/api/v1/components-credentials/:name', (req: Request, res: Response) => {
-            if (!req.params.name.includes('&amp;')) {
-                if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
-                    return res.json(this.nodesPool.componentCredentials[req.params.name])
-                } else {
-                    throw new Error(`Credential ${req.params.name} not found`)
-                }
-            } else {
-                const returnResponse = []
-                for (const name of req.params.name.split('&amp;')) {
-                    if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, name)) {
-                        returnResponse.push(this.nodesPool.componentCredentials[name])
-                    } else {
-                        throw new Error(`Credential ${name} not found`)
-                    }
-                }
-                return res.json(returnResponse)
-            }
-        })
-
-        // Returns specific component node icon via name
-        this.app.get('/api/v1/node-icon/:name', (req: Request, res: Response) => {
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
-                const nodeInstance = this.nodesPool.componentNodes[req.params.name]
-                if (nodeInstance.icon === undefined) {
-                    throw new Error(`Node ${req.params.name} icon not found`)
-                }
-
-                if (nodeInstance.icon.endsWith('.svg') || nodeInstance.icon.endsWith('.png') || nodeInstance.icon.endsWith('.jpg')) {
-                    const filepath = nodeInstance.icon
-                    res.sendFile(filepath)
-                } else {
-                    throw new Error(`Node ${req.params.name} icon is missing icon`)
-                }
-            } else {
-                throw new Error(`Node ${req.params.name} not found`)
-            }
-        })
-
-        // Returns specific component credential icon via name
-        this.app.get('/api/v1/components-credentials-icon/:name', (req: Request, res: Response) => {
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentCredentials, req.params.name)) {
-                const credInstance = this.nodesPool.componentCredentials[req.params.name]
-                if (credInstance.icon === undefined) {
-                    throw new Error(`Credential ${req.params.name} icon not found`)
-                }
-
-                if (credInstance.icon.endsWith('.svg') || credInstance.icon.endsWith('.png') || credInstance.icon.endsWith('.jpg')) {
-                    const filepath = credInstance.icon
-                    res.sendFile(filepath)
-                } else {
-                    throw new Error(`Credential ${req.params.name} icon is missing icon`)
-                }
-            } else {
-                throw new Error(`Credential ${req.params.name} not found`)
-            }
-        })
-
-        // load async options
-        this.app.post('/api/v1/node-load-method/:name', async (req: Request, res: Response) => {
-            const nodeData: INodeData = req.body
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, req.params.name)) {
-                try {
-                    const nodeInstance = this.nodesPool.componentNodes[req.params.name]
-                    const methodName = nodeData.loadMethod || ''
-
-                    const returnOptions: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
-                        appDataSource: this.AppDataSource,
-                        databaseEntities: databaseEntities
-                    })
-
-                    return res.json(returnOptions)
-                } catch (error) {
-                    return res.json([])
-                }
-            } else {
-                res.status(404).send(`Node ${req.params.name} not found`)
-                return
-            }
-        })
-
-        // execute custom function node
-        this.app.post('/api/v1/node-custom-function', async (req: Request, res: Response) => {
-            const body = req.body
-            const functionInputVariables = Object.fromEntries(
-                [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
-            )
-            const nodeData = { inputs: { functionInputVariables, ...body } }
-            if (Object.prototype.hasOwnProperty.call(this.nodesPool.componentNodes, 'customFunction')) {
-                try {
-                    const nodeInstanceFilePath = this.nodesPool.componentNodes['customFunction'].filePath as string
-                    const nodeModule = await import(nodeInstanceFilePath)
-                    const newNodeInstance = new nodeModule.nodeClass()
-
-                    const options: ICommonObject = {
-                        appDataSource: this.AppDataSource,
-                        databaseEntities,
-                        logger
-                    }
-
-                    const returnData = await newNodeInstance.init(nodeData, '', options)
-                    const result = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
-
-                    return res.json(result)
-                } catch (error) {
-                    return res.status(500).send(`Error running custom function: ${error}`)
-                }
-            } else {
-                res.status(404).send(`Node customFunction not found`)
-                return
-            }
-        })
 
         // ----------------------------------------
         // Chatflows

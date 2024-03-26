@@ -1,5 +1,9 @@
 import { cloneDeep } from 'lodash'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { INodeData } from '../../Interface'
+import { INodeOptionsValue, ICommonObject, handleEscapeCharacters } from 'flowise-components'
+import { databaseEntities } from '../../utils'
+import logger from '../../utils/logger'
 
 // Get all component nodes
 const getAllNodes = async () => {
@@ -31,7 +35,108 @@ const getNodeByName = async (nodeName: string) => {
     }
 }
 
+// Returns specific component node icon via name
+const getSingleNodeIcon = async (nodeName: string) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, nodeName)) {
+            const nodeInstance = flowXpresApp.nodesPool.componentNodes[nodeName]
+            if (nodeInstance.icon === undefined) {
+                throw new Error(`Node ${nodeName} icon not found`)
+            }
+
+            if (nodeInstance.icon.endsWith('.svg') || nodeInstance.icon.endsWith('.png') || nodeInstance.icon.endsWith('.jpg')) {
+                const filepath = nodeInstance.icon
+                return filepath
+            } else {
+                throw new Error(`Node ${nodeName} icon is missing icon`)
+            }
+        } else {
+            throw new Error(`Node ${nodeName} not found`)
+        }
+    } catch (error) {
+        throw new Error(`Error: nodesService.getSingleNodeIcon - ${error}`)
+    }
+}
+
+const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Promise<any> => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const nodeData: INodeData = requestBody
+        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, nodeName)) {
+            try {
+                const nodeInstance = flowXpresApp.nodesPool.componentNodes[nodeName]
+                const methodName = nodeData.loadMethod || ''
+
+                const dbResponse: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
+                    appDataSource: flowXpresApp.AppDataSource,
+                    databaseEntities: databaseEntities
+                })
+
+                return dbResponse
+            } catch (error) {
+                return []
+            }
+        } else {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Node ${nodeName} not found`
+            }
+        }
+    } catch (error) {
+        throw new Error(`Error: nodesService.getSingleNodeAsyncOptions - ${error}`)
+    }
+}
+
+// execute custom function node
+const executeCustomFunction = async (requestBody: any) => {
+    try {
+        const flowXpresApp = getRunningExpressApp()
+        const body = requestBody
+        const functionInputVariables = Object.fromEntries(
+            [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
+        )
+        const nodeData = { inputs: { functionInputVariables, ...body } }
+        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, 'customFunction')) {
+            try {
+                const nodeInstanceFilePath = flowXpresApp.nodesPool.componentNodes['customFunction'].filePath as string
+                const nodeModule = await import(nodeInstanceFilePath)
+                const newNodeInstance = new nodeModule.nodeClass()
+
+                const options: ICommonObject = {
+                    appDataSource: flowXpresApp.AppDataSource,
+                    databaseEntities,
+                    logger
+                }
+
+                const returnData = await newNodeInstance.init(nodeData, '', options)
+                const dbResponse = typeof returnData === 'string' ? handleEscapeCharacters(returnData, true) : returnData
+
+                return dbResponse
+            } catch (error) {
+                return {
+                    executionError: true,
+                    status: 500,
+                    msg: `Error running custom function: ${error}`
+                }
+            }
+        } else {
+            return {
+                executionError: true,
+                status: 404,
+                msg: `Node customFunction not found`
+            }
+        }
+    } catch (error) {
+        throw new Error(`Error: nodesService.executeCustomFunction - ${error}`)
+    }
+}
+
 export default {
     getAllNodes,
-    getNodeByName
+    getNodeByName,
+    getSingleNodeIcon,
+    getSingleNodeAsyncOptions,
+    executeCustomFunction
 }

@@ -22,7 +22,55 @@ const getNodeByName = async (req: Request, res: Response, next: NextFunction) =>
     }
 }
 
+const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.name === 'undefined' || req.params.name === '') {
+            throw new Error(`Error: nodesController.getSingleNodeIcon - name not provided!`)
+        }
+        const apiResponse = await nodesService.getSingleNodeIcon(req.params.name)
+        return res.sendFile(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: nodesController.getSingleNodeAsyncOptions - body not provided!`)
+        }
+        if (typeof req.params.name === 'undefined' || req.params.name === '') {
+            throw new Error(`Error: nodesController.getSingleNodeAsyncOptions - name not provided!`)
+        }
+        const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, req.body)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const executeCustomFunction = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: nodesController.executeCustomFunction - body not provided!`)
+        }
+        const apiResponse = await nodesService.executeCustomFunction(req.body)
+        if (typeof apiResponse.executionError !== 'undefined') {
+            return res.status(apiResponse.status).send(apiResponse.msg)
+        }
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     getAllNodes,
-    getNodeByName
+    getNodeByName,
+    getSingleNodeIcon,
+    getSingleNodeAsyncOptions,
+    executeCustomFunction
 }

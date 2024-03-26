@@ -1,0 +1,14 @@
+import express from 'express'
+import nodeConfigsController from '../../controllers/node-configs'
+const router = express.Router()
+
+// CREATE
+router.post('/', nodeConfigsController.getAllNodeConfigs)
+
+// READ
+
+// UPDATE
+
+// DELETE
+
+export default router
