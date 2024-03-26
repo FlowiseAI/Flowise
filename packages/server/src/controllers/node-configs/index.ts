@@ -3,6 +3,9 @@ import nodeConfigsService from '../../services/node-configs'
 
 const getAllNodeConfigs = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (typeof req.body === 'undefined' || req.body === '') {
+            throw new Error(`Error: nodeConfigsController.getAllNodeConfigs - body not provided!`)
+        }
         const apiResponse = await nodeConfigsService.getAllNodeConfigs(req.body)
         return res.json(apiResponse)
     } catch (error) {

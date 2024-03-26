@@ -31,7 +31,6 @@ import {
     resolveVariables,
     isStartNodeDependOnInput,
     mapMimeTypeToInputField,
-    findAvailableConfigs,
     isSameOverrideConfig,
     isFlowValidForStream,
     databaseEntities,
@@ -183,12 +182,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        this.app.post('/api/v1/node-config', async (req: Request, res: Response) => {
-            const nodes = [{ data: req.body }] as IReactFlowNode[]
-            const availableConfigs = findAvailableConfigs(nodes, this.nodesPool.componentCredentials)
-            return res.json(availableConfigs)
-        })
 
         this.app.get('/api/v1/version', async (req: Request, res: Response) => {
             const getPackageJsonPath = (): string => {

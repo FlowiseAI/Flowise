@@ -2,7 +2,7 @@ import { findAvailableConfigs } from '../../utils'
 import { IReactFlowNode } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
-const getAllNodeConfigs = async (requestBody) => {
+const getAllNodeConfigs = async (requestBody: any) => {
     try {
         const flowXpresApp = getRunningExpressApp()
         const nodes = [{ data: requestBody }] as IReactFlowNode[]
