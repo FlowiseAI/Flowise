@@ -29,7 +29,7 @@ const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextF
         if (typeof req.query.credential === 'undefined' || req.query.credential === '') {
             throw new Error(`Error: openaiAssistantsController.getSingleOpenaiAssistant - credential not provided!`)
         }
-        const apiResponse = await openaiAssistantsService.getSingleOpenaiAssistant(req.query.credential as string)
+        const apiResponse = await openaiAssistantsService.getSingleOpenaiAssistant(req.query.credential as string, req.params.id)
         if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }

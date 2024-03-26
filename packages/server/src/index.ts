@@ -189,36 +189,6 @@ export class App {
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
-        // ----------------------------------------
-        // Assistant
-        // ----------------------------------------
-
-        // Get assistant object
-        this.app.get('/api/v1/openai-assistants/:id', async (req: Request, res: Response) => {
-            const credentialId = req.query.credential as string
-            const credential = await this.AppDataSource.getRepository(Credential).findOneBy({
-                id: credentialId
-            })
-
-            if (!credential) return res.status(404).send(`Credential ${credentialId} not found`)
-
-            // Decrpyt credentialData
-            const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-            const openAIApiKey = decryptedCredentialData['openAIApiKey']
-            if (!openAIApiKey) return res.status(404).send(`OpenAI ApiKey not found`)
-
-            const openai = new OpenAI({ apiKey: openAIApiKey })
-            const retrievedAssistant = await openai.beta.assistants.retrieve(req.params.id)
-            const resp = await openai.files.list()
-            const existingFiles = resp.data ?? []
-
-            if (retrievedAssistant.file_ids && retrievedAssistant.file_ids.length) {
-                ;(retrievedAssistant as any).files = existingFiles.filter((file) => retrievedAssistant.file_ids.includes(file.id))
-            }
-
-            return res.json(retrievedAssistant)
-        })
-
         // List available assistants
         this.app.get('/api/v1/openai-assistants', async (req: Request, res: Response) => {
             const credentialId = req.query.credential as string

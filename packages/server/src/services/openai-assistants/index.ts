@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { Credential } from '../../database/entities/Credential'
 
 // ----------------------------------------
 // Assistants
@@ -40,7 +41,7 @@ const getAllOpenaiAssistants = async (credentialId: string) => {
 }
 
 // Get assistant object
-const getSingleOpenaiAssistant = async (credentialId: string) => {
+const getSingleOpenaiAssistant = async (credentialId: string, assistantId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
         const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
@@ -63,8 +64,9 @@ const getSingleOpenaiAssistant = async (credentialId: string) => {
                 msg: `OpenAI ApiKey not found`
             }
         }
+
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.assistants.retrieve(credentialId)
+        const dbResponse = await openai.beta.assistants.retrieve(assistantId)
         const resp = await openai.files.list()
         const existingFiles = resp.data ?? []
         if (dbResponse.file_ids && dbResponse.file_ids.length) {
