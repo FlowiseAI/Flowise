@@ -7,7 +7,7 @@ const creatTool = async (req: Request, res: Response, next: NextFunction) => {
             throw new Error(`Error: toolsController.creatTool - body not provided!`)
         }
         const apiResponse = await toolsService.creatTool(req.body)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -22,7 +22,7 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
             throw new Error(`Error: toolsController.updateTool - id not provided!`)
         }
         const apiResponse = await toolsService.deleteTool(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -34,7 +34,7 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
 const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await toolsService.getAllTools()
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -49,7 +49,7 @@ const getToolById = async (req: Request, res: Response, next: NextFunction) => {
             throw new Error(`Error: toolsController.getToolById - id not provided!`)
         }
         const apiResponse = await toolsService.getToolById(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -67,7 +67,7 @@ const updateTool = async (req: Request, res: Response, next: NextFunction) => {
             throw new Error(`Error: toolsController.deleteTool - body not provided!`)
         }
         const apiResponse = await toolsService.updateTool(req.params.id, req.body)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)

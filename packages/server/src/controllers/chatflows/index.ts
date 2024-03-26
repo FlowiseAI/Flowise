@@ -10,7 +10,7 @@ const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, n
             throw new Error(`Error: chatflowsRouter.checkIfChatflowIsValidForStreaming - id not provided!`)
         }
         const apiResponse = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -25,7 +25,7 @@ const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, nex
             throw new Error(`Error: chatflowsRouter.checkIfChatflowIsValidForUploads - id not provided!`)
         }
         const apiResponse = await chatflowsService.checkIfChatflowIsValidForUploads(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -66,7 +66,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
             return res.status(401).send('Unauthorized')
         }
         const apiResponse = await chatflowsService.getChatflowByApiKey(apiKey.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -81,7 +81,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
             throw new Error(`Error: chatflowsRouter.getChatflowById - id not provided!`)
         }
         const apiResponse = await chatflowsService.getChatflowById(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -132,7 +132,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
             throw new Error(`Error: chatflowsRouter.updateChatflow - id not provided!`)
         }
         const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -147,7 +147,7 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
             throw new Error(`Error: chatflowsRouter.getSinglePublicChatbotConfig - id not provided!`)
         }
         const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)

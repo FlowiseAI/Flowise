@@ -4,7 +4,7 @@ import versionsService from '../../services/versions'
 const getVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await versionsService.getVersion()
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)

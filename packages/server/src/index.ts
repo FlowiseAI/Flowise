@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, Between } from 'typeorm'
+import { DataSource } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -20,7 +20,6 @@ import {
     INodeData,
     chatType,
     IChatMessage,
-    IChatMessageFeedback,
     IDepthQueue,
     INodeDirectedGraph,
     IUploadFileSizeAndTypes
@@ -190,38 +189,6 @@ export class App {
         }
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
-
-        // ----------------------------------------
-        // Chat Message Feedback
-        // ----------------------------------------
-
-        // Get all chatmessage feedback from chatflowid
-        this.app.get('/api/v1/feedback/:id', async (req: Request, res: Response) => {
-            const chatflowid = req.params.id
-            const chatId = req.query?.chatId as string | undefined
-            const sortOrder = req.query?.order as string | undefined
-            const startDate = req.query?.startDate as string | undefined
-            const endDate = req.query?.endDate as string | undefined
-
-            const feedback = await this.getChatMessageFeedback(chatflowid, chatId, sortOrder, startDate, endDate)
-
-            return res.json(feedback)
-        })
-
-        // Add chatmessage feedback for chatflowid
-        this.app.post('/api/v1/feedback/:id', async (req: Request, res: Response) => {
-            const body = req.body
-            const results = await this.addChatMessageFeedback(body)
-            return res.json(results)
-        })
-
-        // Update chatmessage feedback for id
-        this.app.put('/api/v1/feedback/:id', async (req: Request, res: Response) => {
-            const id = req.params.id
-            const body = req.body
-            await this.updateChatMessageFeedback(id, body)
-            return res.json({ status: 'OK' })
-        })
 
         // ----------------------------------------
         // stats
@@ -737,62 +704,6 @@ export class App {
 
         const chatmessage = this.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
         return await this.AppDataSource.getRepository(ChatMessage).save(chatmessage)
-    }
-
-    /**
-     * Method that get chat messages.
-     * @param {string} chatflowid
-     * @param {string} sortOrder
-     * @param {string} chatId
-     * @param {string} startDate
-     * @param {string} endDate
-     */
-    async getChatMessageFeedback(
-        chatflowid: string,
-        chatId?: string,
-        sortOrder: string = 'ASC',
-        startDate?: string,
-        endDate?: string
-    ): Promise<ChatMessageFeedback[]> {
-        let fromDate
-        if (startDate) fromDate = new Date(startDate)
-
-        let toDate
-        if (endDate) toDate = new Date(endDate)
-        return await this.AppDataSource.getRepository(ChatMessageFeedback).find({
-            where: {
-                chatflowid,
-                chatId,
-                createdDate: toDate && fromDate ? Between(fromDate, toDate) : undefined
-            },
-            order: {
-                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-            }
-        })
-    }
-
-    /**
-     * Method that add chat message feedback.
-     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
-     */
-    async addChatMessageFeedback(chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> {
-        const newChatMessageFeedback = new ChatMessageFeedback()
-        Object.assign(newChatMessageFeedback, chatMessageFeedback)
-
-        const feedback = this.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
-        return await this.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
-    }
-
-    /**
-     * Method that updates chat message feedback.
-     * @param {string} id
-     * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
-     */
-    async updateChatMessageFeedback(id: string, chatMessageFeedback: Partial<IChatMessageFeedback>) {
-        const newChatMessageFeedback = new ChatMessageFeedback()
-        Object.assign(newChatMessageFeedback, chatMessageFeedback)
-
-        await this.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
     }
 
     async upsertVector(req: Request, res: Response, isInternal: boolean = false) {

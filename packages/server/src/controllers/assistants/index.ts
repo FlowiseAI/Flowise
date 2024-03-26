@@ -7,7 +7,7 @@ const creatAssistant = async (req: Request, res: Response, next: NextFunction) =
             throw new Error(`Error: assistantsController.creatAssistant - body not provided!`)
         }
         const apiResponse = await assistantsService.creatAssistant(req.body)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -22,7 +22,7 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
             throw new Error(`Error: assistantsController.deleteAssistant - id not provided!`)
         }
         const apiResponse = await assistantsService.deleteAssistant(req.params.id, req.query.isDeleteBoth)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -34,7 +34,7 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
 const getAllAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await assistantsService.getAllAssistants()
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -49,7 +49,7 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
             throw new Error(`Error: assistantsController.getAssistantById - id not provided!`)
         }
         const apiResponse = await assistantsService.getAssistantById(req.params.id)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -67,7 +67,7 @@ const updateAssistant = async (req: Request, res: Response, next: NextFunction) 
             throw new Error(`Error: assistantsController.updateAssistant - body not provided!`)
         }
         const apiResponse = await assistantsService.updateAssistant(req.params.id, req.body)
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)

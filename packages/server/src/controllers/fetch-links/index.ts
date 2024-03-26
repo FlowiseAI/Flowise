@@ -17,7 +17,7 @@ const getAllLinks = async (req: Request, res: Response, next: NextFunction) => {
             req.query.relativeLinksMethod as string,
             req.query.limit as string
         )
-        if (typeof apiResponse.executionError !== 'undefined') {
+        if (apiResponse.executionError) {
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
