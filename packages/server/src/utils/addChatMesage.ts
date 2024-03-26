@@ -6,10 +6,14 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
  * Method that add chat messages.
  * @param {Partial<IChatMessage>} chatMessage
  */
-export const addChatMessage = async (chatMessage: Partial<IChatMessage>): Promise<ChatMessage> => {
+export const utilAddChatMessage = async (chatMessage: Partial<IChatMessage>): Promise<ChatMessage> => {
     const flowXpresApp = getRunningExpressApp()
     const newChatMessage = new ChatMessage()
     Object.assign(newChatMessage, chatMessage)
+    if (!newChatMessage.createdDate) {
+        newChatMessage.createdDate = new Date()
+    }
     const chatmessage = await flowXpresApp.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
-    return await flowXpresApp.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatMessage).save(chatmessage)
+    return dbResponse
 }

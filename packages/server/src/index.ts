@@ -193,13 +193,6 @@ export class App {
 
         const upload = multer({ dest: `${path.join(__dirname, '..', 'uploads')}/` })
 
-        // Add chatmessages for chatflowid
-        this.app.post('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
-            const body = req.body
-            const results = await this.addChatMessage(body)
-            return res.json(results)
-        })
-
         // Delete all chatmessages from chatId
         this.app.delete('/api/v1/chatmessage/:id', async (req: Request, res: Response) => {
             const chatflowid = req.params.id
