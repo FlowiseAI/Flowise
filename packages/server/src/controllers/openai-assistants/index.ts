@@ -11,9 +11,7 @@ const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFun
             throw new Error(`Error: openaiAssistantsController.getAllOpenaiAssistants - credential not provided!`)
         }
         const apiResponse = await openaiAssistantsService.getAllOpenaiAssistants(req.query.credential as string)
-        //@ts-ignore
         if (typeof apiResponse.executionError !== 'undefined') {
-            //@ts-ignore
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
@@ -32,9 +30,7 @@ const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextF
             throw new Error(`Error: openaiAssistantsController.getSingleOpenaiAssistant - credential not provided!`)
         }
         const apiResponse = await openaiAssistantsService.getSingleOpenaiAssistant(req.query.credential as string)
-        //@ts-ignore
         if (typeof apiResponse.executionError !== 'undefined') {
-            //@ts-ignore
             return res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)

@@ -32,7 +32,6 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
             }
 
             // Decrpyt credentialData
-            //@ts-ignore
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
@@ -262,7 +261,6 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             }
 
             // Decrpyt credentialData
-            //@ts-ignore
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {

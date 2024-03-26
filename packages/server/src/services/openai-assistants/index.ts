@@ -21,7 +21,6 @@ const getAllOpenaiAssistants = async (credentialId: string) => {
             }
         }
         // Decrpyt credentialData
-        //@ts-ignore
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
         if (!openAIApiKey) {
@@ -55,7 +54,6 @@ const getSingleOpenaiAssistant = async (credentialId: string) => {
             }
         }
         // Decrpyt credentialData
-        //@ts-ignore
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
         if (!openAIApiKey) {

@@ -10,7 +10,6 @@ const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        //@ts-ignore
         await buildChatflow(req, res, socketIO)
     } catch (error) {
         next(error)

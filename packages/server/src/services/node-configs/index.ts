@@ -2,7 +2,6 @@ import { findAvailableConfigs } from '../../utils'
 import { IReactFlowNode } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
-//@ts-ignore
 const getAllNodeConfigs = async (requestBody) => {
     try {
         const flowXpresApp = getRunningExpressApp()

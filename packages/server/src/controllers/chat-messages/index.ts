@@ -94,9 +94,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             memoryType,
             sessionId
         )
-        //@ts-ignore
         if (typeof apiResponse.executionError !== 'undefined') {
-            //@ts-ignore
             res.status(apiResponse.status).send(apiResponse.msg)
         }
         return res.json(apiResponse)
