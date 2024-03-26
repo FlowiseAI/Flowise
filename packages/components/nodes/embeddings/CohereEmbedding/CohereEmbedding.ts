@@ -17,7 +17,7 @@ class CohereEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Cohere Embeddings'
         this.name = 'cohereEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'CohereEmbeddings'
         this.icon = 'Cohere.svg'
         this.category = 'Embeddings'
@@ -36,19 +36,73 @@ class CohereEmbedding_Embeddings implements INode {
                 type: 'options',
                 options: [
                     {
+                        label: 'embed-english-v3.0',
+                        name: 'embed-english-v3.0',
+                        description: 'Embedding Dimensions: 1024'
+                    },
+                    {
+                        label: 'embed-english-light-v3.0',
+                        name: 'embed-english-light-v3.0',
+                        description: 'Embedding Dimensions: 384'
+                    },
+                    {
+                        label: 'embed-multilingual-v3.0',
+                        name: 'embed-multilingual-v3.0',
+                        description: 'Embedding Dimensions: 1024'
+                    },
+                    {
+                        label: 'embed-multilingual-light-v3.0',
+                        name: 'embed-multilingual-light-v3.0',
+                        description: 'Embedding Dimensions: 384'
+                    },
+                    {
                         label: 'embed-english-v2.0',
-                        name: 'embed-english-v2.0'
+                        name: 'embed-english-v2.0',
+                        description: 'Embedding Dimensions: 4096'
                     },
                     {
                         label: 'embed-english-light-v2.0',
-                        name: 'embed-english-light-v2.0'
+                        name: 'embed-english-light-v2.0',
+                        description: 'Embedding Dimensions: 1024'
                     },
                     {
                         label: 'embed-multilingual-v2.0',
-                        name: 'embed-multilingual-v2.0'
+                        name: 'embed-multilingual-v2.0',
+                        description: 'Embedding Dimensions: 768'
                     }
                 ],
                 default: 'embed-english-v2.0',
+                optional: true
+            },
+            {
+                label: 'Type',
+                name: 'inputType',
+                type: 'options',
+                description:
+                    'Specifies the type of input passed to the model. Required for embedding models v3 and higher. <a target="_blank" href="https://docs.cohere.com/reference/embed">Official Docs</a>',
+                options: [
+                    {
+                        label: 'search_document',
+                        name: 'search_document',
+                        description: 'Use this to encode documents for embeddings that you store in a vector database for search use-cases'
+                    },
+                    {
+                        label: 'search_query',
+                        name: 'search_query',
+                        description: 'Use this when you query your vector DB to find relevant documents.'
+                    },
+                    {
+                        label: 'classification',
+                        name: 'classification',
+                        description: 'Use this when you use the embeddings as an input to a text classifier'
+                    },
+                    {
+                        label: 'clustering',
+                        name: 'clustering',
+                        description: 'Use this when you want to cluster the embeddings.'
+                    }
+                ],
+                default: 'search_query',
                 optional: true
             }
         ]
@@ -56,6 +110,7 @@ class CohereEmbedding_Embeddings implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
+        const inputType = nodeData.inputs?.inputType as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
@@ -65,6 +120,7 @@ class CohereEmbedding_Embeddings implements INode {
         }
 
         if (modelName) obj.model = modelName
+        if (inputType) obj.inputType = inputType
 
         const model = new CohereEmbeddings(obj)
         return model
