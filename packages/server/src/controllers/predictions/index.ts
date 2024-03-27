@@ -47,9 +47,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             if (apiResponse.executionError) {
                 return res.status(apiResponse.status).send(apiResponse.msg)
             }
-            return {
-                status: 'OK'
-            }
+            return res.json(apiResponse)
         } else {
             return res.status(401).send(`This site is not allowed to access this chatbot`)
         }
