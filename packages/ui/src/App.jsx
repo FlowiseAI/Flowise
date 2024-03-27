@@ -98,7 +98,7 @@ const App = () => {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 for (const addedNode of mutation.addedNodes) {
-                    if (addedNode.matches && addedNode.matches('flowise-fullchatbot')) {
+                    if (addedNode.matches && addedNode.matches('start-ai-fullchatbot')) {
                         // Получаем или создаем shadow DOM элемент
                         const shadowRoot = addedNode.shadowRoot || addedNode.attachShadow({ mode: 'open' })
 
