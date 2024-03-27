@@ -28,6 +28,6 @@ jobs:
                         "ref": "${{ github.ref }}",
                         "prNumber": "${{ github.event.pull_request.number }}",
                         "prTitle": "${{ github.event.pull_request.title }}",
-                        "prDescription": "${{ github.event.pull_request.description }}",
+                        "prDescription": "${{ toJSON(github.event.pull_request.description) }}",
                         "sha": "${{ github.sha }}"
                       }

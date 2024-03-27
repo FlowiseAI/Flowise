@@ -270,3 +270,13 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
+
+export interface IVisionChatModal {
+    id: string
+    configuredModel: string
+    multiModalOption: IMultiModalOption
+    configuredMaxToken?: number
+    setVisionModel(): void
+    revertToOriginalModel(): void
+    setMultiModalOption(multiModalOption: IMultiModalOption): void
+}

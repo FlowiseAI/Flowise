@@ -15,7 +15,7 @@
             "data": {
                 "id": "autoGPT_0",
                 "label": "AutoGPT",
-                "version": 1,
+                "version": 2,
                 "name": "autoGPT",
                 "type": "AutoGPT",
                 "baseClasses": ["AutoGPT"],
@@ -66,9 +66,19 @@
                         "name": "vectorStoreRetriever",
                         "type": "BaseRetriever",
                         "id": "autoGPT_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "autoGPT_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{readFile_0.data.instance}}", "{{writeFile_1.data.instance}}", "{{serpAPI_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
