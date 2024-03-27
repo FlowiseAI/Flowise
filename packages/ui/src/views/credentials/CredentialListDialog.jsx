@@ -55,9 +55,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
             <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
                 {dialogProps.title}
             </DialogTitle>
-            <DialogContent
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', pl: 3, pr: 1.5, pb: 3 }}
-            >
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
                 <Box
                     sx={{
                         backgroundColor: customization.isDarkMode ? theme.palette.background.darkPaper : theme.palette.background.paper,

@@ -30,7 +30,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
     let [internalValue, setInternalValue] = useState(value ?? [])
 
     return (
-        <FormControl sx={{ mt: 1, width: '100%', ...formControlSx }} size='small'>
+        <FormControl sx={{ width: '100%', height: '52px', ...formControlSx }} size='small'>
             <Autocomplete
                 id={name}
                 disabled={disabled}
@@ -53,7 +53,9 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
                     onSelect(value)
                 }}
                 PopperComponent={StyledPopper}
-                renderInput={(params) => <TextField {...params} value={internalValue} />}
+                renderInput={(params) => (
+                    <TextField {...params} value={internalValue} sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }} />
+                )}
                 renderOption={(props, option) => (
                     <Box component='li' {...props}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -64,6 +66,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
                         </div>
                     </Box>
                 )}
+                sx={{ height: '100%' }}
             />
         </FormControl>
     )

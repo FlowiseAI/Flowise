@@ -398,9 +398,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                     )}
                 </Box>
             </DialogTitle>
-            <DialogContent
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', pl: 3, pr: 1.5, pb: 3 }}
-            >
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
@@ -408,10 +406,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                                 Tool Name
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
-                            <TooltipWithParser
-                                sx={{ ml: 2, mt: -0.5 }}
-                                title={'Tool name must be small capital letter with underscore. Ex: my_tool'}
-                            />
+                            <TooltipWithParser title={'Tool name must be small capital letter with underscore. Ex: my_tool'} />
                         </Stack>
                         <OutlinedInput
                             id='toolName'
@@ -431,7 +426,6 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                             <TooltipWithParser
-                                sx={{ ml: 2, mt: -0.5 }}
                                 title={'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'}
                             />
                         </Stack>
@@ -467,7 +461,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                 <Typography variant='overline'>Output Schema</Typography>
-                                <TooltipWithParser sx={{ ml: 2, mt: -0.5 }} title={'What should be the output response in JSON format?'} />
+                                <TooltipWithParser title={'What should be the output response in JSON format?'} />
                             </Stack>
                             {dialogProps.type !== 'TEMPLATE' && (
                                 <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
@@ -481,16 +475,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                 <Typography variant='overline'>Javascript Function</Typography>
-                                <TooltipWithParser
-                                    sx={{ ml: 2, mt: -0.5 }}
-                                    title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>'
-                                />
+                                <TooltipWithParser title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>' />
                             </Stack>
                             <Stack direction='row'>
                                 <Button
                                     style={{ marginBottom: 10, marginRight: 10 }}
                                     color='secondary'
-                                    variant='outlined'
+                                    variant='text'
                                     onClick={() => setShowHowToDialog(true)}
                                 >
                                     How to use Function
@@ -505,7 +496,6 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                         <CodeEditor
                             disabled={dialogProps.type === 'TEMPLATE'}
                             value={toolFunc}
-                            height='calc(100vh - 220px)'
                             theme={customization.isDarkMode ? 'dark' : 'light'}
                             lang={'js'}
                             onValueChange={(code) => setToolFunc(code)}
@@ -513,7 +503,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                     </Box>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ p: 3, pt: 0 }}>
+            <DialogActions sx={{ p: 3 }}>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => deleteTool()}>
                         Delete
