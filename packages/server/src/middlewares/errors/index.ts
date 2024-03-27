@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ApiError } from '../../errors/apiError'
 
-async function errorMiddleware(err: ApiError, req: Request, res: Response, next: NextFunction) {
+async function errorMiddleware(err: ApiError, req: Request, res: Response) {
     // Provide error stack trace only in development
     var executionEnvironment = process.env.NODE_ENV || 'development'
     res.locals.message = err.message

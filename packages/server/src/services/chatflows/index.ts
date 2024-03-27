@@ -93,7 +93,6 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
 // Check if chatflow valid for uploads
 const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
         const dbResponse = await utilGetUploadsConfig(chatflowId)
         return dbResponse
     } catch (error) {
