@@ -13,6 +13,7 @@ import {
 import logger from '../../utils/logger'
 import { getStoragePath } from 'flowise-components'
 import { IReactFlowObject } from '../../Interface'
+import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -93,7 +94,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
 const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any> => {
     try {
         const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.getUploadsConfig(chatflowId)
+        const dbResponse = await utilGetUploadsConfig(chatflowId)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: chatflowsService.checkIfChatflowIsValidForUploads - ${error}`)
@@ -243,7 +244,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                 msg: `Chatflow ${chatflowId} not found`
             }
         }
-        const uploadsConfig = await flowXpresApp.getUploadsConfig(chatflowId)
+        const uploadsConfig = await utilGetUploadsConfig(chatflowId)
         // even if chatbotConfig is not set but uploads are enabled
         // send uploadsConfig to the chatbot
         if (dbResponse.chatbotConfig || uploadsConfig) {

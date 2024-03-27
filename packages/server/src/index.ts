@@ -8,14 +8,13 @@ import { Server } from 'socket.io'
 import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { DataSource } from 'typeorm'
-import { IChatFlow, IReactFlowNode, IUploadFileSizeAndTypes } from './Interface'
+import { IChatFlow } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { INodeParams } from 'flowise-components'
 import { initializeRateLimiter } from './utils/rateLimit'
 import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
@@ -167,74 +166,6 @@ export class App {
 
         // Error handling
         this.app.use(errorHandler)
-    }
-
-    /**
-     * Method that checks if uploads are enabled in the chatflow
-     * @param {string} chatflowid
-     */
-    async getUploadsConfig(chatflowid: string): Promise<any> {
-        const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowid
-        })
-        if (!chatflow) return `Chatflow ${chatflowid} not found`
-
-        const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-        const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI']
-
-        const flowObj = JSON.parse(chatflow.flowData)
-        const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
-
-        let isSpeechToTextEnabled = false
-        if (chatflow.speechToText) {
-            const speechToTextProviders = JSON.parse(chatflow.speechToText)
-            for (const provider in speechToTextProviders) {
-                if (provider !== 'none') {
-                    const providerObj = speechToTextProviders[provider]
-                    if (providerObj.status) {
-                        isSpeechToTextEnabled = true
-                        break
-                    }
-                }
-            }
-        }
-
-        let isImageUploadAllowed = false
-        const nodes: IReactFlowNode[] = flowObj.nodes
-
-        /*
-         * Condition for isImageUploadAllowed
-         * 1.) one of the uploadAllowedNodes exists
-         * 2.) one of the uploadProcessingNodes exists + allowImageUploads is ON
-         */
-        if (!nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
-            return {
-                isSpeechToTextEnabled,
-                isImageUploadAllowed: false,
-                imgUploadSizeAndTypes
-            }
-        }
-
-        nodes.forEach((node: IReactFlowNode) => {
-            if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
-                // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
-                node.data.inputParams.map((param: INodeParams) => {
-                    if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
-                        imgUploadSizeAndTypes.push({
-                            fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
-                            maxUploadSize: 5
-                        })
-                        isImageUploadAllowed = true
-                    }
-                })
-            }
-        })
-
-        return {
-            isSpeechToTextEnabled,
-            isImageUploadAllowed,
-            imgUploadSizeAndTypes
-        }
     }
 
     async stopApp() {
