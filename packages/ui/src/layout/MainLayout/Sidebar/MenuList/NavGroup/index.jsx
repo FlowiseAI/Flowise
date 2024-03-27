@@ -44,6 +44,7 @@ const NavGroup = ({ item }) => {
                         </Typography>
                     )
                 }
+                sx={{ py: '20px' }}
             >
                 {items}
             </List>

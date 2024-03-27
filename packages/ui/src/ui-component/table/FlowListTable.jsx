@@ -1,32 +1,39 @@
 import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import moment from 'moment'
 import { styled } from '@mui/material/styles'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import Paper from '@mui/material/Paper'
-import Chip from '@mui/material/Chip'
-import { Button, Stack, Typography } from '@mui/material'
+import {
+    Box,
+    Chip,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+    useTheme
+} from '@mui/material'
+import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
+import { Link } from 'react-router-dom'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    borderColor: theme.palette.grey[900] + 25,
+
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.common.black,
-        color: theme.palette.common.white
+        color: theme.palette.grey[900]
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14
+        fontSize: 14,
+        height: 64
     }
 }))
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover
-    },
+const StyledTableRow = styled(TableRow)(() => ({
     // hide last border
     '&:last-child td, &:last-child th': {
         border: 0
@@ -34,17 +41,20 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }))
 
 export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) => {
-    const navigate = useNavigate()
-    const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`)
-    }
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
 
     return (
         <>
-            <TableContainer style={{ marginTop: '30', border: 1 }} component={Paper}>
+            <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
                 <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
-                    <TableHead>
-                        <TableRow sx={{ marginTop: '10', backgroundColor: 'primary' }}>
+                    <TableHead
+                        sx={{
+                            backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                            height: 56
+                        }}
+                    >
+                        <TableRow>
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 Name
                             </StyledTableCell>
@@ -65,16 +75,26 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                     <TableBody>
                         {data.filter(filterFunction).map((row, index) => (
                             <StyledTableRow key={index}>
-                                <TableCell key='0'>
-                                    <Typography
-                                        sx={{ fontSize: '1.2rem', fontWeight: 500, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
-                                    >
-                                        <Button onClick={() => goToCanvas(row)} sx={{ textAlign: 'left' }}>
-                                            {row.templateName || row.name}
-                                        </Button>
-                                    </Typography>
-                                </TableCell>
-                                <TableCell key='1'>
+                                <StyledTableCell key='0'>
+                                    <Tooltip title={row.templateName || row.name}>
+                                        <Typography
+                                            sx={{
+                                                display: '-webkit-box',
+                                                fontSize: 14,
+                                                fontWeight: 500,
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                textOverflow: 'ellipsis',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                {row.templateName || row.name}
+                                            </Link>
+                                        </Typography>
+                                    </Tooltip>
+                                </StyledTableCell>
+                                <StyledTableCell key='1'>
                                     <div
                                         style={{
                                             display: 'flex',
@@ -91,27 +111,27 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                                     <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
                                                 ))}
                                     </div>
-                                </TableCell>
-                                <TableCell key='2'>
+                                </StyledTableCell>
+                                <StyledTableCell key='2'>
                                     {images[row.id] && (
-                                        <div
-                                            style={{
+                                        <Box
+                                            sx={{
                                                 display: 'flex',
-                                                flexDirection: 'row',
-                                                flexWrap: 'wrap',
-                                                marginTop: 5
+                                                alignItems: 'center',
+                                                justifyContent: 'start',
+                                                gap: 1
                                             }}
                                         >
                                             {images[row.id].slice(0, images[row.id].length > 5 ? 5 : images[row.id].length).map((img) => (
-                                                <div
+                                                <Box
                                                     key={img}
-                                                    style={{
-                                                        width: 35,
-                                                        height: 35,
-                                                        marginRight: 5,
+                                                    sx={{
+                                                        width: 30,
+                                                        height: 30,
                                                         borderRadius: '50%',
-                                                        backgroundColor: 'white',
-                                                        marginTop: 5
+                                                        backgroundColor: customization.isDarkMode
+                                                            ? theme.palette.common.white
+                                                            : theme.palette.grey[300] + 75
                                                     }}
                                                 >
                                                     <img
@@ -119,24 +139,24 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                                                         alt=''
                                                         src={img}
                                                     />
-                                                </div>
+                                                </Box>
                                             ))}
                                             {images[row.id].length > 5 && (
                                                 <Typography
-                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.8rem', fontWeight: 200 }}
+                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}
                                                 >
                                                     + {images[row.id].length - 5} More
                                                 </Typography>
                                             )}
-                                        </div>
+                                        </Box>
                                     )}
-                                </TableCell>
-                                <TableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</TableCell>
-                                <TableCell key='4'>
+                                </StyledTableCell>
+                                <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                <StyledTableCell key='4'>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                         <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
                                     </Stack>
-                                </TableCell>
+                                </StyledTableCell>
                             </StyledTableRow>
                         ))}
                     </TableBody>

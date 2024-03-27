@@ -25,7 +25,7 @@ export const Dropdown = ({ name, value, options, onSelect, disabled = false, dis
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
 
     return (
-        <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
+        <FormControl sx={{ width: '100%', height: '52px' }} size='small'>
             <Autocomplete
                 id={name}
                 disabled={disabled}
@@ -39,7 +39,9 @@ export const Dropdown = ({ name, value, options, onSelect, disabled = false, dis
                     onSelect(value)
                 }}
                 PopperComponent={StyledPopper}
-                renderInput={(params) => <TextField {...params} value={internalValue} />}
+                renderInput={(params) => (
+                    <TextField {...params} value={internalValue} sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }} />
+                )}
                 renderOption={(props, option) => (
                     <Box component='li' {...props}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -50,6 +52,7 @@ export const Dropdown = ({ name, value, options, onSelect, disabled = false, dis
                         </div>
                     </Box>
                 )}
+                sx={{ height: '100%' }}
             />
         </FormControl>
     )
