@@ -30,7 +30,7 @@ import useApi from '@/hooks/useApi'
 
 // icons
 import { IconPlus, IconEdit, IconTrash } from '@tabler/icons'
-import AddDocStoreDialog from '@/views/documents/AddDocStoreDialog'
+import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import moment from 'moment/moment'
@@ -144,9 +144,23 @@ const DocumentStoreDetails = () => {
                     </Grid>
                 </Stack>
                 {!getSpecificDocumentStore.loading && getSpecificDocumentStore.data && (
-                    <Typography sx={{ wordWrap: 'break-word' }} variant='h4'>
-                        {getSpecificDocumentStore.data?.description}
-                    </Typography>
+                    <>
+                        <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
+                            {getSpecificDocumentStore.data?.description}
+                        </Typography>
+                        <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
+                            {getSpecificDocumentStore.data?.totalFiles} Files, {getSpecificDocumentStore.data?.totalChars.toLocaleString()}
+                            {' Chars.'}
+                        </Typography>
+                        <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
+                            {getSpecificDocumentStore.data?.totalChunks}
+                            {' Chunks, '}
+                            {getSpecificDocumentStore.data?.chunkSize}
+                            {' Chunk Size, '}
+                            {getSpecificDocumentStore.data?.chunkOverlap}
+                            {' Chunk Overlap. '}
+                        </Typography>
+                    </>
                 )}
                 {getSpecificDocumentStore.data?.files.length > 0 && (
                     <TableContainer component={Paper}>

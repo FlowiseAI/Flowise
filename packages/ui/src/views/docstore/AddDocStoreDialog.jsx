@@ -49,10 +49,6 @@ const TextSplitter = [
     {
         label: 'Recursive Text Splitter',
         name: 'recursive-splitter'
-    },
-    {
-        label: 'Token Text Splitter',
-        name: 'token-splitter'
     }
 ]
 const MarkdownSplitter = [
@@ -146,6 +142,8 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [contentType, setContentType] = useState('text')
     const [textSplitter, setTextSplitter] = useState('recursive-splitter')
     const [codeLanguage, setCodeLanguage] = useState('')
+    const [chunkSize, setChunkSize] = useState(1000)
+    const [chunkOverlap, setChunkOverlap] = useState(50)
     const [dialogType, setDialogType] = useState('ADD')
 
     useEffect(() => {
@@ -156,12 +154,16 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setContentType(dialogProps.data.contentType)
             setTextSplitter(dialogProps.data.textSplitter)
             setCodeLanguage(dialogProps.data.codeLanguage)
+            setChunkSize(dialogProps.data.chunkSize)
+            setChunkOverlap(dialogProps.data.chunkOverlap)
         } else if (dialogProps.type === 'ADD') {
             setDocumentStoreName('')
             setDocumentStoreDesc('')
             setContentType('text')
             setTextSplitter('')
             setCodeLanguage('')
+            setChunkSize(1000)
+            setChunkOverlap(50)
         }
 
         return () => {
@@ -170,6 +172,8 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setContentType('text')
             setTextSplitter('')
             setCodeLanguage('')
+            setChunkSize(0)
+            setChunkOverlap(0)
         }
     }, [dialogProps])
 
@@ -179,7 +183,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
-    const addNewVariable = async () => {
+    const saveDocumentStore = async () => {
         try {
             const obj = {
                 name: documentStoreName,
@@ -207,7 +211,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (err) {
             const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response?.status}: ${err.response?.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Variable: ${errorData}`,
+                message: `Failed to add new Document Store: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -275,7 +279,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+            <DialogTitle style={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <div
                         style={{
@@ -327,7 +331,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <OutlinedInput
                         size='small'
                         multiline={true}
-                        rows={3}
+                        rows={2}
                         sx={{ mt: 1 }}
                         type='string'
                         fullWidth
@@ -402,12 +406,49 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         />
                     </Box>
                 )}
+
+                <Box sx={{ p: 2 }}>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <Typography>
+                            Chunk Size<span style={{ color: 'red' }}>&nbsp;*</span>
+                        </Typography>
+                        <div style={{ flexGrow: 1 }}></div>
+                    </div>
+                    <OutlinedInput
+                        size='small'
+                        multiline={false}
+                        sx={{ mt: 1 }}
+                        type='number'
+                        fullWidth
+                        key='chunkSize'
+                        onChange={(e) => setChunkSize(e.target.value)}
+                        value={chunkSize ?? 1000}
+                    />
+                </Box>
+                <Box sx={{ p: 2 }}>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <Typography>
+                            Chunk Overlap<span style={{ color: 'red' }}>&nbsp;*</span>
+                        </Typography>
+                        <div style={{ flexGrow: 1 }}></div>
+                    </div>
+                    <OutlinedInput
+                        size='small'
+                        multiline={false}
+                        sx={{ mt: 1 }}
+                        type='number'
+                        fullWidth
+                        key='chunkOverlap'
+                        onChange={(e) => setChunkOverlap(e.target.value)}
+                        value={chunkOverlap ?? 50}
+                    />
+                </Box>
             </DialogContent>
             <DialogActions>
                 <StyledButton
                     disabled={!documentStoreName}
                     variant='contained'
-                    onClick={() => (dialogType === 'ADD' ? addNewVariable() : saveVariable())}
+                    onClick={() => (dialogType === 'ADD' ? saveDocumentStore() : saveVariable())}
                 >
                     {dialogProps.confirmButtonName}
                 </StyledButton>

@@ -36,19 +36,19 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                 <SkeletonChatflowCard />
             ) : (
                 <CardWrapper onClick={onClick}>
-                    <Card sx={{ minWidth: 275 }}>
-                        <CardContent style={{ padding: 1 }}>
-                            <Typography sx={{ wordWrap: 'break-word' }} variant='h4' component='div'>
+                    <Card>
+                        <CardContent style={{ padding: 1, minHeight: '100px' }}>
+                            <Typography style={{ wordWrap: 'break-word' }} variant='h4' component='div'>
                                 {data.name}
                             </Typography>
                             <Typography sx={{ mb: 1.5 }} color='text.secondary'>
                                 {' '}
                             </Typography>
-                            <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
+                            <Typography style={{ wordBreak: 'break-word' }} variant='body2'>
                                 {data.description}
                             </Typography>
                         </CardContent>
-                        <CardActions style={{ padding: 1, marginTop: 20 }}>
+                        <CardActions style={{ padding: 1, marginTop: 15 }}>
                             <Typography sx={{ mb: 1.5 }} color='text.secondary'>
                                 {data.totalDocs}: Docs (Type: {data.contentType})
                             </Typography>

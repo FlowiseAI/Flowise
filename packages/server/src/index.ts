@@ -1318,6 +1318,8 @@ export class App {
                 contentType: 'text',
                 splitter: 'recursive-splitter',
                 codeLanguage: '',
+                chunkSize: 1000,
+                chunkOverlap: 50,
                 folderPath: 'qa',
                 totalDocs: 4
             }
@@ -1327,6 +1329,8 @@ export class App {
                 name: 'my code',
                 description: 'Flowise Code',
                 contentType: 'code',
+                chunkSize: 1000,
+                chunkOverlap: 50,
                 splitter: 'recursive-splitter',
                 folderPath: '',
                 codeLanguage: 'typescript',
@@ -1346,6 +1350,8 @@ export class App {
                 splitter: 'recursive-splitter',
                 codeLanguage: '',
                 folderPath: 'qa',
+                chunkSize: 1000,
+                chunkOverlap: 50,
                 totalDocs: 0
             }
             const dir = path.join(getStoragePath(), 'datasource', obj.folderPath)
