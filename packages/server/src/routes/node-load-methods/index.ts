@@ -2,13 +2,6 @@ import express from 'express'
 import nodesRouter from '../../controllers/nodes'
 const router = express.Router()
 
-// CREATE
-
-// READ
-router.get('/:name', nodesRouter.getSingleNodeAsyncOptions)
-
-// UPDATE
-
-// DELETE
+router.post('/:name', nodesRouter.getSingleNodeAsyncOptions)
 
 export default router
