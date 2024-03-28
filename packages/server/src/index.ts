@@ -168,29 +168,29 @@ export class App {
 
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
-            const whitelistURLs = [
-                // '/api/v1/verify/apikey/',
-                // '/api/v1/chatflows/apikey/',
-                // '/api/v1/public-chatflows',
-                // '/api/v1/public-chatbotConfig',
-                '/api/v1/prediction/',
-                // '/api/v1/vector/upsert/',
-                '/api/v1/node-icon/',
-                // '/api/v1/components-credentials-icon/',
-                // '/api/v1/chatflows-streaming',
-                // '/api/v1/chatflows-uploads',
-                // '/api/v1/openai-assistants-file',
-                // '/api/v1/feedback',
-                // '/api/v1/get-upload-file',
-                // '/api/v1/ip'
-            ]
+        const whitelistURLs = [
+            // '/api/v1/verify/apikey/',
+            // '/api/v1/chatflows/apikey/',
+            // '/api/v1/public-chatflows',
+            // '/api/v1/public-chatbotConfig',
+            '/api/v1/prediction/',
+            // '/api/v1/vector/upsert/',
+            '/api/v1/node-icon/',
+            '/api/v1/components-credentials-icon/'
+            // '/api/v1/chatflows-streaming',
+            // '/api/v1/chatflows-uploads',
+            // '/api/v1/openai-assistants-file',
+            // '/api/v1/feedback',
+            // '/api/v1/get-upload-file',
+            // '/api/v1/ip'
+        ]
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
- 
+
             this.app.use((req, res, next) => {
                 if (req.url.includes('/api/v1/')) {
                     whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
