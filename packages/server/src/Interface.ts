@@ -42,6 +42,7 @@ export interface IChatMessage {
     memoryType?: string
     sessionId?: string
     createdDate: Date
+    leadEmail?: string
 }
 
 export interface IChatMessageFeedback {
@@ -203,6 +204,7 @@ export interface IncomingInput {
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
+    leadEmail?: string
 }
 
 export interface IActiveChatflows {

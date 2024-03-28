@@ -2360,7 +2360,8 @@ export class App {
                 memoryType,
                 sessionId,
                 createdDate: userMessageDateTime,
-                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
+                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+                leadEmail: incomingInput.leadEmail
             }
             await this.addChatMessage(userMessage)
 
