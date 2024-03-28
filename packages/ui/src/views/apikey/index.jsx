@@ -234,7 +234,8 @@ const APIKey = () => {
             title: 'Add New API Key',
             type: 'ADD',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            confirmButtonName: 'Add',
+            customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -246,6 +247,7 @@ const APIKey = () => {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
+            customBtnId: 'btn_confirmEditingApiKey',
             key
         }
         setDialogProps(dialogProp)
@@ -260,7 +262,8 @@ const APIKey = () => {
                     ? `Delete key [${key.keyName}] ? `
                     : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
             confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            cancelButtonName: 'Cancel',
+            customBtnId: 'btn_initiateDeleteApiKey'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -363,6 +366,7 @@ const APIKey = () => {
                                         sx={{ color: 'white', mr: 1, height: 37 }}
                                         onClick={addNew}
                                         startIcon={<IconPlus />}
+                                        id='btn_createApiKey'
                                     >
                                         Create Key
                                     </StyledButton>

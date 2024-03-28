@@ -41,6 +41,19 @@ You can also specify the env variables when using `npx`. For example:
 npx flowise start --PORT=3000 --DEBUG=true
 ```
 
+## 📖 Tests
+
+We use [Cypress](https://github.com/cypress-io) for our e2e testing. If you want to run the test suite in dev mode please follow this guide:
+
+```sh
+cd Flowise/packages/server
+pnpm install
+./node_modules/.bin/cypress install
+pnpm build
+#Only for writting new tests on local dev -> pnpm run cypress:open
+pnpm run e2e
+```
+
 ## 📖 Documentation
 
 [Flowise Docs](https://docs.flowiseai.com/)

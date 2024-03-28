@@ -23,11 +23,8 @@ async function addRateLimiter(id: string, duration: number, limit: number, messa
 
 export function getRateLimiter(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id
-
     if (!rateLimiters[id]) return next()
-
     const idRateLimiter = rateLimiters[id]
-
     return idRateLimiter(req, res, next)
 }
 
