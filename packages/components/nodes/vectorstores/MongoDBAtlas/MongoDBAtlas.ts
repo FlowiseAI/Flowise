@@ -135,7 +135,7 @@ class MongoDBAtlas_VectorStores implements INode {
                 }
             }
 
-            const mongoClient = new MongoClient(mongoDBConnectUrl)
+            const mongoClient = await getMongoClient(mongoDBConnectUrl)
             try {
                 const collection = mongoClient.db(databaseName).collection(collectionName)
 
@@ -151,8 +151,6 @@ class MongoDBAtlas_VectorStores implements INode {
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
             } catch (e) {
                 throw new Error(e)
-            } finally {
-                await mongoClient.close()
             }
         }
     }
@@ -168,7 +166,7 @@ class MongoDBAtlas_VectorStores implements INode {
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-        const mongoClient = new MongoClient(mongoDBConnectUrl)
+        const mongoClient = await getMongoClient(mongoDBConnectUrl)
         try {
             const collection = mongoClient.db(databaseName).collection(collectionName)
 
@@ -183,10 +181,28 @@ class MongoDBAtlas_VectorStores implements INode {
             })
 
             return resolveVectorStoreOrRetriever(nodeData, vectorStore)
-        } finally {
-            await mongoClient.close()
+        } catch (e) {
+            throw new Error(e)
         }
     }
 }
 
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
+
+const getMongoClient = async (newMongoUrl: string) => {
+    if (!mongoClientSingleton) {
+        // if client does not exist
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    }
+    return mongoClientSingleton
+}
 module.exports = { nodeClass: MongoDBAtlas_VectorStores }
