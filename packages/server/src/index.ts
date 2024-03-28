@@ -20,7 +20,7 @@ import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
-import errorHandler from './middlewares/errors'
+import errorHandlerMiddleware from './middlewares/errors'
 
 declare global {
     namespace Express {
@@ -165,7 +165,7 @@ export class App {
         })
 
         // Error handling
-        this.app.use(errorHandler)
+        this.app.use(errorHandlerMiddleware)
     }
 
     async stopApp() {

@@ -1,23 +1,19 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ApiError } from '../../errors/apiError'
 
-async function errorMiddleware(err: ApiError, req: Request, res: Response) {
-    // Provide error stack trace only in development
-    var executionEnvironment = process.env.NODE_ENV || 'development'
-    res.locals.message = err.message
-    res.locals.error = err
-    const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
+// we need eslint because we have to pass next arg for the error middleware
+// eslint-disable-next-line
+async function errorHandlerMiddleware(err: ApiError, req: Request, res: Response, next: NextFunction) {
     let displayedError = {
+        statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
         success: false,
         message: err.message,
-        stack: err.stack
+        // Provide error stack trace only in development
+        stack: process.env.NODE_ENV === 'development' ? err.stack : {}
     }
-    if (executionEnvironment !== 'development') {
-        res.locals.error = ''
-        displayedError.stack = ''
-    }
-    res.status(statusCode).json(displayedError)
+    res.setHeader('Content-Type', 'application/json')
+    res.status(displayedError.statusCode).json(displayedError)
 }
 
-export default errorMiddleware
+export default errorHandlerMiddleware
