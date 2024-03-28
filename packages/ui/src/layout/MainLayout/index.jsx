@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
@@ -61,6 +61,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
+    const [isInIframe, setIsInIframe] = useState(false)
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
@@ -70,32 +71,35 @@ const MainLayout = () => {
     }
 
     useEffect(() => {
+        // Detect if loaded inside an iframe
+        setIsInIframe(window.parent !== window)
+
         setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [matchDownMd])
+    }, [matchDownMd, dispatch])
 
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             {/* header */}
-            <AppBar
-                enableColorOnDark
-                position='fixed'
-                color='inherit'
-                elevation={0}
-                sx={{
-                    bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
-                }}
-            >
-                <Toolbar>
-                    <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
-                </Toolbar>
-            </AppBar>
-
-            {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
-
+            {!isInIframe && (
+                <>
+                    <AppBar
+                        enableColorOnDark
+                        position='fixed'
+                        color='inherit'
+                        elevation={0}
+                        sx={{
+                            bgcolor: theme.palette.background.default,
+                            transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
+                        }}
+                    >
+                        <Toolbar>
+                            <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
+                        </Toolbar>
+                    </AppBar>
+                    <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
+                </>
+            )}
             {/* main content */}
             <Main theme={theme} open={leftDrawerOpened}>
                 <Outlet />

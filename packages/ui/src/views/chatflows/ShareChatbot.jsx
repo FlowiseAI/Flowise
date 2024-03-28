@@ -408,7 +408,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
                     />
                 </div>
             </Stack>
-            {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
+            {textField(title, 'title', 'Title', 'string', 'AnswerAI Sidekick')}
             {textField(
                 titleAvatarSrc,
                 'titleAvatarSrc',

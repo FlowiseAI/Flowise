@@ -10,7 +10,7 @@ export const initialState = {
     borderRadius: config.borderRadius,
     opened: true,
     isHorizontal: localStorage.getItem('isHorizontal') === 'true' ? true : false,
-    isDarkMode: localStorage.getItem('isDarkMode') === 'true' ? true : false
+    isDarkMode: localStorage.getItem('isDarkMode') === 'false' ? false : true
 }
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //

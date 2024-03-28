@@ -122,6 +122,18 @@ export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): P
 }
 
 /**
+ * Find an existing API key
+ * @param {string} keyIdToFind
+ * @returns {Promise<ICommonObject>}
+ */
+export const findAPIKey = async (keyIdToFind: string): Promise<ICommonObject | null> => {
+    const existingAPIKeys = await getAPIKeys()
+    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToFind)
+    if (keyIndex < 0) return null
+    return existingAPIKeys[keyIndex]
+}
+
+/**
  * Delete API key
  * @param {string} keyIdToDelete
  * @returns {Promise<ICommonObject[]>}

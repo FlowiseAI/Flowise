@@ -2,7 +2,9 @@ version: '3.1'
 
 services:
     flowise:
-        image: flowiseai/flowise
+        image: theanswerai/flowise:latest
+        build:
+            context: ..
         restart: always
         environment:
             - PORT=${PORT}
@@ -28,8 +30,25 @@ services:
             - LOG_PATH=${LOG_PATH}
             - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+            - DOMAIN=${DOMAIN}
+            - AUTH0_JWKS_URI=${AUTH0_JWKS_URI}
+            - AUTH0_SECRET=${AUTH0_SECRET}
+            - AUTH0_ISSUER_BASE_URL=${AUTH0_ISSUER_BASE_URL}
+            - AUTH0_BASE_URL=${AUTH0_BASE_URL}
+            - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+            - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
+            - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+            - AUTH0_SCOPE=${AUTH0_SCOPE}
+            - AUTH0_TOKEN_SIGN_ALG=${AUTH0_TOKEN_SIGN_ALG}
+            - AUTH0_ORGANIZATION_ID=${AUTH0_ORGANIZATION_ID}
+            - MY_APP_VITE_AUTH_DOMAIN=${MY_APP_VITE_AUTH_DOMAIN}
+            - MY_APP_VITE_AUTH_CLIENT_ID=${MY_APP_VITE_AUTH_CLIENT_ID}
+            - MY_APP_VITE_AUTH_AUDIENCE=${MY_APP_VITE_AUTH_AUDIENCE}
+            - MY_APP_VITE_AUTH_ORGANIZATION_ID=${MY_APP_VITE_AUTH_ORGANIZATION_ID}
         ports:
             - '${PORT}:${PORT}'
         volumes:
             - ~/.flowise:/root/.flowise
-        command: /bin/sh -c "sleep 3; flowise start"
+        env_file:
+            - .env
+        #command: /bin/sh -c "sleep 3; yarn start"

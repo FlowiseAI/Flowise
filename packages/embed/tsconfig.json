@@ -1,0 +1,19 @@
+{
+    "extends": "./base.json",
+    "include": ["src/**/*"],
+    "exclude": ["dist", "node_modules"],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js",
+        "module": "ESNext",
+        "target": "ESNext",
+        "declaration": true,
+        "declarationMap": true,
+        "outDir": "dist",
+        "emitDeclarationOnly": true
+    }
+}
