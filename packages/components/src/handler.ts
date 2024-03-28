@@ -406,19 +406,25 @@ export class AnalyticHandler {
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             let langfuseTraceClient: LangfuseTraceClient
-
             if (!parentIds || !Object.keys(parentIds).length) {
                 const langfuse: Langfuse = this.handlers['langFuse'].client
+                const model = this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel
                 langfuseTraceClient = langfuse.trace({
                     name,
+                    model: this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel,
                     sessionId: this.options.chatId,
-                    metadata: { tags: ['openai-assistant'] },
+                    metadata: {
+                        tags: ['openai-assistant'],
+                        model: this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel,
+                    },
+                    modelParameters: {
+                        model: this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel,
+                    },
                     ...this.nodeData?.inputs?.analytics?.langFuse
                 })
             } else {
                 langfuseTraceClient = this.handlers['langFuse'].trace[parentIds['langFuse']]
             }
-
             if (langfuseTraceClient) {
                 const span = langfuseTraceClient.span({
                     name,
@@ -561,7 +567,11 @@ export class AnalyticHandler {
             if (trace) {
                 const generation = trace.generation({
                     name,
-                    input: input
+                    input: input,
+                    model: this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel,
+                    metadata: {
+                        model: this.nodeData.inputs?.modelName ?? this.nodeData.inputs?.customModel
+                    }
                 })
                 this.handlers['langFuse'].generation = { [generation.id]: generation }
                 returnIds['langFuse'].generation = generation.id

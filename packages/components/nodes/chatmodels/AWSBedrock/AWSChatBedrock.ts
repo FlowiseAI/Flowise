@@ -88,7 +88,7 @@ class AWSChatBedrock_ChatModels implements INode {
             },
             {
                 label: 'Model Name',
-                name: 'model',
+                name: 'modelName',
                 type: 'options',
                 options: [
                     { label: 'anthropic.claude-3-haiku', name: 'anthropic.claude-3-haiku-20240307-v1:0' },
@@ -144,52 +144,61 @@ class AWSChatBedrock_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const iRegion = nodeData.inputs?.region as string
-        const iModel = nodeData.inputs?.model as string
+        const modelName = nodeData.inputs?.modelName as string
         const customModel = nodeData.inputs?.customModel as string
         const iTemperature = nodeData.inputs?.temperature as string
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
-
+    
+        console.log('Initializing Bedrock model with the following parameters:')
+        console.log('Region:', iRegion)
+        console.log('Model Name:', modelName)
+        console.log('Custom Model:', customModel)
+        console.log('Temperature:', iTemperature)
+        console.log('Max Tokens to Sample:', iMax_tokens_to_sample)
+        console.log('Cache:', cache)
+        console.log('Streaming:', streaming)
+    
         const obj: BaseBedrockInput & BaseChatModelParams = {
             region: iRegion,
-            model: customModel ? customModel : iModel,
+            model: customModel ? customModel : modelName,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
             temperature: parseFloat(iTemperature),
             streaming: streaming ?? true
         }
-
-        /**
-         * Long-term credentials specified in LLM configuration are optional.
-         * Bedrock's credential provider falls back to the AWS SDK to fetch
-         * credentials from the running environment.
-         * When specified, we override the default provider with configured values.
-         * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
-         */
+    
+        console.log('Bedrock configuration object:', obj)
+    
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         if (credentialData && Object.keys(credentialData).length !== 0) {
             const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
             const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
             const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-
+    
             obj.credentials = {
                 accessKeyId: credentialApiKey,
                 secretAccessKey: credentialApiSecret,
                 sessionToken: credentialApiSession
             }
+    
+            console.log('Bedrock credentials set:', obj.credentials)
         }
+    
         if (cache) obj.cache = cache
-
+    
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-
         const multiModalOption: IMultiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
         }
-
+    
         const amazonBedrock = new BedrockChat(nodeData.id, obj)
         if (obj.model.includes('anthropic.claude-3')) amazonBedrock.setMultiModalOption(multiModalOption)
+    
+        console.log('Bedrock model initialized:', amazonBedrock)
+    
         return amazonBedrock
     }
 }
