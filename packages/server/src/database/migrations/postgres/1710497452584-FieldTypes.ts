@@ -5,16 +5,16 @@ export class FieldTypes1710497452584 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatflowid" type uuid USING "chatflowid"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type uuid USING "chatId"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" type uuid USING "sessionId"::uuid`)
+        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)
+        await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "sessionId" type varchar USING "sessionId"::varchar`)
 
         await queryRunner.query(`ALTER TABLE "assistant" ALTER COLUMN "credential" type uuid USING "credential"::uuid`)
 
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatflowid" type uuid USING "chatflowid"::uuid`)
-        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatId" type uuid USING "chatId"::uuid`)
+        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)
         await queryRunner.query(`ALTER TABLE "chat_message_feedback" ALTER COLUMN "messageId" type uuid USING "messageId"::uuid`)
 
-        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ADD CONSTRAINT "UQ_6352078b5a294f2d22179ea7955" UNIQUE ("messageId")`)
+        await queryRunner.query(`ALTER TABLE "chat_message_feedback" ADD CONSTRAINT "UQ_6352078b5a294f2d22179ea7956" UNIQUE ("messageId")`)
 
         await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d229" ON "chat_message" ("chatflowid") `)
         await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_f56c36fe42894d57e5c664d230" ON "chat_message_feedback" ("chatflowid") `)
@@ -26,7 +26,7 @@ export class FieldTypes1710497452584 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_f56c36fe42894d57e5c664d229"`)
         await queryRunner.query(`DROP INDEX "public"."IDX_f56c36fe42894d57e5c664d230"`)
 
-        await queryRunner.query(`ALTER TABLE "chat_message_feedback" DROP CONSTRAINT "UQ_6352078b5a294f2d22179ea7955"`)
+        await queryRunner.query(`ALTER TABLE "chat_message_feedback" DROP CONSTRAINT "UQ_6352078b5a294f2d22179ea7956"`)
 
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatflowid" type varchar USING "chatflowid"::varchar`)
         await queryRunner.query(`ALTER TABLE "chat_message" ALTER COLUMN "chatId" type varchar USING "chatId"::varchar`)

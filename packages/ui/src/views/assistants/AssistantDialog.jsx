@@ -31,16 +31,16 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const assistantAvailableModels = [
     {
+        label: 'gpt-4-turbo-preview',
+        name: 'gpt-4-turbo-preview'
+    },
+    {
         label: 'gpt-4-1106-preview',
         name: 'gpt-4-1106-preview'
     },
     {
         label: 'gpt-4-0613',
         name: 'gpt-4-0613'
-    },
-    {
-        label: 'gpt-4-0314',
-        name: 'gpt-4-0314'
     },
     {
         label: 'gpt-4',
