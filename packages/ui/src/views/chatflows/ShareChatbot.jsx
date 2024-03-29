@@ -27,7 +27,7 @@ const defaultConfig = {
     backgroundColor: '#ffffff',
     fontSize: 16,
     poweredByTextColor: '#303235',
-    headerBackgroundColor: '#000000',
+    headerBackgroundColor: '#362CFA',
     botMessage: {
         backgroundColor: '#f7f8ff',
         textColor: '#303235'
