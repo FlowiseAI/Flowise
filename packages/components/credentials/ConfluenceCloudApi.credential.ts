@@ -1,6 +1,6 @@
 import { INodeParams, INodeCredential } from '../src/Interface'
 
-class ConfluenceApi implements INodeCredential {
+class ConfluenceCloudApi implements INodeCredential {
     label: string
     name: string
     version: number
@@ -8,8 +8,8 @@ class ConfluenceApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Confluence API'
-        this.name = 'confluenceApi'
+        this.label = 'Confluence Cloud API'
+        this.name = 'confluenceCloudApi'
         this.version = 1.0
         this.description =
             'Refer to <a target="_blank" href="https://support.atlassian.com/confluence-cloud/docs/manage-oauth-access-tokens/">official guide</a> on how to get Access Token or <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">API Token</a> on Confluence'
@@ -30,4 +30,4 @@ class ConfluenceApi implements INodeCredential {
     }
 }
 
-module.exports = { credClass: ConfluenceApi }
+module.exports = { credClass: ConfluenceCloudApi }

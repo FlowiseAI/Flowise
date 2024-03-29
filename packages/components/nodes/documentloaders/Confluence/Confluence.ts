@@ -28,7 +28,7 @@ class Confluence_DocumentLoaders implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['confluenceApi']
+            credentialNames: ['confluenceCloudApi', 'confluenceServerDCApi']
         }
         this.inputs = [
             {
@@ -77,14 +77,22 @@ class Confluence_DocumentLoaders implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const personalAccessToken = getCredentialParam('personalAccessToken', credentialData, nodeData)
         const username = getCredentialParam('username', credentialData, nodeData)
 
-        const confluenceOptions: ConfluencePagesLoaderParams = {
-            username,
-            accessToken,
+        let confluenceOptions: ConfluencePagesLoaderParams = {
             baseUrl,
             spaceKey,
             limit
+        }
+
+        if (accessToken) {
+            // Confluence Cloud credentials
+            confluenceOptions.username = username
+            confluenceOptions.accessToken = accessToken
+        } else if (personalAccessToken) {
+            // Confluence Server/Data Center credentials
+            confluenceOptions.personalAccessToken = personalAccessToken
         }
 
         const loader = new ConfluencePagesLoader(confluenceOptions)
