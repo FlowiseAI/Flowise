@@ -40,11 +40,11 @@ import { utilAddChatMessage } from './addChatMesage'
  */
 export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInternal: boolean = false): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
         let incomingInput: IncomingInput = req.body
         let nodeToExecuteData: INodeData
-        const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
         if (!chatflow) {
@@ -108,7 +108,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                         const options: ICommonObject = {
                             chatId,
                             chatflowid,
-                            appDataSource: flowXpresApp.AppDataSource,
+                            appDataSource: appServer.AppDataSource,
                             databaseEntities: databaseEntities
                         }
                         const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
@@ -166,20 +166,20 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
          ***/
         const isFlowReusable = () => {
             return (
-                Object.prototype.hasOwnProperty.call(flowXpresApp.chatflowPool.activeChatflows, chatflowid) &&
-                flowXpresApp.chatflowPool.activeChatflows[chatflowid].inSync &&
-                flowXpresApp.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
+                Object.prototype.hasOwnProperty.call(appServer.chatflowPool.activeChatflows, chatflowid) &&
+                appServer.chatflowPool.activeChatflows[chatflowid].inSync &&
+                appServer.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
                 isSameOverrideConfig(
                     isInternal,
-                    flowXpresApp.chatflowPool.activeChatflows[chatflowid].overrideConfig,
+                    appServer.chatflowPool.activeChatflows[chatflowid].overrideConfig,
                     incomingInput.overrideConfig
                 ) &&
-                !isStartNodeDependOnInput(flowXpresApp.chatflowPool.activeChatflows[chatflowid].startingNodes, nodes)
+                !isStartNodeDependOnInput(appServer.chatflowPool.activeChatflows[chatflowid].startingNodes, nodes)
             )
         }
 
         if (isFlowReusable()) {
-            nodeToExecuteData = flowXpresApp.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
+            nodeToExecuteData = appServer.chatflowPool.activeChatflows[chatflowid].endingNodeData as INodeData
             isStreamValid = isFlowValidForStream(nodes, nodeToExecuteData)
             logger.debug(
                 `[server]: Reuse existing chatflow ${chatflowid} with ending node ${nodeToExecuteData.label} (${nodeToExecuteData.id})`
@@ -262,9 +262,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
                     chatHistory = await getSessionChatHistory(
                         memoryNode,
-                        flowXpresApp.nodesPool.componentNodes,
+                        appServer.nodesPool.componentNodes,
                         incomingInput,
-                        flowXpresApp.AppDataSource,
+                        appServer.AppDataSource,
                         databaseEntities,
                         logger
                     )
@@ -293,15 +293,15 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 edges,
                 graph,
                 depthQueue,
-                flowXpresApp.nodesPool.componentNodes,
+                appServer.nodesPool.componentNodes,
                 incomingInput.question,
                 chatHistory,
                 chatId,
                 sessionId ?? '',
                 chatflowid,
-                flowXpresApp.AppDataSource,
+                appServer.AppDataSource,
                 incomingInput?.overrideConfig,
-                flowXpresApp.cachePool,
+                appServer.cachePool,
                 false,
                 undefined,
                 incomingInput.uploads
@@ -326,12 +326,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question, chatHistory)
             nodeToExecuteData = reactFlowNodeData
 
-            flowXpresApp.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
+            appServer.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
         }
 
         logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
 
-        const nodeInstanceFilePath = flowXpresApp.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
+        const nodeInstanceFilePath = appServer.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
@@ -341,7 +341,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   chatflowid,
                   chatHistory: incomingInput.history,
                   logger,
-                  appDataSource: flowXpresApp.AppDataSource,
+                  appDataSource: appServer.AppDataSource,
                   databaseEntities,
                   analytic: chatflow.analytic,
                   uploads: incomingInput.uploads,
@@ -353,7 +353,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   chatflowid,
                   chatHistory: incomingInput.history,
                   logger,
-                  appDataSource: flowXpresApp.AppDataSource,
+                  appDataSource: appServer.AppDataSource,
                   databaseEntities,
                   analytic: chatflow.analytic,
                   uploads: incomingInput.uploads
@@ -398,7 +398,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const chatMessage = await utilAddChatMessage(apiMessage)
 
         logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
-        await flowXpresApp.telemetry.sendTelemetry('prediction_sent', {
+        await appServer.telemetry.sendTelemetry('prediction_sent', {
             version: await getAppVersion(),
             chatflowId: chatflowid,
             chatId,

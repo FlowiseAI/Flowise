@@ -18,9 +18,9 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         //**
-        const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
         if (!chatflow) {
@@ -102,8 +102,8 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
 
 const deleteChatflow = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
         try {
             // Delete all  uploads corresponding to this chatflow
             const directory = path.join(getStoragePath(), chatflowId)
@@ -119,8 +119,8 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
 
 const getAllChatflows = async (): Promise<IChatFlow[]> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).find()
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         return dbResponse
     } catch (error) {
         throw new Error(`Error: chatflowsService.getAllChatflows - ${error}`)
@@ -129,8 +129,8 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
 
 const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow)
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')
             .where('cf.apikeyid = :apikeyid', { apikeyid: apiKeyId })
             .orWhere('cf.apikeyid IS NULL')
@@ -152,8 +152,8 @@ const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
 
 const getChatflowById = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
         if (!dbResponse) {
@@ -171,10 +171,10 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
 
 const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const newDbChatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
-        await flowXpresApp.telemetry.sendTelemetry('chatflow_created', {
+        const appServer = getRunningExpressApp()
+        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+        await appServer.telemetry.sendTelemetry('chatflow_created', {
             version: await getAppVersion(),
             chatflowId: dbResponse.id,
             flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
@@ -187,14 +187,14 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const newDbChatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+        const appServer = getRunningExpressApp()
+        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
         // chatFlowPool is initialized only when a flow is opened
         // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
-        if (flowXpresApp.chatflowPool) {
+        if (appServer.chatflowPool) {
             // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
-            flowXpresApp.chatflowPool.updateInSync(chatflow.id, false)
+            appServer.chatflowPool.updateInSync(chatflow.id, false)
         }
         return dbResponse
     } catch (error) {
@@ -205,8 +205,8 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
 const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
         if (dbResponse && dbResponse.isPublic) {
@@ -232,8 +232,8 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
 // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
 const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
         if (!dbResponse) {

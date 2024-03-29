@@ -9,7 +9,7 @@ import { getUserHome, decryptCredentialData, getAppVersion } from '../../utils'
 
 const creatAssistant = async (requestBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         if (!requestBody.details) {
             return {
                 executionError: true,
@@ -19,7 +19,7 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
         }
         const assistantDetails = JSON.parse(requestBody.details)
         try {
-            const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+            const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
                 id: requestBody.credential
             })
 
@@ -130,10 +130,10 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
         const newAssistant = new Assistant()
         Object.assign(newAssistant, requestBody)
 
-        const assistant = await flowXpresApp.AppDataSource.getRepository(Assistant).create(newAssistant)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Assistant).save(assistant)
+        const assistant = await appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
 
-        await flowXpresApp.telemetry.sendTelemetry('assistant_created', {
+        await appServer.telemetry.sendTelemetry('assistant_created', {
             version: await getAppVersion(),
             assistantId: dbResponse.id
         })
@@ -145,8 +145,8 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
 
 const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const assistant = await flowXpresApp.AppDataSource.getRepository(Assistant).findOneBy({
+        const appServer = getRunningExpressApp()
+        const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
             id: assistantId
         })
         if (!assistant) {
@@ -158,7 +158,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
         }
         try {
             const assistantDetails = JSON.parse(assistant.details)
-            const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+            const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
                 id: assistant.credential
             })
 
@@ -182,7 +182,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             }
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
-            const dbResponse = await flowXpresApp.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
+            const dbResponse = await appServer.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
             if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
             return dbResponse
         } catch (error: any) {
@@ -203,8 +203,8 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
 
 const getAllAssistants = async (): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Assistant).find()
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
         return dbResponse
     } catch (error) {
         throw new Error(`Error: assistantsService.getAllAssistants - ${error}`)
@@ -213,8 +213,8 @@ const getAllAssistants = async (): Promise<any> => {
 
 const getAssistantById = async (assistantId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Assistant).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
             id: assistantId
         })
         if (!dbResponse) {
@@ -232,8 +232,8 @@ const getAssistantById = async (assistantId: string): Promise<any> => {
 
 const updateAssistant = async (assistantId: string, requestBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const assistant = await flowXpresApp.AppDataSource.getRepository(Assistant).findOneBy({
+        const appServer = getRunningExpressApp()
+        const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
             id: assistantId
         })
 
@@ -248,7 +248,7 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             const openAIAssistantId = JSON.parse(assistant.details)?.id
             const body = requestBody
             const assistantDetails = JSON.parse(body.details)
-            const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+            const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
                 id: body.credential
             })
 
@@ -342,8 +342,8 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             body.details = JSON.stringify(newAssistantDetails)
             Object.assign(updateAssistant, body)
 
-            await flowXpresApp.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
-            const dbResponse = await flowXpresApp.AppDataSource.getRepository(Assistant).save(assistant)
+            await appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
+            const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {
             return {

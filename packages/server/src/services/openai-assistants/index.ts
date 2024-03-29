@@ -10,8 +10,8 @@ import { Credential } from '../../database/entities/Credential'
 // List available assistants
 const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })
         if (!credential) {
@@ -43,8 +43,8 @@ const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
 // Get assistant object
 const getSingleOpenaiAssistant = async (credentialId: string, assistantId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })
         if (!credential) {

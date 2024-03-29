@@ -17,13 +17,13 @@ export const utilGetChatMessageFeedback = async (
     startDate?: string,
     endDate?: string
 ): Promise<ChatMessageFeedback[]> => {
-    const flowXpresApp = getRunningExpressApp()
+    const appServer = getRunningExpressApp()
     let fromDate
     if (startDate) fromDate = new Date(startDate)
 
     let toDate
     if (endDate) toDate = new Date(endDate)
-    return await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).find({
+    return await appServer.AppDataSource.getRepository(ChatMessageFeedback).find({
         where: {
             chatflowid,
             chatId,

@@ -86,11 +86,11 @@ const getAllInternalChatMessages = async (
 
 const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteOptions: FindOptionsWhere<ChatMessage>): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
 
         // remove all related feedback records
         const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
-        await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
+        await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
 
         // Delete all uploads corresponding to this chatflow/chatId
         if (chatId) {
@@ -101,7 +101,7 @@ const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteO
                 logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
             }
         }
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: chatMessagesService.removeAllChatMessages - ${error}`)

@@ -3,13 +3,13 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 
 export const addChatflowsCount = async (keys: any) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         let tmpResult = keys
         if (typeof keys !== 'undefined' && keys.length > 0) {
             const updatedKeys: any[] = []
             //iterate through keys and get chatflows
             for (const key of keys) {
-                const chatflows = await flowXpresApp.AppDataSource.getRepository(ChatFlow)
+                const chatflows = await appServer.AppDataSource.getRepository(ChatFlow)
                     .createQueryBuilder('cf')
                     .where('cf.apikeyid = :apikeyid', { apikeyid: key.id })
                     .getMany()

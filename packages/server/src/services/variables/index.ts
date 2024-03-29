@@ -3,9 +3,9 @@ import { Variable } from '../../database/entities/Variable'
 
 const createVariable = async (newVariable: Variable) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const variable = await flowXpresApp.AppDataSource.getRepository(Variable).create(newVariable)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).save(variable)
+        const appServer = getRunningExpressApp()
+        const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: variablesServices.createVariable - ${error}`)
@@ -14,8 +14,8 @@ const createVariable = async (newVariable: Variable) => {
 
 const deleteVariable = async (variableId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).delete({ id: variableId })
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).delete({ id: variableId })
         return dbResponse
     } catch (error) {
         throw new Error(`Error: variablesServices.createVariable - ${error}`)
@@ -24,8 +24,8 @@ const deleteVariable = async (variableId: string): Promise<any> => {
 
 const getAllVariables = async () => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).find()
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).find()
         return dbResponse
     } catch (error) {
         throw new Error(`Error: variablesServices.getAllVariables - ${error}`)
@@ -34,8 +34,8 @@ const getAllVariables = async () => {
 
 const getVariableById = async (variableId: string) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
             id: variableId
         })
         return dbResponse
@@ -46,9 +46,9 @@ const getVariableById = async (variableId: string) => {
 
 const updateVariable = async (variable: Variable, updatedVariable: Variable) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const tmpUpdatedVariable = await flowXpresApp.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
+        const appServer = getRunningExpressApp()
+        const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: variablesServices.updateVariable - ${error}`)

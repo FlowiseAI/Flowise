@@ -8,9 +8,9 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
  */
 
 export const utilAddChatMessageFeedback = async (chatMessageFeedback: Partial<IChatMessageFeedback>): Promise<ChatMessageFeedback> => {
-    const flowXpresApp = getRunningExpressApp()
+    const appServer = getRunningExpressApp()
     const newChatMessageFeedback = new ChatMessageFeedback()
     Object.assign(newChatMessageFeedback, chatMessageFeedback)
-    const feedback = await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
-    return await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
+    const feedback = await appServer.AppDataSource.getRepository(ChatMessageFeedback).create(newChatMessageFeedback)
+    return await appServer.AppDataSource.getRepository(ChatMessageFeedback).save(feedback)
 }

@@ -8,9 +8,9 @@ import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
  * @param {Partial<IChatMessageFeedback>} chatMessageFeedback
  */
 export const utilUpdateChatMessageFeedback = async (id: string, chatMessageFeedback: Partial<IChatMessageFeedback>) => {
-    const flowXpresApp = getRunningExpressApp()
+    const appServer = getRunningExpressApp()
     const newChatMessageFeedback = new ChatMessageFeedback()
     Object.assign(newChatMessageFeedback, chatMessageFeedback)
-    await flowXpresApp.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
+    await appServer.AppDataSource.getRepository(ChatMessageFeedback).update({ id }, chatMessageFeedback)
     return { status: 'OK' }
 }

@@ -27,7 +27,7 @@ export const utilGetChatMessage = async (
     messageId?: string,
     feedback?: boolean
 ): Promise<ChatMessage[]> => {
-    const flowXpresApp = getRunningExpressApp()
+    const appServer = getRunningExpressApp()
     const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
         const date = new Date(dateTimeStr)
         if (isNaN(date.getTime())) {
@@ -50,7 +50,7 @@ export const utilGetChatMessage = async (
     if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
     if (feedback) {
-        const query = await flowXpresApp.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
+        const query = await appServer.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
 
         // do the join with chat message feedback based on messageId for each chat message in the chatflow
         query
@@ -83,7 +83,7 @@ export const utilGetChatMessage = async (
         return messages
     }
 
-    return await flowXpresApp.AppDataSource.getRepository(ChatMessage).find({
+    return await appServer.AppDataSource.getRepository(ChatMessage).find({
         where: {
             chatflowid,
             chatType,

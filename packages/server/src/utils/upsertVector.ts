@@ -21,11 +21,11 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 
 export const upsertVector = async (req: Request, res: Response, isInternal: boolean = false) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
         let incomingInput: IncomingInput = req.body
 
-        const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
         if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
@@ -105,22 +105,22 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
             edges,
             filteredGraph,
             depthQueue,
-            flowXpresApp.nodesPool.componentNodes,
+            appServer.nodesPool.componentNodes,
             incomingInput.question,
             chatHistory,
             chatId,
             sessionId ?? '',
             chatflowid,
-            flowXpresApp.AppDataSource,
+            appServer.AppDataSource,
             incomingInput?.overrideConfig,
-            flowXpresApp.cachePool,
+            appServer.cachePool,
             isUpsert,
             stopNodeId
         )
 
         const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
-        await flowXpresApp.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+        await appServer.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
         await telemetryService.createEvent({
             name: `vector_upserted`,
             data: {

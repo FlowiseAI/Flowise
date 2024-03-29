@@ -8,8 +8,8 @@ import { INodeParams } from 'flowise-components'
  * @param {string} chatflowid
  */
 export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => {
-    const flowXpresApp = getRunningExpressApp()
-    const chatflow = await flowXpresApp.AppDataSource.getRepository(ChatFlow).findOneBy({
+    const appServer = getRunningExpressApp()
+    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
         id: chatflowid
     })
     if (!chatflow) return `Chatflow ${chatflowid} not found`

@@ -4,9 +4,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 // Returns specific component node icon via name
 const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, req.params.name)) {
-            const nodeInstance = flowXpresApp.nodesPool.componentNodes[req.params.name]
+        const appServer = getRunningExpressApp()
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, req.params.name)) {
+            const nodeInstance = appServer.nodesPool.componentNodes[req.params.name]
             if (nodeInstance.icon === undefined) {
                 throw new Error(`Error: nodeIconController.getSingleNodeIcon - Node ${req.params.name} icon not found`)
             }

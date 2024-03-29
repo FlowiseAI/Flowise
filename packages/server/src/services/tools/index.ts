@@ -4,12 +4,12 @@ import { getAppVersion } from '../../utils'
 
 const creatTool = async (requestBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const newTool = new Tool()
         Object.assign(newTool, requestBody)
-        const tool = await flowXpresApp.AppDataSource.getRepository(Tool).create(newTool)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).save(tool)
-        await flowXpresApp.telemetry.sendTelemetry('tool_created', {
+        const tool = await appServer.AppDataSource.getRepository(Tool).create(newTool)
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
+        await appServer.telemetry.sendTelemetry('tool_created', {
             version: await getAppVersion(),
             toolId: dbResponse.id,
             toolName: dbResponse.name
@@ -22,8 +22,8 @@ const creatTool = async (requestBody: any): Promise<any> => {
 
 const deleteTool = async (toolId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).delete({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).delete({
             id: toolId
         })
         return dbResponse
@@ -34,8 +34,8 @@ const deleteTool = async (toolId: string): Promise<any> => {
 
 const getAllTools = async (): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).find()
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).find()
         return dbResponse
     } catch (error) {
         throw new Error(`Error: toolsService.getAllTools - ${error}`)
@@ -44,8 +44,8 @@ const getAllTools = async (): Promise<any> => {
 
 const getToolById = async (toolId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).findOneBy({
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
             id: toolId
         })
         if (!dbResponse) {
@@ -63,8 +63,8 @@ const getToolById = async (toolId: string): Promise<any> => {
 
 const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const tool = await flowXpresApp.AppDataSource.getRepository(Tool).findOneBy({
+        const appServer = getRunningExpressApp()
+        const tool = await appServer.AppDataSource.getRepository(Tool).findOneBy({
             id: toolId
         })
         if (!tool) {
@@ -76,8 +76,8 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
         }
         const updateTool = new Tool()
         Object.assign(updateTool, toolBody)
-        await flowXpresApp.AppDataSource.getRepository(Tool).merge(tool, updateTool)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Tool).save(tool)
+        await appServer.AppDataSource.getRepository(Tool).merge(tool, updateTool)
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: toolsService.getToolById - ${error}`)

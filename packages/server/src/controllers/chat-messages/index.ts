@@ -102,7 +102,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
 //Delete all chatmessages from chatId
 const removeAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
             throw new Error('Error: chatMessagesController.removeAllChatMessages - id not provided!')
         }
@@ -122,9 +122,9 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         try {
             await clearSessionMemory(
                 nodes,
-                flowXpresApp.nodesPool.componentNodes,
+                appServer.nodesPool.componentNodes,
                 chatId,
-                flowXpresApp.AppDataSource,
+                appServer.AppDataSource,
                 sessionId,
                 memoryType,
                 isClearFromViewMessageDialog

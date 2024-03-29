@@ -5,7 +5,7 @@ import chatflowsService from '../chatflows'
 
 const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const chatflow = await chatflowsService.getChatflowById(chatflowId)
         if (!chatflow) {
             return {
@@ -17,7 +17,7 @@ const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
         const flowData = chatflow.flowData
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const nodes = parsedFlowData.nodes
-        const dbResponse = findAvailableConfigs(nodes, flowXpresApp.nodesPool.componentCredentials)
+        const dbResponse = findAvailableConfigs(nodes, appServer.nodesPool.componentCredentials)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: flowConfigService.getSingleFlowConfig - ${error}`)

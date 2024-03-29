@@ -4,10 +4,10 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 // Get all component credentials
 const getAllComponentsCredentials = async (): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const dbResponse = []
-        for (const credName in flowXpresApp.nodesPool.componentCredentials) {
-            const clonedCred = cloneDeep(flowXpresApp.nodesPool.componentCredentials[credName])
+        for (const credName in appServer.nodesPool.componentCredentials) {
+            const clonedCred = cloneDeep(appServer.nodesPool.componentCredentials[credName])
             dbResponse.push(clonedCred)
         }
         return dbResponse
@@ -18,10 +18,10 @@ const getAllComponentsCredentials = async (): Promise<any> => {
 
 const getComponentByName = async (credentialName: string) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         if (!credentialName.includes('&amp;')) {
-            if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentCredentials, credentialName)) {
-                return flowXpresApp.nodesPool.componentCredentials[credentialName]
+            if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, credentialName)) {
+                return appServer.nodesPool.componentCredentials[credentialName]
             } else {
                 throw new Error(
                     `Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${credentialName} not found`
@@ -30,8 +30,8 @@ const getComponentByName = async (credentialName: string) => {
         } else {
             const dbResponse = []
             for (const name of credentialName.split('&amp;')) {
-                if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentCredentials, name)) {
-                    dbResponse.push(flowXpresApp.nodesPool.componentCredentials[name])
+                if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, name)) {
+                    dbResponse.push(appServer.nodesPool.componentCredentials[name])
                 } else {
                     throw new Error(`Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${name} not found`)
                 }
@@ -46,9 +46,9 @@ const getComponentByName = async (credentialName: string) => {
 // Returns specific component credential icon via name
 const getSingleComponentsCredentialIcon = async (credentialName: string) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentCredentials, credentialName)) {
-            const credInstance = flowXpresApp.nodesPool.componentCredentials[credentialName]
+        const appServer = getRunningExpressApp()
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, credentialName)) {
+            const credInstance = appServer.nodesPool.componentCredentials[credentialName]
             if (credInstance.icon === undefined) {
                 throw new Error(`Credential ${credentialName} icon not found`)
             }

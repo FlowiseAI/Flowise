@@ -8,10 +8,10 @@ import logger from '../../utils/logger'
 // Get all component nodes
 const getAllNodes = async () => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const dbResponse = []
-        for (const nodeName in flowXpresApp.nodesPool.componentNodes) {
-            const clonedNode = cloneDeep(flowXpresApp.nodesPool.componentNodes[nodeName])
+        for (const nodeName in appServer.nodesPool.componentNodes) {
+            const clonedNode = cloneDeep(appServer.nodesPool.componentNodes[nodeName])
             dbResponse.push(clonedNode)
         }
         return dbResponse
@@ -23,9 +23,9 @@ const getAllNodes = async () => {
 // Get specific component node via name
 const getNodeByName = async (nodeName: string) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, nodeName)) {
-            const dbResponse = flowXpresApp.nodesPool.componentNodes[nodeName]
+        const appServer = getRunningExpressApp()
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, nodeName)) {
+            const dbResponse = appServer.nodesPool.componentNodes[nodeName]
             return dbResponse
         } else {
             throw new Error(`Node ${nodeName} not found`)
@@ -38,9 +38,9 @@ const getNodeByName = async (nodeName: string) => {
 // Returns specific component node icon via name
 const getSingleNodeIcon = async (nodeName: string) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, nodeName)) {
-            const nodeInstance = flowXpresApp.nodesPool.componentNodes[nodeName]
+        const appServer = getRunningExpressApp()
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, nodeName)) {
+            const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
             if (nodeInstance.icon === undefined) {
                 throw new Error(`Node ${nodeName} icon not found`)
             }
@@ -61,15 +61,15 @@ const getSingleNodeIcon = async (nodeName: string) => {
 
 const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const nodeData: INodeData = requestBody
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, nodeName)) {
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, nodeName)) {
             try {
-                const nodeInstance = flowXpresApp.nodesPool.componentNodes[nodeName]
+                const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
                 const methodName = nodeData.loadMethod || ''
 
                 const dbResponse: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
-                    appDataSource: flowXpresApp.AppDataSource,
+                    appDataSource: appServer.AppDataSource,
                     databaseEntities: databaseEntities
                 })
 
@@ -92,20 +92,20 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
 // execute custom function node
 const executeCustomFunction = async (requestBody: any) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const body = requestBody
         const functionInputVariables = Object.fromEntries(
             [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
         )
         const nodeData = { inputs: { functionInputVariables, ...body } }
-        if (Object.prototype.hasOwnProperty.call(flowXpresApp.nodesPool.componentNodes, 'customFunction')) {
+        if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, 'customFunction')) {
             try {
-                const nodeInstanceFilePath = flowXpresApp.nodesPool.componentNodes['customFunction'].filePath as string
+                const nodeInstanceFilePath = appServer.nodesPool.componentNodes['customFunction'].filePath as string
                 const nodeModule = await import(nodeInstanceFilePath)
                 const newNodeInstance = new nodeModule.nodeClass()
 
                 const options: ICommonObject = {
-                    appDataSource: flowXpresApp.AppDataSource,
+                    appDataSource: appServer.AppDataSource,
                     databaseEntities,
                     logger
                 }

@@ -6,10 +6,10 @@ import { ICredentialReturnResponse } from '../../Interface'
 
 const createCredential = async (requestBody: any) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         const newCredential = await transformToCredentialEntity(requestBody)
-        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).create(newCredential)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).save(credential)
+        const credential = await appServer.AppDataSource.getRepository(Credential).create(newCredential)
+        const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: credentialsService.createCredential - ${error}`)
@@ -19,8 +19,8 @@ const createCredential = async (requestBody: any) => {
 // Delete all credentials from chatflowid
 const deleteCredentials = async (credentialId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).delete({ id: credentialId })
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
         if (!dbResponse) {
             return {
                 executionError: true,
@@ -36,25 +36,25 @@ const deleteCredentials = async (credentialId: string): Promise<any> => {
 
 const getAllCredentials = async (paramCredentialName: any) => {
     try {
-        const flowXpresApp = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
         let dbResponse = []
         if (paramCredentialName) {
             if (Array.isArray(paramCredentialName)) {
                 for (let i = 0; i < paramCredentialName.length; i += 1) {
                     const name = paramCredentialName[i] as string
-                    const credentials = await flowXpresApp.AppDataSource.getRepository(Credential).findBy({
+                    const credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
                         credentialName: name
                     })
                     dbResponse.push(...credentials)
                 }
             } else {
-                const credentials = await flowXpresApp.AppDataSource.getRepository(Credential).findBy({
+                const credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
                     credentialName: paramCredentialName as string
                 })
                 dbResponse = [...credentials]
             }
         } else {
-            const credentials = await flowXpresApp.AppDataSource.getRepository(Credential).find()
+            const credentials = await appServer.AppDataSource.getRepository(Credential).find()
             for (const credential of credentials) {
                 dbResponse.push(omit(credential, ['encryptedData']))
             }
@@ -67,8 +67,8 @@ const getAllCredentials = async (paramCredentialName: any) => {
 
 const getCredentialById = async (credentialId: string): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })
         if (!credential) {
@@ -82,7 +82,7 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
         const decryptedCredentialData = await decryptCredentialData(
             credential.encryptedData,
             credential.credentialName,
-            flowXpresApp.nodesPool.componentCredentials
+            appServer.nodesPool.componentCredentials
         )
         const returnCredential: ICredentialReturnResponse = {
             ...credential,
@@ -97,8 +97,8 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
 
 const updateCredential = async (credentialId: string, requestBody: any): Promise<any> => {
     try {
-        const flowXpresApp = getRunningExpressApp()
-        const credential = await flowXpresApp.AppDataSource.getRepository(Credential).findOneBy({
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })
         if (!credential) {
@@ -109,8 +109,8 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
             }
         }
         const updateCredential = await transformToCredentialEntity(requestBody)
-        await flowXpresApp.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
-        const dbResponse = await flowXpresApp.AppDataSource.getRepository(Credential).save(credential)
+        await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
+        const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
     } catch (error) {
         throw new Error(`Error: credentialsService.updateCredential - ${error}`)
