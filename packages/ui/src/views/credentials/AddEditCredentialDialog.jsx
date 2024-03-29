@@ -168,9 +168,8 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Credential: ${errorData}`,
+                message: `Failed to save Credential: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

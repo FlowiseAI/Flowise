@@ -235,9 +235,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Assistant: ${errorData}`,
+                message: `Failed to add new Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -289,9 +288,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Assistant: ${errorData}`,
+                message: `Failed to save Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -329,9 +327,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to sync Assistant: ${errorData}`,
+                message: `Failed to sync Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -376,9 +373,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to delete Assistant: ${errorData}`,
+                message: `Failed to delete Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
