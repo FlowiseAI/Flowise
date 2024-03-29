@@ -1,5 +1,6 @@
 import { Request } from 'express'
 import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 'flowise-components'
+import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
 import path from 'path'
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -49,7 +50,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (!chatflow) {
             return {
                 executionError: true,
-                status: 404,
+                status: StatusCodes.NOT_FOUND,
                 msg: `Chatflow ${chatflowid} not found`
             }
         }
@@ -62,7 +63,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             if (!isKeyValidated) {
                 return {
                     executionError: true,
-                    status: 404,
+                    status: StatusCodes.UNAUTHORIZED,
                     msg: `Unauthorized`
                 }
             }

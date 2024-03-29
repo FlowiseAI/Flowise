@@ -3,8 +3,7 @@ import PropTypes from 'prop-types'
 import { FormControl, Switch, Typography } from '@mui/material'
 
 export const SwitchInput = ({ label, value, onChange, disabled = false }) => {
-    //@ts-ignore https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing
-    const [myValue, setMyValue] = useState(!!value ?? false)
+    const [myValue, setMyValue] = useState(value !== undefined ? !!value : false)
 
     useEffect(() => {
         setMyValue(value)
