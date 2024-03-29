@@ -3,6 +3,7 @@ import { baseURL } from '@/store/constant'
 
 const apiClient = axios.create({
     baseURL: `${baseURL}/api/v1`,
+    withCredentials: true,
     headers: {
         'Content-type': 'application/json'
     }

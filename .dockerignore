@@ -33,6 +33,7 @@
 **/dist
 **/.sst
 docker
+node_modules
 
 LICENSE
 README.md
