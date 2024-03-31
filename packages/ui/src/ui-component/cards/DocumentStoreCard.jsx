@@ -6,7 +6,7 @@ import { CardActions, Typography } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import SkeletonChatflowCard from '@/ui-component/cards/Skeleton/ChatflowCard'
+import SkeletonCard from '@/ui-component/cards/Skeleton/ChatflowCard'
 import CardContent from '@mui/material/CardContent'
 import Card from '@mui/material/Card'
 
@@ -33,7 +33,7 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
     return (
         <>
             {isLoading ? (
-                <SkeletonChatflowCard />
+                <SkeletonCard />
             ) : (
                 <CardWrapper onClick={onClick}>
                     <Card>
@@ -41,16 +41,16 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                             <Typography style={{ wordWrap: 'break-word' }} variant='h4' component='div'>
                                 {data.name}
                             </Typography>
-                            <Typography sx={{ mb: 1.5 }} color='text.secondary'>
-                                {' '}
+                            <Typography style={{ marginBottom: 1.5 }} color='text.secondary'>
+                                Type: {data.type}
                             </Typography>
                             <Typography style={{ wordBreak: 'break-word' }} variant='body2'>
                                 {data.description}
                             </Typography>
                         </CardContent>
                         <CardActions style={{ padding: 1, marginTop: 15 }}>
-                            <Typography sx={{ mb: 1.5 }} color='text.secondary'>
-                                {data.totalDocs}: Docs (Type: {data.contentType})
+                            <Typography style={{ marginBottom: 1.5 }} color='text.secondary'>
+                                {data.totalFiles}: Files
                             </Typography>
                         </CardActions>
                     </Card>

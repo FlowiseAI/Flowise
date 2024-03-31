@@ -7,4 +7,4 @@ dotenv.config({ path: envPath, override: true })
 export * from './Interface'
 export * from './utils'
 export * from './speechToText'
-export * from './documentStore'
+export * from './documentStoreProcessor'

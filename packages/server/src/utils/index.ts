@@ -1250,3 +1250,10 @@ export const getAppVersion = async () => {
         return ''
     }
 }
+
+export const convertToValidFilename = (word: string) => {
+    return word
+        .replace(/[/|\\:*?"<>]/g, ' ')
+        .replace(' ', '')
+        .toLowerCase()
+}

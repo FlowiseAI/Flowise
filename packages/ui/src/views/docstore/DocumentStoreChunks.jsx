@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Typography } from '@mui/material'
+import { Grid, Box, Stack, Typography, Link } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 
 // project imports
@@ -15,9 +15,9 @@ import documentsApi from '@/api/documents'
 import useApi from '@/hooks/useApi'
 
 // icons
-import Link from '@mui/material/Link'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import { useNavigate } from 'react-router-dom'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -43,61 +43,58 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const DocumentStoreChunks = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const navigate = useNavigate()
 
-    const getSpecificDocumentStore = useApi(documentsApi.getSpecificDocumentStore)
+    const getChunks = useApi(documentsApi.getFileChunks)
 
     const URLpath = document.location.pathname.toString().split('/')
     const fileId = URLpath[URLpath.length - 1] === 'documentStores' ? '' : URLpath[URLpath.length - 1]
     const storeId = URLpath[URLpath.length - 2] === 'documentStores' ? '' : URLpath[URLpath.length - 2]
 
     const [documentChunks, setDocumentChunks] = useState([])
-    const [fileName, setFileName] = useState('')
     const [totalChunks, setTotalChunks] = useState(0)
 
     useEffect(() => {
-        getSpecificDocumentStore.request(storeId)
-
+        getChunks.request(storeId, fileId)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (getSpecificDocumentStore.data) {
-            getSpecificDocumentStore.data.files.map((file, index) => {
-                if (file.id === fileId) {
-                    setFileName(file.name)
-                    setTotalChunks(file.totalChunks)
-                    setDocumentChunks(file.chunks)
-                }
-            })
+        if (getChunks.data) {
+            setTotalChunks(getChunks.data.count)
+            setDocumentChunks(getChunks.data.chunks)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificDocumentStore.data])
+    }, [getChunks.data])
+
+    const openDS = (id) => {
+        navigate('/documentStores/' + storeId)
+    }
 
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <Grid sx={{ mb: 1.25 }} container direction='row'>
+                    <Grid container direction='row'>
                         <h1>
-                            <Link underline='always' key='2' color='inherit' href='/documentStores'>
-                                Document Stores
-                            </Link>
-                            {' >'}
-                            <Link underline='always' key='2' color='inherit' href='/documentStores/${storeId}'>
-                                {getSpecificDocumentStore.data?.name}
-                            </Link>
-                            {' >'} {fileName} ({totalChunks} Chunks)
+                            <Link color='inherit' onClick={openDS}>
+                                {getChunks.data?.file?.storeName}
+                            </Link>{' '}
+                            {' > '} {getChunks.data?.file?.name}
                         </h1>
                     </Grid>
                 </Stack>
+                <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
+                    {getChunks.data?.file?.totalChars?.toLocaleString()} Chars, {totalChunks} Chunks.
+                </Typography>
 
                 <Box sx={{ p: 1 }}>
                     <Grid container spacing={2}>
                         {documentChunks?.map((row, index) => (
                             <Grid item lg={3} md={4} sm={6} xs={12} key={index}>
                                 <CardWrapper>
-                                    <Card key={index} style={{ padding: 0 }}>
+                                    <Card style={{ padding: 0 }}>
                                         <CardContent style={{ padding: 0 }}>
                                             <Typography color='textSecondary' gutterBottom>
                                                 {`#${index + 1}. Characters: ${row.pageContent.length}`}

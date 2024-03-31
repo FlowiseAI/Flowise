@@ -15,7 +15,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { IconX, IconFileStack } from '@tabler/icons'
 
 // API
-import variablesApi from '@/api/variables'
+import documentStoreApi from '@/api/documents'
 
 // Hooks
 
@@ -145,6 +145,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [chunkSize, setChunkSize] = useState(1000)
     const [chunkOverlap, setChunkOverlap] = useState(50)
     const [dialogType, setDialogType] = useState('ADD')
+    const [docStoreId, setDocumentStoreId] = useState()
 
     useEffect(() => {
         setDialogType(dialogProps.type)
@@ -156,6 +157,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setCodeLanguage(dialogProps.data.codeLanguage)
             setChunkSize(dialogProps.data.chunkSize)
             setChunkOverlap(dialogProps.data.chunkOverlap)
+            setDocumentStoreId(dialogProps.data.id)
         } else if (dialogProps.type === 'ADD') {
             setDocumentStoreName('')
             setDocumentStoreDesc('')
@@ -183,19 +185,21 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
-    const saveDocumentStore = async () => {
+    const createDocumentStore = async () => {
         try {
             const obj = {
                 name: documentStoreName,
                 description: documentStoreDesc,
-                contentType: contentType,
-                textSplitter: textSplitter,
-                codeLanguage: codeLanguage
+                type: contentType,
+                splitter: textSplitter,
+                codeLanguage: codeLanguage,
+                chunkSize: chunkSize,
+                chunkOverlap: chunkOverlap
             }
-            const createResp = await variablesApi.createVariable(obj)
+            const createResp = await documentStoreApi.createDocumentStore(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Variable added',
+                    message: 'New Document Store created.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -227,18 +231,22 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         }
     }
 
-    const saveVariable = async () => {
+    const updateDocumentStore = async () => {
         try {
             const saveObj = {
                 name: documentStoreName,
-                value: variableValue,
-                type: variableType
+                description: documentStoreDesc,
+                type: contentType,
+                splitter: textSplitter,
+                codeLanguage: codeLanguage,
+                chunkSize: chunkSize,
+                chunkOverlap: chunkOverlap
             }
 
-            const saveResp = await variablesApi.updateVariable(variable.id, saveObj)
+            const saveResp = await documentStoreApi.updateDocumentStore(docStoreId, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Variable saved',
+                    message: 'Document Store Updated!',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -254,7 +262,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Variable: ${errorData}`,
+                message: `Failed to update Document Store: ${errorData}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -445,10 +453,13 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
+                <StyledButton color='error' variant='contained' onClick={() => onCancel()}>
+                    Cancel
+                </StyledButton>
                 <StyledButton
                     disabled={!documentStoreName}
                     variant='contained'
-                    onClick={() => (dialogType === 'ADD' ? saveDocumentStore() : saveVariable())}
+                    onClick={() => (dialogType === 'ADD' ? createDocumentStore() : updateDocumentStore())}
                 >
                     {dialogProps.confirmButtonName}
                 </StyledButton>

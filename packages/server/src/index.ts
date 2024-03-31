@@ -7,53 +7,54 @@ import * as fs from 'fs'
 import basicAuth from 'express-basic-auth'
 import contentDisposition from 'content-disposition'
 import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
+import logger, { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { Between, DataSource, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
 import {
-    IChatFlow,
-    IncomingInput,
-    IReactFlowNode,
-    IReactFlowObject,
-    INodeData,
-    ICredentialReturnResponse,
     chatType,
+    DocumentStoreStatus,
+    IChatFlow,
     IChatMessage,
     IChatMessageFeedback,
+    ICredentialReturnResponse,
     IDepthQueue,
+    IncomingInput,
+    INodeData,
     INodeDirectedGraph,
+    IReactFlowNode,
+    IReactFlowObject,
     IUploadFileSizeAndTypes
 } from './Interface'
 import {
-    getNodeModulesPackagePath,
-    getStartingNodes,
     buildFlow,
-    getEndingNodes,
+    clearSessionMemory,
     constructGraphs,
-    resolveVariables,
+    convertToValidFilename,
+    databaseEntities,
+    decryptCredentialData,
+    deleteFolderRecursive,
+    findAvailableConfigs,
+    findMemoryNode,
+    getAllConnectedNodes,
+    getAppVersion,
+    getEncryptionKey,
+    getEndingNodes,
+    getMemorySessionId,
+    getNodeModulesPackagePath,
+    getSessionChatHistory,
+    getStartingNodes,
+    getTelemetryFlowObj,
+    getUserHome,
+    isFlowValidForStream,
+    isSameOverrideConfig,
     isStartNodeDependOnInput,
     mapMimeTypeToInputField,
-    findAvailableConfigs,
-    isSameOverrideConfig,
-    isFlowValidForStream,
-    databaseEntities,
-    transformToCredentialEntity,
-    decryptCredentialData,
     replaceInputsWithConfig,
-    getEncryptionKey,
-    getMemorySessionId,
-    getUserHome,
-    getSessionChatHistory,
-    getAllConnectedNodes,
-    clearSessionMemory,
-    findMemoryNode,
-    deleteFolderRecursive,
-    getTelemetryFlowObj,
-    getAppVersion
+    resolveVariables,
+    transformToCredentialEntity
 } from './utils'
-import { cloneDeep, omit, uniqWith, isEqual } from 'lodash'
+import { cloneDeep, isEqual, omit, uniqWith } from 'lodash'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -65,26 +66,29 @@ import { Assistant } from './database/entities/Assistant'
 import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
 import {
+    convertSpeechToText,
+    DocumentStoreProcessor,
+    getStoragePath,
+    handleEscapeCharacters,
     ICommonObject,
+    IFileUpload,
     IMessage,
     INodeOptionsValue,
     INodeParams,
-    handleEscapeCharacters,
-    convertSpeechToText,
-    xmlScrape,
     webCrawl,
-    getStoragePath,
-    IFileUpload,
-    DocumentStore
+    xmlScrape
 } from 'flowise-components'
 import { createRateLimiter, getRateLimiter, initializeRateLimiter } from './utils/rateLimit'
 import { addAPIKey, compareKeys, deleteAPIKey, getApiKey, getAPIKeys, updateAPIKey } from './utils/apiKey'
-import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import axios from 'axios'
 import { Client } from 'langchainhub'
 import { parsePrompt } from './utils/hub'
 import { Telemetry } from './utils/telemetry'
 import { Variable } from './database/entities/Variable'
+import { DocumentStore } from './database/entities/DocumentStore'
+import { DocumentStoreDTO } from './dto/DocumentStoreDTO'
+import { DocumentStoreFileChunk } from './database/entities/DocumentStoreFileChunk'
 
 export class App {
     app: express.Application
@@ -1308,77 +1312,303 @@ export class App {
         // Document Store
         // ----------------------------------------
 
-        // Get all documents
+        // Create new document store
+        this.app.post('/api/v1/documentStores', async (req: Request, res: Response) => {
+            try {
+                const body = req.body
+                const subFolder = convertToValidFilename(body.name)
+                const dir = path.join(getStoragePath(), 'datasource', subFolder)
+                if (fs.existsSync(dir)) {
+                    return res.status(500).send(new Error(`Document store ${body.name} already exists. Subfolder: ${subFolder}`))
+                }
+                const docStore = DocumentStoreDTO.toEntity(body)
+                const dStore = this.AppDataSource.getRepository(DocumentStore).create(docStore)
+                const results = await this.AppDataSource.getRepository(DocumentStore).save(dStore)
+                fs.mkdirSync(dir, { recursive: true })
+                return res.json(results)
+            } catch (e) {
+                return res.status(500).send(e)
+            }
+        })
+
+        // Get all document stores
         this.app.get('/api/v1/documentStores', async (req: Request, res: Response) => {
-            const documents: any[] = []
-            let obj = {
-                id: '0',
-                name: 'Q&A',
-                description: 'Collection of documents for Q&A',
-                contentType: 'text',
-                splitter: 'recursive-splitter',
-                codeLanguage: '',
-                chunkSize: 1000,
-                chunkOverlap: 50,
-                folderPath: 'qa',
-                totalDocs: 4
+            const entities = await getDataSource().getRepository(DocumentStore).find()
+            if (entities.length) {
+                return res.json(DocumentStoreDTO.fromEntities(entities))
             }
-            documents.push(obj)
-            obj = {
-                id: '1',
-                name: 'my code',
-                description: 'Flowise Code',
-                contentType: 'code',
-                chunkSize: 1000,
-                chunkOverlap: 50,
-                splitter: 'recursive-splitter',
-                folderPath: '',
-                codeLanguage: 'typescript',
-                totalDocs: 1
+            return res.json([])
+        })
+
+        // delete file from document store
+        this.app.delete('/api/v1/documentStores/:id/:fileId', async (req: Request, res: Response) => {
+            try {
+                const storeId = req.params.id
+                const fileId = req.params.fileId
+
+                if (!storeId || !fileId) {
+                    return res.status(500).send(new Error(`Document store file delete missing key information.`))
+                }
+                const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                    id: storeId
+                })
+                if (!entity) return res.status(404).send(`Document store ${storeId} not found`)
+                const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
+                if (!fs.existsSync(dir)) {
+                    return res.status(500).send(new Error(`Missing folder to delete files for Document Store ${entity.name}`))
+                }
+                const existingFiles = JSON.parse(entity.files)
+                const found = existingFiles.find((uFile: any) => uFile.id === fileId)
+                const metrics = JSON.parse(entity.metrics)
+                if (found) {
+                    //remove the existing file
+                    fs.unlinkSync(found.path)
+                    const index = existingFiles.indexOf(found)
+                    if (index > -1) {
+                        existingFiles.splice(index, 1)
+                    }
+                    metrics.totalFiles--
+                    metrics.totalChunks -= found.totalChunks
+                    metrics.totalChars -= found.totalChars
+                    entity.status = DocumentStoreStatus.SYNC
+
+                    await this.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: found.id })
+
+                    entity.files = JSON.stringify(existingFiles)
+                    entity.metrics = JSON.stringify(metrics)
+                    await this.AppDataSource.getRepository(DocumentStore).save(entity)
+                    res.json('OK')
+                } else {
+                    return res.status(500).send(new Error(`Unable to locate file in Document Store ${entity.name}`))
+                }
+            } catch (e) {
+                return res.status(500).send(e)
             }
-            documents.push(obj)
-            return res.json(documents)
+        })
+
+        // upload file to document store
+        this.app.post('/api/v1/documentStores/files', async (req: Request, res: Response) => {
+            const body = req.body
+            if (!body.storeId || !body.uploadFiles) {
+                return res.status(500).send(new Error(`Document store upload missing key information.`))
+            }
+            const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                id: body.storeId
+            })
+            if (!entity) return res.status(404).send(`Document store ${body.storeId} not found`)
+
+            // Base64 strings
+            let files: string[] = []
+            const fileBase64 = body.uploadFiles
+            if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                files = JSON.parse(fileBase64)
+            } else {
+                files = [fileBase64]
+            }
+
+            const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
+            if (!fs.existsSync(dir)) {
+                return res.status(500).send(new Error(`Missing folder to upload files for Document Store ${entity.name}`))
+            }
+            const uploadedFiles: any[] = []
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const filePath = path.join(dir, filename)
+                fs.writeFileSync(filePath, bf)
+                const stats = fs.statSync(filePath)
+                uploadedFiles.push({
+                    id: uuidv4(),
+                    path: filePath,
+                    name: filename,
+                    size: stats.size,
+                    status: DocumentStoreStatus.NEW,
+                    uploaded: stats.birthtime,
+                    totalChunks: 0,
+                    totalChars: 0
+                })
+            }
+            const existingFiles = JSON.parse(entity.files)
+            existingFiles.map((file: any) => {
+                //check if they have uploaded a file with the same as an existing file
+                const found = uploadedFiles.find((uFile) => uFile.name === file.name)
+                if (found) {
+                    //remove the existing file
+                    const index = existingFiles.indexOf(file)
+                    if (index > -1) {
+                        existingFiles.splice(index, 1)
+                    }
+                }
+            })
+            existingFiles.push(...uploadedFiles)
+            entity.status = DocumentStoreStatus.STALE
+            entity.files = JSON.stringify(existingFiles)
+            await this.AppDataSource.getRepository(DocumentStore).save(entity)
+            //start processing the files in the background
+            const documentProcessor = new DocumentStoreProcessor()
+            let config = JSON.parse(entity.config)
+            documentProcessor.splitIntoChunks(entity.id, config, uploadedFiles).then(async (result: any) => {
+                if (result.uploadedFiles && result.uploadedFiles.length) {
+                    const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                        id: result.id
+                    })
+                    if (!entity) return res.status(404).send(`Document store ${body.storeId} not found`)
+                    entity.status = DocumentStoreStatus.SYNC
+                    const files = JSON.parse(entity.files)
+                    const metrics = JSON.parse(entity.metrics)
+                    const filesWithChunks = files.map((file: any) => {
+                        const found = result.uploadedFiles.find((uFile: any) => uFile.id === file.id)
+                        let totalNewChars = 0
+                        if (found) {
+                            file.totalChunks = found.totalChunks
+                            file.status = 'SYNC'
+                            if (found.chunks) {
+                                found.chunks.map(async (chunk: any) => {
+                                    const docChunk: DocumentStoreFileChunk = {
+                                        docId: file.id,
+                                        storeId: result.id,
+                                        id: uuidv4(),
+                                        pageContent: chunk.pageContent,
+                                        metadata: JSON.stringify(chunk.metadata)
+                                    }
+                                    totalNewChars += chunk.pageContent.length
+                                    const dChunk = this.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+                                    await this.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+                                })
+                                file.totalChars = totalNewChars
+                            }
+                            metrics.totalChunks += file.totalChunks
+                            metrics.totalChars += totalNewChars
+                            metrics.totalFiles++
+                        }
+                        return file
+                    })
+                    entity.metrics = JSON.stringify(metrics)
+                    entity.files = JSON.stringify(filesWithChunks)
+                    await this.AppDataSource.getRepository(DocumentStore).save(entity)
+                }
+            })
+            return res.json('OK')
         })
 
         // Get specific store
         this.app.get('/api/v1/documentStores/:id', async (req: Request, res: Response) => {
-            let obj: any = {
-                id: '0',
-                name: 'Q&A',
-                description: 'Collection of documents for Q&A',
-                contentType: 'text',
-                splitter: 'recursive-splitter',
-                codeLanguage: '',
-                folderPath: 'qa',
-                chunkSize: 1000,
-                chunkOverlap: 50,
-                totalDocs: 0
-            }
-            const dir = path.join(getStoragePath(), 'datasource', obj.folderPath)
-            // Get an array of all files for the given directory using fs.readdirSync
-            const fileList = fs.readdirSync(dir)
-            const files: any[] = []
-            // Create the full path of the file/directory by concatenating the passed directory and file/directory name
-            for (const file of fileList) {
-                const name = `${dir}/${file}`
-                // Check if the current file/directory is a directory using fs.statSync
-                const stats = fs.statSync(name)
-                if (!stats.isDirectory()) {
-                    files.push({
-                        id: '' + files.length,
-                        path: name,
-                        name: file,
-                        size: stats.size,
-                        uploaded: stats.birthtime,
-                        totalChunks: 0
-                    })
+            const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                id: req.params.id
+            })
+            if (!entity) return res.status(404).send(`Document store ${req.params.id} not found`)
+
+            let dto = DocumentStoreDTO.fromEntity(entity)
+            return res.json(dto)
+        })
+
+        // Get chunks for a specific file
+        this.app.get('/api/v1/documentStores/file/:storeId/:fileId', async (req: Request, res: Response) => {
+            const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                id: req.params.storeId
+            })
+            if (!entity) return res.status(404).send(`Document store ${req.params.storeId} not found`)
+            const files = JSON.parse(entity.files)
+            const found = files.find((file: any) => file.id === req.params.fileId)
+            if (!found) return res.status(404).send(`Document store file ${req.params.fileId} not found`)
+
+            const chunksWithCount = await this.AppDataSource.getRepository(DocumentStoreFileChunk).findAndCount({
+                where: { docId: req.params.fileId }
+            })
+
+            if (!chunksWithCount) return res.status(404).send(`File ${req.params.fileId} not found`)
+            found.storeName = entity.name
+            return res.json({
+                chunks: chunksWithCount[0],
+                count: chunksWithCount[1],
+                file: found
+            })
+        })
+
+        // Update documentStore
+        this.app.put('/api/v1/documentStores/:id', async (req: Request, res: Response) => {
+            const docStore = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                id: req.params.id
+            })
+
+            if (!docStore) return res.status(404).send(`Document Store ${req.params.id} not found`)
+
+            const body = req.body
+            const updateDocStore = DocumentStoreDTO.toEntity(body)
+            const currentConfig = JSON.parse(docStore.config)
+            const files = JSON.parse(docStore.files)
+            let refreshChunks = false
+            if (files && files.length) {
+                if (
+                    currentConfig.splitter !== body.splitter ||
+                    currentConfig.codeLanguage !== body.codeLanguage ||
+                    currentConfig.chunkSize !== body.chunkSize ||
+                    currentConfig.chunkOverlap !== body.chunkOverlap
+                ) {
+                    refreshChunks = true
                 }
             }
-            obj.files = files
-            obj.totalFiles = files.length
-            obj.noOfDocs = 50
-            let objWithChunks = await new DocumentStore().fetchChunks(obj)
-            return res.json(objWithChunks)
+
+            Object.assign(updateDocStore, body)
+
+            if (refreshChunks) {
+                updateDocStore.status = DocumentStoreStatus.STALE
+                const documentProcessor = new DocumentStoreProcessor()
+                files.map((file: any) => {
+                    file.status = DocumentStoreStatus.NEW
+                })
+                updateDocStore.files = JSON.stringify(files)
+                await this.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
+                    storeId: docStore.id
+                })
+                updateDocStore.metrics = JSON.stringify({})
+                documentProcessor.splitIntoChunks(docStore.id, body, files).then(async (result: any) => {
+                    if (result.uploadedFiles && result.uploadedFiles.length) {
+                        const entity = await this.AppDataSource.getRepository(DocumentStore).findOneBy({
+                            id: result.id
+                        })
+                        if (!entity) return res.status(404).send(`Document store ${req.params.id} not found`)
+                        entity.status = DocumentStoreStatus.SYNC
+                        const files = JSON.parse(entity.files)
+                        const metrics = JSON.parse(entity.metrics)
+                        const filesWithChunks = files.map((file: any) => {
+                            const found = result.uploadedFiles.find((uFile: any) => uFile.id === file.id)
+                            let totalNewChars = 0
+                            if (found) {
+                                file.totalChunks = found.totalChunks
+                                file.status = 'SYNC'
+                                if (found.chunks) {
+                                    found.chunks.map(async (chunk: any) => {
+                                        const docChunk: DocumentStoreFileChunk = {
+                                            docId: file.id,
+                                            storeId: result.id,
+                                            id: uuidv4(),
+                                            pageContent: chunk.pageContent,
+                                            metadata: JSON.stringify(chunk.metadata)
+                                        }
+                                        totalNewChars += chunk.pageContent.length
+                                        const dChunk = this.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+                                        await this.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+                                    })
+                                    file.totalChars = totalNewChars
+                                }
+                                metrics.totalChunks += file.totalChunks
+                                metrics.totalChars += totalNewChars
+                                metrics.totalFiles++
+                            }
+                            return file
+                        })
+                        entity.metrics = JSON.stringify(metrics)
+                        entity.files = JSON.stringify(filesWithChunks)
+                        await this.AppDataSource.getRepository(DocumentStore).save(entity)
+                    }
+                })
+            }
+            this.AppDataSource.getRepository(DocumentStore).merge(docStore, updateDocStore)
+            const result = await this.AppDataSource.getRepository(DocumentStore).save(docStore)
+
+            return res.json(result)
         })
 
         // ----------------------------------------

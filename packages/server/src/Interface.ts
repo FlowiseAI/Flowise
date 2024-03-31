@@ -234,3 +234,33 @@ export interface IUploadFileSizeAndTypes {
     fileTypes: string[]
     maxUploadSize: number
 }
+
+// DocumentStore related
+export enum DocumentStoreStatus {
+    EMPTY_SYNC = 'EMPTY',
+    SYNC = 'SYNC',
+    SYNCING = 'SYNCING',
+    STALE = 'STALE',
+    NEW = 'NEW'
+}
+
+export interface IDocumentStore {
+    id: string
+    name: string
+    description: string
+    subFolder: string
+    files: string // JSON string
+    metrics: string // JSON string
+    type: string
+    config: string // JSON string
+    updatedDate: Date
+    createdDate: Date
+    status: DocumentStoreStatus
+}
+export interface IDocumentStoreFileChunk {
+    id: string
+    docId: string
+    storeId: string
+    pageContent: string
+    metadata: string
+}

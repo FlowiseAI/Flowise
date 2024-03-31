@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import {
@@ -29,13 +29,16 @@ import documentsApi from '@/api/documents'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconEdit, IconTrash } from '@tabler/icons'
+import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX } from '@tabler/icons'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import moment from 'moment/moment'
 import { formatBytes } from '@/utils/genericHelper'
 import { useNavigate } from 'react-router-dom'
+import useNotifier from '@/utils/useNotifier'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import useConfirm from '@/hooks/useConfirm'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -43,66 +46,159 @@ const DocumentStoreDetails = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
+    const dispatch = useDispatch()
+    useNotifier()
+
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const { confirm } = useConfirm()
 
     const getSpecificDocumentStore = useApi(documentsApi.getSpecificDocumentStore)
 
     const [showDialog, setShowDialog] = useState(false)
+    const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
+    const fileUploadRef = useRef(null)
 
     const openChunks = (id) => {
         navigate('/documentStores/' + storeId + '/' + id)
     }
 
-    const onUploadFile = (file) => {
-        try {
-            const dialogProp = {
-                title: 'Add New Tool',
-                type: 'IMPORT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
-                data: JSON.parse(file)
-            }
-            setDialogProps(dialogProp)
-            setShowDialog(true)
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    const handleFileUpload = (e) => {
+    const handleUploadClick = async (e) => {
         if (!e.target.files) return
 
-        const file = e.target.files[0]
+        if (e.target.files.length === 1) {
+            const file = e.target.files[0]
+            const { name } = file
 
-        const reader = new FileReader()
-        reader.onload = (evt) => {
-            if (!evt?.target?.result) {
+            const reader = new FileReader()
+            reader.onload = (evt) => {
+                if (!evt?.target?.result) {
+                    return
+                }
+                const { result } = evt.target
+
+                const value = result + `,filename:${name}`
+
+                onChange(value)
+            }
+            reader.readAsDataURL(file)
+        } else if (e.target.files.length > 0) {
+            let files = Array.from(e.target.files).map((file) => {
+                const reader = new FileReader()
+                const { name } = file
+
+                return new Promise((resolve) => {
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) {
+                            return
+                        }
+                        const { result } = evt.target
+                        const value = result + `,filename:${name}`
+                        resolve(value)
+                    }
+                    reader.readAsDataURL(file)
+                })
+            })
+
+            const res = await Promise.all(files)
+            onChange(JSON.stringify(res))
+        }
+    }
+
+    const onFileDelete = async (file) => {
+        const confirmPayload = {
+            title: `Delete`,
+            description: `Delete file ${file.name}?`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
+
+        if (isConfirmed) {
+            try {
+                const deleteResp = await documentsApi.deleteFileFromStore(storeId, file.id)
+                if (deleteResp.data) {
+                    enqueueSnackbar({
+                        message: 'File deleted',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    onConfirm()
+                }
+            } catch (error) {
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                enqueueSnackbar({
+                    message: `Failed to delete file: ${errorData}`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        }
+    }
+
+    const onChange = async (value) => {
+        const data = {
+            storeId: storeId,
+            uploadFiles: value
+        }
+        const response = await documentsApi.uploadFileToStore(data)
+        if (response.data) {
+            getSpecificDocumentStore.request(storeId)
+        }
+    }
+
+    const handleFileChange = async (event) => {
+        // 👇️ open file input box on click of another element
+        fileUploadRef.current.click()
+    }
+
+    const onEditClicked = async () => {
+        if (getSpecificDocumentStore.data?.files.length > 0) {
+            const confirmPayload = {
+                title: `Warning`,
+                description: `Editing the configuration might result in all files being reprocessed. Kindly Confirm ?`,
+                confirmButtonName: 'Yes, Edit Config',
+                cancelButtonName: 'Cancel'
+            }
+
+            const isConfirmed = await confirm(confirmPayload)
+
+            if (!isConfirmed) {
                 return
             }
-            const { result } = evt.target
-            onUploadFile(result)
         }
-        reader.readAsText(file)
-    }
-
-    const addNew = () => {
-        const dialogProp = {
-            title: 'Create New Document Store',
-            type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Create New Document Store'
+        const data = {
+            name: documentStore.name,
+            description: documentStore.description,
+            contentType: documentStore.type,
+            textSplitter: documentStore.splitter,
+            codeLanguage: documentStore.codeLanguage,
+            chunkSize: documentStore.chunkSize,
+            chunkOverlap: documentStore.chunkOverlap,
+            id: documentStore.id
         }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
-
-    const edit = (selectedTool) => {
         const dialogProp = {
             title: 'Edit Document Store',
             type: 'EDIT',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Update Document Store',
-            data: selectedTool
+            data: data
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -110,7 +206,7 @@ const DocumentStoreDetails = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
-        getAllDocumentStores.request()
+        getSpecificDocumentStore.request(storeId)
     }
 
     const URLpath = document.location.pathname.toString().split('/')
@@ -121,23 +217,34 @@ const DocumentStoreDetails = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        if (getSpecificDocumentStore.data) {
+            setDocumentStore(getSpecificDocumentStore.data)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificDocumentStore.data])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
                     <Grid sx={{ mb: 1.25 }} container direction='row'>
-                        <h1>
-                            <Link underline='always' key='2' color='inherit' href='/documentStores'>
-                                Document Stores
-                            </Link>{' '}
-                            {'>'} {getSpecificDocumentStore.data?.name}
-                        </h1>
+                        <h1>{getSpecificDocumentStore.data?.name}</h1>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
-                            <Button variant='outlined' onClick={edit} sx={{ mr: 2 }} startIcon={<IconEdit />}>
-                                Edit
-                            </Button>
-                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={edit} startIcon={<IconPlus />}>
+                            {getSpecificDocumentStore.data?.status !== 'STALE' && (
+                                <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
+                                    Edit Config
+                                </Button>
+                            )}
+                            {getSpecificDocumentStore.data?.status === 'STALE' && (
+                                <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
+                                    Refresh
+                                </Button>
+                            )}
+                            <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleUploadClick} />
+                            <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconPlus />} onClick={handleFileChange}>
                                 Add Document
                             </StyledButton>
                         </Grid>
@@ -148,35 +255,44 @@ const DocumentStoreDetails = () => {
                         <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
                             {getSpecificDocumentStore.data?.description}
                         </Typography>
-                        <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
-                            {getSpecificDocumentStore.data?.totalFiles} Files, {getSpecificDocumentStore.data?.totalChars.toLocaleString()}
-                            {' Chars.'}
-                        </Typography>
-                        <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
-                            {getSpecificDocumentStore.data?.totalChunks}
-                            {' Chunks, '}
-                            {getSpecificDocumentStore.data?.chunkSize}
-                            {' Chunk Size, '}
-                            {getSpecificDocumentStore.data?.chunkOverlap}
-                            {' Chunk Overlap. '}
-                        </Typography>
+                        {getSpecificDocumentStore.data?.totalFiles > 0 && (
+                            <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
+                                {getSpecificDocumentStore.data?.totalFiles}{' '}
+                                {getSpecificDocumentStore.data?.totalFiles === 1 ? 'File' : 'Files'};{' '}
+                                {getSpecificDocumentStore.data?.totalChars?.toLocaleString()} Chars;{' '}
+                                {getSpecificDocumentStore.data?.totalChunks} Chunks.
+                            </Typography>
+                        )}
                     </>
                 )}
-                {getSpecificDocumentStore.data?.files.length > 0 && (
-                    <TableContainer component={Paper}>
-                        <Table aria-label='documents table'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Size</TableCell>
-                                    <TableCell>Uploaded</TableCell>
-                                    <TableCell>Chunks</TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {getSpecificDocumentStore.data?.files.map((file, index) => (
+                <br />
+                <TableContainer component={Paper}>
+                    <Table aria-label='documents table'>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell style={{ width: '2%' }}> </TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Size</TableCell>
+                                <TableCell>Uploaded</TableCell>
+                                <TableCell>Chunks</TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {getSpecificDocumentStore.data?.files.length > 0 &&
+                                getSpecificDocumentStore.data?.files.map((file, index) => (
                                     <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell style={{ width: '2%' }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    backgroundColor: file.status === 'NEW' ? '#ffe57f' : 'green',
+                                                    borderRadius: '50%'
+                                                }}
+                                            ></div>
+                                        </TableCell>
                                         <TableCell component='th' scope='row'>
                                             <div
                                                 style={{
@@ -185,26 +301,48 @@ const DocumentStoreDetails = () => {
                                                     alignItems: 'center'
                                                 }}
                                             >
-                                                <Button onClick={() => openChunks(file.id)} sx={{ textAlign: 'left' }}>
+                                                <Button
+                                                    disabled={file.status === 'NEW'}
+                                                    onClick={() => openChunks(file.id)}
+                                                    style={{ textAlign: 'left' }}
+                                                >
                                                     {file.name}
                                                 </Button>
                                             </div>
                                         </TableCell>
                                         <TableCell>{formatBytes(file.size)}</TableCell>
                                         <TableCell>{moment(file.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
+                                        <TableCell>{file.status === 'NEW' ? 'Processing...' : file.totalChunks + ' chunks'}</TableCell>
                                         <TableCell>
-                                            {file.totalChunks} {file.totalChunks > 1 ? 'chunks' : 'chunk'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton title='Delete' color='error' onClick={() => deleteVariable(file)}>
+                                            <IconButton
+                                                disabled={file.status === 'NEW'}
+                                                title='Delete'
+                                                color='error'
+                                                onClick={() => onFileDelete(file)}
+                                            >
                                                 <IconTrash />
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                            {getSpecificDocumentStore.data?.files.length === 0 && (
+                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableCell colSpan='6'>
+                                        <Typography style={{ color: 'darkred' }} variant='h5'>
+                                            Empty Document Store. Please add a document to this store.
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                {getSpecificDocumentStore.data?.status === 'STALE' && (
+                    <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>
+                        <Typography color='warning' style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}>
+                            Some files are still being processed. Refresh this document store to see the latest changes.
+                        </Typography>
+                    </div>
                 )}
             </MainCard>
             {showDialog && (
@@ -215,6 +353,7 @@ const DocumentStoreDetails = () => {
                     onConfirm={onConfirm}
                 />
             )}
+            <ConfirmDialog />
         </>
     )
 }
