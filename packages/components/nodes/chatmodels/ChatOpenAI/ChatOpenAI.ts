@@ -221,6 +221,9 @@ class ChatOpenAI_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
 
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
+        }
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
@@ -228,7 +231,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         const obj: Partial<OpenAIChatInput> &
             Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput; multiModalOption?: IMultiModalOption } = {
+            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -265,10 +268,9 @@ class ChatOpenAI_ChatModels implements INode {
                 imageResolution
             }
         }
-        obj.multiModalOption = multiModalOption
 
         const model = new ChatOpenAI(nodeData.id, obj)
-
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }

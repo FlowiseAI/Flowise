@@ -100,7 +100,7 @@ class CSV_Agents implements INode {
         for (const file of files) {
             const splitDataURI = file.split(',')
             splitDataURI.pop()
-            base64String = splitDataURI.pop() ?? ''
+            base64String += splitDataURI.pop() ?? ''
         }
 
         const pyodide = await LoadPyodide()
