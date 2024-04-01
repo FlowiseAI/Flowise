@@ -165,25 +165,15 @@ export const clearCorrelations = async (result: any, options: ICommonObject) => 
         if (callbackMgr) {
             for (const handler of callbackMgr.handlers) {
                 if (Object.prototype.hasOwnProperty.call(handler, 'langfuse')) {
-                    // @ts-ignore
-                    const langfuse: Langfuse = handler.langfuse
-                    if (value.langfuse.span) {
-                        value.langfuse.span.end({
+                    if (value.langfuse?.trace) {
+                        value.langfuse.trace.update({
                             output: resultText
                         })
                     }
+
+                    // @ts-ignore
+                    const langfuse: Langfuse = handler.langfuse
                     await langfuse.shutdownAsync()
-                    console.log('*** shutting down langfuse ***')
-                    // const span: LangfuseSpanClient | undefined = this.handlers['langFuse'].span[returnIds['langFuse'].span]
-                    // if (span) {
-                    //     span.end({
-                    //         output
-                    //     })
-                    //     if (shutdown) {
-                    //         const langfuse: Langfuse = this.handlers['langFuse'].client
-                    //         await langfuse.shutdownAsync()
-                    //     }
-                    // }
                 } else if (handler instanceof LangChainTracer) {
                     if (value && value.langsmith) {
                         const parentRunConfig: RunTreeConfig = {
@@ -230,7 +220,7 @@ export const getCallbackManager = async (input: string, nodeData: INodeData, opt
     if (options.corelationId && correlationWeakMap.has(options.corelationId)) {
         return correlationWeakMap.get(options.corelationId) as CallbackManager
     }
-    const callbacks = await additionalCallbacks(nodeData, options)
+    const callbacks = await additionalCallbacks(nodeData, options, input)
     const groupManager = new FlowiseCallbackManager(options.corelationId, input, options.chatId)
     groupManager.setHandlers(callbacks)
     if (logger) {
@@ -307,7 +297,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 }
 
-export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
+export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject, input?: string) => {
     try {
         if (!options.analytic) return []
 
@@ -361,7 +351,19 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     if (nodeData?.inputs?.analytics?.langFuse) {
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
                     }
+                    const langfuse = new Langfuse(langFuseOptions)
 
+                    // Create trace with tags
+                    const trace = langfuse.trace({
+                        input: input,
+                        metadata: { tags: [] }
+                    })
+                    const parentIds: any = {}
+                    parentIds.langfuse = {
+                        trace: trace
+                    }
+                    addParentId(options.corelationId, parentIds)
+                    langFuseOptions = { ...langFuseOptions, root: trace }
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)
                 } else if (provider === 'lunary') {

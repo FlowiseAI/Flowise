@@ -16,7 +16,6 @@ import { LangChainTracer } from '@langchain/core/tracers/tracer_langchain'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 import { RunTree, RunTreeConfig } from 'langsmith'
 import { addParentId, getParentId, isParentIdInitialized } from './handler'
-import { Langfuse } from 'langfuse'
 
 export class FlowiseCallbackManager extends CallbackManager {
     parentIdHashMap: Record<string, string | undefined> = {}
@@ -46,13 +45,6 @@ export class FlowiseCallbackManager extends CallbackManager {
     }
 
     addHandler(handler: BaseCallbackHandler, inherit?: boolean): void {
-        // if (Object.prototype.hasOwnProperty.call(handler, 'langfuse')) {
-        //     this.parentIdHashMap['langsmith'] = undefined
-        // } else if (handler instanceof LangChainTracer) {
-        //     this.parentIdHashMap['langfuse'] = undefined
-        // } else if (handler instanceof LunaryHandler) {
-        //     this.parentIdHashMap['lunary'] = undefined
-        // }
         super.addHandler(handler, inherit)
     }
 
@@ -143,18 +135,7 @@ export class FlowiseCallbackManager extends CallbackManager {
             const parentIds: any = {}
             for (const handler of this.handlers) {
                 if (Object.prototype.hasOwnProperty.call(handler, 'langfuse')) {
-                    // @ts-ignore
-                    const langfuse: Langfuse = handler?.langfuse
-                    let langfuseTraceClient = langfuse.trace({
-                        name: 'MultiChain',
-                        sessionId: this.sessionId
-                    })
-                    const span = langfuse.span({})
-                    parentIds.langfuse = {
-                        id: langfuseTraceClient.traceId,
-                        trace: langfuseTraceClient
-                    }
-                    console.log('**** generated parentRunId: ' + span.id)
+                    // parent run is created when langfuse is created
                 } else if (handler instanceof LangChainTracer) {
                     const parentRunConfig: RunTreeConfig = {
                         name: 'Multichain',
@@ -201,7 +182,6 @@ export class FlowiseCallbackManager extends CallbackManager {
         _metadata?: Record<string, unknown> | undefined,
         runName?: string | undefined
     ): Promise<CallbackManagerForToolRun> {
-        console.log('******FlowiseCallbackManager.handleToolStart()')
         return super.handleToolStart(tool, input, runId, this._parentRunId, this.tags, this.metadata, runName)
     }
 
@@ -214,12 +194,10 @@ export class FlowiseCallbackManager extends CallbackManager {
         _metadata?: Record<string, unknown> | undefined,
         runName?: string | undefined
     ): Promise<CallbackManagerForRetrieverRun> {
-        console.log('******FlowiseCallbackManager.handleRetrieverStart()')
         return super.handleRetrieverStart(retriever, query, runId, this._parentRunId, this.tags, this.metadata, runName)
     }
 
     copy(additionalHandlers: BaseCallbackHandler[] = [], inherit = true): CallbackManager {
-        console.log('******FlowiseCallbackManager.copy()')
         const manager = new FlowiseCallbackManager(this.correlationId, this.input, this.sessionId)
         manager.parentIdHashMap = this.parentIdHashMap
         manager.parentIdInitialized = this.parentIdInitialized
