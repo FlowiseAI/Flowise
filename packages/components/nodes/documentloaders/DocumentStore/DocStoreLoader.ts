@@ -1,4 +1,6 @@
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { DataSource } from 'typeorm'
+import { Document } from '@langchain/core/documents'
 
 class DocStore_DocumentLoaders implements INode {
     label: string
@@ -53,33 +55,45 @@ class DocStore_DocumentLoaders implements INode {
         async listStores(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const returnData: INodeOptionsValue[] = []
 
-            // const appDataSource = options.appDataSource as DataSource
-            // const databaseEntities = options.databaseEntities as IDaßtabaseEntity
-            //
-            // if (appDataSource === undefined || !appDataSource) {
-            //     return returnData
-            // }
-            //
-            // const tools = await appDataSource.getRepository(databaseEntities['Tool']).find()
-            //
-            let obj = {
-                name: '0',
-                label: 'Q&A',
-                description: 'Collection of documents for Q&A'
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+            if (appDataSource === undefined || !appDataSource) {
+                return returnData
             }
-            returnData.push(obj)
-            obj = {
-                name: '1',
-                label: 'my code',
-                description: 'Flowise Code'
+
+            const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).find()
+            for (const store of stores) {
+                if (store.status === 'SYNC') {
+                    const obj = {
+                        name: store.id,
+                        label: store.name,
+                        description: store.description
+                    }
+                    returnData.push(obj)
+                }
             }
-            returnData.push(obj)
             return returnData
         }
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        return {}
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        // if (options.isUpsert) {
+        const selectedStore = nodeData.inputs?.selectedStore as string
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const finaldocs = await appDataSource
+            .getRepository(databaseEntities['DocumentStoreFileChunk'])
+            .find({ where: { storeId: selectedStore } })
+
+        const finalDocs = []
+        for (const doc of finaldocs) {
+            finalDocs.push(new Document({ pageContent: doc.pageContent, metadata: doc.metadata }))
+        }
+        return finaldocs
+        // }
+        //
+        // return {}
     }
 }
 
