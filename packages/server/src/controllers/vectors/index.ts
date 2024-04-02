@@ -1,19 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import multer from 'multer'
-import path from 'path'
 import vectorsService from '../../services/vectors'
 import { getRateLimiter } from '../../utils/rateLimit'
-
-const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
-
-const uploadFilesMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        upload.array('files')
-        return next()
-    } catch (error) {
-        next(error)
-    }
-}
 
 const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -42,6 +29,5 @@ const createInternalUpsert = async (req: Request, res: Response, next: NextFunct
 export default {
     upsertVectorMiddleware,
     createInternalUpsert,
-    uploadFilesMiddleware,
     getRateLimiterMiddleware
 }
