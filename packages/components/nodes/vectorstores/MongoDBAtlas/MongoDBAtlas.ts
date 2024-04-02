@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { MongoClient } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from '@langchain/community/vectorstores/mongodb_atlas'
+import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
@@ -135,20 +135,19 @@ class MongoDBAtlas_VectorStores implements INode {
                 }
             }
 
-            const mongoClient = new MongoClient(mongoDBConnectUrl)
-            const collection = mongoClient.db(databaseName).collection(collectionName)
-
-            if (!textKey || textKey === '') textKey = 'text'
-            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
-
-            const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
-                collection,
-                indexName,
-                textKey,
-                embeddingKey
-            })
-
+            const mongoClient = await getMongoClient(mongoDBConnectUrl)
             try {
+                const collection = mongoClient.db(databaseName).collection(collectionName)
+
+                if (!textKey || textKey === '') textKey = 'text'
+                if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+
+                const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
+                    collection,
+                    indexName,
+                    textKey,
+                    embeddingKey
+                })
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
             } catch (e) {
                 throw new Error(e)
@@ -167,21 +166,43 @@ class MongoDBAtlas_VectorStores implements INode {
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-        const mongoClient = new MongoClient(mongoDBConnectUrl)
-        const collection = mongoClient.db(databaseName).collection(collectionName)
+        const mongoClient = await getMongoClient(mongoDBConnectUrl)
+        try {
+            const collection = mongoClient.db(databaseName).collection(collectionName)
 
-        if (!textKey || textKey === '') textKey = 'text'
-        if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+            if (!textKey || textKey === '') textKey = 'text'
+            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
 
-        const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
-            collection,
-            indexName,
-            textKey,
-            embeddingKey
-        })
+            const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
+                collection,
+                indexName,
+                textKey,
+                embeddingKey
+            })
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+            return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        } catch (e) {
+            throw new Error(e)
+        }
     }
 }
 
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
+
+const getMongoClient = async (newMongoUrl: string) => {
+    if (!mongoClientSingleton) {
+        // if client does not exist
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    }
+    return mongoClientSingleton
+}
 module.exports = { nodeClass: MongoDBAtlas_VectorStores }
