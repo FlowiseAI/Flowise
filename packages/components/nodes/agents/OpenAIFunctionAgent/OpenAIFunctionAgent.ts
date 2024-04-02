@@ -23,6 +23,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge?: string
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
@@ -32,8 +33,9 @@ class OpenAIFunctionAgent_Agents implements INode {
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'function.svg'
-        this.description = `An agent that uses Function Calling to pick the tool and args to call`
+        this.description = `An agent that uses OpenAI Function Calling to pick the tool and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.badge = 'DEPRECATING'
         this.inputs = [
             {
                 label: 'Allowed Tools',

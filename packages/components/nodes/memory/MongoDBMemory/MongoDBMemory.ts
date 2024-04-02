@@ -1,5 +1,5 @@
 import { MongoClient, Collection, Document } from 'mongodb'
-import { MongoDBChatMessageHistory } from '@langchain/community/stores/message/mongodb'
+import { MongoDBChatMessageHistory } from '@langchain/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -10,7 +10,7 @@ let mongoUrl: string
 
 const getMongoClient = async (newMongoUrl: string) => {
     if (!mongoClientSingleton) {
-        // if client doesn't exists
+        // if client does not exist
         mongoClientSingleton = new MongoClient(newMongoUrl)
         mongoUrl = newMongoUrl
         return mongoClientSingleton

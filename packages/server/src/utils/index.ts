@@ -576,7 +576,7 @@ export const getVariableValue = (
     isAcceptVariable = false
 ) => {
     const isObject = typeof paramValue === 'object'
-    let returnVal = isObject ? JSON.stringify(paramValue) : paramValue
+    let returnVal = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
     const variableStack = []
     const variableDict = {} as IVariableDict
     let startIdx = 0
@@ -991,10 +991,11 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         // Agent that are available to stream
         const whitelistAgents = [
             'openAIFunctionAgent',
-            'mistralAIFunctionAgent',
+            'mistralAIToolAgent',
             'csvAgent',
             'airtableAgent',
-            'conversationalRetrievalAgent'
+            'conversationalRetrievalAgent',
+            'openAIToolAgent'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Engine') {

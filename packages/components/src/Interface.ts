@@ -284,8 +284,8 @@ export type IndexingResult = {
 export interface IVisionChatModal {
     id: string
     configuredModel: string
-    configuredMaxToken: number
     multiModalOption: IMultiModalOption
+    configuredMaxToken?: number
     setVisionModel(): void
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
