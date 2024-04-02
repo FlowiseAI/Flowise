@@ -29,9 +29,9 @@ const AboutDialog = ({ show, onCancel }) => {
                 .then(([currentVersionData]) => {
                     const finalData = {
                         name: '24.1',
-                        html_url: 'https://docs-symphony.zendesk.com/hc/en-us/sections/19506012331405-Logi-Symphony-23',
+                        html_url: 'https://docs-symphony.zendesk.com/hc/en-us/sections/25422182631693',
                         currentVersion: currentVersionData.data.version,
-                        published_at: 'March 31, 2024'
+                        published_at: 'April 15, 2024'
                     }
                     setData(finalData)
                 })
