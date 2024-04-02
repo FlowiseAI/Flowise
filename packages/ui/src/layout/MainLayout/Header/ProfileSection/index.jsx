@@ -30,16 +30,8 @@ import AboutDialog from '@/ui-component/dialog/AboutDialog'
 // assets
 import { IconLogout, IconSettings } from '@tabler/icons'
 import { IconInfoCircle } from '@tabler/icons'
-import { ReactComponent as IconUpload } from 'assets/images/upload.svg'
-import { ReactComponent as IconDownload } from 'assets/images/download.svg'
-import { ReactComponent as IconExit } from 'assets/images/exit.svg'
-
-import iconDown from 'assets/images/IconDown.svg'
-import iconSettings from 'assets/images/IconSettings.svg'
 
 // API
-
-import { SET_DARKMODE } from 'store/actions'
 
 import './index.css'
 

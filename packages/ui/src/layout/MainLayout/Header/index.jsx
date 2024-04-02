@@ -12,9 +12,6 @@ import ProfileSection from './ProfileSection'
 // assets
 import { IconMenu2 } from '@tabler/icons'
 
-// store
-import { SET_DARKMODE } from 'store/actions'
-import iconMenu from '../../../assets/images/IconMenu.svg'
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
