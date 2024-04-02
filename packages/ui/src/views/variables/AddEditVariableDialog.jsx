@@ -111,9 +111,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
-            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response?.status}: ${err.response?.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Variable: ${errorData}`,
+                message: `Failed to add new Variable: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -154,9 +153,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Variable: ${errorData}`,
+                message: `Failed to save Variable: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -222,6 +220,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         key='variableName'
                         onChange={(e) => setVariableName(e.target.value)}
                         value={variableName ?? ''}
+                        id='txtInput_variableName'
                     />
                 </Box>
                 <Box sx={{ p: 2 }}>
@@ -237,6 +236,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         options={variableTypes}
                         onSelect={(newValue) => setVariableType(newValue)}
                         value={variableType ?? 'choose an option'}
+                        id='dropdown_variableType'
                     />
                 </Box>
                 {variableType === 'static' && (
@@ -255,6 +255,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             key='variableValue'
                             onChange={(e) => setVariableValue(e.target.value)}
                             value={variableValue ?? ''}
+                            id='txtInput_variableValue'
                         />
                     </Box>
                 )}
@@ -264,6 +265,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     disabled={!variableName || !variableType || (variableType === 'static' && !variableValue)}
                     variant='contained'
                     onClick={() => (dialogType === 'ADD' ? addNewVariable() : saveVariable())}
+                    id='btn_confirmAddingNewVariable'
                 >
                     {dialogProps.confirmButtonName}
                 </StyledButton>

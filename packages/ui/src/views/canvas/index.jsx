@@ -172,9 +172,8 @@ const Canvas = () => {
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
                 navigate('/')
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: errorData,
+                    message: error.response.data.message,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -359,9 +358,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            const error = getSpecificChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to retrieve chatflow: ${errorData}`)
+            errorFailed(`Failed to retrieve chatflow: ${error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -375,9 +372,7 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            const error = createNewChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            errorFailed(`Failed to save chatflow: ${error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -389,9 +384,7 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            const error = updateChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Failed to save chatflow: ${errorData}`)
+            errorFailed(`Failed to save chatflow: ${error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
