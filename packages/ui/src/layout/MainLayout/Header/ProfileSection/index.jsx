@@ -28,10 +28,7 @@ import Transitions from '@/ui-component/extended/Transitions'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
 
 // assets
-import { IconLogout, IconSettings } from '@tabler/icons'
-import { IconInfoCircle } from '@tabler/icons'
-
-// API
+import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons'
 
 import './index.css'
 
