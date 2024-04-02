@@ -456,8 +456,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 }, 100)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            handleError(errorData)
+            handleError(error.response.data.message)
             return
         }
     }

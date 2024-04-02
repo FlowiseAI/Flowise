@@ -10,13 +10,8 @@ class AstraDBApi implements INodeCredential {
     constructor() {
         this.label = 'Astra DB API'
         this.name = 'AstraDBApi'
-        this.version = 1.0
+        this.version = 2.0
         this.inputs = [
-            {
-                label: 'Astra DB Collection Name',
-                name: 'collectionName',
-                type: 'string'
-            },
             {
                 label: 'Astra DB Application Token',
                 name: 'applicationToken',
