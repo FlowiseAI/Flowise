@@ -355,6 +355,11 @@ export const getUpsertDetails = (nodes, edges) => {
                     innerNodes.push(nodes.find((node) => node.data.id === embeddingsId))
                 }
 
+                if (vsNode.data.inputs.recordManager) {
+                    const recordManagerId = vsNode.data.inputs.recordManager.replace(/{{|}}/g, '').split('.')[0]
+                    innerNodes.push(nodes.find((node) => node.data.id === recordManagerId))
+                }
+
                 for (const doc of connectedDocs) {
                     const docId = doc.replace(/{{|}}/g, '').split('.')[0]
                     const docNode = nodes.find((node) => node.data.id === docId)

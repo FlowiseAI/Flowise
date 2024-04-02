@@ -18,7 +18,7 @@ const deleteVariable = async (variableId: string): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).delete({ id: variableId })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.createVariable - ${error}`)
+        throw new Error(`Error: variablesServices.deleteVariable - ${error}`)
     }
 }
 

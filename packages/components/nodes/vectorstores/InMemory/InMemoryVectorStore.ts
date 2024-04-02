@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
 class InMemoryVectorStore_VectorStores implements INode {
@@ -64,7 +64,7 @@ class InMemoryVectorStore_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<void> {
+        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
 
@@ -78,6 +78,7 @@ class InMemoryVectorStore_VectorStores implements INode {
 
             try {
                 await MemoryVectorStore.fromDocuments(finalDocs, embeddings)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

@@ -35,6 +35,7 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
+import upsertHistoryRouter from './upsert-history'
 
 const router = express.Router()
 
@@ -74,5 +75,6 @@ router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
 router.use('/version', versionRouter)
+router.use('/upsert-history', upsertHistoryRouter)
 
 export default router

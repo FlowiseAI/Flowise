@@ -14,6 +14,9 @@ import logger from '../../utils/logger'
 import { getStoragePath } from 'flowise-components'
 import { IReactFlowObject } from '../../Interface'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { UpsertHistory } from '../../database/entities/UpsertHistory'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -105,9 +108,18 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
         try {
-            // Delete all  uploads corresponding to this chatflow
+            // Delete all uploads corresponding to this chatflow
             const directory = path.join(getStoragePath(), chatflowId)
             deleteFolderRecursive(directory)
+
+            // Delete all chat messages
+            await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
+
+            // Delete all chat feedback
+            await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete({ chatflowid: chatflowId })
+
+            // Delete all upsert history
+            await appServer.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: chatflowId })
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}: ${e}`)
         }

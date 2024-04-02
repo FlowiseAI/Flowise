@@ -19,7 +19,7 @@ const creatTool = async (req: Request, res: Response, next: NextFunction) => {
 const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: toolsController.updateTool - id not provided!`)
+            throw new Error(`Error: toolsController.deleteTool - id not provided!`)
         }
         const apiResponse = await toolsService.deleteTool(req.params.id)
         if (apiResponse.executionError) {

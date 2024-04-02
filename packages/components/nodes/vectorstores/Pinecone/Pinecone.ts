@@ -3,9 +3,10 @@ import { Pinecone } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { index } from '../../../src/indexing'
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -24,7 +25,7 @@ class Pinecone_VectorStores implements INode {
     constructor() {
         this.label = 'Pinecone'
         this.name = 'pinecone'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
@@ -49,6 +50,13 @@ class Pinecone_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Pinecone Index',
@@ -97,11 +105,12 @@ class Pinecone_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
-            const index = nodeData.inputs?.pineconeIndex as string
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
+            const _index = nodeData.inputs?.pineconeIndex as string
             const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
@@ -110,7 +119,7 @@ class Pinecone_VectorStores implements INode {
                 apiKey: pineconeApiKey
             })
 
-            const pineconeIndex = client.Index(index)
+            const pineconeIndex = client.Index(_index)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
@@ -127,7 +136,25 @@ class Pinecone_VectorStores implements INode {
             if (pineconeNamespace) obj.namespace = pineconeNamespace
 
             try {
-                await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
+                if (recordManager) {
+                    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+                    await recordManager.createSchema()
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: pineconeNamespace
+                        }
+                    })
+
+                    return res
+                } else {
+                    await PineconeStore.fromDocuments(finalDocs, embeddings, obj)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }

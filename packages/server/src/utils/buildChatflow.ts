@@ -36,7 +36,6 @@ import { utilAddChatMessage } from './addChatMesage'
  * @param {Request} req
  * @param {Server} socketIO
  * @param {boolean} isInternal
- * @param {boolean} isUpsert
  */
 export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInternal: boolean = false): Promise<any> => {
     try {
