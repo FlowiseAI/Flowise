@@ -8,6 +8,7 @@ export class DocumentStoreDTO {
     description: string
     subFolder: string
     files: any[]
+    whereUsed: any[]
     type: string
     createdDate: Date
     updatedDate: Date
@@ -15,7 +16,6 @@ export class DocumentStoreDTO {
     chunkOverlap: number
     splitter: string
     codeLanguage: string
-    totalDocs: number
     totalFiles: number
     totalChunks: number
     totalChars: number
@@ -37,7 +37,11 @@ export class DocumentStoreDTO {
         documentStoreDTO.chunkSize = config.chunkSize
         documentStoreDTO.chunkOverlap = config.chunkOverlap
         documentStoreDTO.subFolder = entity.subFolder
-
+        if (entity.whereUsed) {
+            documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
+        } else {
+            documentStoreDTO.whereUsed = []
+        }
         if (entity.metrics) {
             let metrics = JSON.parse(entity.metrics)
             documentStoreDTO.totalFiles = metrics.totalFiles
@@ -62,6 +66,7 @@ export class DocumentStoreDTO {
         Object.assign(docStore, body)
         docStore.subFolder = convertToValidFilename(docStore.name)
         docStore.files = '[]'
+        docStore.whereUsed = '[]'
         const config = {
             splitter: body.splitter,
             codeLanguage: body.codeLanguage,

@@ -22,6 +22,9 @@ export class DocumentStore implements IDocumentStore {
     files: string
 
     @Column({ nullable: false, type: 'text' })
+    whereUsed: string
+
+    @Column({ nullable: false, type: 'text' })
     type: string
 
     @Column({ nullable: false, type: 'text' })

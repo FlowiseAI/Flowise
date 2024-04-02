@@ -89,6 +89,7 @@ import { Variable } from './database/entities/Variable'
 import { DocumentStore } from './database/entities/DocumentStore'
 import { DocumentStoreDTO } from './dto/DocumentStoreDTO'
 import { DocumentStoreFileChunk } from './database/entities/DocumentStoreFileChunk'
+// import { containsDocumentStore } from "./utils/DocumentStoreUtils";
 
 export class App {
     app: express.Application
@@ -435,7 +436,7 @@ export class App {
             const body = req.body
             const newChatFlow = new ChatFlow()
             Object.assign(newChatFlow, body)
-
+            //containsDocumentStore(newChatFlow)
             const chatflow = this.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             const results = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
@@ -465,6 +466,7 @@ export class App {
 
             updateChatFlow.id = chatflow.id
             createRateLimiter(updateChatFlow)
+            //containsDocumentStore(updateChatFlow)
 
             this.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
             const result = await this.AppDataSource.getRepository(ChatFlow).save(chatflow)

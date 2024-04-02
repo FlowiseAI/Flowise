@@ -1,6 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataSource } from 'typeorm'
-import { Document } from '@langchain/core/documents'
 
 class DocStore_DocumentLoaders implements INode {
     label: string
@@ -20,7 +19,7 @@ class DocStore_DocumentLoaders implements INode {
         this.name = 'documentStore'
         this.version = 1.0
         this.type = 'Document'
-        this.icon = 'Txt.svg'
+        this.icon = 'dstore.svg'
         this.badge = 'NEW'
 
         this.category = 'Document Loaders'
@@ -82,15 +81,15 @@ class DocStore_DocumentLoaders implements INode {
         const selectedStore = nodeData.inputs?.selectedStore as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
-        const finaldocs = await appDataSource
+        const chunks = await appDataSource
             .getRepository(databaseEntities['DocumentStoreFileChunk'])
             .find({ where: { storeId: selectedStore } })
 
-        const finalDocs = []
-        for (const doc of finaldocs) {
-            finalDocs.push(new Document({ pageContent: doc.pageContent, metadata: doc.metadata }))
-        }
-        return finaldocs
+        // const finalDocs = []
+        // for (const chunk of chunks) {
+        //     finalDocs.push(new Document({ pageContent: chunk.pageContent, metadata: chunk.metadata }))
+        // }
+        return chunks
         // }
         //
         // return {}
