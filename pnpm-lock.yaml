@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+    autoInstallPeers: true
+    excludeLinksFromLockfile: false
+
 onlyBuiltDependencies:
     - faiss-node
     - sqlite3
@@ -30,7 +34,7 @@ importers:
                 version: 8.10.0(eslint@8.57.0)
             eslint-config-react-app:
                 specifier: ^7.0.1
-                version: 7.0.1(@babel/plugin-syntax-flow@7.23.3)(@babel/plugin-transform-react-jsx@7.23.4)(eslint@8.57.0)(typescript@4.9.5)
+                version: 7.0.1(@babel/plugin-syntax-flow@7.23.3)(@babel/plugin-transform-react-jsx@7.23.4)(eslint@8.57.0)(jest@27.5.1)(typescript@4.9.5)
             eslint-plugin-jsx-a11y:
                 specifier: ^6.6.1
                 version: 6.8.0(eslint@8.57.0)
@@ -126,7 +130,7 @@ importers:
                 version: 0.0.5
             '@langchain/community':
                 specifier: ^0.0.39
-                version: 0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
+                version: 0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
             '@langchain/google-genai':
                 specifier: ^0.0.10
                 version: 0.0.10
@@ -136,6 +140,9 @@ importers:
             '@langchain/mistralai':
                 specifier: ^0.0.11
                 version: 0.0.11
+            '@langchain/mongodb':
+                specifier: ^0.0.1
+                version: 0.0.1
             '@langchain/openai':
                 specifier: ^0.0.14
                 version: 0.0.14
@@ -235,7 +242,7 @@ importers:
             langchain:
                 specifier: ^0.1.26
                 version: >-
-                    0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.2.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
+                    0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.3.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
             langfuse:
                 specifier: 3.3.4
                 version: 3.3.4
@@ -264,14 +271,14 @@ importers:
                 specifier: ^2.29.3
                 version: 2.30.1
             mongodb:
-                specifier: 6.2.0
-                version: 6.2.0
+                specifier: 6.3.0
+                version: 6.3.0
             mysql2:
                 specifier: ^3.9.2
                 version: 3.9.2
             node-fetch:
                 specifier: ^2.6.11
-                version: 2.7.0
+                version: 2.7.0(encoding@0.1.13)
             node-html-markdown:
                 specifier: ^1.3.0
                 version: 1.3.0
@@ -316,7 +323,7 @@ importers:
                 version: 1.2.3
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.20(ioredis@5.3.2)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
+                version: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
             vm2:
                 specifier: ^3.9.19
                 version: 3.9.19
@@ -576,10 +583,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 1.2.1
+                version: 1.2.0
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
+                version: 1.0.2(flowise-embed@1.2.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0)
@@ -746,7 +753,7 @@ packages:
             digest-fetch: 1.3.0
             form-data-encoder: 1.7.2
             formdata-node: 4.4.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             web-streams-polyfill: 3.3.3
         transitivePeerDependencies:
             - encoding
@@ -762,7 +769,7 @@ packages:
             digest-fetch: 1.3.0
             form-data-encoder: 1.7.2
             formdata-node: 4.4.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             web-streams-polyfill: 3.3.3
         transitivePeerDependencies:
             - encoding
@@ -778,7 +785,7 @@ packages:
             digest-fetch: 1.3.0
             form-data-encoder: 1.7.2
             formdata-node: 4.4.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             web-streams-polyfill: 3.3.3
         transitivePeerDependencies:
             - encoding
@@ -880,7 +887,7 @@ packages:
     /@aws-crypto/util@3.0.0:
         resolution: { integrity: sha512-2OJlpeJpCR48CC8r+uKVChzs9Iungj9wkZrl8Z041DWEWvyIHILYKCPNzJghKsivj+S3mLo6BVc7mBNzdxA46w== }
         dependencies:
-            '@aws-sdk/types': 3.418.0
+            '@aws-sdk/types': 3.523.0
             '@aws-sdk/util-utf8-browser': 3.259.0
             tslib: 1.14.1
         dev: false
@@ -1925,10 +1932,10 @@ packages:
             '@babel/helpers': 7.24.0
             '@babel/parser': 7.24.0
             '@babel/template': 7.24.0
-            '@babel/traverse': 7.24.0
+            '@babel/traverse': 7.24.0(supports-color@5.5.0)
             '@babel/types': 7.24.0
             convert-source-map: 2.0.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             gensync: 1.0.0-beta.2
             json5: 2.2.3
             semver: 6.3.1
@@ -2016,7 +2023,7 @@ packages:
             '@babel/core': 7.24.0
             '@babel/helper-compilation-targets': 7.23.6
             '@babel/helper-plugin-utils': 7.24.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             lodash.debounce: 4.0.8
             resolve: 1.22.8
         transitivePeerDependencies:
@@ -2030,7 +2037,7 @@ packages:
             '@babel/core': 7.24.0
             '@babel/helper-compilation-targets': 7.23.6
             '@babel/helper-plugin-utils': 7.24.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             lodash.debounce: 4.0.8
             resolve: 1.22.8
         transitivePeerDependencies:
@@ -2153,7 +2160,7 @@ packages:
         engines: { node: '>=6.9.0' }
         dependencies:
             '@babel/template': 7.24.0
-            '@babel/traverse': 7.24.0
+            '@babel/traverse': 7.24.0(supports-color@5.5.0)
             '@babel/types': 7.24.0
         transitivePeerDependencies:
             - supports-color
@@ -3230,23 +3237,6 @@ packages:
             '@babel/parser': 7.24.0
             '@babel/types': 7.24.0
 
-    /@babel/traverse@7.24.0:
-        resolution: { integrity: sha512-HfuJlI8qq3dEDmNU5ChzzpZRWq+oxCZQyMzIMEqLho+AQnhMnKQUzH6ydo3RBl/YjPCuk68Y6s0Gx0AeyULiWw== }
-        engines: { node: '>=6.9.0' }
-        dependencies:
-            '@babel/code-frame': 7.23.5
-            '@babel/generator': 7.23.6
-            '@babel/helper-environment-visitor': 7.22.20
-            '@babel/helper-function-name': 7.23.0
-            '@babel/helper-hoist-variables': 7.22.5
-            '@babel/helper-split-export-declaration': 7.22.6
-            '@babel/parser': 7.24.0
-            '@babel/types': 7.24.0
-            debug: 4.3.4
-            globals: 11.12.0
-        transitivePeerDependencies:
-            - supports-color
-
     /@babel/traverse@7.24.0(supports-color@5.5.0):
         resolution: { integrity: sha512-HfuJlI8qq3dEDmNU5ChzzpZRWq+oxCZQyMzIMEqLho+AQnhMnKQUzH6ydo3RBl/YjPCuk68Y6s0Gx0AeyULiWw== }
         engines: { node: '>=6.9.0' }
@@ -3263,7 +3253,6 @@ packages:
             globals: 11.12.0
         transitivePeerDependencies:
             - supports-color
-        dev: false
 
     /@babel/types@7.24.0:
         resolution: { integrity: sha512-+j7a5c253RfKh8iABBhywc8NSfP5LURe7Uh4qpsh6jc+aLJguvmIUBdjSdEMQv2bENrCR5MfRdjGo7vzS/ob7w== }
@@ -3580,7 +3569,7 @@ packages:
         resolution: { integrity: sha512-/SXVuVnuU5b4dq8OFY4izG+dmGla185PcoqgK6+AJMpmOeY1QYVNbWtCwvSvoAANN5D/wV+EBU8+x7Vf9EphbA== }
         engines: { node: '>=16' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             hpagent: 1.2.0
             ms: 2.1.3
             secure-json-parse: 2.7.0
@@ -4106,7 +4095,7 @@ packages:
         engines: { node: ^12.22.0 || ^14.17.0 || >=16.0.0 }
         dependencies:
             ajv: 6.12.6
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             espree: 9.6.1
             globals: 13.24.0
             ignore: 5.3.1
@@ -4182,7 +4171,7 @@ packages:
         dependencies:
             '@supercharge/promise-pool': 3.1.1
             langchain: >-
-                0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.2.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
+                0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.3.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
             semver: 7.6.0
             typescript: 5.4.2
         dev: false
@@ -4253,8 +4242,8 @@ packages:
             '@types/node': 20.11.26
         dev: false
 
-    /@grpc/grpc-js@1.10.4:
-        resolution: { integrity: sha512-MqBisuxTkYvPFnEiu+dag3xG/NBUDzSbAFAWlzfkGnQkjVZ6by3h4atbBc+Ikqup1z5BfB4BN18gKWR1YyppNw== }
+    /@grpc/grpc-js@1.10.3:
+        resolution: { integrity: sha512-qiO9MNgYnwbvZ8MK0YLWbnGrNX3zTcj6/Ef7UHu5ZofER3e2nF3Y35GaPo9qNJJ/UJQKa4KL+z/F4Q8Q+uCdUQ== }
         engines: { node: '>=12.10.0' }
         dependencies:
             '@grpc/proto-loader': 0.7.10
@@ -4315,7 +4304,7 @@ packages:
         engines: { node: '>=10.10.0' }
         dependencies:
             '@humanwhocodes/object-schema': 2.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             minimatch: 3.1.2
         transitivePeerDependencies:
             - supports-color
@@ -4708,7 +4697,7 @@ packages:
             '@babel/preset-typescript': 7.18.6(@babel/core@7.24.0)
             '@babel/runtime': 7.24.0
             '@babel/template': 7.24.0
-            '@babel/traverse': 7.24.0
+            '@babel/traverse': 7.24.0(supports-color@5.5.0)
             '@babel/types': 7.24.0
             '@ladle/react-context': 1.0.1(react-dom@18.2.0)(react@18.2.0)
             '@vitejs/plugin-react': 3.1.0(vite@4.5.2)
@@ -4718,7 +4707,7 @@ packages:
             classnames: 2.5.1
             commander: 9.5.0
             cross-spawn: 7.0.3
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             default-browser: 3.1.0
             express: 4.18.3
             get-port: 6.1.2
@@ -4770,7 +4759,7 @@ packages:
             - encoding
         dev: false
 
-    /@langchain/community@0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0):
+    /@langchain/community@0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0):
         resolution: { integrity: sha512-M9JzQ2dgnAkTTy90C+0+eiZ/BKvzq3KEuLH0tw+CNdFAMLc/f3c0Zj7esuPUisgISDAhESvGWJ0vDEJkkJR0zw== }
         engines: { node: '>=18' }
         peerDependencies:
@@ -5061,12 +5050,12 @@ packages:
             langsmith: 0.1.6
             lodash: 4.17.21
             lunary: 0.6.16(openai@4.28.4)
-            mongodb: 6.2.0
+            mongodb: 6.3.0
             mysql2: 3.9.2
             pg: 8.11.3
             redis: 4.6.13
             replicate: 0.12.3
-            typeorm: 0.3.20(ioredis@5.3.2)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
+            typeorm: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
             uuid: 9.0.1
             weaviate-ts-client: 1.6.0(graphql@16.8.1)
             ws: 8.16.0
@@ -5121,6 +5110,22 @@ packages:
             zod-to-json-schema: 3.22.4(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
+        dev: false
+
+    /@langchain/mongodb@0.0.1:
+        resolution: { integrity: sha512-5CWh73s7D9/WraXcZJTqc6VRkITNe71G4uXBO/KwtE1E/7DlYT8EvWzX6Er+HvVp1EsBGlcJGUp9St/lvbfrPg== }
+        engines: { node: '>=18' }
+        dependencies:
+            '@langchain/core': 0.1.44
+            mongodb: 6.3.0
+        transitivePeerDependencies:
+            - '@aws-sdk/credential-providers'
+            - '@mongodb-js/zstd'
+            - gcp-metadata
+            - kerberos
+            - mongodb-client-encryption
+            - snappy
+            - socks
         dev: false
 
     /@langchain/openai@0.0.14:
@@ -5206,7 +5211,7 @@ packages:
             '@types/qs': 6.9.12
             form-data: 4.0.0
             js-base64: 3.7.7
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             qs: 6.11.2
         dev: false
 
@@ -5230,7 +5235,7 @@ packages:
             detect-libc: 2.0.2
             https-proxy-agent: 5.0.1
             make-dir: 3.1.0
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             nopt: 5.0.0
             npmlog: 5.0.1
             rimraf: 3.0.2
@@ -5244,7 +5249,7 @@ packages:
     /@mistralai/mistralai@0.0.10:
         resolution: { integrity: sha512-fZOt7A32DcPSff58wTa44pKUBoJBH5toAuzNI9yoM7s5NjTupa1IYcSqqk2LigO8M5EtOEkFsD/XzdyWPnhaRA== }
         dependencies:
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -5252,7 +5257,7 @@ packages:
     /@mistralai/mistralai@0.1.3:
         resolution: { integrity: sha512-WUHxC2xdeqX9PTXJEqdiNY54vT2ir72WSJrZTTBKRnkfhX6zIfCYA24faRlWjUB5WTpn+wfdGsTMl3ArijlXFA== }
         dependencies:
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -5525,7 +5530,7 @@ packages:
         engines: { node: '>=12' }
         dependencies:
             '@types/node-fetch': 2.6.2
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -5849,7 +5854,7 @@ packages:
         dependencies:
             '@oclif/core': 2.15.0(@types/node@20.11.26)(typescript@4.9.5)
             chalk: 4.1.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             http-call: 5.3.0
             lodash.template: 4.5.0
             semver: 7.6.0
@@ -5951,7 +5956,7 @@ packages:
             '@octokit/request-error': 2.1.0
             '@octokit/types': 6.41.0
             is-plain-object: 5.0.0
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             universal-user-agent: 6.0.1
         transitivePeerDependencies:
             - encoding
@@ -5979,7 +5984,7 @@ packages:
         engines: { node: '>=10' }
         dependencies:
             aws4: 1.12.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             hpagent: 0.1.2
             ms: 2.1.3
             secure-json-parse: 2.7.0
@@ -6099,7 +6104,7 @@ packages:
             typescript:
                 optional: true
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             extract-zip: 2.0.1
             progress: 2.0.3
             proxy-agent: 6.3.0
@@ -8145,13 +8150,6 @@ packages:
             '@types/webidl-conversions': 7.0.3
         dev: false
 
-    /@types/whatwg-url@8.2.2:
-        resolution: { integrity: sha512-FtQu10RWgn3D9U4aazdwIE2yzphmTJREDqNdODHrbrZmmMqI0vMheC/6NE/J1Yveaj8H+ela+YwWTjq5PGmuhA== }
-        dependencies:
-            '@types/node': 20.11.26
-            '@types/webidl-conversions': 7.0.3
-        dev: false
-
     /@types/ws@8.5.10:
         resolution: { integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A== }
         dependencies:
@@ -8196,7 +8194,7 @@ packages:
             '@typescript-eslint/scope-manager': 5.62.0
             '@typescript-eslint/type-utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
             '@typescript-eslint/utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             eslint: 8.57.0
             graphemer: 1.4.0
             ignore: 5.3.1
@@ -8234,7 +8232,7 @@ packages:
             '@typescript-eslint/scope-manager': 5.62.0
             '@typescript-eslint/types': 5.62.0
             '@typescript-eslint/typescript-estree': 5.62.0(typescript@4.9.5)
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             eslint: 8.57.0
             typescript: 4.9.5
         transitivePeerDependencies:
@@ -8261,7 +8259,7 @@ packages:
         dependencies:
             '@typescript-eslint/typescript-estree': 5.62.0(typescript@4.9.5)
             '@typescript-eslint/utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             eslint: 8.57.0
             tsutils: 3.21.0(typescript@4.9.5)
             typescript: 4.9.5
@@ -8285,7 +8283,7 @@ packages:
         dependencies:
             '@typescript-eslint/types': 5.62.0
             '@typescript-eslint/visitor-keys': 5.62.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             globby: 11.1.0
             is-glob: 4.0.3
             semver: 7.6.0
@@ -8671,7 +8669,7 @@ packages:
         resolution: { integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ== }
         engines: { node: '>= 6.0.0' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -8679,7 +8677,7 @@ packages:
         resolution: { integrity: sha512-o/zjMZRhJxny7OyEF+Op8X+efiELC7k7yOjMzgfzVqOzXqkBkWI79YoTdOtsuWd5BWhAGAuOY/Xa6xpiaWXiNg== }
         engines: { node: '>= 14' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
         dev: false
@@ -10719,6 +10717,7 @@ packages:
     /bson@6.4.0:
         resolution: { integrity: sha512-6/gSSEdbkuFlSb+ufj5jUSU4+wo8xQOwm2bDSqwmxiPE17JTpsP63eAwoN8iF8Oy4gJYj+PAL3zdRCTdaw5Y1g== }
         engines: { node: '>=16.20.1' }
+        deprecated: a critical bug affecting zSeries s390x big-endian systems is fixed in bson@6.5.0
         dev: false
 
     /buffer-crc32@0.2.13:
@@ -10746,7 +10745,7 @@ packages:
         resolution: { integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg== }
         dependencies:
             base64-js: 1.5.1
-            ieee754: 1.1.13
+            ieee754: 1.2.1
             isarray: 1.0.0
         dev: true
 
@@ -11482,7 +11481,7 @@ packages:
         dependencies:
             form-data: 4.0.0
             js-base64: 3.7.2
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             qs: 6.11.2
             url-join: 4.0.1
         transitivePeerDependencies:
@@ -11879,14 +11878,6 @@ packages:
         resolution: { integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g== }
         dev: false
 
-    /cross-fetch@3.1.8:
-        resolution: { integrity: sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg== }
-        dependencies:
-            node-fetch: 2.7.0
-        transitivePeerDependencies:
-            - encoding
-        dev: false
-
     /cross-fetch@3.1.8(encoding@0.1.13):
         resolution: { integrity: sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg== }
         dependencies:
@@ -11898,7 +11889,7 @@ packages:
     /cross-fetch@4.0.0:
         resolution: { integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g== }
         dependencies:
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -12385,16 +12376,6 @@ packages:
         dependencies:
             ms: 2.0.0
 
-    /debug@3.2.7:
-        resolution: { integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ== }
-        peerDependencies:
-            supports-color: '*'
-        peerDependenciesMeta:
-            supports-color:
-                optional: true
-        dependencies:
-            ms: 2.1.3
-
     /debug@3.2.7(supports-color@5.5.0):
         resolution: { integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ== }
         peerDependencies:
@@ -12405,18 +12386,6 @@ packages:
         dependencies:
             ms: 2.1.3
             supports-color: 5.5.0
-        dev: true
-
-    /debug@4.3.4:
-        resolution: { integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ== }
-        engines: { node: '>=6.0' }
-        peerDependencies:
-            supports-color: '*'
-        peerDependenciesMeta:
-            supports-color:
-                optional: true
-        dependencies:
-            ms: 2.1.2
 
     /debug@4.3.4(supports-color@5.5.0):
         resolution: { integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ== }
@@ -12429,7 +12398,6 @@ packages:
         dependencies:
             ms: 2.1.2
             supports-color: 5.5.0
-        dev: false
 
     /debug@4.3.4(supports-color@8.1.1):
         resolution: { integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ== }
@@ -13094,7 +13062,7 @@ packages:
         resolution: { integrity: sha512-9Z0qLB0NIisTRt1DZ/8U2k12RJn8yls/nXMZLn+/N8hANT3TcYjKFKcwbw5zFQiN4NTde3TSY9zb79e1ij6j9Q== }
         dependencies:
             '@socket.io/component-emitter': 3.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             engine.io-parser: 5.2.2
             ws: 8.11.0
             xmlhttprequest-ssl: 2.0.0
@@ -13120,7 +13088,7 @@ packages:
             base64id: 2.0.0
             cookie: 0.4.2
             cors: 2.8.5
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             engine.io-parser: 5.2.2
             ws: 8.11.0
         transitivePeerDependencies:
@@ -13498,45 +13466,10 @@ packages:
             - supports-color
         dev: true
 
-    /eslint-config-react-app@7.0.1(@babel/plugin-syntax-flow@7.23.3)(@babel/plugin-transform-react-jsx@7.23.4)(eslint@8.57.0)(typescript@4.9.5):
-        resolution: { integrity: sha512-K6rNzvkIeHaTd8m/QEh1Zko0KI7BACWkkneSs6s9cKZC/J27X3eZR6Upt1jkmZ/4FK+XUOPPxMEN7+lbUXfSlA== }
-        engines: { node: '>=14.0.0' }
-        peerDependencies:
-            eslint: ^8.0.0
-            typescript: '*'
-        peerDependenciesMeta:
-            typescript:
-                optional: true
-        dependencies:
-            '@babel/core': 7.24.0
-            '@babel/eslint-parser': 7.23.10(@babel/core@7.24.0)(eslint@8.57.0)
-            '@rushstack/eslint-patch': 1.7.2
-            '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
-            '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-            babel-preset-react-app: 10.0.1
-            confusing-browser-globals: 1.0.11
-            eslint: 8.57.0
-            eslint-plugin-flowtype: 8.0.3(@babel/plugin-syntax-flow@7.23.3)(@babel/plugin-transform-react-jsx@7.23.4)(eslint@8.57.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)
-            eslint-plugin-jest: 25.7.0(@typescript-eslint/eslint-plugin@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
-            eslint-plugin-jsx-a11y: 6.8.0(eslint@8.57.0)
-            eslint-plugin-react: 7.34.0(eslint@8.57.0)
-            eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
-            eslint-plugin-testing-library: 5.11.1(eslint@8.57.0)(typescript@4.9.5)
-            typescript: 4.9.5
-        transitivePeerDependencies:
-            - '@babel/plugin-syntax-flow'
-            - '@babel/plugin-transform-react-jsx'
-            - eslint-import-resolver-typescript
-            - eslint-import-resolver-webpack
-            - jest
-            - supports-color
-        dev: true
-
     /eslint-import-resolver-node@0.3.9:
         resolution: { integrity: sha512-WFj2isz22JahUv+B788TlO3N6zL3nNJGU8CcZbPZvVEkBPaJdCV4vy5wyghty5ROFbCRnm132v8BScu5/1BQ8g== }
         dependencies:
-            debug: 3.2.7
+            debug: 3.2.7(supports-color@5.5.0)
             is-core-module: 2.13.1
             resolve: 1.22.8
         transitivePeerDependencies:
@@ -13565,7 +13498,7 @@ packages:
                 optional: true
         dependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-            debug: 3.2.7
+            debug: 3.2.7(supports-color@5.5.0)
             eslint: 8.57.0
             eslint-import-resolver-node: 0.3.9
         transitivePeerDependencies:
@@ -13602,7 +13535,7 @@ packages:
             array.prototype.findlastindex: 1.2.4
             array.prototype.flat: 1.3.2
             array.prototype.flatmap: 1.3.2
-            debug: 3.2.7
+            debug: 3.2.7(supports-color@5.5.0)
             doctrine: 2.1.0
             eslint: 8.57.0
             eslint-import-resolver-node: 0.3.9
@@ -13639,27 +13572,6 @@ packages:
             '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
             eslint: 8.57.0
             jest: 27.5.1
-        transitivePeerDependencies:
-            - supports-color
-            - typescript
-        dev: true
-
-    /eslint-plugin-jest@25.7.0(@typescript-eslint/eslint-plugin@5.62.0)(eslint@8.57.0)(typescript@4.9.5):
-        resolution: { integrity: sha512-PWLUEXeeF7C9QGKqvdSbzLOiLTx+bno7/HC9eefePfEb257QFHg7ye3dh80AZVkaa/RQsBB1Q/ORQvg2X7F0NQ== }
-        engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
-        peerDependencies:
-            '@typescript-eslint/eslint-plugin': ^4.0.0 || ^5.0.0
-            eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
-            jest: '*'
-        peerDependenciesMeta:
-            '@typescript-eslint/eslint-plugin':
-                optional: true
-            jest:
-                optional: true
-        dependencies:
-            '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
-            '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-            eslint: 8.57.0
         transitivePeerDependencies:
             - supports-color
             - typescript
@@ -13844,7 +13756,7 @@ packages:
             ajv: 6.12.6
             chalk: 4.1.2
             cross-spawn: 7.0.3
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             doctrine: 3.0.0
             escape-string-regexp: 4.0.0
             eslint-scope: 7.2.2
@@ -14306,7 +14218,7 @@ packages:
         engines: { node: '>= 10.17.0' }
         hasBin: true
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             get-stream: 5.2.0
             yauzl: 2.10.0
         optionalDependencies:
@@ -14446,7 +14358,7 @@ packages:
     /fbjs@3.0.5:
         resolution: { integrity: sha512-ztsSx77JBtkuMrEypfhgc3cI0+0h+svqeie7xHbh1k/IKdcydnvadp/mUaGgjAOXQmQSxsqgaRhS3q9fy+1kxg== }
         dependencies:
-            cross-fetch: 3.1.8
+            cross-fetch: 3.1.8(encoding@0.1.13)
             fbjs-css-vars: 1.0.2
             loose-envify: 1.4.0
             object-assign: 4.1.1
@@ -14759,14 +14671,14 @@ packages:
         resolution: { integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw== }
         dev: true
 
-    /flowise-embed-react@1.0.2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
+    /flowise-embed-react@1.0.2(flowise-embed@1.2.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
         resolution: { integrity: sha512-M6rDofJWTWI9rtZN7G3oTlqAcQaHoF/IUIoW1YitHsjKly24awq5sky+0Wfkcg4VfoXz3SiLHMZ/XOF4PDuvqA== }
         peerDependencies:
             flowise-embed: '*'
             react: 18.x
         dependencies:
             '@ladle/react': 2.5.1(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
-            flowise-embed: 1.2.1
+            flowise-embed: 1.2.0
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -14781,8 +14693,8 @@ packages:
             - typescript
         dev: false
 
-    /flowise-embed@1.2.1:
-        resolution: { integrity: sha512-sn8An0dseo398RXx/yzQ3lC//+FpY5o/094yaWZs3NmYy6am+duCZJ18lhcYF5A4oCucrIoZCcCz5mxViYtznw== }
+    /flowise-embed@1.2.0:
+        resolution: { integrity: sha512-WGVH/ix6fvb+bOvp8ugxgC9raQvF7HuhqTDasFmltkrDhDySXeyOiZOj5eUs5nOkk9WT4ZaDznjSeBGDXOiShQ== }
         dependencies:
             '@babel/core': 7.24.0
             '@ts-stack/markdown': 1.5.0
@@ -15175,7 +15087,7 @@ packages:
             extend: 3.0.2
             https-proxy-agent: 5.0.1
             is-stream: 2.0.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
             - supports-color
@@ -15188,7 +15100,7 @@ packages:
             extend: 3.0.2
             https-proxy-agent: 7.0.4
             is-stream: 2.0.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
             - supports-color
@@ -15296,7 +15208,7 @@ packages:
         dependencies:
             basic-ftp: 5.0.5
             data-uri-to-buffer: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             fs-extra: 11.2.0
         transitivePeerDependencies:
             - supports-color
@@ -15645,7 +15557,7 @@ packages:
             fast-text-encoding: 1.0.6
             google-auth-library: 8.9.0
             is-stream-ended: 0.1.4
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             object-hash: 3.0.0
             proto3-json-serializer: 1.1.1
             protobufjs: 7.2.4
@@ -15703,7 +15615,7 @@ packages:
             graphql: 14 - 16
         dependencies:
             '@graphql-typed-document-node/core': 3.2.0(graphql@16.8.1)
-            cross-fetch: 3.1.8
+            cross-fetch: 3.1.8(encoding@0.1.13)
             extract-files: 9.0.0
             form-data: 3.0.1
             graphql: 16.8.1
@@ -15736,7 +15648,7 @@ packages:
             digest-fetch: 1.3.0
             form-data-encoder: 1.7.2
             formdata-node: 4.4.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             web-streams-polyfill: 3.3.3
         transitivePeerDependencies:
             - encoding
@@ -16303,7 +16215,7 @@ packages:
         engines: { node: '>=8.0.0' }
         dependencies:
             content-type: 1.0.5
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             is-retry-allowed: 1.2.0
             is-stream: 2.0.1
             parse-json: 4.0.0
@@ -16346,7 +16258,7 @@ packages:
         dependencies:
             '@tootallnate/once': 1.1.2
             agent-base: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -16356,7 +16268,7 @@ packages:
         dependencies:
             '@tootallnate/once': 2.0.0
             agent-base: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -16365,7 +16277,7 @@ packages:
         engines: { node: '>= 14' }
         dependencies:
             agent-base: 7.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
         dev: false
@@ -16413,7 +16325,7 @@ packages:
         engines: { node: '>= 6' }
         dependencies:
             agent-base: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -16422,7 +16334,7 @@ packages:
         engines: { node: '>= 14' }
         dependencies:
             agent-base: 7.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
         dev: false
@@ -16661,7 +16573,7 @@ packages:
         dependencies:
             '@ioredis/commands': 1.2.0
             cluster-key-slot: 1.1.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             denque: 2.1.0
             lodash.defaults: 4.2.0
             lodash.isarguments: 3.1.0
@@ -17333,7 +17245,7 @@ packages:
     /isomorphic-fetch@3.0.0:
         resolution: { integrity: sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA== }
         dependencies:
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             whatwg-fetch: 3.6.20
         transitivePeerDependencies:
             - encoding
@@ -17370,7 +17282,7 @@ packages:
         resolution: { integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw== }
         engines: { node: '>=10' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             istanbul-lib-coverage: 3.2.2
             source-map: 0.6.1
         transitivePeerDependencies:
@@ -17849,7 +17761,7 @@ packages:
             '@babel/core': 7.24.0
             '@babel/generator': 7.23.6
             '@babel/plugin-syntax-typescript': 7.23.3(@babel/core@7.24.0)
-            '@babel/traverse': 7.24.0
+            '@babel/traverse': 7.24.0(supports-color@5.5.0)
             '@babel/types': 7.24.0
             '@jest/transform': 27.5.1
             '@jest/types': 27.5.1
@@ -18442,7 +18354,7 @@ packages:
         resolution: { integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A== }
         dev: false
 
-    /langchain@0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.2.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0):
+    /langchain@0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.3.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0):
         resolution: { integrity: sha512-2hCXDev/KkBKNHCrxqq7XQxAp/kpjMtwlIuKBzaSW8gM+BOrh8q6B9PM3ItbvG4s29JCW7xlJtIEO3LaWChwkQ== }
         engines: { node: '>=18' }
         peerDependencies:
@@ -18607,7 +18519,7 @@ packages:
             '@gomomento/sdk': 1.68.1
             '@gomomento/sdk-core': 1.68.1
             '@google-ai/generativelanguage': 0.2.1
-            '@langchain/community': 0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
+            '@langchain/community': 0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.12.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
             '@langchain/core': 0.1.44
             '@langchain/openai': 0.0.19
             '@notionhq/client': 2.2.14
@@ -18633,7 +18545,7 @@ packages:
             langsmith: 0.1.13
             mammoth: 1.7.0
             ml-distance: 4.0.1
-            mongodb: 6.2.0
+            mongodb: 6.3.0
             notion-to-md: 3.1.1
             openapi-types: 12.1.3
             p-retry: 4.6.2
@@ -18643,7 +18555,7 @@ packages:
             pyodide: 0.25.0
             redis: 4.6.13
             srt-parser-2: 1.2.3
-            typeorm: 0.3.20(ioredis@5.3.2)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
+            typeorm: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)
             uuid: 9.0.1
             weaviate-ts-client: 1.6.0(graphql@16.8.1)
             ws: 8.16.0
@@ -18733,7 +18645,7 @@ packages:
             langchain: '>=0.0.157 <0.2.0'
         dependencies:
             langchain: >-
-                0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.2.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
+                0.1.26(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@notionhq/client@2.2.14)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(apify-client@2.9.3)(assemblyai@4.3.2)(axios@1.6.2)(cheerio@1.0.0-rc.12)(chromadb@1.8.1)(cohere-ai@6.2.2)(d3-dsv@2.0.0)(faiss-node@0.2.3)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mammoth@1.7.0)(mongodb@6.3.0)(mysql2@3.9.2)(notion-to-md@3.1.1)(pdf-parse@1.1.1)(pg@8.11.3)(playwright@1.42.1)(puppeteer@20.9.0)(pyodide@0.25.0)(redis@4.6.13)(replicate@0.12.3)(srt-parser-2@1.2.3)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
             langfuse: 3.3.4
             langfuse-core: 3.3.4
         dev: false
@@ -18915,7 +18827,7 @@ packages:
         dependencies:
             chalk: 5.3.0
             commander: 11.0.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             execa: 7.2.0
             lilconfig: 2.1.0
             listr2: 6.6.1
@@ -18952,7 +18864,7 @@ packages:
             '@anthropic-ai/sdk': 0.18.0
             '@aws-crypto/sha256-js': 5.2.0
             '@datastax/astra-db-ts': 0.1.4
-            '@grpc/grpc-js': 1.10.4
+            '@grpc/grpc-js': 1.10.3
             '@llamaindex/cloud': 0.0.4(node-fetch@2.7.0)
             '@llamaindex/env': 0.0.5(@aws-crypto/sha256-js@5.2.0)(pathe@1.1.2)
             '@mistralai/mistralai': 0.0.10
@@ -18973,7 +18885,7 @@ packages:
             magic-bytes.js: 1.10.0
             mammoth: 1.7.0
             md-utils-ts: 2.0.0
-            mongodb: 6.5.0
+            mongodb: 6.3.0
             notion-md-crawler: 0.0.2
             openai: 4.28.4
             papaparse: 5.4.1
@@ -20001,27 +19913,6 @@ packages:
         resolution: { integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ== }
         engines: { node: '>= 0.6' }
 
-    /mem-fs-editor@9.7.0:
-        resolution: { integrity: sha512-ReB3YD24GNykmu4WeUL/FDIQtkoyGB6zfJv60yfCo3QjKeimNcTqv2FT83bP0ccs6uu+sm5zyoBlspAzigmsdg== }
-        engines: { node: '>=12.10.0' }
-        peerDependencies:
-            mem-fs: ^2.1.0
-        peerDependenciesMeta:
-            mem-fs:
-                optional: true
-        dependencies:
-            binaryextensions: 4.19.0
-            commondir: 1.0.1
-            deep-extend: 0.6.0
-            ejs: 3.1.9
-            globby: 11.1.0
-            isbinaryfile: 5.0.2
-            minimatch: 7.4.6
-            multimatch: 5.0.0
-            normalize-path: 3.0.0
-            textextensions: 5.16.0
-        dev: true
-
     /mem-fs-editor@9.7.0(mem-fs@2.3.0):
         resolution: { integrity: sha512-ReB3YD24GNykmu4WeUL/FDIQtkoyGB6zfJv60yfCo3QjKeimNcTqv2FT83bP0ccs6uu+sm5zyoBlspAzigmsdg== }
         engines: { node: '>=12.10.0' }
@@ -20379,7 +20270,7 @@ packages:
     /micromark@2.11.4:
         resolution: { integrity: sha512-+WoovN/ppKolQOFIAajxi7Lu9kInbPxFuTBVEavFcL8eAfVstoc5MocPmqBeAdBOJV00uaVjegzH4+MA0DN/uA== }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             parse-entities: 2.0.0
         transitivePeerDependencies:
             - supports-color
@@ -20389,7 +20280,7 @@ packages:
         resolution: { integrity: sha512-uD66tJj54JLYq0De10AhWycZWGQNUvDI55xPgk2sQM5kn1JYlhbCMTtEeT27+vAhW2FBQxLlOmS3pmA7/2z4aA== }
         dependencies:
             '@types/debug': 4.1.12
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             decode-named-character-reference: 1.0.2
             micromark-core-commonmark: 1.1.0
             micromark-factory-space: 1.1.0
@@ -20726,13 +20617,6 @@ packages:
         resolution: { integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how== }
         dev: false
 
-    /mongodb-connection-string-url@2.6.0:
-        resolution: { integrity: sha512-WvTZlI9ab0QYtTYnuMLgobULWhokRjtC7db9LtcVfJ+Hsnyr5eo6ZtNAt3Ly24XZScGMelOcGtm7lSn0332tPQ== }
-        dependencies:
-            '@types/whatwg-url': 8.2.2
-            whatwg-url: 11.0.0
-        dev: false
-
     /mongodb-connection-string-url@3.0.0:
         resolution: { integrity: sha512-t1Vf+m1I5hC2M5RJx/7AtxgABy1cZmIPQRMXw+gEIPn/cZNF3Oiy+l0UIypUwVB5trcWHq3crg2g3uAR9aAwsQ== }
         dependencies:
@@ -20740,40 +20624,8 @@ packages:
             whatwg-url: 13.0.0
         dev: false
 
-    /mongodb@6.2.0:
-        resolution: { integrity: sha512-d7OSuGjGWDZ5usZPqfvb36laQ9CPhnWkAGHT61x5P95p/8nMVeH8asloMwW6GcYFeB0Vj4CB/1wOTDG2RA9BFA== }
-        engines: { node: '>=16.20.1' }
-        peerDependencies:
-            '@aws-sdk/credential-providers': ^3.188.0
-            '@mongodb-js/zstd': ^1.1.0
-            gcp-metadata: ^5.2.0
-            kerberos: ^2.0.1
-            mongodb-client-encryption: '>=6.0.0 <7'
-            snappy: ^7.2.2
-            socks: ^2.7.1
-        peerDependenciesMeta:
-            '@aws-sdk/credential-providers':
-                optional: true
-            '@mongodb-js/zstd':
-                optional: true
-            gcp-metadata:
-                optional: true
-            kerberos:
-                optional: true
-            mongodb-client-encryption:
-                optional: true
-            snappy:
-                optional: true
-            socks:
-                optional: true
-        dependencies:
-            '@mongodb-js/saslprep': 1.1.5
-            bson: 6.4.0
-            mongodb-connection-string-url: 2.6.0
-        dev: false
-
-    /mongodb@6.5.0:
-        resolution: { integrity: sha512-Fozq68InT+JKABGLqctgtb8P56pRrJFkbhW0ux+x1mdHeyinor8oNzJqwLjV/t5X5nJGfTlluxfyMnOXNggIUA== }
+    /mongodb@6.3.0:
+        resolution: { integrity: sha512-tt0KuGjGtLUhLoU263+xvQmPHEGTw5LbcNC73EoFRYgSHwZt5tsoJC110hDyO1kjQzpgNrpdcSza9PknWN4LrA== }
         engines: { node: '>=16.20.1' }
         peerDependencies:
             '@aws-sdk/credential-providers': ^3.188.0
@@ -21010,17 +20862,6 @@ packages:
         resolution: { integrity: sha512-DRI60hzo2oKN1ma0ckc6nQWlHU69RH6xN0sjQTjMpChPfTYvKZdcQFfdYK2RWbJcKyUizSIy/l8OTGxMAM1QDw== }
         dev: false
 
-    /node-fetch@2.7.0:
-        resolution: { integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A== }
-        engines: { node: 4.x || >=6.0.0 }
-        peerDependencies:
-            encoding: ^0.1.0
-        peerDependenciesMeta:
-            encoding:
-                optional: true
-        dependencies:
-            whatwg-url: 5.0.0
-
     /node-fetch@2.7.0(encoding@0.1.13):
         resolution: { integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A== }
         engines: { node: 4.x || >=6.0.0 }
@@ -21032,7 +20873,6 @@ packages:
         dependencies:
             encoding: 0.1.13
             whatwg-url: 5.0.0
-        dev: false
 
     /node-forge@1.3.1:
         resolution: { integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA== }
@@ -21233,7 +21073,7 @@ packages:
         engines: { node: '>=12' }
         dependencies:
             markdown-table: 2.0.0
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -21635,7 +21475,7 @@ packages:
             async-retry: 1.3.3
             aws-sdk: 2.1575.0
             concurrently: 7.6.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             find-yarn-workspace-root: 2.0.0
             fs-extra: 8.1.0
             github-slugger: 1.5.0
@@ -21771,7 +21611,7 @@ packages:
             digest-fetch: 1.3.0
             form-data-encoder: 1.7.2
             formdata-node: 4.4.1
-            node-fetch: 2.7.0
+            node-fetch: 2.7.0(encoding@0.1.13)
             web-streams-polyfill: 3.3.3
         transitivePeerDependencies:
             - encoding
@@ -21952,7 +21792,7 @@ packages:
         resolution: { integrity: sha512-UJKdSzgd3KOnXXAtqN5+/eeHcvTn1hBkesEmElVgvO/NAYcxAvmjzIGmnNd3Tb/gRAvMBdNRFD4qAWdHxY6QXg== }
         engines: { node: '>=12.10.0' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             p-queue: 6.6.2
         transitivePeerDependencies:
             - supports-color
@@ -21969,7 +21809,7 @@ packages:
         dependencies:
             '@tootallnate/quickjs-emscripten': 0.23.0
             agent-base: 7.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             get-uri: 6.0.3
             http-proxy-agent: 7.0.2
             https-proxy-agent: 7.0.4
@@ -22356,7 +22196,7 @@ packages:
         resolution: { integrity: sha512-v6ZJ/efsBpGrGGknjtq9J/oC8tZWq0KWL5vQrk2GlzLEQPUDB1ex+13Rmidl1neNN358Jn9EHZw5y07FFtaC7A== }
         engines: { node: '>=6.8.1' }
         dependencies:
-            debug: 3.2.7
+            debug: 3.2.7(supports-color@5.5.0)
             node-ensure: 0.0.0
         transitivePeerDependencies:
             - supports-color
@@ -22366,8 +22206,6 @@ packages:
         resolution: { integrity: sha512-Un1yLbSlk/zfwrltgguskExIioXZlFSFwsyXU0cnBorLywbTbcdzmJJEebh+U2cFCtR7y8nDs5lPHAe7ldxjZg== }
         engines: { node: '>=18.12.1', npm: '>=8.19.2' }
         hasBin: true
-        dependencies:
-            '@xmldom/xmldom': 0.8.10
         dev: false
         bundledDependencies:
             - '@xmldom/xmldom'
@@ -23693,7 +23531,7 @@ packages:
         resolution: { integrity: sha512-AwAuY4g9nxx0u52DnSMkqqgyLHaW/XaPLtaAo3y/ZCfeaQB/g4YDH4kb8Wc/mWzWvu0YjOznVnfn373MVZZrgw== }
         engines: { node: '>=12.0.0' }
         dependencies:
-            protobufjs: 7.2.4
+            protobufjs: 7.2.6
         dev: false
 
     /protobufjs-cli@1.1.1(protobufjs@7.2.4):
@@ -23788,7 +23626,7 @@ packages:
         engines: { node: '>= 14' }
         dependencies:
             agent-base: 7.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             http-proxy-agent: 7.0.2
             https-proxy-agent: 7.0.4
             lru-cache: 7.18.3
@@ -23863,7 +23701,7 @@ packages:
             '@puppeteer/browsers': 1.4.6(typescript@4.9.5)
             chromium-bidi: 0.4.16(devtools-protocol@0.0.1147663)
             cross-fetch: 4.0.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             devtools-protocol: 0.0.1147663
             typescript: 4.9.5
             ws: 8.13.0
@@ -25297,7 +25135,7 @@ packages:
         resolution: { integrity: sha512-wfI3pk7EE80lCIXprqh7ym48IHYdwmAAzESdbU8Q9l7pnRCk9LEhpbOTNKjz6FARLm/Bl5m+4F0ABxOkYUujSQ== }
         engines: { node: '>=12' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             extend: 3.0.2
         transitivePeerDependencies:
             - supports-color
@@ -26031,7 +25869,7 @@ packages:
     /socket.io-adapter@2.5.4:
         resolution: { integrity: sha512-wDNHGXGewWAjQPt3pyeYBtpWSq9cLE5UW1ZUPL/2eGK9jtse/FpXib7epSTsz0Q0m+6sg6Y4KtcFTlah1bdOVg== }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             ws: 8.11.0
         transitivePeerDependencies:
             - bufferutil
@@ -26044,7 +25882,7 @@ packages:
         engines: { node: '>=10.0.0' }
         dependencies:
             '@socket.io/component-emitter': 3.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             engine.io-client: 6.5.3
             socket.io-parser: 4.2.4
         transitivePeerDependencies:
@@ -26058,7 +25896,7 @@ packages:
         engines: { node: '>=10.0.0' }
         dependencies:
             '@socket.io/component-emitter': 3.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
         dev: false
@@ -26070,7 +25908,7 @@ packages:
             accepts: 1.3.8
             base64id: 2.0.0
             cors: 2.8.5
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             engine.io: 6.5.4
             socket.io-adapter: 2.5.4
             socket.io-parser: 4.2.4
@@ -26093,7 +25931,7 @@ packages:
         engines: { node: '>= 10' }
         dependencies:
             agent-base: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             socks: 2.8.1
         transitivePeerDependencies:
             - supports-color
@@ -26103,7 +25941,7 @@ packages:
         engines: { node: '>= 10' }
         dependencies:
             agent-base: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             socks: 2.8.1
         transitivePeerDependencies:
             - supports-color
@@ -26114,7 +25952,7 @@ packages:
         engines: { node: '>= 14' }
         dependencies:
             agent-base: 7.1.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             socks: 2.8.1
         transitivePeerDependencies:
             - supports-color
@@ -26279,7 +26117,7 @@ packages:
     /spdy-transport@3.0.0:
         resolution: { integrity: sha512-hsLVFE5SjA6TCisWeJXFKniGGOpBgMLmerfO2aCyCU5s7nJ/rpAepqmFifv/GCbSbueEeAJJnmSQ2rKC/g8Fcw== }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             detect-node: 2.1.0
             hpack.js: 2.1.6
             obuf: 1.1.2
@@ -26293,7 +26131,7 @@ packages:
         resolution: { integrity: sha512-r46gZQZQV+Kl9oItvl1JZZqJKGr+oEkB08A6BzkiR7593/7IbtuncXHd2YoYeTsG4157ZssMu9KYvUHLcjcDoA== }
         engines: { node: '>=6.0.0' }
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             handle-thing: 2.0.1
             http-deceiver: 1.2.7
             select-hose: 2.0.0
@@ -27543,7 +27381,7 @@ packages:
         engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0 }
         dependencies:
             '@tufjs/models': 1.0.4
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             make-fetch-happen: 11.1.1
         transitivePeerDependencies:
             - supports-color
@@ -27729,7 +27567,7 @@ packages:
     /typedarray@0.0.6:
         resolution: { integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA== }
 
-    /typeorm@0.3.20(ioredis@5.3.2)(mongodb@6.2.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13):
+    /typeorm@0.3.20(ioredis@5.3.2)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13):
         resolution: { integrity: sha512-sJ0T08dV5eoZroaq9uPKBoNcGslHBR4E4y+EBHs//SiGbblGe7IeduP/IH4ddCcj0qp3PHwDwGnuvqEAnKlq/Q== }
         engines: { node: '>=16.13.0' }
         hasBin: true
@@ -27793,12 +27631,12 @@ packages:
             chalk: 4.1.2
             cli-highlight: 2.1.11
             dayjs: 1.11.10
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             dotenv: 16.4.5
             glob: 10.3.10
             ioredis: 5.3.2
             mkdirp: 2.1.6
-            mongodb: 6.2.0
+            mongodb: 6.3.0
             mysql2: 3.9.2
             pg: 8.11.3
             redis: 4.6.13
@@ -27875,7 +27713,7 @@ packages:
             chalk: 4.1.2
             cli-highlight: 2.1.11
             dayjs: 1.11.10
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             dotenv: 16.4.5
             glob: 10.3.10
             mkdirp: 2.1.6
@@ -28657,7 +28495,7 @@ packages:
             workbox-build: ^7.0.0
             workbox-window: ^7.0.0
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             fast-glob: 3.3.2
             pretty-bytes: 6.1.1
             vite: 5.1.6(sass@1.71.1)
@@ -28684,7 +28522,7 @@ packages:
             vite:
                 optional: true
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             globrex: 0.1.2
             tsconfck: 3.0.3(typescript@4.9.5)
             vite: 4.5.2(sass@1.71.1)
@@ -29420,6 +29258,7 @@ packages:
 
     /workbox-google-analytics@7.0.0:
         resolution: { integrity: sha512-MEYM1JTn/qiC3DbpvP2BVhyIH+dV/5BjHk756u9VbwuAhu0QHyKscTnisQuz21lfRpOwiS9z4XdqeVAKol0bzg== }
+        deprecated: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
         dependencies:
             workbox-background-sync: 7.0.0
             workbox-core: 7.0.0
@@ -29869,7 +29708,7 @@ packages:
             cli-table: 0.3.11
             commander: 7.1.0
             dateformat: 4.6.3
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             diff: 5.2.0
             error: 10.4.0
             escape-string-regexp: 4.0.0
@@ -29914,11 +29753,11 @@ packages:
         dependencies:
             chalk: 4.1.2
             dargs: 7.0.0
-            debug: 4.3.4
+            debug: 4.3.4(supports-color@5.5.0)
             execa: 5.1.1
             github-username: 6.0.0
             lodash: 4.17.21
-            mem-fs-editor: 9.7.0
+            mem-fs-editor: 9.7.0(mem-fs@2.3.0)
             minimist: 1.2.8
             pacote: 15.2.0
             read-pkg-up: 7.0.1
@@ -29992,7 +29831,3 @@ packages:
     /zwitch@2.0.4:
         resolution: { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
         dev: false
-
-settings:
-    autoInstallPeers: true
-    excludeLinksFromLockfile: false
