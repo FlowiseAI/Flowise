@@ -15,7 +15,7 @@ import ProfileSection from './ProfileSection'
 // assets
 
 // store
-import { SET_DARKMODE } from 'store/actions'
+import { SET_DARKMODE } from '@/store/actions'
 import iconMenu from '../../../assets/images/IconMenu.svg'
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
