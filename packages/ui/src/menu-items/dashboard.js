@@ -1,19 +1,8 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconTable } from '@tabler/icons'
-import { ReactComponent as IconKeys } from 'assets/images/IconKey.svg'
-import { ReactComponent as IconSmile } from 'assets/images/smile.svg'
-import { ReactComponent as IconCollection } from 'assets/images/collection.svg'
-import { ReactComponent as IconLocks } from 'assets/images/lock.svg'
+import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable } from '@tabler/icons'
+
 // constant
-const icons = {
-    IconHierarchy,
-    IconBuildingStore,
-    IconKey,
-    IconTool,
-    IconLock,
-    IconRobot,
-    IconTable
-}
+const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -61,6 +50,14 @@ const dashboard = {
             type: 'item',
             url: '/credentials',
             icon: IconLocks,
+            breadcrumbs: true
+        },
+        {
+            id: 'variables',
+            title: 'Variables',
+            type: 'item',
+            url: '/variables',
+            icon: icons.IconVariable,
             breadcrumbs: true
         },
         {

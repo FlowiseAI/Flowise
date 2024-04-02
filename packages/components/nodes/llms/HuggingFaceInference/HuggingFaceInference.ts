@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class HuggingFaceInference_LLMs implements INode {
     label: string
@@ -20,7 +20,7 @@ class HuggingFaceInference_LLMs implements INode {
         this.name = 'huggingFaceInference_LLMs'
         this.version = 2.0
         this.type = 'HuggingFaceInference'
-        this.icon = 'huggingface.png'
+        this.icon = 'HuggingFace.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around HuggingFace large language models'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]

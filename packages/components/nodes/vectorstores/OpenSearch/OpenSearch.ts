@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { Client } from '@opensearch-project/opensearch'
-import { Document } from 'langchain/document'
-import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
-import { Embeddings } from 'langchain/embeddings/base'
+import { Document } from '@langchain/core/documents'
+import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
+import { Embeddings } from '@langchain/core/embeddings'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
@@ -24,7 +24,7 @@ class OpenSearch_VectorStores implements INode {
         this.name = 'openSearch'
         this.version = 1.0
         this.type = 'OpenSearch'
-        this.icon = 'opensearch.png'
+        this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity search upon query using OpenSearch, an open-source, all-in-one vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']

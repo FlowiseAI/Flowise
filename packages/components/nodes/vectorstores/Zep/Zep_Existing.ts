@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { ZepVectorStore, IZepConfig } from 'langchain/vectorstores/zep'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { IDocument, ZepClient } from '@getzep/zep-js'
+import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/zep'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Zep_Existing_VectorStores implements INode {
     label: string
@@ -20,11 +20,11 @@ class Zep_Existing_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep Load Existing Index'
+        this.label = 'Zep Load Existing Index - Open Source'
         this.name = 'zepExistingIndex'
         this.version = 1.0
         this.type = 'Zep'
-        this.icon = 'zep.png'
+        this.icon = 'zep.svg'
         this.category = 'Vector Stores'
         this.description = 'Load existing index from Zep (i.e: Document has been upserted)'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']

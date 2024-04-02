@@ -1,6 +1,6 @@
+import { BraveSearch } from '@langchain/community/tools/brave_search'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { BraveSearch } from 'langchain/tools'
 
 class BraveSearchAPI_Tools implements INode {
     label: string

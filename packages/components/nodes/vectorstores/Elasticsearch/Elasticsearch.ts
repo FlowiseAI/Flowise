@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { Client, ClientOptions } from '@elastic/elasticsearch'
-import { Document } from 'langchain/document'
-import { Embeddings } from 'langchain/embeddings/base'
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
+import { Document } from '@langchain/core/documents'
+import { Embeddings } from '@langchain/core/embeddings'
+import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -183,13 +183,26 @@ const prepareConnectionOptions = (
     } else if (cloudId) {
         let username = getCredentialParam('username', credentialData, nodeData)
         let password = getCredentialParam('password', credentialData, nodeData)
-        elasticSearchClientOptions = {
-            cloud: {
-                id: cloudId
-            },
-            auth: {
-                username: username,
-                password: password
+        if (cloudId.startsWith('http')) {
+            elasticSearchClientOptions = {
+                node: cloudId,
+                auth: {
+                    username: username,
+                    password: password
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            }
+        } else {
+            elasticSearchClientOptions = {
+                cloud: {
+                    id: cloudId
+                },
+                auth: {
+                    username: username,
+                    password: password
+                }
             }
         }
     }

@@ -1,9 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from '@langchain/community/vectorstores/singlestore'
 import { flatten } from 'lodash'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class SingleStoreUpsert_VectorStores implements INode {
     label: string

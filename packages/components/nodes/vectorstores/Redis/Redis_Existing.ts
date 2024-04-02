@@ -1,9 +1,8 @@
+import { Embeddings } from '@langchain/core/embeddings'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/community/vectorstores/redis'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData } from '../../../src/Interface'
-import { Embeddings } from 'langchain/embeddings/base'
-import { VectorStore } from 'langchain/vectorstores/base'
-import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
-import { Document } from 'langchain/document'
-
 import { RedisSearchBase } from './RedisSearchBase'
 
 class RedisExisting_VectorStores extends RedisSearchBase implements INode {

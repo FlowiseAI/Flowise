@@ -1,6 +1,8 @@
 {
     "description": "QnA chain using Ollama local LLM, LocalAI embedding model, and Faiss local vector store",
     "badge": "POPULAR",
+    "categories": "Text File,ChatOllama,Conversational Retrieval QA Chain,Faiss,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
@@ -83,10 +85,10 @@
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
-                "version": 1,
+                "version": 3,
                 "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
-                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "BaseLangChain"],
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
                 "category": "Chains",
                 "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
                 "inputParams": [
@@ -98,47 +100,36 @@
                         "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
                     },
                     {
-                        "label": "System Message",
-                        "name": "systemMessagePrompt",
+                        "label": "Rephrase Prompt",
+                        "name": "rephrasePrompt",
                         "type": "string",
+                        "description": "Using previous chat history, rephrase question into a standalone question",
+                        "warning": "Prompt must include input variables: {chat_history} and {question}",
                         "rows": 4,
                         "additionalParams": true,
                         "optional": true,
-                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
-                        "id": "conversationalRetrievalQAChain_0-input-systemMessagePrompt-string"
+                        "default": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                        "id": "conversationalRetrievalQAChain_0-input-rephrasePrompt-string"
                     },
                     {
-                        "label": "Chain Option",
-                        "name": "chainOption",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "MapReduceDocumentsChain",
-                                "name": "map_reduce",
-                                "description": "Suitable for QA tasks over larger documents and can run the preprocessing step in parallel, reducing the running time"
-                            },
-                            {
-                                "label": "RefineDocumentsChain",
-                                "name": "refine",
-                                "description": "Suitable for QA tasks over a large number of documents."
-                            },
-                            {
-                                "label": "StuffDocumentsChain",
-                                "name": "stuff",
-                                "description": "Suitable for QA tasks over a small number of documents."
-                            }
-                        ],
+                        "label": "Response Prompt",
+                        "name": "responsePrompt",
+                        "type": "string",
+                        "description": "Taking the rephrased question, search for answer from the provided context",
+                        "warning": "Prompt must include input variable: {context}",
+                        "rows": 4,
                         "additionalParams": true,
                         "optional": true,
-                        "id": "conversationalRetrievalQAChain_0-input-chainOption-options"
+                        "default": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.",
+                        "id": "conversationalRetrievalQAChain_0-input-responsePrompt-string"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel"
+                        "type": "BaseChatModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Vector Store Retriever",
@@ -153,19 +144,31 @@
                         "optional": true,
                         "description": "If left empty, a default BufferMemory will be used",
                         "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "model": "{{chatOllama_0.data.instance}}",
                     "vectorStoreRetriever": "{{faiss_0.data.instance}}",
-                    "memory": ""
+                    "memory": "",
+                    "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                    "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|BaseLangChain",
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
                         "name": "conversationalRetrievalQAChain",
                         "label": "ConversationalRetrievalQAChain",
-                        "type": "ConversationalRetrievalQAChain | BaseChain | BaseLangChain"
+                        "type": "ConversationalRetrievalQAChain | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -233,10 +236,10 @@
                         "type": "options",
                         "options": [
                             {
-                                "id": "textFile_0-output-document-Document",
+                                "id": "textFile_0-output-document-Document|json",
                                 "name": "document",
                                 "label": "Document",
-                                "type": "Document"
+                                "type": "Document | json"
                             },
                             {
                                 "id": "textFile_0-output-text-string|json",
@@ -649,20 +652,20 @@
             "source": "chatOllama_0",
             "sourceHandle": "chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOllama_0-chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseLanguageModel",
+            "id": "chatOllama_0-chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }
         },
         {
             "source": "textFile_0",
-            "sourceHandle": "textFile_0-output-document-Document",
+            "sourceHandle": "textFile_0-output-document-Document|json",
             "target": "faiss_0",
             "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "textFile_0-textFile_0-output-document-Document-faiss_0-faiss_0-input-document-Document",
+            "id": "textFile_0-textFile_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
             "data": {
                 "label": ""
             }

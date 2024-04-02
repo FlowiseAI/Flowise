@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
 import { Pinecone } from '@pinecone-database/pinecone'
-import { PineconeLibArgs, PineconeStore } from 'langchain/vectorstores/pinecone'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -25,7 +25,7 @@ class PineconeUpsert_VectorStores implements INode {
         this.name = 'pineconeUpsert'
         this.version = 1.0
         this.type = 'Pinecone'
-        this.icon = 'pinecone.png'
+        this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to Pinecone'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
@@ -96,11 +96,9 @@ class PineconeUpsert_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
-        const pineconeEnv = getCredentialParam('pineconeEnv', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey,
-            environment: pineconeEnv
+            apiKey: pineconeApiKey
         })
 
         const pineconeIndex = client.Index(index)
@@ -113,7 +111,7 @@ class PineconeUpsert_VectorStores implements INode {
             }
         }
 
-        const obj: PineconeLibArgs = {
+        const obj: PineconeStoreParams = {
             pineconeIndex
         }
 

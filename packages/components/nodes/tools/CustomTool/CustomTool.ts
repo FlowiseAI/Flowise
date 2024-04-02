@@ -1,5 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { convertSchemaToZod, getBaseClasses } from '../../../src/utils'
+import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
@@ -63,6 +63,9 @@ class CustomTool_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const selectedToolId = nodeData.inputs?.selectedTool as string
         const customToolFunc = nodeData.inputs?.customToolFunc as string
+        const customToolName = nodeData.inputs?.customToolName as string
+        const customToolDesc = nodeData.inputs?.customToolDesc as string
+        const customToolSchema = nodeData.inputs?.customToolSchema as string
 
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
@@ -80,7 +83,22 @@ class CustomTool_Tools implements INode {
                 code: tool.func
             }
             if (customToolFunc) obj.code = customToolFunc
-            return new DynamicStructuredTool(obj)
+            if (customToolName) obj.name = customToolName
+            if (customToolDesc) obj.description = customToolDesc
+            if (customToolSchema) {
+                const zodSchemaFunction = new Function('z', `return ${customToolSchema}`)
+                obj.schema = zodSchemaFunction(z)
+            }
+
+            const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
+            const flow = { chatflowId: options.chatflowid }
+
+            let dynamicStructuredTool = new DynamicStructuredTool(obj)
+            dynamicStructuredTool.setVariables(variables)
+            dynamicStructuredTool.setFlowObject(flow)
+
+            return dynamicStructuredTool
         } catch (e) {
             throw new Error(e)
         }

@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { OpenApiToolkit } from 'langchain/agents'
-import { JsonSpec, JsonObject } from 'langchain/tools'
-import { BaseLanguageModel } from 'langchain/base_language'
 import { load } from 'js-yaml'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { OpenApiToolkit } from 'langchain/agents'
+import { JsonSpec, JsonObject } from './core'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class OpenAPIToolkit_Tools implements INode {
@@ -22,7 +22,7 @@ class OpenAPIToolkit_Tools implements INode {
         this.name = 'openAPIToolkit'
         this.version = 1.0
         this.type = 'OpenAPIToolkit'
-        this.icon = 'openapi.png'
+        this.icon = 'openapi.svg'
         this.category = 'Tools'
         this.description = 'Load OpenAPI specification'
         this.credential = {

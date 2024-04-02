@@ -1,9 +1,11 @@
+import fetch from 'node-fetch'
+import { Document } from '@langchain/core/documents'
+import { VectaraStore } from '@langchain/community/vectorstores/vectara'
+import { VectorDBQAChain } from 'langchain/chains'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { VectorDBQAChain } from 'langchain/chains'
-import { Document } from 'langchain/document'
-import { VectaraStore } from 'langchain/vectorstores/vectara'
-import fetch from 'node-fetch'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 // functionality based on https://github.com/vectara/vectara-answer
 const reorderCitations = (unorderedSummary: string) => {
@@ -48,7 +50,7 @@ class VectaraChain_Chains implements INode {
     constructor() {
         this.label = 'Vectara QA Chain'
         this.name = 'vectaraQAChain'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'VectaraQAChain'
         this.icon = 'vectara.png'
         this.category = 'Chains'
@@ -69,22 +71,23 @@ class VectaraChain_Chains implements INode {
                 options: [
                     {
                         label: 'vectara-summary-ext-v1.2.0 (gpt-3.5-turbo)',
-                        name: 'vectara-summary-ext-v1.2.0'
+                        name: 'vectara-summary-ext-v1.2.0',
+                        description: 'base summarizer, available to all Vectara users'
                     },
                     {
                         label: 'vectara-experimental-summary-ext-2023-10-23-small (gpt-3.5-turbo)',
                         name: 'vectara-experimental-summary-ext-2023-10-23-small',
-                        description: 'In beta, available to both Growth and Scale Vectara users'
+                        description: `In beta, available to both Growth and <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users`
                     },
                     {
                         label: 'vectara-summary-ext-v1.3.0 (gpt-4.0)',
                         name: 'vectara-summary-ext-v1.3.0',
-                        description: 'Only available to paying Scale Vectara users'
+                        description: 'Only available to <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users'
                     },
                     {
                         label: 'vectara-experimental-summary-ext-2023-10-23-med (gpt-4.0)',
                         name: 'vectara-experimental-summary-ext-2023-10-23-med',
-                        description: 'In beta, only available to paying Scale Vectara users'
+                        description: `In beta, only available to <a target="_blank" href="https://vectara.com/pricing/">Scale</a> Vectara users`
                     }
                 ],
                 default: 'vectara-summary-ext-v1.2.0'
@@ -218,6 +221,14 @@ class VectaraChain_Chains implements INode {
                 description: 'Maximum results used to build the summarized response',
                 type: 'number',
                 default: 7
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -226,9 +237,9 @@ class VectaraChain_Chains implements INode {
         return null
     }
 
-    async run(nodeData: INodeData, input: string): Promise<object> {
+    async run(nodeData: INodeData, input: string): Promise<string | object> {
         const vectorStore = nodeData.inputs?.vectaraStore as VectaraStore
-        const responseLang = (nodeData.inputs?.responseLang as string) ?? 'auto'
+        const responseLang = (nodeData.inputs?.responseLang as string) ?? 'eng'
         const summarizerPromptName = nodeData.inputs?.summarizerPromptName as string
         const maxSummarizedResultsStr = nodeData.inputs?.maxSummarizedResults as string
         const maxSummarizedResults = maxSummarizedResultsStr ? parseInt(maxSummarizedResultsStr, 10) : 7
@@ -247,17 +258,43 @@ class VectaraChain_Chains implements INode {
             lexicalInterpolationConfig: { lambda: vectaraFilter?.lambda ?? 0.025 }
         }))
 
+        // Vectara reranker ID for MMR (https://docs.vectara.com/docs/api-reference/search-apis/reranking#maximal-marginal-relevance-mmr-reranker)
+        const mmrRerankerId = 272725718
+        const mmrEnabled = vectaraFilter?.mmrConfig?.enabled
+
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Vectara chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
+
         const data = {
             query: [
                 {
                     query: input,
                     start: 0,
-                    numResults: topK,
+                    numResults: mmrEnabled ? vectaraFilter?.mmrTopK : topK,
+                    corpusKey: corpusKeys,
                     contextConfig: {
                         sentencesAfter: vectaraFilter?.contextConfig?.sentencesAfter ?? 2,
                         sentencesBefore: vectaraFilter?.contextConfig?.sentencesBefore ?? 2
                     },
-                    corpusKey: corpusKeys,
+                    ...(mmrEnabled
+                        ? {
+                              rerankingConfig: {
+                                  rerankerId: mmrRerankerId,
+                                  mmrConfig: {
+                                      diversityBias: vectaraFilter?.mmrConfig.diversityBias
+                                  }
+                              }
+                          }
+                        : {}),
                     summary: [
                         {
                             summarizerPromptName,
@@ -285,6 +322,14 @@ class VectaraChain_Chains implements INode {
             const documents = result.responseSet[0].document
             let rawSummarizedText = ''
 
+            // remove responses that are not in the topK (in case of MMR)
+            // Note that this does not really matter functionally due to the reorder citations, but it is more efficient
+            const maxResponses = mmrEnabled ? Math.min(responses.length, topK) : responses.length
+            if (responses.length > maxResponses) {
+                responses.splice(0, maxResponses)
+            }
+
+            // Add metadata to each text response given its corresponding document metadata
             for (let i = 0; i < responses.length; i += 1) {
                 const responseMetadata = responses[i].metadata
                 const documentMetadata = documents[responses[i].documentIndex].metadata
@@ -301,13 +346,13 @@ class VectaraChain_Chains implements INode {
                 responses[i].metadata = combinedMetadata
             }
 
+            // Create the summarization response
             const summaryStatus = result.responseSet[0].summary[0].status
             if (summaryStatus.length > 0 && summaryStatus[0].code === 'BAD_REQUEST') {
                 throw new Error(
                     `BAD REQUEST: Too much text for the summarizer to summarize. Please try reducing the number of search results to summarize, or the context of each result by adjusting the 'summary_num_sentences', and 'summary_num_results' parameters respectively.`
                 )
             }
-
             if (
                 summaryStatus.length > 0 &&
                 summaryStatus[0].code === 'NOT_FOUND' &&
@@ -316,8 +361,8 @@ class VectaraChain_Chains implements INode {
                 throw new Error(`BAD REQUEST: summarizer ${summarizerPromptName} is invalid for this account.`)
             }
 
+            // Reorder citations in summary and create the list of returned source documents
             rawSummarizedText = result.responseSet[0].summary[0]?.text
-
             let summarizedText = reorderCitations(rawSummarizedText)
             let summaryResponses = applyCitationOrder(responses, rawSummarizedText)
 

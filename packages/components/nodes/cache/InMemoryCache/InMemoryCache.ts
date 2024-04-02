@@ -1,6 +1,6 @@
-import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { BaseCache } from 'langchain/schema'
+import { BaseCache } from '@langchain/core/caches'
 import hash from 'object-hash'
+import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 
 class InMemoryCache implements INode {
     label: string
@@ -20,7 +20,7 @@ class InMemoryCache implements INode {
         this.version = 1.0
         this.type = 'InMemoryCache'
         this.description = 'Cache LLM response in memory, will be cleared once app restarted'
-        this.icon = 'inmemorycache.png'
+        this.icon = 'Memory.svg'
         this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(InMemoryCacheExtended)]
         this.inputs = []

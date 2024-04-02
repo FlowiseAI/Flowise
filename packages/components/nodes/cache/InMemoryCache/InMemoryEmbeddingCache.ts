@@ -1,7 +1,7 @@
-import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import { Embeddings } from '@langchain/core/embeddings'
+import { BaseStore } from '@langchain/core/stores'
 import { CacheBackedEmbeddings } from 'langchain/embeddings/cache_backed'
-import { Embeddings } from 'langchain/embeddings/base'
-import { BaseStore } from 'langchain/schema/storage'
+import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 
 class InMemoryEmbeddingCache implements INode {
     label: string
@@ -21,7 +21,7 @@ class InMemoryEmbeddingCache implements INode {
         this.version = 1.0
         this.type = 'InMemoryEmbeddingCache'
         this.description = 'Cache generated Embeddings in memory to avoid needing to recompute them.'
-        this.icon = 'inmemorycache.png'
+        this.icon = 'Memory.svg'
         this.category = 'Cache'
         this.baseClasses = [this.type, ...getBaseClasses(CacheBackedEmbeddings)]
         this.inputs = [

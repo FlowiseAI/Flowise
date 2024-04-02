@@ -1,7 +1,14 @@
 import { flatten } from 'lodash'
-import { VectaraStore, VectaraLibArgs, VectaraFilter, VectaraContextConfig, VectaraFile } from 'langchain/vectorstores/vectara'
-import { Document } from 'langchain/document'
-import { Embeddings } from 'langchain/embeddings/base'
+import {
+    VectaraStore,
+    VectaraLibArgs,
+    VectaraFilter,
+    VectaraContextConfig,
+    VectaraFile,
+    MMRConfig
+} from '@langchain/community/vectorstores/vectara'
+import { Document } from '@langchain/core/documents'
+import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -22,7 +29,7 @@ class Vectara_VectorStores implements INode {
     constructor() {
         this.label = 'Vectara'
         this.name = 'vectara'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Vectara'
         this.icon = 'vectara.png'
         this.category = 'Vector Stores'
@@ -82,7 +89,9 @@ class Vectara_VectorStores implements INode {
                 label: 'Lambda',
                 name: 'lambda',
                 description:
-                    'Improves retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.',
+                    'Enable hybrid search to improve retrieval accuracy by adjusting the balance (from 0 to 1) between neural search and keyword-based search factors.' +
+                    'A value of 0.0 means that only neural search is used, while a value of 1.0 means that only keyword-based search is used. Defaults to 0.0 (neural only).',
+                default: 0.0,
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -90,8 +99,30 @@ class Vectara_VectorStores implements INode {
             {
                 label: 'Top K',
                 name: 'topK',
-                description: 'Number of top results to fetch. Defaults to 4',
-                placeholder: '4',
+                description: 'Number of top results to fetch. Defaults to 5',
+                placeholder: '5',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'MMR K',
+                name: 'mmrK',
+                description: 'Number of top results to fetch for MMR. Defaults to 50',
+                placeholder: '50',
+                type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'MMR diversity bias',
+                name: 'mmrDiversityBias',
+                step: 0.1,
+                description:
+                    'The diversity bias to use for MMR. This is a value between 0.0 and 1.0' +
+                    'Values closer to 1.0 optimize for the most diverse results.' +
+                    'Defaults to 0 (MMR disabled)',
+                placeholder: '0.0',
                 type: 'number',
                 additionalParams: true,
                 optional: true
@@ -191,7 +222,9 @@ class Vectara_VectorStores implements INode {
         const lambda = nodeData.inputs?.lambda as number
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const k = topK ? parseFloat(topK) : 5
+        const mmrK = nodeData.inputs?.mmrK as number
+        const mmrDiversityBias = nodeData.inputs?.mmrDiversityBias as number
 
         const vectaraArgs: VectaraLibArgs = {
             apiKey: apiKey,
@@ -208,6 +241,11 @@ class Vectara_VectorStores implements INode {
         if (sentencesBefore) vectaraContextConfig.sentencesBefore = sentencesBefore
         if (sentencesAfter) vectaraContextConfig.sentencesAfter = sentencesAfter
         vectaraFilter.contextConfig = vectaraContextConfig
+        const mmrConfig: MMRConfig = {}
+        mmrConfig.enabled = mmrDiversityBias > 0
+        mmrConfig.mmrTopK = mmrK
+        mmrConfig.diversityBias = mmrDiversityBias
+        vectaraFilter.mmrConfig = mmrConfig
 
         const vectorStore = new VectaraStore(vectaraArgs)
 

@@ -1,10 +1,10 @@
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
+import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
 import { Client } from '@opensearch-project/opensearch'
 import { flatten } from 'lodash'
 import { getBaseClasses } from '../../../src/utils'
+import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class OpenSearchUpsert_VectorStores implements INode {
     label: string
@@ -24,7 +24,7 @@ class OpenSearchUpsert_VectorStores implements INode {
         this.name = 'openSearchUpsertDocument'
         this.version = 1.0
         this.type = 'OpenSearch'
-        this.icon = 'opensearch.png'
+        this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert documents to OpenSearch'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
