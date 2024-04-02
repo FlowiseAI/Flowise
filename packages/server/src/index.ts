@@ -1453,7 +1453,7 @@ export class App {
                                 } catch (e) {
                                     return false
                                 }
-                            }).length > 0
+                            })?.length > 0
                     }
                 }
 

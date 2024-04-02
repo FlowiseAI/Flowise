@@ -14,6 +14,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      pnpm:
+        specifier: ^8.15.5
+        version: 8.15.6
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -147,6 +151,9 @@ importers:
       '@langchain/pinecone':
         specifier: ^0.0.3
         version: 0.0.3
+      '@langchain/yandex':
+        specifier: ^0.0.1
+        version: 0.0.1
       '@mistralai/mistralai':
         specifier: 0.1.3
         version: 0.1.3
@@ -579,11 +586,11 @@ importers:
         specifier: ^16.0.0
         version: 16.4.5
       flowise-embed:
-        specifier: latest
-        version: 1.2.1
+        specifier: github:myosminozhka-ru/FlowiseChatEmbed#develop
+        version: github.com/myosminozhka-ru/FlowiseChatEmbed/ddd071f874e6e72258185821187bc0d08c1f02af
       flowise-embed-react:
-        specifier: latest
-        version: 1.0.2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
+        specifier: github:myosminozhka-ru/FlowiseEmbedReact#deploy
+        version: github.com/myosminozhka-ru/FlowiseEmbedReact/692bcd0312582407b0ab7a1417968a03487e14f2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
       flowise-react-json-view:
         specifier: '*'
         version: 1.21.7(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0)
@@ -5143,6 +5150,13 @@ packages:
       '@pinecone-database/pinecone': 2.1.0
       flat: 5.0.2
       uuid: 9.0.1
+    dev: false
+
+  /@langchain/yandex@0.0.1:
+    resolution: {integrity: sha512-3ytjqCdSmFHLpBGmsf7SxQOHU/XNcDzXXrb0hdNd0O/aygtZ6SeVCRqu3kfsQ1KBlNWERW2GtGvaL4lzYKT7ZQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@langchain/core': 0.1.44
     dev: false
 
   /@leichtgewicht/ip-codec@2.0.4:
@@ -14658,44 +14672,6 @@ packages:
     resolution: {integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==}
     dev: true
 
-  /flowise-embed-react@1.0.2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
-    resolution: {integrity: sha512-M6rDofJWTWI9rtZN7G3oTlqAcQaHoF/IUIoW1YitHsjKly24awq5sky+0Wfkcg4VfoXz3SiLHMZ/XOF4PDuvqA==}
-    peerDependencies:
-      flowise-embed: '*'
-      react: 18.x
-    dependencies:
-      '@ladle/react': 2.5.1(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
-      flowise-embed: 1.2.1
-      react: 18.2.0
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - react-dom
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - typescript
-    dev: false
-
-  /flowise-embed@1.2.1:
-    resolution: {integrity: sha512-sn8An0dseo398RXx/yzQ3lC//+FpY5o/094yaWZs3NmYy6am+duCZJ18lhcYF5A4oCucrIoZCcCz5mxViYtznw==}
-    dependencies:
-      '@babel/core': 7.24.0
-      '@ts-stack/markdown': 1.5.0
-      lodash: 4.17.21
-      prettier: 3.2.5
-      socket.io-client: 4.7.4
-      solid-element: 1.7.0(solid-js@1.7.1)
-      solid-js: 1.7.1
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-    dev: false
-
   /flowise-react-json-view@1.21.7(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ==}
     peerDependencies:
@@ -22440,6 +22416,12 @@ packages:
       fsevents: 2.3.2
     dev: false
 
+  /pnpm@8.15.6:
+    resolution: {integrity: sha512-d7iem+d6Kwatj0A6Gcrl4il29hAj+YrTI9XDAZSVjrwC7gpq5dE+5FT2E05OjK8poF8LGg4dKxe8prah8RWfhg==}
+    engines: {node: '>=16.14'}
+    hasBin: true
+    dev: false
+
   /popmotion@9.3.6:
     resolution: {integrity: sha512-ZTbXiu6zIggXzIliMi8LGxXBF5ST+wkpXGEjeTUDUOCdSQ356hij/xjeUdv0F8zCQNeqB1+PR5/BB+gC+QLAPw==}
     dependencies:
@@ -29854,4 +29836,47 @@ packages:
 
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
+    dev: false
+
+  github.com/myosminozhka-ru/FlowiseChatEmbed/ddd071f874e6e72258185821187bc0d08c1f02af:
+    resolution: {tarball: https://codeload.github.com/myosminozhka-ru/FlowiseChatEmbed/tar.gz/ddd071f874e6e72258185821187bc0d08c1f02af}
+    name: flowise-embed
+    version: 1.2.1
+    dependencies:
+      '@babel/core': 7.24.0
+      '@ts-stack/markdown': 1.5.0
+      lodash: 4.17.21
+      prettier: 3.2.5
+      socket.io-client: 4.7.4
+      solid-element: 1.7.0(solid-js@1.7.1)
+      solid-js: 1.7.1
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
+
+  github.com/myosminozhka-ru/FlowiseEmbedReact/692bcd0312582407b0ab7a1417968a03487e14f2(flowise-embed@1.2.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
+    resolution: {tarball: https://codeload.github.com/myosminozhka-ru/FlowiseEmbedReact/tar.gz/692bcd0312582407b0ab7a1417968a03487e14f2}
+    id: github.com/myosminozhka-ru/FlowiseEmbedReact/692bcd0312582407b0ab7a1417968a03487e14f2
+    name: flowise-embed-react
+    version: 1.0.2
+    peerDependencies:
+      flowise-embed: '*'
+      react: 18.x
+    dependencies:
+      '@ladle/react': 2.5.1(react-dom@18.2.0)(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
+      flowise-embed: github.com/myosminozhka-ru/FlowiseChatEmbed/ddd071f874e6e72258185821187bc0d08c1f02af
+      react: 18.2.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - react-dom
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - typescript
     dev: false
