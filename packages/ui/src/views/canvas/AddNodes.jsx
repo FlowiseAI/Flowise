@@ -46,12 +46,6 @@ import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
 import { translationObject } from '@/translate'
 // ==============================|| ADD NODES||============================== //
-function a11yProps(index) {
-    return {
-        id: `attachment-tab-${index}`,
-        'aria-controls': `attachment-tabpanel-${index}`
-    }
-}
 
 const translationsNodes = {
     Agents: 'Агенты',
@@ -107,6 +101,13 @@ const excludedNodesByLable = [
     'Vectara',
     'Weaviate'
 ]
+
+function a11yProps(index) {
+    return {
+        id: `attachment-tab-${index}`,
+        'aria-controls': `attachment-tabpanel-${index}`
+    }
+}
 
 const AddNodes = ({ nodesData, node }) => {
     const theme = useTheme()

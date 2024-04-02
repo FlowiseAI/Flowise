@@ -12,6 +12,7 @@ class AIPlugin implements INode {
     category: string
     baseClasses: string[]
     inputs?: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'AI Plugin'
@@ -22,6 +23,7 @@ class AIPlugin implements INode {
         this.category = 'Tools'
         this.description = 'Execute actions using ChatGPT Plugin Url'
         this.baseClasses = [this.type, ...getBaseClasses(AIPluginTool)]
+        this.badge = 'DEPRECATING'
         this.inputs = [
             {
                 label: 'Plugin Url',

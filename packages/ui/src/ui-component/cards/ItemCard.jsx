@@ -5,10 +5,9 @@ import { styled } from '@mui/material/styles'
 import { Box, Grid, Typography } from '@mui/material'
 
 // project imports
+import MainCard from 'ui-component/cards/MainCard'
+import SkeletonChatflowCard from 'ui-component/cards/Skeleton/ChatflowCard'
 import moment from 'moment'
-import { translationObject } from '@/translate'
-import MainCard from '@/ui-component/cards/MainCard'
-import SkeletonChatflowCard from '@/ui-component/cards/Skeleton/ChatflowCard'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,

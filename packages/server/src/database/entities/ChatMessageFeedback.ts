@@ -13,7 +13,7 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     chatflowid: string
 
     @Index()
-    @Column({ type: 'uuid' })
+    @Column({ type: 'varchar' })
     chatId: string
 
     @Column({ type: 'uuid' })
