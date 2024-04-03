@@ -1,12 +1,12 @@
 import client from './client'
 
-const getAllDocumentStores = () => client.get('/documentStores')
-const getSpecificDocumentStore = (id) => client.get(`/documentStores/${id}`)
-const createDocumentStore = (body) => client.post(`/documentStores`, body)
-const updateDocumentStore = (id, body) => client.put(`/documentStores/${id}`, body)
-const uploadFileToStore = (body) => client.post(`/documentStores/files`, body)
-const deleteFileFromStore = (id, fileId) => client.delete(`/documentStores/${id}/${fileId}`)
-const getFileChunks = (storeId, fileId) => client.get(`/documentStores/file/${storeId}/${fileId}`)
+const getAllDocumentStores = () => client.get('/documentStore')
+const getSpecificDocumentStore = (id) => client.get(`/documentStore/${id}`)
+const createDocumentStore = (body) => client.post(`/documentStore`, body)
+const updateDocumentStore = (id, body) => client.put(`/documentStore/${id}`, body)
+const uploadFileToStore = (body) => client.post(`/documentStore/files`, body)
+const deleteFileFromStore = (id, fileId) => client.delete(`/documentStore/${id}/${fileId}`)
+const getFileChunks = (storeId, fileId) => client.get(`/documentStore/file/${storeId}/${fileId}`)
 //
 // const deleteTool = (id) => client.delete(`/tools/${id}`)
 
