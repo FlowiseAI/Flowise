@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import {
+    CircularProgress,
     Grid,
     Box,
     Stack,
@@ -379,6 +380,14 @@ const Marketplace = () => {
                             </FormControl>
                         </Toolbar>
                     </Box>
+                )}
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
                 )}
 
                 {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (

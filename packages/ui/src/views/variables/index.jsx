@@ -7,6 +7,7 @@ import moment from 'moment'
 import {
     Button,
     Box,
+    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -59,6 +60,7 @@ const Variables = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [isLoading, setLoading] = useState(true)
     const [showVariableDialog, setShowVariableDialog] = useState(false)
     const [variableDialogProps, setVariableDialogProps] = useState({})
     const [variables, setVariables] = useState([])
@@ -160,6 +162,10 @@ const Variables = () => {
         }
     }, [getAllVariables.data])
 
+    useEffect(() => {
+        setLoading(getAllVariables.loading)
+    }, [getAllVariables.loading])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -216,7 +222,16 @@ const Variables = () => {
                         </Toolbar>
                     </Box>
                 </Stack>
-                {variables.length === 0 && (
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
+
+                {!isLoading && variables.length === 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img
@@ -228,7 +243,8 @@ const Variables = () => {
                         <div>No Variables Yet</div>
                     </Stack>
                 )}
-                {variables.length > 0 && (
+
+                {!isLoading && variables.length > 0 && (
                     <TableContainer component={Paper}>
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>

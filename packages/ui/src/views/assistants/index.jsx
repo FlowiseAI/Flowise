@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
+import { CircularProgress, Grid, Box, Stack, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -31,6 +31,7 @@ const Assistants = () => {
 
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
+    const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [showLoadDialog, setShowLoadDialog] = useState(false)
@@ -85,6 +86,10 @@ const Assistants = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllAssistantsApi.loading)
+    }, [getAllAssistantsApi.loading])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -102,10 +107,18 @@ const Assistants = () => {
                         </Grid>
                     </Grid>
                 </Stack>
-                <Grid container spacing={gridSpacing}>
-                    {!getAllAssistantsApi.loading &&
-                        getAllAssistantsApi.data &&
-                        getAllAssistantsApi.data.map((data, index) => (
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
+
+                {!isLoading && getAllAssistantsApi.data && (
+                    <Grid container spacing={gridSpacing}>
+                        {getAllAssistantsApi.data.map((data, index) => (
                             <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
                                 <ItemCard
                                     data={{
@@ -117,8 +130,10 @@ const Assistants = () => {
                                 />
                             </Grid>
                         ))}
-                </Grid>
-                {!getAllAssistantsApi.loading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
+                    </Grid>
+                )}
+
+                {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />

@@ -7,6 +7,7 @@ import moment from 'moment'
 import {
     Button,
     Box,
+    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -60,6 +61,7 @@ const Credentials = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [isLoading, setLoading] = useState(true)
     const [showCredentialListDialog, setShowCredentialListDialog] = useState(false)
     const [credentialListDialogProps, setCredentialListDialogProps] = useState({})
     const [showSpecificCredentialDialog, setShowSpecificCredentialDialog] = useState(false)
@@ -175,6 +177,10 @@ const Credentials = () => {
     }, [])
 
     useEffect(() => {
+        setLoading(getAllCredentialsApi.loading)
+    }, [getAllCredentialsApi.loading])
+
+    useEffect(() => {
         if (getAllCredentialsApi.data) {
             setCredentials(getAllCredentialsApi.data)
         }
@@ -239,7 +245,16 @@ const Credentials = () => {
                         </Toolbar>
                     </Box>
                 </Stack>
-                {credentials.length <= 0 && (
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
+
+                {!isLoading && credentials.length <= 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img
@@ -251,7 +266,8 @@ const Credentials = () => {
                         <div>No Credentials Yet</div>
                     </Stack>
                 )}
-                {credentials.length > 0 && (
+
+                {!isLoading && credentials.length > 0 && (
                     <TableContainer component={Paper}>
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>

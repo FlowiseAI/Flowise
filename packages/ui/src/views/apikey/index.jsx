@@ -7,6 +7,7 @@ import {
     Button,
     Box,
     Chip,
+    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -193,6 +194,7 @@ const APIKey = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [apiKeys, setAPIKeys] = useState([])
@@ -321,6 +323,10 @@ const APIKey = () => {
         }
     }, [getAllAPIKeysApi.data])
 
+    useEffect(() => {
+        setLoading(getAllAPIKeysApi.loading)
+    }, [getAllAPIKeysApi.loading])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -374,7 +380,16 @@ const APIKey = () => {
                         </Toolbar>
                     </Box>
                 </Stack>
-                {apiKeys.length <= 0 && (
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
+
+                {!isLoading && apiKeys.length <= 0 && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
@@ -382,6 +397,7 @@ const APIKey = () => {
                         <div>No API Keys Yet</div>
                     </Stack>
                 )}
+
                 {apiKeys.length > 0 && (
                     <TableContainer component={Paper}>
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
+import { CircularProgress, Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup, InputAdornment, TextField } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -184,6 +184,13 @@ const Chatflows = () => {
                         </ButtonGroup>
                     </Toolbar>
                 </Box>
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
                 {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
                     <Grid container spacing={gridSpacing}>
                         {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (

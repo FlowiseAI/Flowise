@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
+import { CircularProgress, Grid, Box, Stack, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -30,6 +30,7 @@ const Tools = () => {
 
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
+    const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
 
@@ -101,6 +102,10 @@ const Tools = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllToolsApi.loading)
+    }, [getAllToolsApi.loading])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -124,16 +129,26 @@ const Tools = () => {
                         </Grid>
                     </Grid>
                 </Stack>
-                <Grid container spacing={gridSpacing}>
-                    {!getAllToolsApi.loading &&
-                        getAllToolsApi.data &&
-                        getAllToolsApi.data.map((data, index) => (
+
+                {isLoading && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <CircularProgress color='inherit' />
+                        </Box>
+                    </Stack>
+                )}
+
+                {!isLoading && getAllToolsApi.data && (
+                    <Grid container spacing={gridSpacing}>
+                        {getAllToolsApi.data.map((data, index) => (
                             <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
                                 <ItemCard data={data} onClick={() => edit(data)} />
                             </Grid>
                         ))}
-                </Grid>
-                {!getAllToolsApi.loading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                    </Grid>
+                )}
+
+                {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
