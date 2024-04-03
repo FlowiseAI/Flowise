@@ -671,8 +671,26 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         </div>
                                     </div>
                                 )}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'start',
+                                        height: '40px',
+                                        padding: '8px',
+                                        marginLeft: '20px',
+                                        marginBottom: '20px',
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: `${customization.borderRadius}px`,
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    {chatMessages.filter((message) => message.type === 'userMessage')[0]?.leadEmail}
+                                </Box>
                                 <div
                                     style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
                                         marginLeft: '20px',
                                         border: '1px solid #e0e0e0',
                                         borderRadius: `${customization.borderRadius}px`
