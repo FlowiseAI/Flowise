@@ -29,7 +29,7 @@ import documentsApi from '@/api/documents'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX } from '@tabler/icons'
+import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconFileStack } from '@tabler/icons'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import Button from '@mui/material/Button'
 import moment from 'moment/moment'
@@ -314,6 +314,14 @@ const DocumentStoreDetails = () => {
                                         <TableCell>{moment(file.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
                                         <TableCell>{file.status === 'NEW' ? 'Processing...' : file.totalChunks + ' chunks'}</TableCell>
                                         <TableCell>
+                                            <IconButton
+                                                disabled={file.status === 'NEW'}
+                                                title='Delete'
+                                                color='primary'
+                                                onClick={() => onFileDelete(file)}
+                                            >
+                                                <IconFileStack />
+                                            </IconButton>
                                             <IconButton
                                                 disabled={file.status === 'NEW'}
                                                 title='Delete'
