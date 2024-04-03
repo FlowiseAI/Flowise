@@ -8,17 +8,15 @@ export class AddChatHistory1694658767766 implements MigrationInterface {
 
         const chatIdColumnExists = await queryRunner.hasColumn('chat_message', 'chatId')
         if (!chatIdColumnExists) await queryRunner.query(`ALTER TABLE \`chat_message\` ADD COLUMN \`chatId\` VARCHAR(255);`)
-        const results: { id: string; chatflowid: string }[] = await queryRunner.query(`WITH RankedMessages AS (
-                SELECT
-                    \`chatflowid\`,
-                    \`id\`,
-                    \`createdDate\`,
-                    ROW_NUMBER() OVER (PARTITION BY \`chatflowid\` ORDER BY \`createdDate\`) AS row_num
-                FROM \`chat_message\`
-            )
+        const results: { id: string; chatflowid: string }[] = await queryRunner.query(`
             SELECT \`chatflowid\`, \`id\`
-            FROM RankedMessages
-            WHERE row_num = 1;`)
+            FROM \`chat_message\`
+            WHERE \`createdDate\` IN (
+                SELECT MIN(\`createdDate\`)
+                FROM \`chat_message\`
+                GROUP BY \`chatflowid\`
+            )
+        `);
         for (const chatMessage of results) {
             await queryRunner.query(
                 `UPDATE \`chat_message\` SET \`chatId\` = '${chatMessage.id}' WHERE \`chatflowid\` = '${chatMessage.chatflowid}'`
