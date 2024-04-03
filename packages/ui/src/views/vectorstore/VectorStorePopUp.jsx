@@ -1,33 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { Button } from '@mui/material'
 import { IconDatabaseImport, IconX } from '@tabler/icons'
 
 // project import
 import { StyledFab } from '@/ui-component/button/StyledFab'
 import VectorStoreDialog from './VectorStoreDialog'
-
-// api
-import vectorstoreApi from '@/api/vectorstore'
-
-// Hooks
-import useNotifier from '@/utils/useNotifier'
-
-// Const
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import UpsertResultDialog from './UpsertResultDialog'
 
 export const VectorStorePopUp = ({ chatflowid }) => {
-    const dispatch = useDispatch()
-
-    useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
     const [open, setOpen] = useState(false)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [showUpsertResultDialog, setShowUpsertResultDialog] = useState(false)
+    const [upsertResultDialogProps, setUpsertResultDialogProps] = useState({})
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -41,39 +27,6 @@ export const VectorStorePopUp = ({ chatflowid }) => {
         }
         setExpandDialogProps(props)
         setShowExpandDialog(true)
-    }
-
-    const onUpsert = async () => {
-        try {
-            await vectorstoreApi.upsertVectorStore(chatflowid, {})
-            enqueueSnackbar({
-                message: 'Succesfully upserted vector store',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            enqueueSnackbar({
-                message: errorData,
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        }
     }
 
     useEffect(() => {
@@ -101,12 +54,24 @@ export const VectorStorePopUp = ({ chatflowid }) => {
             <VectorStoreDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}
-                onUpsert={onUpsert}
                 onCancel={() => {
                     setShowExpandDialog(false)
                     setOpen((prevopen) => !prevopen)
                 }}
+                onIndexResult={(indexRes) => {
+                    setShowExpandDialog(false)
+                    setShowUpsertResultDialog(true)
+                    setUpsertResultDialogProps({ ...indexRes })
+                }}
             ></VectorStoreDialog>
+            <UpsertResultDialog
+                show={showUpsertResultDialog}
+                dialogProps={upsertResultDialogProps}
+                onCancel={() => {
+                    setShowUpsertResultDialog(false)
+                    setOpen(false)
+                }}
+            ></UpsertResultDialog>
         </>
     )
 }

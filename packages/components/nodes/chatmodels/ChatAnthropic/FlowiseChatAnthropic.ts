@@ -11,8 +11,8 @@ export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChat
     constructor(id: string, fields: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string }) {
         super(fields)
         this.id = id
-        this.configuredModel = fields?.modelName || 'claude-3-haiku-20240307'
-        this.configuredMaxToken = fields?.maxTokens ?? 256
+        this.configuredModel = fields?.modelName || ''
+        this.configuredMaxToken = fields?.maxTokens ?? 2048
     }
 
     revertToOriginalModel(): void {
@@ -27,7 +27,7 @@ export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChat
     setVisionModel(): void {
         if (!this.modelName.startsWith('claude-3')) {
             super.modelName = 'claude-3-haiku-20240307'
-            super.maxTokens = 1024
+            super.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 2048
         }
     }
 }

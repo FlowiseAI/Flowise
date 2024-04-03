@@ -32,16 +32,16 @@ export class ChatMessage implements IChatMessage {
     @Column()
     chatType: string
 
-    @Column({ type: 'uuid' })
+    @Column({ type: 'varchar' })
     chatId: string
 
     @Column({ nullable: true })
     memoryType?: string
 
-    @Column({ type: 'uuid', nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     sessionId?: string
 
-    @Column({type:'timestamp'})
+    @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
 }
