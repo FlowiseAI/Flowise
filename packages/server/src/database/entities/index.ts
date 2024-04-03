@@ -7,6 +7,7 @@ import { Assistant } from './Assistant'
 import { Variable } from './Variable'
 import { DocumentStore } from './DocumentStore'
 import { DocumentStoreFileChunk } from './DocumentStoreFileChunk'
+import { UpsertHistory } from './UpsertHistory'
 
 export const entities = {
     ChatFlow,
@@ -17,5 +18,6 @@ export const entities = {
     Assistant,
     Variable,
     DocumentStore,
-    DocumentStoreFileChunk
+    DocumentStoreFileChunk,
+    UpsertHistory
 }

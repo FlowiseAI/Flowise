@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { AstraDBVectorStore, AstraLibArgs } from '@langchain/community/vectorstores/astradb'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
@@ -23,13 +23,12 @@ class Astra_VectorStores implements INode {
     constructor() {
         this.label = 'Astra'
         this.name = 'Astra'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Astra'
         this.icon = 'astra.svg'
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity or mmr search upon query using DataStax Astra DB, a serverless vector database that’s perfect for managing mission-critical AI workloads`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -48,6 +47,16 @@ class Astra_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Namespace',
+                name: 'astraNamespace',
+                type: 'string'
+            },
+            {
+                label: 'Collection',
+                name: 'astraCollection',
+                type: 'string'
             },
             {
                 label: 'Vector Dimension',
@@ -92,10 +101,12 @@ class Astra_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const vectorDimension = nodeData.inputs?.vectorDimension as number
+            const astraNamespace = nodeData.inputs?.astraNamespace as string
+            const astraCollection = nodeData.inputs?.astraCollection as string
             const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
@@ -111,7 +122,8 @@ class Astra_VectorStores implements INode {
 
             const astraConfig: AstraLibArgs = {
                 ...clientConfig,
-                collection: credentialData.collectionName ?? 'flowise_test',
+                namespace: astraNamespace ?? 'default_keyspace',
+                collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
                 collectionOptions: {
                     vector: {
                         dimension: vectorDimension ?? 1536,
@@ -130,6 +142,7 @@ class Astra_VectorStores implements INode {
 
             try {
                 await AstraDBVectorStore.fromDocuments(finalDocs, embeddings, astraConfig)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }
@@ -141,7 +154,8 @@ class Astra_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const vectorDimension = nodeData.inputs?.vectorDimension as number
         const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
-
+        const astraNamespace = nodeData.inputs?.astraNamespace as string
+        const astraCollection = nodeData.inputs?.astraCollection as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
         const expectedSimilarityMetric = ['cosine', 'euclidean', 'dot_product']
@@ -156,7 +170,8 @@ class Astra_VectorStores implements INode {
 
         const astraConfig: AstraLibArgs = {
             ...clientConfig,
-            collection: credentialData.collectionName ?? 'flowise_test',
+            namespace: astraNamespace ?? 'default_keyspace',
+            collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
             collectionOptions: {
                 vector: {
                     dimension: vectorDimension ?? 1536,

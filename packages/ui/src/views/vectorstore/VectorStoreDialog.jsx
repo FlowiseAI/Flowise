@@ -78,7 +78,7 @@ function a11yProps(index) {
     }
 }
 
-const VectorStoreDialog = ({ show, dialogProps, onCancel }) => {
+const VectorStoreDialog = ({ show, dialogProps, onCancel, onIndexResult }) => {
     const portalElement = document.getElementById('portal')
     const { reactFlowInstance } = useContext(flowContext)
     const dispatch = useDispatch()
@@ -276,7 +276,7 @@ query(formData).then((response) => {
     const onUpsertClicked = async (vectorStoreNode) => {
         setLoading(true)
         try {
-            await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
+            const res = await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
             enqueueSnackbar({
                 message: 'Succesfully upserted vector store. You can start chatting now!',
                 options: {
@@ -290,10 +290,10 @@ query(formData).then((response) => {
                 }
             })
             setLoading(false)
+            if (res && res.data && typeof res.data === 'object') onIndexResult(res.data)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: errorData,
+                message: error.response.data.message,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -550,7 +550,8 @@ query(formData).then((response) => {
 VectorStoreDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    onIndexResult: PropTypes.func
 }
 
 export default VectorStoreDialog

@@ -406,6 +406,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
             if (response.data) {
                 const data = response.data
+                if (data.executionError) {
+                    handleError(data.msg)
+                    return
+                }
 
                 setMessages((prevMessages) => {
                     let allMessages = [...cloneDeep(prevMessages)]
@@ -456,8 +460,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 }, 100)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            handleError(errorData)
+            handleError(error.response.data.message)
             return
         }
     }
