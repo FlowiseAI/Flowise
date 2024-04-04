@@ -19,7 +19,7 @@ import assistantsApi from '@/api/assistants'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileImport } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| CHATFLOWS ||============================== //
@@ -94,7 +94,7 @@ const Assistants = () => {
                         <Button
                             variant='outlined'
                             onClick={loadExisting}
-                            startIcon={<IconFileImport />}
+                            startIcon={<IconFileUpload />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
                             Load

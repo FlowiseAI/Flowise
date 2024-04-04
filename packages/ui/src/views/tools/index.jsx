@@ -18,7 +18,7 @@ import toolsApi from '@/api/tools'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileImport } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| CHATFLOWS ||============================== //
@@ -111,7 +111,7 @@ const Tools = () => {
                             <Button
                                 variant='outlined'
                                 onClick={() => inputRef.current.click()}
-                                startIcon={<IconFileImport />}
+                                startIcon={<IconFileUpload />}
                                 sx={{ borderRadius: 2, height: 40 }}
                             >
                                 Load

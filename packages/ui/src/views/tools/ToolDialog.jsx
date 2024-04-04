@@ -16,7 +16,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
-import { IconX, IconFileExport, IconPlus } from '@tabler/icons'
+import { IconX, IconFileDownload, IconPlus } from '@tabler/icons'
 
 // API
 import toolsApi from '@/api/tools'
@@ -387,7 +387,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     {dialogProps.title}
                     {dialogProps.type === 'EDIT' && (
-                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileExport />}>
+                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
                             Export
                         </Button>
                     )}
