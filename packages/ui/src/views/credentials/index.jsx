@@ -391,6 +391,7 @@ const Credentials = () => {
                 dialogProps={specificCredentialDialogProps}
                 onCancel={() => setShowSpecificCredentialDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></AddEditCredentialDialog>
             <ConfirmDialog />
         </>

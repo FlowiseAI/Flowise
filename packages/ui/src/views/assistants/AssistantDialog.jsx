@@ -68,7 +68,7 @@ const assistantAvailableModels = [
     }
 ]
 
-const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
     useNotifier()
     const dispatch = useDispatch()
@@ -121,6 +121,18 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             syncData(getAssistantObjApi.data)
         }
     }, [getAssistantObjApi.data])
+
+    useEffect(() => {
+        if (getAssistantObjApi.error) {
+            syncData(getAssistantObjApi.error)
+        }
+    }, [getAssistantObjApi.error])
+
+    useEffect(() => {
+        if (getSpecificAssistantApi.error) {
+            syncData(getSpecificAssistantApi.error)
+        }
+    }, [getSpecificAssistantApi.error])
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -235,6 +247,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to add new Assistant: ${error.response.data.message}`,
                 options: {
@@ -288,6 +301,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to save Assistant: ${error.response.data.message}`,
                 options: {
@@ -327,6 +341,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to sync Assistant: ${error.response.data.message}`,
                 options: {
@@ -373,6 +388,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to delete Assistant: ${error.response.data.message}`,
                 options: {

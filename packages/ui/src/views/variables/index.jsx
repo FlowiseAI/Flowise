@@ -372,6 +372,7 @@ const Variables = () => {
                 dialogProps={variableDialogProps}
                 onCancel={() => setShowVariableDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></AddEditVariableDialog>
             <HowToUseVariablesDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)}></HowToUseVariablesDialog>
             <ConfirmDialog />

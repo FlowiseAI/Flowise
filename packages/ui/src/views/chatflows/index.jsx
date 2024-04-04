@@ -192,6 +192,7 @@ const Chatflows = () => {
                             isLoading={isLoading}
                             filterFunction={filterFlows}
                             updateFlowsApi={getAllChatflowsApi}
+                            setError={setError}
                         />
                     )}
                     {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (

@@ -462,6 +462,7 @@ const APIKey = () => {
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></APIKeyDialog>
             <ConfirmDialog />
         </>

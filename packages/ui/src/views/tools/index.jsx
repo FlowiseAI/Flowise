@@ -181,6 +181,7 @@ const Tools = () => {
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></ToolDialog>
         </>
     )

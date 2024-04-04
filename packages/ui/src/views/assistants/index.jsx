@@ -161,12 +161,14 @@ const Assistants = () => {
                 dialogProps={loadDialogProps}
                 onCancel={() => setShowLoadDialog(false)}
                 onAssistantSelected={onAssistantSelected}
+                setError={setError}
             ></LoadAssistantDialog>
             <AssistantDialog
                 show={showDialog}
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></AssistantDialog>
         </>
     )

@@ -41,7 +41,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi }) => {
+export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi, setError }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -211,7 +211,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                 justifyContent='center'
                                                 alignItems='center'
                                             >
-                                                <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
+                                                <FlowListMenu chatflow={row} setError={setError} updateFlowsApi={updateFlowsApi} />
                                             </Stack>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -230,5 +230,6 @@ FlowListTable.propTypes = {
     images: PropTypes.object,
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
-    updateFlowsApi: PropTypes.object
+    updateFlowsApi: PropTypes.object,
+    setError: PropTypes.func
 }

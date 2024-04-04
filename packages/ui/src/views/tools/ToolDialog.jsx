@@ -55,7 +55,7 @@ try {
     return '';
 }`
 
-const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
+const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)
@@ -159,6 +159,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             else setToolFunc('')
         }
     }, [getSpecificToolApi.data])
+
+    useEffect(() => {
+        if (getSpecificToolApi.error) {
+            setError(getSpecificToolApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificToolApi.error])
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -532,7 +539,8 @@ ToolDialog.propTypes = {
     dialogProps: PropTypes.object,
     onUseTemplate: PropTypes.func,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default ToolDialog

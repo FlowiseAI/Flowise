@@ -446,6 +446,7 @@ const Marketplace = () => {
                                 goToTool={goToTool}
                                 goToCanvas={goToCanvas}
                                 isLoading={isLoading}
+                                setError={setError}
                             />
                         )}
 
