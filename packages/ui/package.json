@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -22,11 +22,11 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "^0.27.2",
+        "axios": "1.6.2",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",
-        "flowise-embed": "*",
-        "flowise-embed-react": "*",
+        "flowise-embed": "latest",
+        "flowise-embed-react": "latest",
         "flowise-react-json-view": "*",
         "formik": "^2.2.6",
         "framer-motion": "^4.1.13",

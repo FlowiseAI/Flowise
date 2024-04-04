@@ -72,7 +72,7 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Include Tables',
                 name: 'includesTables',
                 type: 'string',
-                description: 'Tables to include for queries, seperated by comma. Can only use Include Tables or Ignore Tables',
+                description: 'Tables to include for queries, separated by comma. Can only use Include Tables or Ignore Tables',
                 placeholder: 'table1, table2',
                 additionalParams: true,
                 optional: true
@@ -81,7 +81,7 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Ignore Tables',
                 name: 'ignoreTables',
                 type: 'string',
-                description: 'Tables to ignore for queries, seperated by comma. Can only use Ignore Tables or Include Tables',
+                description: 'Tables to ignore for queries, separated by comma. Can only use Ignore Tables or Include Tables',
                 placeholder: 'table1, table2',
                 additionalParams: true,
                 optional: true

@@ -222,7 +222,8 @@ const APIKey = () => {
             title: 'Add New API Key',
             type: 'ADD',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            confirmButtonName: 'Add',
+            customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -234,6 +235,7 @@ const APIKey = () => {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Save',
+            customBtnId: 'btn_confirmEditingApiKey',
             key
         }
         setDialogProps(dialogProp)
@@ -248,7 +250,8 @@ const APIKey = () => {
                     ? `Delete key [${key.keyName}] ? `
                     : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
             confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            cancelButtonName: 'Cancel',
+            customBtnId: 'btn_initiateDeleteApiKey'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -271,9 +274,8 @@ const APIKey = () => {
                     onConfirm()
                 }
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete API key: ${errorData}`,
+                    message: `Failed to delete API key: ${error.response.data.message}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',

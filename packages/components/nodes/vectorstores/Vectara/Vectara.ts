@@ -9,7 +9,7 @@ import {
 } from '@langchain/community/vectorstores/vectara'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class Vectara_VectorStores implements INode {
@@ -144,7 +144,7 @@ class Vectara_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
             const customerId = getCredentialParam('customerID', credentialData, nodeData)
@@ -204,6 +204,7 @@ class Vectara_VectorStores implements INode {
                     const vectorStore = new VectaraStore(vectaraArgs)
                     await vectorStore.addFiles(vectaraFiles)
                 }
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

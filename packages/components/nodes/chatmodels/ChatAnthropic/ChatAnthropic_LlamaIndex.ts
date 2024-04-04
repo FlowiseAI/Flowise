@@ -18,7 +18,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic_LlamaIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
@@ -39,22 +39,22 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 options: [
                     {
                         label: 'claude-3-opus',
-                        name: 'claude-3-opus-20240229',
+                        name: 'claude-3-opus',
                         description: 'Most powerful model for highly complex tasks'
                     },
                     {
                         label: 'claude-3-sonnet',
-                        name: 'claude-3-sonnet-20240229',
+                        name: 'claude-3-sonnet',
                         description: 'Ideal balance of intelligence and speed for enterprise workloads'
                     },
                     {
-                        label: 'claude-2',
-                        name: 'claude-2',
+                        label: 'claude-2.1',
+                        name: 'claude-2.1',
                         description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
                     },
                     {
-                        label: 'claude-instant-1',
-                        name: 'claude-instant-1',
+                        label: 'claude-instant-1.2',
+                        name: 'claude-instant-1.2',
                         description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
                     }
                 ],
@@ -90,7 +90,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as 'claude-2' | 'claude-instant-1' | undefined
+        const modelName = nodeData.inputs?.modelName as 'claude-3-opus' | 'claude-3-sonnet' | 'claude-2.1' | 'claude-instant-1.2'
         const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
 

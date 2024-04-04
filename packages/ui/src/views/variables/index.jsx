@@ -98,6 +98,7 @@ const Variables = () => {
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Add',
+            customBtnId: 'btn_confirmAddingVariable',
             data: {}
         }
         setVariableDialogProps(dialogProp)
@@ -143,9 +144,8 @@ const Variables = () => {
                     onConfirm()
                 }
             } catch (error) {
-                const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete Variable: ${errorData}`,
+                    message: `Failed to delete Variable: ${error.response.data.message}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
