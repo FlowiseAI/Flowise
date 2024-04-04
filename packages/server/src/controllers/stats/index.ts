@@ -26,9 +26,6 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
             }
         }
         const apiResponse = await statsService.getChatflowStats(chatflowid, chatTypeFilter, startDate, endDate, '', true)
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

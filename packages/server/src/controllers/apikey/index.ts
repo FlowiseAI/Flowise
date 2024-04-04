@@ -61,9 +61,6 @@ const verifyApiKey = async (req: Request, res: Response, next: NextFunction) => 
             new ApiError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.verifyApiKey - apiKey not provided!`)
         }
         const apiResponse = await apikeyService.verifyApiKey(req.params.apiKey)
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

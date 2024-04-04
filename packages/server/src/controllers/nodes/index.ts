@@ -43,9 +43,6 @@ const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: Next
             throw new Error(`Error: nodesController.getSingleNodeAsyncOptions - name not provided!`)
         }
         const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, req.body)
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -58,9 +55,6 @@ const executeCustomFunction = async (req: Request, res: Response, next: NextFunc
             throw new Error(`Error: nodesController.executeCustomFunction - body not provided!`)
         }
         const apiResponse = await nodesService.executeCustomFunction(req.body)
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

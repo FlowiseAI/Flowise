@@ -17,9 +17,6 @@ const getAllLinks = async (req: Request, res: Response, next: NextFunction) => {
             req.query.relativeLinksMethod as string,
             req.query.limit as string
         )
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

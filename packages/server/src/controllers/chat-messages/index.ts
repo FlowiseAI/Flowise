@@ -59,9 +59,6 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             messageId,
             feedback
         )
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -90,9 +87,6 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             messageId,
             feedback
         )
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -139,9 +133,6 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         if (sessionId) deleteOptions.sessionId = sessionId
         if (chatType) deleteOptions.chatType = chatType
         const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)
-        if (apiResponse.executionError) {
-            res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
