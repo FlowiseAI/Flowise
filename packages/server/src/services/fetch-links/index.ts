@@ -1,14 +1,12 @@
 import { webCrawl, xmlScrape } from 'flowise-components'
+import { ApiError } from '../../errors/apiError'
+import { StatusCodes } from 'http-status-codes'
 
 const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, queryLimit: string): Promise<any> => {
     try {
         const url = decodeURIComponent(requestUrl)
         if (!relativeLinksMethod) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Please choose a Relative Links Method in Additional Parameters!`
-            }
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Please choose a Relative Links Method in Additional Parameters!`)
         }
         const limit = parseInt(queryLimit)
         if (process.env.DEBUG === 'true') console.info(`Start ${relativeLinksMethod}`)
@@ -20,7 +18,7 @@ const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, quer
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: fetchLinksService.getAllLinks - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: fetchLinksService.getAllLinks - ${error}`)
     }
 }
 
