@@ -1,6 +1,8 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Tool } from '../../database/entities/Tool'
 import { getAppVersion } from '../../utils'
+import { ApiError } from '../../errors/apiError'
+import { StatusCodes } from 'http-status-codes'
 
 const creatTool = async (requestBody: any): Promise<any> => {
     try {
@@ -16,7 +18,7 @@ const creatTool = async (requestBody: any): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.creatTool - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.creatTool - ${error}`)
     }
 }
 
@@ -28,7 +30,7 @@ const deleteTool = async (toolId: string): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.deleteTool - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.deleteTool - ${error}`)
     }
 }
 
@@ -38,7 +40,7 @@ const getAllTools = async (): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).find()
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.getAllTools - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${error}`)
     }
 }
 
@@ -49,15 +51,11 @@ const getToolById = async (toolId: string): Promise<any> => {
             id: toolId
         })
         if (!dbResponse) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Tool ${toolId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.getToolById - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
     }
 }
 
@@ -68,11 +66,7 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
             id: toolId
         })
         if (!tool) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Tool ${toolId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
         }
         const updateTool = new Tool()
         Object.assign(updateTool, toolBody)
@@ -80,7 +74,7 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: toolsService.getToolById - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
     }
 }
 
