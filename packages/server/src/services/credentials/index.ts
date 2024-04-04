@@ -3,6 +3,8 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
 import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
 import { ICredentialReturnResponse } from '../../Interface'
+import { ApiError } from '../../errors/apiError'
+import { StatusCodes } from 'http-status-codes'
 
 const createCredential = async (requestBody: any) => {
     try {
@@ -12,7 +14,7 @@ const createCredential = async (requestBody: any) => {
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: credentialsService.createCredential - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: credentialsService.createCredential - ${error}`)
     }
 }
 
@@ -22,15 +24,11 @@ const deleteCredentials = async (credentialId: string): Promise<any> => {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
         if (!dbResponse) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Credential ${credentialId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: credentialsService.deleteCredential - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: credentialsService.deleteCredential - ${error}`)
     }
 }
 
@@ -61,7 +59,7 @@ const getAllCredentials = async (paramCredentialName: any) => {
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: credentialsService.getAllCredentials - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: credentialsService.getAllCredentials - ${error}`)
     }
 }
 
@@ -72,11 +70,7 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
             id: credentialId
         })
         if (!credential) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Credential ${credentialId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(
@@ -91,7 +85,7 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
         const dbResponse = omit(returnCredential, ['encryptedData'])
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: credentialsService.createCredential - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: credentialsService.createCredential - ${error}`)
     }
 }
 
@@ -102,18 +96,14 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
             id: credentialId
         })
         if (!credential) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Credential ${credentialId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
         const updateCredential = await transformToCredentialEntity(requestBody)
         await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: credentialsService.updateCredential - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: credentialsService.updateCredential - ${error}`)
     }
 }
 
