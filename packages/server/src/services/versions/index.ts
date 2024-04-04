@@ -1,5 +1,7 @@
 import path from 'path'
 import * as fs from 'fs'
+import { ApiError } from '../../errors/apiError'
+import { StatusCodes } from 'http-status-codes'
 
 const getVersion = async () => {
     try {
@@ -20,11 +22,7 @@ const getVersion = async () => {
         }
         const packagejsonPath = getPackageJsonPath()
         if (!packagejsonPath) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: 'Version not found'
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Version not found`)
         }
         try {
             const content = await fs.promises.readFile(packagejsonPath, 'utf8')
@@ -33,14 +31,10 @@ const getVersion = async () => {
                 version: parsedContent.version
             }
         } catch (error) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Version not found: ${error}`
-            }
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Version not found: ${error}`)
         }
     } catch (error) {
-        throw new Error(`Error: versionService.getVersion - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: versionService.getVersion - ${error}`)
     }
 }
 
