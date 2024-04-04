@@ -171,6 +171,24 @@ const uploadFileToDocumentStore = async (storeId: string, uploadFiles: string) =
     }
 }
 
+const previewChunks = async (storeId: string, fileId: string, config: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: storeId
+        })
+        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        const files = JSON.parse(entity.files)
+        const found = files.find((file: any) => file.id === fileId)
+        if (!found) throw new Error(`Document store file ${fileId} not found`)
+        const documentProcessor = new DocumentStoreProcessor()
+        const chunksObj = await documentProcessor.split(config, found)
+        return chunksObj
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.previewChunks - ${error}`)
+    }
+}
+
 const getDocumentStoreById = async (storeId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -231,5 +249,6 @@ export default {
     getDocumentStoreById,
     getDocumentStoreFileChunks,
     updateDocumentStore,
-    uploadFileToDocumentStore
+    uploadFileToDocumentStore,
+    previewChunks
 }

@@ -316,9 +316,9 @@ const DocumentStoreDetails = () => {
                                         <TableCell>
                                             <IconButton
                                                 disabled={file.status === 'NEW'}
-                                                title='Delete'
+                                                title='Chunks'
                                                 color='primary'
-                                                onClick={() => onFileDelete(file)}
+                                                onClick={() => openChunks(file.id)}
                                             >
                                                 <IconFileStack />
                                             </IconButton>

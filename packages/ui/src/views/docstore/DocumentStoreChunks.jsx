@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
+import { Box, Divider, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // API
 import documentsApi from '@/api/documents'
@@ -23,6 +24,7 @@ import { IconArrowBack } from '@tabler/icons'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { InputSlider } from '@/ui-component/slider/InputSlider'
+import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // ==============================|| DOCUMENTS ||============================== //
 const ContentTypes = [
@@ -37,6 +39,16 @@ const ContentTypes = [
     {
         label: 'Markdown',
         name: 'markdown'
+    }
+]
+const PdfUsage = [
+    {
+        label: 'One document per page',
+        name: 'perPage'
+    },
+    {
+        label: 'One document per file',
+        name: 'perFile'
     }
 ]
 
@@ -148,7 +160,8 @@ const DocumentStoreChunks = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
 
-    const getChunks = useApi(documentsApi.getFileChunks)
+    const getChunksApi = useApi(documentsApi.getFileChunks)
+    const previewApi = useApi(documentsApi.previewChunks)
 
     const URLpath = document.location.pathname.toString().split('/')
     const fileId = URLpath[URLpath.length - 1] === 'documentStores' ? '' : URLpath[URLpath.length - 1]
@@ -156,30 +169,63 @@ const DocumentStoreChunks = () => {
 
     const [documentChunks, setDocumentChunks] = useState([])
     const [totalChunks, setTotalChunks] = useState(0)
+    const [currentPreviewCount, setCurrentPreviewCount] = useState(0)
+    const [previewChunkCount, setPreviewChunkCount] = useState(20)
     const [contentType, setContentType] = useState('text')
     const [textSplitter, setTextSplitter] = useState('recursive-splitter')
     const [codeLanguage, setCodeLanguage] = useState('')
     const [customSeparator, setCustomSeparator] = useState('')
-    const [chunkSize, setChunkSize] = useState(1000)
+    const [chunkSize, setChunkSize] = useState(1500)
     const [chunkOverlap, setChunkOverlap] = useState(50)
+    const [pdfUsage, setPdfUsage] = useState()
+    const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        getChunks.request(storeId, fileId)
+        getChunksApi.request(storeId, fileId)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (getChunks.data) {
-            setTotalChunks(getChunks.data.count)
-            setDocumentChunks(getChunks.data.chunks)
+        if (getChunksApi.data) {
+            setTotalChunks(getChunksApi.data.count)
+            setDocumentChunks(getChunksApi.data.chunks)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getChunks.data])
+    }, [getChunksApi.data])
 
-    const openDS = (id) => {
+    const openDS = (storeId) => {
         navigate('/documentStores/' + storeId)
     }
+
+    const showPreview = () => {
+        setLoading(true)
+        setDocumentChunks([])
+        const config = {
+            splitter: textSplitter,
+            chunkSize: chunkSize,
+            chunkOverlap: chunkOverlap,
+            separator: customSeparator,
+            previewChunkCount: previewChunkCount
+        }
+        if (getChunksApi.data?.file?.name?.toLowerCase().endsWith('pdf')) {
+            config.pdfUsage = pdfUsage
+            config.pdfLegacyBuild = pdfLegacyBuild
+        }
+        previewApi.request(storeId, fileId, config)
+    }
+
+    useEffect(() => {
+        if (previewApi.data) {
+            setTotalChunks(previewApi.data.totalChunks)
+            setDocumentChunks(previewApi.data.chunks)
+            setCurrentPreviewCount(previewApi.data.previewChunkCount)
+            setLoading(false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [previewApi.data])
 
     return (
         <>
@@ -187,7 +233,7 @@ const DocumentStoreChunks = () => {
                 <Stack flexDirection='row'>
                     <Grid container direction='row'>
                         <div>
-                            <h1>{getChunks.data?.file?.name}</h1>
+                            <h1>{getChunksApi.data?.file?.name}</h1>
                             <h3>Chunking Playground & Settings</h3>
                         </div>
                         <Box sx={{ flexGrow: 1 }} />
@@ -198,14 +244,18 @@ const DocumentStoreChunks = () => {
                         </Grid>
                     </Grid>
                 </Stack>
-                {/*<Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>*/}
-                {/*    {getChunks.data?.file?.totalChars?.toLocaleString()} Chars, {totalChunks} Chunks.*/}
-                {/*</Typography>*/}
-                <Box sx={{ p: 1 }}>
-                    <Grid container>
-                        <Grid item xs={6} md={6} lg={6} sm={6}>
-                            <div style={{ display: 'flex', flexDirection: 'column', paddingRight: 15 }}>
-                                <Box sx={{ p: 2 }}>
+                {loading && <BackdropLoader open={loading} />}
+                <Box>
+                    <Grid container spacing='2'>
+                        <Grid item xs={4} md={6} lg={6} sm={4}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    paddingRight: 15
+                                }}
+                            >
+                                <Box sx={{ p: 1 }}>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
                                             Content Type<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -221,7 +271,7 @@ const DocumentStoreChunks = () => {
                                     />
                                 </Box>
                                 {contentType === 'text' && (
-                                    <Box sx={{ p: 2 }}>
+                                    <Box sx={{ p: 1 }}>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                                             <Typography>
                                                 Splitter<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -238,7 +288,7 @@ const DocumentStoreChunks = () => {
                                     </Box>
                                 )}
                                 {textSplitter === 'markdown' && (
-                                    <Box sx={{ p: 2 }}>
+                                    <Box sx={{ p: 1 }}>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                                             <Typography>
                                                 Splitter<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -255,15 +305,14 @@ const DocumentStoreChunks = () => {
                                     </Box>
                                 )}
                                 {textSplitter === 'recursive-splitter' && (
-                                    <Box sx={{ p: 2 }}>
+                                    <Box sx={{ p: 1 }}>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                                             <Typography>Custom Separators</Typography>
                                             <div style={{ flexGrow: 1 }}></div>
                                         </div>
                                         <OutlinedInput
                                             size='small'
-                                            multiline={true}
-                                            rows={2}
+                                            multiline={false}
                                             sx={{ mt: 1 }}
                                             type='text'
                                             fullWidth
@@ -274,7 +323,7 @@ const DocumentStoreChunks = () => {
                                     </Box>
                                 )}
                                 {contentType === 'code' && (
-                                    <Box sx={{ p: 2 }}>
+                                    <Box sx={{ p: 1 }}>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                                             <Typography>
                                                 Language<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -291,29 +340,62 @@ const DocumentStoreChunks = () => {
                                     </Box>
                                 )}
 
-                                <Box sx={{ p: 2 }}>
+                                <Box sx={{ p: 1 }}>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
-                                            Chunk Size<span style={{ color: 'red' }}>&nbsp;*</span>
+                                            Maximum Chunk Size<span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
                                         <div style={{ flexGrow: 1 }}></div>
                                     </div>
-                                    <InputSlider initialValue={100} />
-                                    {/*<OutlinedInput*/}
-                                    {/*    size='small'*/}
-                                    {/*    multiline={false}*/}
-                                    {/*    sx={{ mt: 1 }}*/}
-                                    {/*    type='number'*/}
-                                    {/*    fullWidth*/}
-                                    {/*    key='chunkSize'*/}
-                                    {/*    onChange={(e) => setChunkSize(e.target.value)}*/}
-                                    {/*    value={chunkSize ?? 1000}*/}
-                                    {/*/>*/}
+                                    <InputSlider value={chunkSize} onChange={setChunkSize} />
                                 </Box>
-                                <Box sx={{ p: 2 }}>
+                                <Box sx={{ p: 1 }}>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
                                             Chunk Overlap<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        </Typography>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                    </div>
+                                    <InputSlider value={chunkOverlap} onChange={setChunkOverlap} />
+                                    {chunkOverlap >= chunkSize && (
+                                        <Typography variant='text.secondary' style={{ color: 'red' }}>
+                                            Overlap should be less than chunk size
+                                        </Typography>
+                                    )}
+                                </Box>
+                                {getChunksApi.data?.file?.name?.toLowerCase().endsWith('pdf') && (
+                                    <>
+                                        <Box>
+                                            <Divider textAlign='center'>PDF Settings</Divider>
+                                        </Box>
+                                        <Box sx={{ p: 1 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                <Typography>
+                                                    Usage<span style={{ color: 'red' }}>&nbsp;*</span>
+                                                </Typography>
+                                                <div style={{ flexGrow: 1 }}></div>
+                                            </div>
+                                            <Dropdown
+                                                key={textSplitter}
+                                                name='pdfUsage'
+                                                options={PdfUsage}
+                                                onSelect={(newValue) => setPdfUsage(newValue)}
+                                                value={pdfUsage ?? 'choose an option'}
+                                            />
+                                        </Box>
+                                        <Box sx={{ p: 1 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                <Typography>Use Legacy Build</Typography>
+                                                <div style={{ flexGrow: 1 }}></div>
+                                            </div>
+                                            <SwitchInput label='' value={pdfLegacyBuild} onChange={setPdfLegacyBuild} />
+                                        </Box>
+                                    </>
+                                )}
+                                <Box sx={{ p: 1 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Typography>
+                                            Show Chunks in Preview<span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
                                         <div style={{ flexGrow: 1 }}></div>
                                     </div>
@@ -323,45 +405,49 @@ const DocumentStoreChunks = () => {
                                         sx={{ mt: 1 }}
                                         type='number'
                                         fullWidth
-                                        key='chunkOverlap'
-                                        onChange={(e) => setChunkOverlap(e.target.value)}
-                                        value={chunkOverlap ?? 50}
+                                        key='previewChunkCount'
+                                        onChange={(e) => setPreviewChunkCount(e.target.value)}
+                                        value={previewChunkCount ?? 25}
                                     />
                                 </Box>
-                                <Box sx={{ p: 2, textAlign: 'center' }}>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} >
-                                        Preview
-                                    </StyledButton>
-                                    {'  '}
+                                <Box sx={{ p: 1, textAlign: 'center' }}>
                                     <StyledButton variant='contained' sx={{ color: 'white' }}>
                                         Confirm & Process
+                                    </StyledButton>{' '}
+                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={showPreview}>
+                                        Preview
                                     </StyledButton>
                                 </Box>
                             </div>
                         </Grid>
-                        <Grid item xs={6} md={6} lg={6} sm={6}>
-                            <Grid
-                                container
-                                spacing={2}
-                                style={{ borderLeftStyle: 'dashed', borderLeftWidth: 1, borderLeftColor: '#000000' }}
-                            >
-                                {documentChunks?.map((row, index) => (
-                                    <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
-                                        <CardWrapper>
-                                            <Card style={{ padding: 0 }}>
-                                                <CardContent style={{ padding: 0 }}>
-                                                    <Typography color='textSecondary' gutterBottom>
-                                                        {`#${index + 1}. Characters: ${row.pageContent.length}`}
-                                                    </Typography>
-                                                    <Typography sx={{ wordWrap: 'break-word' }} variant='body2' style={{ fontSize: 10 }}>
-                                                        {row.pageContent}
-                                                    </Typography>
-                                                </CardContent>
-                                            </Card>
-                                        </CardWrapper>
-                                    </Grid>
-                                ))}
-                            </Grid>
+                        <Grid item xs={8} md={6} lg={6} sm={8}>
+                            <Typography style={{ marginBottom: 5, wordWrap: 'break-word', textAlign: 'left' }} variant='h4'>
+                                Preview: Showing {currentPreviewCount} of {totalChunks} Chunks.
+                            </Typography>
+                            <div style={{ height: '800px', overflow: 'scroll' }}>
+                                <Grid container spacing={2}>
+                                    {documentChunks?.map((row, index) => (
+                                        <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
+                                            <CardWrapper>
+                                                <Card style={{ padding: 0 }}>
+                                                    <CardContent style={{ padding: 0 }}>
+                                                        <Typography color='textSecondary' gutterBottom>
+                                                            {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                        </Typography>
+                                                        <Typography
+                                                            sx={{ wordWrap: 'break-word' }}
+                                                            variant='body2'
+                                                            style={{ fontSize: 10 }}
+                                                        >
+                                                            {row.pageContent}
+                                                        </Typography>
+                                                    </CardContent>
+                                                </Card>
+                                            </CardWrapper>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </div>
                         </Grid>
                     </Grid>
                 </Box>

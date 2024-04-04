@@ -8,6 +8,8 @@ router.get('/', documentStoreController.getAllDocumentStores)
 router.delete('/:id', documentStoreController.deleteFileFromDocumentStore)
 // upload file to document store
 router.post('/:id/files', documentStoreController.uploadFileToDocumentStore)
+// chunking preview
+router.post('/preview/:storeId/:fileId', documentStoreController.previewFileChunks)
 // Get specific store
 router.get('/:id', documentStoreController.getDocumentStoreById)
 // Get specific file from a store

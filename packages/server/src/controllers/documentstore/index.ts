@@ -91,6 +91,25 @@ const getDocumentStoreFileChunks = async (req: Request, res: Response, next: Nex
     }
 }
 
+const previewFileChunks = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
+            throw new Error('Error: documentStoreController.previewFileChunks - storeId not provided!')
+        }
+        if (typeof req.params.fileId === 'undefined' || req.params.fileId === '') {
+            throw new Error('Error: documentStoreController.previewFileChunks - fileId not provided!')
+        }
+        const body = req.body
+        if (typeof body === 'undefined') {
+            throw new Error('Error: documentStoreController.previewFileChunks - body not provided!')
+        }
+        const apiResponse = await documentStoreService.previewChunks(req.params.storeId, req.params.fileId, body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const updateDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
@@ -119,5 +138,6 @@ export default {
     getDocumentStoreById,
     getDocumentStoreFileChunks,
     uploadFileToDocumentStore,
-    updateDocumentStore
+    updateDocumentStore,
+    previewFileChunks
 }

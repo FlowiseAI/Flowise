@@ -1,8 +1,8 @@
-import * as React from 'react'
 import { styled } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
 import { Grid, Input } from '@mui/material'
+import PropTypes from 'prop-types'
 
 const BoxShadow = '0 3px 1px rgba(0,0,0,0.1),0 4px 8px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.02)'
 
@@ -13,7 +13,7 @@ const CustomInputSlider = styled(Slider)(({ theme }) => ({
     '& .MuiSlider-thumb': {
         height: 20,
         width: 20,
-        backgroundColor: '#fff',
+        backgroundColor: '#333',
         boxShadow: '0 0 2px 0px rgba(0, 0, 0, 0.1)',
         '&:focus, &:hover, &.Mui-active': {
             boxShadow: '0px 0px 3px 1px rgba(0, 0, 0, 0.1)',
@@ -37,7 +37,7 @@ const CustomInputSlider = styled(Slider)(({ theme }) => ({
         },
         '& *': {
             background: 'transparent',
-            color: theme.palette.mode === 'dark' ? '#fff' : '#000'
+            color: theme.palette.mode === 'dark' ? '#000' : '#000'
         }
     },
     '& .MuiSlider-track': {
@@ -51,22 +51,16 @@ const CustomInputSlider = styled(Slider)(({ theme }) => ({
     }
 }))
 
-export const InputSlider = (initialValue) => {
-    const [value, setValue] = React.useState(initialValue)
-
-    const handleSliderChange = (event, newValue) => {
-        setValue(newValue)
-    }
+export const InputSlider = ({ value, onChange }) => {
+    const handleSliderChange = (event, newValue) => onChange(newValue)
 
     const handleInputChange = (event) => {
-        setValue(event.target.value === '' ? 0 : Number(event.target.value))
+        onChange(event.target.value === '' ? 0 : Number(event.target.value))
     }
 
     const handleBlur = () => {
         if (value < 0) {
-            setValue(0)
-        } else if (value > 100) {
-            setValue(100)
+            onChange(0)
         }
     }
 
@@ -103,4 +97,9 @@ export const InputSlider = (initialValue) => {
             </Grid>
         </Box>
     )
+}
+
+InputSlider.propTypes = {
+    value: PropTypes.number,
+    onChange: PropTypes.func
 }
