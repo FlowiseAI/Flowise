@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, Button, ButtonGroup } from '@mui/material'
+import { Box, Stack, Button, ButtonGroup, Skeleton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -26,6 +26,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 const Tools = () => {
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
+    const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
 
@@ -97,6 +98,10 @@ const Tools = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllToolsApi.loading)
+    }, [getAllToolsApi.loading])
+
     return (
         <>
             <MainCard>
@@ -131,12 +136,19 @@ const Tools = () => {
                             </StyledButton>
                         </ButtonGroup>
                     </ViewHeader>
-                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                        {!getAllToolsApi.loading &&
-                            getAllToolsApi.data &&
-                            getAllToolsApi.data.map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
-                    </Box>
-                    {!getAllToolsApi.loading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                    {isLoading ? (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                        </Box>
+                    ) : (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            {getAllToolsApi.data &&
+                                getAllToolsApi.data.map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
+                        </Box>
+                    )}
+                    {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />

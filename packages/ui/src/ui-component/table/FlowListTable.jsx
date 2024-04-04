@@ -6,6 +6,7 @@ import {
     Box,
     Chip,
     Paper,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -40,7 +41,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) => {
+export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -73,92 +74,150 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.filter(filterFunction).map((row, index) => (
-                            <StyledTableRow key={index}>
-                                <StyledTableCell key='0'>
-                                    <Tooltip title={row.templateName || row.name}>
-                                        <Typography
-                                            sx={{
-                                                display: '-webkit-box',
-                                                fontSize: 14,
-                                                fontWeight: 500,
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                textOverflow: 'ellipsis',
-                                                overflow: 'hidden'
-                                            }}
-                                        >
-                                            <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
-                                                {row.templateName || row.name}
-                                            </Link>
-                                        </Typography>
-                                    </Tooltip>
-                                </StyledTableCell>
-                                <StyledTableCell key='1'>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            flexWrap: 'wrap',
-                                            marginTop: 5
-                                        }}
-                                    >
-                                        &nbsp;
-                                        {row.category &&
-                                            row.category
-                                                .split(';')
-                                                .map((tag, index) => (
-                                                    <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
-                                                ))}
-                                    </div>
-                                </StyledTableCell>
-                                <StyledTableCell key='2'>
-                                    {images[row.id] && (
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'start',
-                                                gap: 1
-                                            }}
-                                        >
-                                            {images[row.id].slice(0, images[row.id].length > 5 ? 5 : images[row.id].length).map((img) => (
-                                                <Box
-                                                    key={img}
+                        {isLoading ? (
+                            <>
+                                <StyledTableRow>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                </StyledTableRow>
+                                <StyledTableRow>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                </StyledTableRow>
+                            </>
+                        ) : (
+                            <>
+                                {data?.filter(filterFunction).map((row, index) => (
+                                    <StyledTableRow key={index}>
+                                        <StyledTableCell key='0'>
+                                            <Tooltip title={row.templateName || row.name}>
+                                                <Typography
                                                     sx={{
-                                                        width: 30,
-                                                        height: 30,
-                                                        borderRadius: '50%',
-                                                        backgroundColor: customization.isDarkMode
-                                                            ? theme.palette.common.white
-                                                            : theme.palette.grey[300] + 75
+                                                        display: '-webkit-box',
+                                                        fontSize: 14,
+                                                        fontWeight: 500,
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        textOverflow: 'ellipsis',
+                                                        overflow: 'hidden'
                                                     }}
                                                 >
-                                                    <img
-                                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                                        alt=''
-                                                        src={img}
-                                                    />
-                                                </Box>
-                                            ))}
-                                            {images[row.id].length > 5 && (
-                                                <Typography
-                                                    sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}
-                                                >
-                                                    + {images[row.id].length - 5} More
+                                                    <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                        {row.templateName || row.name}
+                                                    </Link>
                                                 </Typography>
+                                            </Tooltip>
+                                        </StyledTableCell>
+                                        <StyledTableCell key='1'>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    flexWrap: 'wrap',
+                                                    marginTop: 5
+                                                }}
+                                            >
+                                                &nbsp;
+                                                {row.category &&
+                                                    row.category
+                                                        .split(';')
+                                                        .map((tag, index) => (
+                                                            <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
+                                                        ))}
+                                            </div>
+                                        </StyledTableCell>
+                                        <StyledTableCell key='2'>
+                                            {images[row.id] && (
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'start',
+                                                        gap: 1
+                                                    }}
+                                                >
+                                                    {images[row.id]
+                                                        .slice(0, images[row.id].length > 5 ? 5 : images[row.id].length)
+                                                        .map((img) => (
+                                                            <Box
+                                                                key={img}
+                                                                sx={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? theme.palette.common.white
+                                                                        : theme.palette.grey[300] + 75
+                                                                }}
+                                                            >
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 5,
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt=''
+                                                                    src={img}
+                                                                />
+                                                            </Box>
+                                                        ))}
+                                                    {images[row.id].length > 5 && (
+                                                        <Typography
+                                                            sx={{
+                                                                alignItems: 'center',
+                                                                display: 'flex',
+                                                                fontSize: '.9rem',
+                                                                fontWeight: 200
+                                                            }}
+                                                        >
+                                                            + {images[row.id].length - 5} More
+                                                        </Typography>
+                                                    )}
+                                                </Box>
                                             )}
-                                        </Box>
-                                    )}
-                                </StyledTableCell>
-                                <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                                <StyledTableCell key='4'>
-                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
-                                        <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
-                                    </Stack>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        ))}
+                                        </StyledTableCell>
+                                        <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                        <StyledTableCell key='4'>
+                                            <Stack
+                                                direction={{ xs: 'column', sm: 'row' }}
+                                                spacing={1}
+                                                justifyContent='center'
+                                                alignItems='center'
+                                            >
+                                                <FlowListMenu chatflow={row} updateFlowsApi={updateFlowsApi} />
+                                            </Stack>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                ))}
+                            </>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -169,6 +228,7 @@ export const FlowListTable = ({ data, images, filterFunction, updateFlowsApi }) 
 FlowListTable.propTypes = {
     data: PropTypes.array,
     images: PropTypes.object,
+    isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }

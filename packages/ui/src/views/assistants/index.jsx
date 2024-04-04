@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // material-ui
-import { Box, Stack, Button } from '@mui/material'
+import { Box, Stack, Button, Skeleton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -27,6 +27,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 const Assistants = () => {
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
+    const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [showLoadDialog, setShowLoadDialog] = useState(false)
@@ -81,6 +82,10 @@ const Assistants = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllAssistantsApi.loading)
+    }, [getAllAssistantsApi.loading])
+
     return (
         <>
             <MainCard>
@@ -98,22 +103,29 @@ const Assistants = () => {
                             Add
                         </StyledButton>
                     </ViewHeader>
-                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                        {!getAllAssistantsApi.loading &&
-                            getAllAssistantsApi.data &&
-                            getAllAssistantsApi.data.map((data, index) => (
-                                <ItemCard
-                                    data={{
-                                        name: JSON.parse(data.details)?.name,
-                                        description: JSON.parse(data.details)?.instructions,
-                                        iconSrc: data.iconSrc
-                                    }}
-                                    key={index}
-                                    onClick={() => edit(data)}
-                                />
-                            ))}
-                    </Box>
-                    {!getAllAssistantsApi.loading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
+                    {isLoading ? (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                        </Box>
+                    ) : (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            {getAllAssistantsApi.data &&
+                                getAllAssistantsApi.data.map((data, index) => (
+                                    <ItemCard
+                                        data={{
+                                            name: JSON.parse(data.details)?.name,
+                                            description: JSON.parse(data.details)?.instructions,
+                                            iconSrc: data.iconSrc
+                                        }}
+                                        key={index}
+                                        onClick={() => edit(data)}
+                                    />
+                                ))}
+                        </Box>
+                    )}
+                    {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />

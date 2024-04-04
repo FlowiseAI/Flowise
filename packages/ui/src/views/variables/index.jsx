@@ -9,6 +9,7 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Box,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -76,6 +77,7 @@ const Variables = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [isLoading, setLoading] = useState(true)
     const [showVariableDialog, setShowVariableDialog] = useState(false)
     const [variableDialogProps, setVariableDialogProps] = useState({})
     const [variables, setVariables] = useState([])
@@ -172,6 +174,10 @@ const Variables = () => {
     }, [])
 
     useEffect(() => {
+        setLoading(getAllVariables.loading)
+    }, [getAllVariables.loading])
+
+    useEffect(() => {
         if (getAllVariables.data) {
             setVariables(getAllVariables.data)
         }
@@ -194,95 +200,146 @@ const Variables = () => {
                             Add Variable
                         </StyledButton>
                     </ViewHeader>
-                    {variables.length === 0 && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                    src={VariablesEmptySVG}
-                                    alt='VariablesEmptySVG'
-                                />
-                            </Box>
-                            <div>No Variables Yet</div>
-                        </Stack>
-                    )}
-                    {variables.length > 0 && (
-                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                            <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                                <TableHead
-                                    sx={{
-                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                                        height: 56
-                                    }}
-                                >
-                                    <TableRow>
-                                        <StyledTableCell>Name</StyledTableCell>
-                                        <StyledTableCell>Value</StyledTableCell>
-                                        <StyledTableCell>Type</StyledTableCell>
-                                        <StyledTableCell>Last Updated</StyledTableCell>
-                                        <StyledTableCell>Created</StyledTableCell>
-                                        <StyledTableCell> </StyledTableCell>
-                                        <StyledTableCell> </StyledTableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {variables.filter(filterVariables).map((variable, index) => (
-                                        <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <StyledTableCell scope='row'>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center'
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            width: 25,
-                                                            height: 25,
-                                                            marginRight: 10,
-                                                            borderRadius: '50%'
-                                                        }}
-                                                    >
-                                                        <IconVariable
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                borderRadius: '50%',
-                                                                objectFit: 'contain'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    {variable.name}
-                                                </div>
-                                            </StyledTableCell>
-                                            <StyledTableCell>{variable.value}</StyledTableCell>
+                    <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                            <TableHead
+                                sx={{
+                                    backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                                    height: 56
+                                }}
+                            >
+                                <TableRow>
+                                    <StyledTableCell>Name</StyledTableCell>
+                                    <StyledTableCell>Value</StyledTableCell>
+                                    <StyledTableCell>Type</StyledTableCell>
+                                    <StyledTableCell>Last Updated</StyledTableCell>
+                                    <StyledTableCell>Created</StyledTableCell>
+                                    <StyledTableCell> </StyledTableCell>
+                                    <StyledTableCell> </StyledTableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {isLoading ? (
+                                    <>
+                                        <StyledTableRow>
                                             <StyledTableCell>
-                                                <Chip
-                                                    color={variable.type === 'static' ? 'info' : 'secondary'}
-                                                    size='small'
-                                                    label={variable.type}
-                                                />
-                                            </StyledTableCell>
-                                            <StyledTableCell>{moment(variable.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                                            <StyledTableCell>{moment(variable.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                                            <StyledTableCell>
-                                                <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
-                                                    <IconEdit />
-                                                </IconButton>
+                                                <Skeleton variant='text' />
                                             </StyledTableCell>
                                             <StyledTableCell>
-                                                <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
-                                                    <IconTrash />
-                                                </IconButton>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
                                             </StyledTableCell>
                                         </StyledTableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    )}
+                                        <StyledTableRow>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <Skeleton variant='text' />
+                                            </StyledTableCell>
+                                        </StyledTableRow>
+                                    </>
+                                ) : (
+                                    <>
+                                        {variables.filter(filterVariables).map((variable, index) => (
+                                            <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                <StyledTableCell scope='row'>
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: 25,
+                                                                height: 25,
+                                                                marginRight: 10,
+                                                                borderRadius: '50%'
+                                                            }}
+                                                        >
+                                                            <IconVariable
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    borderRadius: '50%',
+                                                                    objectFit: 'contain'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        {variable.name}
+                                                    </div>
+                                                </StyledTableCell>
+                                                <StyledTableCell>{variable.value}</StyledTableCell>
+                                                <StyledTableCell>
+                                                    <Chip
+                                                        color={variable.type === 'static' ? 'info' : 'secondary'}
+                                                        size='small'
+                                                        label={variable.type}
+                                                    />
+                                                </StyledTableCell>
+                                                <StyledTableCell>{moment(variable.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                <StyledTableCell>{moment(variable.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                <StyledTableCell>
+                                                    <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                                        <IconEdit />
+                                                    </IconButton>
+                                                </StyledTableCell>
+                                                <StyledTableCell>
+                                                    <IconButton title='Delete' color='error' onClick={() => deleteVariable(variable)}>
+                                                        <IconTrash />
+                                                    </IconButton>
+                                                </StyledTableCell>
+                                            </StyledTableRow>
+                                        ))}
+                                    </>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Stack>
+                {!isLoading && variables.length === 0 && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <img
+                                style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                src={VariablesEmptySVG}
+                                alt='VariablesEmptySVG'
+                            />
+                        </Box>
+                        <div>No Variables Yet</div>
+                    </Stack>
+                )}
             </MainCard>
             <AddEditVariableDialog
                 show={showVariableDialog}

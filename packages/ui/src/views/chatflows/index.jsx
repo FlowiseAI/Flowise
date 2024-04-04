@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, ToggleButton } from '@mui/material'
+import { Box, Skeleton, Stack, ToggleButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -162,17 +162,27 @@ const Chatflows = () => {
                         Add New
                     </StyledButton>
                 </ViewHeader>
-                {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
-                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                        {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (
-                            <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                        ))}
-                    </Box>
-                )}
-                {!isLoading && view === 'list' && getAllChatflowsApi.data && (
+                {!view || view === 'card' ? (
+                    <>
+                        {isLoading && !getAllChatflowsApi.data ? (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                            </Box>
+                        ) : (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
+                                    <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                ))}
+                            </Box>
+                        )}
+                    </>
+                ) : (
                     <FlowListTable
                         data={getAllChatflowsApi.data}
                         images={images}
+                        isLoading={isLoading}
                         filterFunction={filterFlows}
                         updateFlowsApi={getAllChatflowsApi}
                     />

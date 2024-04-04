@@ -2,7 +2,20 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
-import { Button, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from '@mui/material'
+import {
+    Button,
+    Chip,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+    useTheme
+} from '@mui/material'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -23,7 +36,16 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterByType, filterByFramework, goToCanvas, goToTool }) => {
+export const MarketplaceTable = ({
+    data,
+    filterFunction,
+    filterByBadge,
+    filterByType,
+    filterByFramework,
+    goToCanvas,
+    goToTool,
+    isLoading
+}) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -64,79 +86,120 @@ export const MarketplaceTable = ({ data, filterFunction, filterByBadge, filterBy
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data
-                            .filter(filterByBadge)
-                            .filter(filterByType)
-                            .filter(filterFunction)
-                            .filter(filterByFramework)
-                            .map((row, index) => (
-                                <StyledTableRow key={index}>
-                                    <StyledTableCell key='0'>
-                                        <Typography
-                                            sx={{
-                                                display: '-webkit-box',
-                                                fontSize: 14,
-                                                fontWeight: 500,
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                textOverflow: 'ellipsis',
-                                                overflow: 'hidden'
-                                            }}
-                                        >
-                                            <Button onClick={() => openTemplate(row)} sx={{ textAlign: 'left' }}>
-                                                {row.templateName || row.name}
-                                            </Button>
-                                        </Typography>
+                        {isLoading ? (
+                            <>
+                                <StyledTableRow>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell key='1'>
-                                        <Typography>{row.type}</Typography>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell key='2'>
-                                        <Typography sx={{ overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
-                                            {row.description || ''}
-                                        </Typography>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell key='3'>
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                flexWrap: 'wrap',
-                                                marginTop: 5
-                                            }}
-                                        >
-                                            {row.categories &&
-                                                row.categories
-                                                    .split(',')
-                                                    .map((tag, index) => (
-                                                        <Chip
-                                                            variant='outlined'
-                                                            key={index}
-                                                            size='small'
-                                                            label={tag.toUpperCase()}
-                                                            style={{ marginRight: 3, marginBottom: 3 }}
-                                                        />
-                                                    ))}
-                                        </div>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell key='4'>
-                                        <Typography>
-                                            {row.badge &&
-                                                row.badge
-                                                    .split(';')
-                                                    .map((tag, index) => (
-                                                        <Chip
-                                                            color={tag === 'POPULAR' ? 'primary' : 'error'}
-                                                            key={index}
-                                                            size='small'
-                                                            label={tag.toUpperCase()}
-                                                            style={{ marginRight: 5, marginBottom: 5 }}
-                                                        />
-                                                    ))}
-                                        </Typography>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
                                     </StyledTableCell>
                                 </StyledTableRow>
-                            ))}
+                                <StyledTableRow>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                </StyledTableRow>
+                            </>
+                        ) : (
+                            <>
+                                {data
+                                    ?.filter(filterByBadge)
+                                    .filter(filterByType)
+                                    .filter(filterFunction)
+                                    .filter(filterByFramework)
+                                    .map((row, index) => (
+                                        <StyledTableRow key={index}>
+                                            <StyledTableCell key='0'>
+                                                <Typography
+                                                    sx={{
+                                                        display: '-webkit-box',
+                                                        fontSize: 14,
+                                                        fontWeight: 500,
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        textOverflow: 'ellipsis',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    <Button onClick={() => openTemplate(row)} sx={{ textAlign: 'left' }}>
+                                                        {row.templateName || row.name}
+                                                    </Button>
+                                                </Typography>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='1'>
+                                                <Typography>{row.type}</Typography>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='2'>
+                                                <Typography sx={{ overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                                    {row.description || ''}
+                                                </Typography>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='3'>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        flexWrap: 'wrap',
+                                                        marginTop: 5
+                                                    }}
+                                                >
+                                                    {row.categories &&
+                                                        row.categories
+                                                            .split(',')
+                                                            .map((tag, index) => (
+                                                                <Chip
+                                                                    variant='outlined'
+                                                                    key={index}
+                                                                    size='small'
+                                                                    label={tag.toUpperCase()}
+                                                                    style={{ marginRight: 3, marginBottom: 3 }}
+                                                                />
+                                                            ))}
+                                                </div>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='4'>
+                                                <Typography>
+                                                    {row.badge &&
+                                                        row.badge
+                                                            .split(';')
+                                                            .map((tag, index) => (
+                                                                <Chip
+                                                                    color={tag === 'POPULAR' ? 'primary' : 'error'}
+                                                                    key={index}
+                                                                    size='small'
+                                                                    label={tag.toUpperCase()}
+                                                                    style={{ marginRight: 5, marginBottom: 5 }}
+                                                                />
+                                                            ))}
+                                                </Typography>
+                                            </StyledTableCell>
+                                        </StyledTableRow>
+                                    ))}
+                            </>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -151,5 +214,6 @@ MarketplaceTable.propTypes = {
     filterByType: PropTypes.func,
     filterByFramework: PropTypes.func,
     goToTool: PropTypes.func,
-    goToCanvas: PropTypes.func
+    goToCanvas: PropTypes.func,
+    isLoading: PropTypes.bool
 }

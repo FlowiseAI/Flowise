@@ -4,7 +4,19 @@ import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Box, Stack, Badge, ToggleButton, InputLabel, FormControl, Select, OutlinedInput, Checkbox, ListItemText } from '@mui/material'
+import {
+    Box,
+    Stack,
+    Badge,
+    ToggleButton,
+    InputLabel,
+    FormControl,
+    Select,
+    OutlinedInput,
+    Checkbox,
+    ListItemText,
+    Skeleton
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList } from '@tabler/icons'
 
@@ -331,44 +343,57 @@ const Marketplace = () => {
                             </ToggleButton>
                         </ToggleButtonGroup>
                     </ViewHeader>
-                    {!isLoading && (!view || view === 'card') && getAllTemplatesMarketplacesApi.data && (
+                    {!view || view === 'card' ? (
                         <>
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                {getAllTemplatesMarketplacesApi.data
-                                    .filter(filterByBadge)
-                                    .filter(filterByType)
-                                    .filter(filterFlows)
-                                    .filter(filterByFramework)
-                                    .map((data, index) => (
-                                        <Box key={index}>
-                                            {data.badge && (
-                                                <Badge
-                                                    sx={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        '& .MuiBadge-badge': {
-                                                            right: 20
-                                                        }
-                                                    }}
-                                                    badgeContent={data.badge}
-                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                                >
-                                                    {data.type === 'Chatflow' && (
-                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                                    )}
-                                                    {data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
-                                                </Badge>
-                                            )}
-                                            {!data.badge && data.type === 'Chatflow' && (
-                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                            )}
-                                            {!data.badge && data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
-                                        </Box>
-                                    ))}
-                            </Box>
+                            {isLoading ? (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                </Box>
+                            ) : (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    {getAllTemplatesMarketplacesApi.data
+                                        ?.filter(filterByBadge)
+                                        .filter(filterByType)
+                                        .filter(filterFlows)
+                                        .filter(filterByFramework)
+                                        .map((data, index) => (
+                                            <Box key={index}>
+                                                {data.badge && (
+                                                    <Badge
+                                                        sx={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            '& .MuiBadge-badge': {
+                                                                right: 20
+                                                            }
+                                                        }}
+                                                        badgeContent={data.badge}
+                                                        color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                    >
+                                                        {data.type === 'Chatflow' && (
+                                                            <ItemCard
+                                                                onClick={() => goToCanvas(data)}
+                                                                data={data}
+                                                                images={images[data.id]}
+                                                            />
+                                                        )}
+                                                        {data.type === 'Tool' && <ItemCard data={data} onClick={() => goToTool(data)} />}
+                                                    </Badge>
+                                                )}
+                                                {!data.badge && data.type === 'Chatflow' && (
+                                                    <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                )}
+                                                {!data.badge && data.type === 'Tool' && (
+                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                )}
+                                            </Box>
+                                        ))}
+                                </Box>
+                            )}
                         </>
-                    )}
-                    {!isLoading && view === 'list' && getAllTemplatesMarketplacesApi.data && (
+                    ) : (
                         <MarketplaceTable
                             data={getAllTemplatesMarketplacesApi.data}
                             filterFunction={filterFlows}
@@ -377,6 +402,7 @@ const Marketplace = () => {
                             filterByFramework={filterByFramework}
                             goToTool={goToTool}
                             goToCanvas={goToCanvas}
+                            isLoading={isLoading}
                         />
                     )}
 
