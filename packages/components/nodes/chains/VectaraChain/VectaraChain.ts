@@ -4,6 +4,8 @@ import { VectaraStore } from '@langchain/community/vectorstores/vectara'
 import { VectorDBQAChain } from 'langchain/chains'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 // functionality based on https://github.com/vectara/vectara-answer
 const reorderCitations = (unorderedSummary: string) => {
@@ -48,7 +50,7 @@ class VectaraChain_Chains implements INode {
     constructor() {
         this.label = 'Vectara QA Chain'
         this.name = 'vectaraQAChain'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'VectaraQAChain'
         this.icon = 'vectara.png'
         this.category = 'Chains'
@@ -219,6 +221,14 @@ class VectaraChain_Chains implements INode {
                 description: 'Maximum results used to build the summarized response',
                 type: 'number',
                 default: 7
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -227,7 +237,7 @@ class VectaraChain_Chains implements INode {
         return null
     }
 
-    async run(nodeData: INodeData, input: string): Promise<object> {
+    async run(nodeData: INodeData, input: string): Promise<string | object> {
         const vectorStore = nodeData.inputs?.vectaraStore as VectaraStore
         const responseLang = (nodeData.inputs?.responseLang as string) ?? 'eng'
         const summarizerPromptName = nodeData.inputs?.summarizerPromptName as string
@@ -251,6 +261,18 @@ class VectaraChain_Chains implements INode {
         // Vectara reranker ID for MMR (https://docs.vectara.com/docs/api-reference/search-apis/reranking#maximal-marginal-relevance-mmr-reranker)
         const mmrRerankerId = 272725718
         const mmrEnabled = vectaraFilter?.mmrConfig?.enabled
+
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Vectara chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         const data = {
             query: [

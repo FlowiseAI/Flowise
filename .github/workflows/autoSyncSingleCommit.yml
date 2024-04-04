@@ -23,7 +23,7 @@ jobs:
               run: |
                   echo Autosync a single commit with id: ${{ github.sha }} from openSource main branch towards cloud hosted version.
             - name: Repository Dispatch
-              uses: peter-evans/repository-dispatch@v2
+              uses: peter-evans/repository-dispatch@v3
               with:
                   token: ${{ secrets.AUTOSYNC_TOKEN }}
                   repository: ${{ secrets.AUTOSYNC_CH_URL }}
@@ -32,5 +32,5 @@ jobs:
                       {
                         "ref": "${{ github.ref }}",
                         "sha": "${{ github.sha }}",
-                        "commitMessage": "${{ github.event.commits[0].message }}"
+                        "commitMessage": "${{ github.event.commits[0].id }}"
                       }
