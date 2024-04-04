@@ -6,16 +6,14 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { getUserHome, decryptCredentialData, getAppVersion } from '../../utils'
+import { ApiError } from '../../errors/apiError'
+import { StatusCodes } from 'http-status-codes'
 
 const creatAssistant = async (requestBody: any): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Invalid request body`
-            }
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid request body`)
         }
         const assistantDetails = JSON.parse(requestBody.details)
         try {
@@ -24,22 +22,14 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
             })
 
             if (!credential) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `Credential ${requestBody.credential} not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${requestBody.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `OpenAI ApiKey not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
             const openai = new OpenAI({ apiKey: openAIApiKey })
 
@@ -121,11 +111,7 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
 
             requestBody.details = JSON.stringify(newAssistantDetails)
         } catch (error) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Error creating new assistant: ${error}`
-            }
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant: ${error}`)
         }
         const newAssistant = new Assistant()
         Object.assign(newAssistant, requestBody)
@@ -139,7 +125,7 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: assistantsService.creatTool - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.creatTool - ${error}`)
     }
 }
 
@@ -150,11 +136,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             id: assistantId
         })
         if (!assistant) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Assistant ${assistantId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
         try {
             const assistantDetails = JSON.parse(assistant.details)
@@ -163,22 +145,14 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             })
 
             if (!credential) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `Credential ${assistant.credential} not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${assistant.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `OpenAI ApiKey not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
@@ -189,15 +163,11 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             if (error.status === 404 && error.type === 'invalid_request_error') {
                 return 'OK'
             } else {
-                return {
-                    executionError: true,
-                    status: 500,
-                    msg: `Error deleting assistant: ${error}`
-                }
+                throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant: ${error}`)
             }
         }
     } catch (error) {
-        throw new Error(`Error: assistantsService.deleteTool - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.deleteTool - ${error}`)
     }
 }
 
@@ -207,7 +177,7 @@ const getAllAssistants = async (): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: assistantsService.getAllAssistants - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getAllAssistants - ${error}`)
     }
 }
 
@@ -218,15 +188,11 @@ const getAssistantById = async (assistantId: string): Promise<any> => {
             id: assistantId
         })
         if (!dbResponse) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Assistant ${assistantId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: assistantsService.getAssistantById - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getAssistantById - ${error}`)
     }
 }
 
@@ -238,11 +204,7 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
         })
 
         if (!assistant) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Assistant ${assistantId} not found`
-            }
+            throw new ApiError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
         try {
             const openAIAssistantId = JSON.parse(assistant.details)?.id
@@ -253,22 +215,14 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             })
 
             if (!credential) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `Credential ${body.credential} not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `Credential ${body.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `OpenAI ApiKey not found`
-                }
+                throw new ApiError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
@@ -346,14 +300,10 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Error updating assistant: ${error}`
-            }
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant: ${error}`)
         }
     } catch (error) {
-        throw new Error(`Error: assistantsService.updateAssistant - ${error}`)
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.updateAssistant - ${error}`)
     }
 }
 
