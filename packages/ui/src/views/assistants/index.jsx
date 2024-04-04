@@ -21,6 +21,7 @@ import useApi from '@/hooks/useApi'
 // icons
 import { IconPlus, IconFileUpload } from '@tabler/icons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -28,6 +29,7 @@ const Assistants = () => {
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
     const [isLoading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [showLoadDialog, setShowLoadDialog] = useState(false)
@@ -86,54 +88,73 @@ const Assistants = () => {
         setLoading(getAllAssistantsApi.loading)
     }, [getAllAssistantsApi.loading])
 
+    useEffect(() => {
+        if (getAllAssistantsApi.error) {
+            setError(getAllAssistantsApi.error)
+        }
+    }, [getAllAssistantsApi.error])
+
     return (
         <>
             <MainCard>
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='OpenAI Assistants'>
-                        <Button
-                            variant='outlined'
-                            onClick={loadExisting}
-                            startIcon={<IconFileUpload />}
-                            sx={{ borderRadius: 2, height: 40 }}
-                        >
-                            Load
-                        </Button>
-                        <StyledButton variant='contained' sx={{ borderRadius: 2, height: 40 }} onClick={addNew} startIcon={<IconPlus />}>
-                            Add
-                        </StyledButton>
-                    </ViewHeader>
-                    {isLoading ? (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                        </Box>
-                    ) : (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            {getAllAssistantsApi.data &&
-                                getAllAssistantsApi.data.map((data, index) => (
-                                    <ItemCard
-                                        data={{
-                                            name: JSON.parse(data.details)?.name,
-                                            description: JSON.parse(data.details)?.instructions,
-                                            iconSrc: data.iconSrc
-                                        }}
-                                        key={index}
-                                        onClick={() => edit(data)}
-                                    />
-                                ))}
-                        </Box>
-                    )}
-                    {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader title='OpenAI Assistants'>
+                            <Button
+                                variant='outlined'
+                                onClick={loadExisting}
+                                startIcon={<IconFileUpload />}
+                                sx={{ borderRadius: 2, height: 40 }}
+                            >
+                                Load
+                            </Button>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: 40 }}
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                            >
+                                Add
+                            </StyledButton>
+                        </ViewHeader>
+                        {isLoading ? (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
                             </Box>
-                            <div>No Assistants Added Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
+                        ) : (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {getAllAssistantsApi.data &&
+                                    getAllAssistantsApi.data.map((data, index) => (
+                                        <ItemCard
+                                            data={{
+                                                name: JSON.parse(data.details)?.name,
+                                                description: JSON.parse(data.details)?.instructions,
+                                                iconSrc: data.iconSrc
+                                            }}
+                                            key={index}
+                                            onClick={() => edit(data)}
+                                        />
+                                    ))}
+                            </Box>
+                        )}
+                        {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        src={ToolEmptySVG}
+                                        alt='ToolEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Assistants Added Yet</div>
+                            </Stack>
+                        )}
+                    </Stack>
+                )}
             </MainCard>
             <LoadAssistantDialog
                 show={showLoadDialog}

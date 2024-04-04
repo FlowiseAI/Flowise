@@ -20,6 +20,7 @@ import useApi from '@/hooks/useApi'
 // icons
 import { IconPlus, IconFileUpload } from '@tabler/icons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -27,6 +28,7 @@ const Tools = () => {
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
     const [isLoading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
 
@@ -102,61 +104,77 @@ const Tools = () => {
         setLoading(getAllToolsApi.loading)
     }, [getAllToolsApi.loading])
 
+    useEffect(() => {
+        if (getAllToolsApi.error) {
+            setError(getAllToolsApi.error)
+        }
+    }, [getAllToolsApi.error])
+
     return (
         <>
             <MainCard>
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Tools'>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Button
-                                variant='outlined'
-                                onClick={() => inputRef.current.click()}
-                                startIcon={<IconFileUpload />}
-                                sx={{ borderRadius: 2, height: 40 }}
-                            >
-                                Load
-                            </Button>
-                            <input
-                                style={{ display: 'none' }}
-                                ref={inputRef}
-                                type='file'
-                                hidden
-                                accept='.json'
-                                onChange={(e) => handleFileUpload(e)}
-                            />
-                        </Box>
-                        <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                            <StyledButton
-                                variant='contained'
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                sx={{ borderRadius: 2, height: 40 }}
-                            >
-                                Create
-                            </StyledButton>
-                        </ButtonGroup>
-                    </ViewHeader>
-                    {isLoading ? (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                        </Box>
-                    ) : (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            {getAllToolsApi.data &&
-                                getAllToolsApi.data.map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
-                        </Box>
-                    )}
-                    {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader title='Tools'>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Button
+                                    variant='outlined'
+                                    onClick={() => inputRef.current.click()}
+                                    startIcon={<IconFileUpload />}
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                >
+                                    Load
+                                </Button>
+                                <input
+                                    style={{ display: 'none' }}
+                                    ref={inputRef}
+                                    type='file'
+                                    hidden
+                                    accept='.json'
+                                    onChange={(e) => handleFileUpload(e)}
+                                />
                             </Box>
-                            <div>No Tools Created Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
+                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                <StyledButton
+                                    variant='contained'
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                >
+                                    Create
+                                </StyledButton>
+                            </ButtonGroup>
+                        </ViewHeader>
+                        {isLoading ? (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                            </Box>
+                        ) : (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {getAllToolsApi.data &&
+                                    getAllToolsApi.data.map((data, index) => (
+                                        <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                    ))}
+                            </Box>
+                        )}
+                        {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        src={ToolEmptySVG}
+                                        alt='ToolEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Tools Created Yet</div>
+                            </Stack>
+                        )}
+                    </Stack>
+                )}
             </MainCard>
             <ToolDialog
                 show={showDialog}
