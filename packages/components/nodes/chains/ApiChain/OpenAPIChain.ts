@@ -5,6 +5,9 @@ import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
+import path from 'path'
 
 class OpenApiChain_Chains implements INode {
     label: string
@@ -64,12 +67,12 @@ class OpenApiChain_Chains implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        return await initChain(nodeData)
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        return await initChain(nodeData, options)
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
-        const chain = await initChain(nodeData)
+        const chain = await initChain(nodeData, options)
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
@@ -94,7 +97,7 @@ class OpenApiChain_Chains implements INode {
     }
 }
 
-const initChain = async (nodeData: INodeData) => {
+const initChain = async (nodeData: INodeData, options: ICommonObject) => {
     const model = nodeData.inputs?.model as ChatOpenAI
     const headers = nodeData.inputs?.headers as string
     const yamlLink = nodeData.inputs?.yamlLink as string
@@ -105,10 +108,18 @@ const initChain = async (nodeData: INodeData) => {
     if (yamlLink) {
         yamlString = yamlLink
     } else {
-        const splitDataURI = yamlFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        yamlString = bf.toString('utf-8')
+        if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
+            const file = yamlFileBase64.replace('FILE-STORAGE::', '')
+            const chatflowid = options.chatflowid
+            const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+            const fileData = fs.readFileSync(fileInStorage)
+            yamlString = fileData.toString()
+        } else {
+            const splitDataURI = yamlFileBase64.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            yamlString = bf.toString('utf-8')
+        }
     }
 
     return await createOpenAPIChain(yamlString, {
