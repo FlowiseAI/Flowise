@@ -9,7 +9,7 @@ export class AddUpsertHistoryEntity1709814301358 implements MigrationInterface {
                 \`result\` text NOT NULL,
                 \`flowData\` text NOT NULL,
                 \`date\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-                PRIMARY KEY (\`id\`)
+                PRIMARY KEY (\`id\`),
                 KEY \`IDX_a0b59fd66f6e48d2b198123cb6\` (\`chatflowid\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
         )
