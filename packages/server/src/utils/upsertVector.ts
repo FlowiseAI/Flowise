@@ -78,8 +78,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
 
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         const vsNodes = nodes.filter(
             (node) =>

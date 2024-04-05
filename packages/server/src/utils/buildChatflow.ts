@@ -152,8 +152,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
         const memoryType = memoryNode?.data.label
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Node Data already exists in pool

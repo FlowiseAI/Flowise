@@ -1144,14 +1144,14 @@ export const redactCredentialWithPasswordType = (
  * API/Embed + UI:
  * (3) Hard-coded sessionId in UI
  * (4) Not specified on UI nor API, default to chatId
- * @param {IReactFlowNode} memoryNode
+ * @param {IReactFlowNode | undefined} memoryNode
  * @param {IncomingInput} incomingInput
  * @param {string} chatId
  * @param {boolean} isInternal
  * @returns {string}
  */
 export const getMemorySessionId = (
-    memoryNode: IReactFlowNode,
+    memoryNode: IReactFlowNode | undefined,
     incomingInput: IncomingInput,
     chatId: string,
     isInternal: boolean
@@ -1168,7 +1168,7 @@ export const getMemorySessionId = (
     }
 
     // Hard-coded sessionId in UI
-    if (memoryNode.data.inputs?.sessionId) {
+    if (memoryNode && memoryNode.data.inputs?.sessionId) {
         return memoryNode.data.inputs.sessionId
     }
 
@@ -1232,6 +1232,7 @@ export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[])
             return memoryNode
         }
     }
+
     return undefined
 }
 

@@ -191,6 +191,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         if (!memory) {
             memory = new BufferMemory({
                 returnMessages: true,
+                memoryKey: 'chat_history',
                 appDataSource,
                 databaseEntities,
                 chatflowid
@@ -405,7 +406,7 @@ class BufferMemory extends FlowiseMemory implements MemoryMethods {
 
         const chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
-                chatId: overrideSessionId,
+                sessionId: overrideSessionId,
                 chatflowid: this.chatflowid
             },
             order: {
