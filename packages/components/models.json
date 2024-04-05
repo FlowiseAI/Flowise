@@ -1,0 +1,104 @@
+{
+  "model-list": {
+    "chatModels": {
+      "type": "ChatModel",
+      "models": [
+        {
+          "name": "awsBedrock",
+          "options": [
+            {
+              "label": "amazon.titan-tg1-large",
+              "name": "amazon.titan-tg1-large"
+            },
+            {
+              "label": "amazon.titan-e1t-medium",
+              "name": "amazon.titan-e1t-medium"
+            },
+            {
+              "label": "cohere.command-text-v14",
+              "name": "cohere.command-text-v14"
+            },
+            {
+              "label": "cohere.command-light-text-v14",
+              "name": "cohere.command-light-text-v14"
+            },
+            {
+              "label": "ai21.j2-grande-instruct",
+              "name": "ai21.j2-grande-instruct"
+            },
+            {
+              "label": "ai21.j2-jumbo-instruct",
+              "name": "ai21.j2-jumbo-instruct"
+            },
+            {
+              "label": "ai21.j2-mid",
+              "name": "ai21.j2-mid"
+            },
+            {
+              "label": "ai21.j2-ultra",
+              "name": "ai21.j2-ultra"
+            }
+          ],
+          "default": "amazon.titan-e1t-medium"
+        },
+        {
+          "name": "azureChatOpenAI",
+          "options": [
+            {
+              "label": "gpt-4",
+              "name": "gpt-4"
+            },
+            {
+              "label": "gpt-4-32k",
+              "name": "gpt-4-32k"
+            },
+            {
+              "label": "gpt-35-turbo",
+              "name": "gpt-35-turbo"
+            },
+            {
+              "label": "gpt-35-turbo-16k",
+              "name": "gpt-35-turbo-16k"
+            },
+            {
+              "label": "gpt-4-vision-preview",
+              "name": "gpt-4-vision-preview"
+            }
+          ],
+          "default": "gpt-35-turbo"
+        }
+      ]
+    },
+    "llm": {
+      "type": "LLM",
+      "models": [
+        {
+          "name": "AWSBedRock",
+          "options": [
+            {
+              "label": "af-south-1",
+              "name": "af-south-1"
+            },
+            {
+              "label": "us-west-2",
+              "name": "us-west-2"
+            }
+          ]
+        },
+        {
+          "name": "AWSBedRock",
+          "options": [
+            {
+              "label": "af-south-1",
+              "name": "af-south-1"
+            },
+            {
+              "label": "us-west-2",
+              "name": "us-west-2"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
