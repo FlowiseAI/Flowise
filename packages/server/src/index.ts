@@ -216,6 +216,10 @@ export class App {
                 }
             })
         }
+        
+        // Get the subpath from the environment, or assume it's at the root.
+        // Modified to default to /aichatbot.
+        const appPath = process.env.SUBPATH ?? '/aichatbot'
 
         if (process.env.ENABLE_METRICS === 'true') {
             switch (process.env.METRICS_PROVIDER) {
@@ -263,12 +267,7 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        // Get the subpath from the environment, or assume it's at the root.
-        // Modified to default to /aichatbot.
-        const appPath = process.env.SUBPATH ?? '/aichatbot'
-
         this.app.use(appPath, express.static(uiBuildPath))
-        this.app.use(appPath, indexRouter)
 
         // All other requests not handled will return React app
         this.app.use((req: Request, res: Response) => {
