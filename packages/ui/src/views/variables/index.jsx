@@ -207,6 +207,7 @@ const Variables = () => {
                                 sx={{ borderRadius: 2, height: '100%' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
+                                id='btn_createVariable'
                             >
                                 Add Variable
                             </StyledButton>
