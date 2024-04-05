@@ -116,7 +116,7 @@ class XMLAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -177,11 +177,7 @@ class XMLAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = async (
-    nodeData: INodeData,
-    flowObj: { sessionId?: string; chatId?: string; input?: string },
-    chatHistory: IMessage[] = []
-) => {
+const prepareAgent = async (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
     const model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
@@ -207,7 +203,7 @@ const prepareAgent = async (
 
     const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
 
-    const messages = (await memory.getChatMessages(flowObj.sessionId, false, chatHistory)) as IMessage[]
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false)) as IMessage[]
     let chatHistoryMsgTxt = ''
     for (const message of messages) {
         if (message.type === 'apiMessage') {

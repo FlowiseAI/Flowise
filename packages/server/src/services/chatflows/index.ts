@@ -217,7 +217,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        if (containsBase64File(updateChatFlow)) {
+        if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
             updateChatFlow.flowData = updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
         const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)

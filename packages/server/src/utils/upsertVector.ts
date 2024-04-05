@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import * as fs from 'fs'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject } from 'flowise-components'
+import { ICommonObject, IMessage } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
@@ -61,7 +61,6 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 stopNodeId: req.body.stopNodeId
             }
         }
@@ -73,7 +72,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
         const edges = parsedFlowData.edges
 
         let stopNodeId = incomingInput?.stopNodeId ?? ''
-        let chatHistory = incomingInput?.history
+        let chatHistory: IMessage[] = []
         let chatId = incomingInput.chatId ?? ''
         let isUpsert = true
 

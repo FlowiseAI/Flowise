@@ -195,7 +195,6 @@ export interface IMessage {
 
 export interface IncomingInput {
     question: string
-    history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
