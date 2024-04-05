@@ -4,6 +4,7 @@ import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import fs from 'fs'
 import { TextSplitter } from 'langchain/dist/text_splitter'
+import { DocxLoader } from 'langchain/document_loaders/fs/docx'
 
 export class DocumentStoreProcessor {
     constructor() {}
@@ -127,6 +128,10 @@ export class DocumentStoreProcessor {
                 }
                 break
             }
+            case '.docx': {
+                loader = new DocxLoader(blob)
+                break
+            }
             default:
                 loader = new TextLoader(blob)
                 break
@@ -137,9 +142,11 @@ export class DocumentStoreProcessor {
             chunks = await loader.loadAndSplit(splitter)
         }
         const totalChunks = chunks.length
+        // if -1, return all chunks
+        if (config.previewChunkCount === -1) config.previewChunkCount = totalChunks
         // return all docs if the user ask for more than we have
         if (totalChunks <= config.previewChunkCount) config.previewChunkCount = totalChunks
-
+        // return only the first n chunks
         if (totalChunks > config.previewChunkCount) chunks = chunks.slice(0, config.previewChunkCount)
 
         return { chunks: chunks, totalChunks: totalChunks, previewChunkCount: config.previewChunkCount }

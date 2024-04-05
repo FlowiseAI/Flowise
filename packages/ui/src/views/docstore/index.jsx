@@ -37,56 +37,12 @@ const Documents = () => {
         navigate('/documentStores/' + id)
     }
 
-    const onUploadFile = (file) => {
-        try {
-            const dialogProp = {
-                title: 'Add New Tool',
-                type: 'IMPORT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
-                data: JSON.parse(file)
-            }
-            setDialogProps(dialogProp)
-            setShowDialog(true)
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    const handleFileUpload = (e) => {
-        if (!e.target.files) return
-
-        const file = e.target.files[0]
-
-        const reader = new FileReader()
-        reader.onload = (evt) => {
-            if (!evt?.target?.result) {
-                return
-            }
-            const { result } = evt.target
-            onUploadFile(result)
-        }
-        reader.readAsText(file)
-    }
-
     const addNew = () => {
         const dialogProp = {
             title: 'Create New Document Store',
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Create New Document Store'
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
-
-    const edit = (selectedTool) => {
-        const dialogProp = {
-            title: 'Edit Tool',
-            type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Document Store',
-            data: selectedTool
         }
         setDialogProps(dialogProp)
         setShowDialog(true)

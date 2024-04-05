@@ -162,6 +162,7 @@ const DocumentStoreChunks = () => {
 
     const getChunksApi = useApi(documentsApi.getFileChunks)
     const previewApi = useApi(documentsApi.previewChunks)
+    const processApi = useApi(documentsApi.processChunks)
 
     const URLpath = document.location.pathname.toString().split('/')
     const fileId = URLpath[URLpath.length - 1] === 'documentStores' ? '' : URLpath[URLpath.length - 1]
@@ -174,10 +175,10 @@ const DocumentStoreChunks = () => {
     const [contentType, setContentType] = useState('text')
     const [textSplitter, setTextSplitter] = useState('recursive-splitter')
     const [codeLanguage, setCodeLanguage] = useState('')
-    const [customSeparator, setCustomSeparator] = useState('')
+    const [customSeparator, setCustomSeparator] = useState('\n')
     const [chunkSize, setChunkSize] = useState(1500)
     const [chunkOverlap, setChunkOverlap] = useState(50)
-    const [pdfUsage, setPdfUsage] = useState()
+    const [pdfUsage, setPdfUsage] = useState('perPage')
     const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -188,8 +189,23 @@ const DocumentStoreChunks = () => {
 
     useEffect(() => {
         if (getChunksApi.data) {
-            setTotalChunks(getChunksApi.data.count)
-            setDocumentChunks(getChunksApi.data.chunks)
+            const data = getChunksApi.data
+            setTotalChunks(data.count)
+            setDocumentChunks(data.chunks)
+            setCurrentPreviewCount(data.count)
+            setPreviewChunkCount(20)
+            if (data.file.config) {
+                const fileConfig = JSON.parse(data.file.config)
+                setTextSplitter(fileConfig.splitter)
+                setChunkSize(fileConfig.chunkSize)
+                setChunkOverlap(fileConfig.chunkOverlap)
+                setCustomSeparator(fileConfig.separator)
+                setPreviewChunkCount(fileConfig.previewChunkCount)
+                if (data?.file?.name?.toLowerCase().endsWith('pdf')) {
+                    setPdfUsage(fileConfig.pdfUsage)
+                    setPdfLegacyBuild(fileConfig.pdfLegacyBuild)
+                }
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,6 +232,23 @@ const DocumentStoreChunks = () => {
         previewApi.request(storeId, fileId, config)
     }
 
+    const processChunks = () => {
+        setLoading(true)
+        setDocumentChunks([])
+        const config = {
+            splitter: textSplitter,
+            chunkSize: chunkSize,
+            chunkOverlap: chunkOverlap,
+            separator: customSeparator,
+            previewChunkCount: -1
+        }
+        if (getChunksApi.data?.file?.name?.toLowerCase().endsWith('pdf')) {
+            config.pdfUsage = pdfUsage
+            config.pdfLegacyBuild = pdfLegacyBuild
+        }
+        processApi.request(storeId, fileId, config)
+    }
+
     useEffect(() => {
         if (previewApi.data) {
             setTotalChunks(previewApi.data.totalChunks)
@@ -226,6 +259,17 @@ const DocumentStoreChunks = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [previewApi.data])
+
+    useEffect(() => {
+        if (processApi.data) {
+            setTotalChunks(processApi.data.chunks.length)
+            setDocumentChunks(processApi.data.chunks)
+            setCurrentPreviewCount(processApi.data.chunks.length)
+            setLoading(false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [processApi.data])
 
     return (
         <>
@@ -238,7 +282,12 @@ const DocumentStoreChunks = () => {
                         </div>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
-                            <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconArrowBack />} onClick={openDS}>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ color: 'white' }}
+                                startIcon={<IconArrowBack />}
+                                onClick={() => openDS(storeId)}
+                            >
                                 Back to Document Store
                             </StyledButton>
                         </Grid>
@@ -376,7 +425,7 @@ const DocumentStoreChunks = () => {
                                                 <div style={{ flexGrow: 1 }}></div>
                                             </div>
                                             <Dropdown
-                                                key={textSplitter}
+                                                key={pdfUsage}
                                                 name='pdfUsage'
                                                 options={PdfUsage}
                                                 onSelect={(newValue) => setPdfUsage(newValue)}
@@ -411,7 +460,7 @@ const DocumentStoreChunks = () => {
                                     />
                                 </Box>
                                 <Box sx={{ p: 1, textAlign: 'center' }}>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }}>
+                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={processChunks}>
                                         Confirm & Process
                                     </StyledButton>{' '}
                                     <StyledButton variant='contained' sx={{ color: 'white' }} onClick={showPreview}>

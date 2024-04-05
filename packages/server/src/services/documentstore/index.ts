@@ -19,6 +19,7 @@ const createDocumentStore = async (newDocumentStore: DocumentStore) => {
         throw new Error(`Error: documentStoreServices.createDocumentStore - ${error}`)
     }
 }
+
 const getAllDocumentStores = async () => {
     try {
         const appServer = getRunningExpressApp()
@@ -28,6 +29,7 @@ const getAllDocumentStores = async () => {
         throw new Error(`Error: documentStoreServices.getAllDocumentStores - ${error}`)
     }
 }
+
 const deleteFileFromDocumentStore = async (storeId: string, fileId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -121,51 +123,52 @@ const uploadFileToDocumentStore = async (storeId: string, uploadFiles: string) =
         existingFiles.push(...filesWithMetadata)
         entity.status = DocumentStoreStatus.STALE
         entity.files = JSON.stringify(existingFiles)
-        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        const results = await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        return results
         //start processing the files in the background
-        const documentProcessor = new DocumentStoreProcessor()
-        let config = JSON.parse(entity.config)
-        documentProcessor.splitIntoChunks(entity.id, config, filesWithMetadata).then(async (result: any) => {
-            if (result.uploadedFiles && result.uploadedFiles.length) {
-                const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
-                    id: result.id
-                })
-                if (!entity) throw new Error(`Document store ${storeId} not found`)
-                entity.status = DocumentStoreStatus.SYNC
-                const files = JSON.parse(entity.files)
-                const metrics = JSON.parse(entity.metrics)
-                const filesWithChunks = files.map((file: any) => {
-                    const found = result.uploadedFiles.find((uFile: any) => uFile.id === file.id)
-                    let totalNewChars = 0
-                    if (found) {
-                        file.totalChunks = found.totalChunks
-                        file.status = 'SYNC'
-                        if (found.chunks) {
-                            found.chunks.map(async (chunk: any) => {
-                                const docChunk: DocumentStoreFileChunk = {
-                                    docId: file.id,
-                                    storeId: result.id,
-                                    id: uuidv4(),
-                                    pageContent: chunk.pageContent,
-                                    metadata: JSON.stringify(chunk.metadata)
-                                }
-                                totalNewChars += chunk.pageContent.length
-                                const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
-                                await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
-                            })
-                            file.totalChars = totalNewChars
-                        }
-                        metrics.totalChunks += file.totalChunks
-                        metrics.totalChars += totalNewChars
-                        metrics.totalFiles++
-                    }
-                    return file
-                })
-                entity.metrics = JSON.stringify(metrics)
-                entity.files = JSON.stringify(filesWithChunks)
-                await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
-            }
-        })
+        // const documentProcessor = new DocumentStoreProcessor()
+        // let config = JSON.parse(entity.config)
+        // documentProcessor.splitIntoChunks(entity.id, config, filesWithMetadata).then(async (result: any) => {
+        //     if (result.uploadedFiles && result.uploadedFiles.length) {
+        //         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+        //             id: result.id
+        //         })
+        //         if (!entity) throw new Error(`Document store ${storeId} not found`)
+        //         entity.status = DocumentStoreStatus.SYNC
+        //         const files = JSON.parse(entity.files)
+        //         const metrics = JSON.parse(entity.metrics)
+        //         const filesWithChunks = files.map((file: any) => {
+        //             const found = result.uploadedFiles.find((uFile: any) => uFile.id === file.id)
+        //             let totalNewChars = 0
+        //             if (found) {
+        //                 file.totalChunks = found.totalChunks
+        //                 file.status = 'SYNC'
+        //                 if (found.chunks) {
+        //                     found.chunks.map(async (chunk: any) => {
+        //                         const docChunk: DocumentStoreFileChunk = {
+        //                             docId: file.id,
+        //                             storeId: result.id,
+        //                             id: uuidv4(),
+        //                             pageContent: chunk.pageContent,
+        //                             metadata: JSON.stringify(chunk.metadata)
+        //                         }
+        //                         totalNewChars += chunk.pageContent.length
+        //                         const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+        //                         await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+        //                     })
+        //                     file.totalChars = totalNewChars
+        //                 }
+        //                 metrics.totalChunks += file.totalChunks
+        //                 metrics.totalChars += totalNewChars
+        //                 metrics.totalFiles++
+        //             }
+        //             return file
+        //         })
+        //         entity.metrics = JSON.stringify(metrics)
+        //         entity.files = JSON.stringify(filesWithChunks)
+        //         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        //     }
+        // })
     } catch (error) {
         throw new Error(`Error: documentStoreServices.uploadFileToDocumentStore - ${error}`)
     }
@@ -184,6 +187,54 @@ const previewChunks = async (storeId: string, fileId: string, config: string) =>
         const documentProcessor = new DocumentStoreProcessor()
         const chunksObj = await documentProcessor.split(config, found)
         return chunksObj
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.previewChunks - ${error}`)
+    }
+}
+
+const processChunks = async (storeId: string, fileId: string, config: string) => {
+    try {
+        const chunksObj: any = await previewChunks(storeId, fileId, config)
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: storeId
+        })
+        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        entity.status = DocumentStoreStatus.SYNC
+        const files = JSON.parse(entity.files)
+        const metrics = JSON.parse(entity.metrics)
+        const found = files.find((uFile: any) => uFile.id === fileId)
+        let totalNewChars = 0
+        if (found) {
+            await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: found.id })
+
+            found.totalChunks = chunksObj.totalChunks
+            found.status = 'SYNC'
+            found.config = JSON.stringify(config)
+            metrics.totalChunks -= found.totalChunks
+            if (chunksObj.chunks) {
+                chunksObj.chunks.map(async (chunk: any) => {
+                    const docChunk: DocumentStoreFileChunk = {
+                        docId: fileId,
+                        storeId: storeId,
+                        id: uuidv4(),
+                        pageContent: chunk.pageContent,
+                        metadata: JSON.stringify(chunk.metadata)
+                    }
+                    totalNewChars += chunk.pageContent.length
+                    const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+                    await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+                })
+                found.totalChars = totalNewChars
+            }
+            metrics.totalChunks += found.totalChunks
+            metrics.totalChars += totalNewChars
+            metrics.totalFiles++
+        }
+        entity.metrics = JSON.stringify(metrics)
+        entity.files = JSON.stringify(files)
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        return getDocumentStoreFileChunks(storeId, fileId)
     } catch (error) {
         throw new Error(`Error: documentStoreServices.previewChunks - ${error}`)
     }
@@ -250,5 +301,6 @@ export default {
     getDocumentStoreFileChunks,
     updateDocumentStore,
     uploadFileToDocumentStore,
-    previewChunks
+    previewChunks,
+    processChunks
 }

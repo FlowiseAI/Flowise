@@ -25,17 +25,17 @@ export class DocumentStoreDTO {
 
     static fromEntity(entity: DocumentStore): DocumentStoreDTO {
         let documentStoreDTO = new DocumentStoreDTO()
-        let config = JSON.parse(entity.config)
+        // let config = JSON.parse(entity.config)
 
         Object.assign(documentStoreDTO, entity)
         documentStoreDTO.id = entity.id
         documentStoreDTO.name = entity.name
         documentStoreDTO.description = entity.description
         documentStoreDTO.type = entity.type
-        documentStoreDTO.splitter = config.splitter
-        documentStoreDTO.codeLanguage = config.codeLanguage
-        documentStoreDTO.chunkSize = config.chunkSize
-        documentStoreDTO.chunkOverlap = config.chunkOverlap
+        // documentStoreDTO.splitter = config.splitter
+        // documentStoreDTO.codeLanguage = config.codeLanguage
+        // documentStoreDTO.chunkSize = config.chunkSize
+        // documentStoreDTO.chunkOverlap = config.chunkOverlap
         documentStoreDTO.subFolder = entity.subFolder
         if (entity.whereUsed) {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
@@ -67,13 +67,13 @@ export class DocumentStoreDTO {
         docStore.subFolder = convertToValidFilename(docStore.name)
         docStore.files = '[]'
         docStore.whereUsed = '[]'
-        const config = {
-            splitter: body.splitter,
-            codeLanguage: body.codeLanguage,
-            chunkSize: body.chunkSize,
-            chunkOverlap: body.chunkOverlap
-        }
-        docStore.config = JSON.stringify(config)
+        // const config = {
+        //     splitter: body.splitter,
+        //     codeLanguage: body.codeLanguage,
+        //     chunkSize: body.chunkSize,
+        //     chunkOverlap: body.chunkOverlap
+        // }
+        // docStore.config = JSON.stringify(config)
         docStore.metrics = JSON.stringify({
             totalFiles: 0,
             totalChars: 0,

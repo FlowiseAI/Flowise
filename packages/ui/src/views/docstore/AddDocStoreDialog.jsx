@@ -24,106 +24,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { Dropdown } from '@/ui-component/dropdown/Dropdown'
-
-const ContentTypes = [
-    {
-        label: 'Text',
-        name: 'text'
-    },
-    {
-        label: 'Code',
-        name: 'code'
-    },
-    {
-        label: 'Markdown',
-        name: 'markdown'
-    }
-]
-
-const TextSplitter = [
-    {
-        label: 'Character Text Splitter',
-        name: 'character-splitter'
-    },
-    {
-        label: 'Recursive Text Splitter',
-        name: 'recursive-splitter'
-    }
-]
-const MarkdownSplitter = [
-    {
-        label: 'Markdown Text Splitter',
-        name: 'markdown-splitter'
-    }
-]
-
-const Languages = [
-    {
-        label: 'cpp',
-        name: 'cpp'
-    },
-    {
-        label: 'go',
-        name: 'go'
-    },
-    {
-        label: 'java',
-        name: 'java'
-    },
-    {
-        label: 'js',
-        name: 'js'
-    },
-    {
-        label: 'php',
-        name: 'php'
-    },
-    {
-        label: 'proto',
-        name: 'proto'
-    },
-    {
-        label: 'python',
-        name: 'python'
-    },
-    {
-        label: 'rst',
-        name: 'rst'
-    },
-    {
-        label: 'ruby',
-        name: 'ruby'
-    },
-    {
-        label: 'rust',
-        name: 'rust'
-    },
-    {
-        label: 'scala',
-        name: 'scala'
-    },
-    {
-        label: 'swift',
-        name: 'swift'
-    },
-    {
-        label: 'markdown',
-        name: 'markdown'
-    },
-    {
-        label: 'latex',
-        name: 'latex'
-    },
-    {
-        label: 'html',
-        name: 'html'
-    },
-    {
-        label: 'sol',
-        name: 'sol'
-    }
-]
 
 const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -139,11 +39,6 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const [documentStoreName, setDocumentStoreName] = useState('')
     const [documentStoreDesc, setDocumentStoreDesc] = useState('')
-    const [contentType, setContentType] = useState('text')
-    const [textSplitter, setTextSplitter] = useState('recursive-splitter')
-    const [codeLanguage, setCodeLanguage] = useState('')
-    const [chunkSize, setChunkSize] = useState(1000)
-    const [chunkOverlap, setChunkOverlap] = useState(50)
     const [dialogType, setDialogType] = useState('ADD')
     const [docStoreId, setDocumentStoreId] = useState()
 
@@ -152,30 +47,15 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             setDocumentStoreName(dialogProps.data.name)
             setDocumentStoreDesc(dialogProps.data.description)
-            setContentType(dialogProps.data.contentType)
-            setTextSplitter(dialogProps.data.textSplitter)
-            setCodeLanguage(dialogProps.data.codeLanguage)
-            setChunkSize(dialogProps.data.chunkSize)
-            setChunkOverlap(dialogProps.data.chunkOverlap)
             setDocumentStoreId(dialogProps.data.id)
         } else if (dialogProps.type === 'ADD') {
             setDocumentStoreName('')
             setDocumentStoreDesc('')
-            setContentType('text')
-            setTextSplitter('')
-            setCodeLanguage('')
-            setChunkSize(1000)
-            setChunkOverlap(50)
         }
 
         return () => {
             setDocumentStoreName('')
             setDocumentStoreDesc('')
-            setContentType('text')
-            setTextSplitter('')
-            setCodeLanguage('')
-            setChunkSize(0)
-            setChunkOverlap(0)
         }
     }, [dialogProps])
 
@@ -189,12 +69,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         try {
             const obj = {
                 name: documentStoreName,
-                description: documentStoreDesc,
-                type: contentType,
-                splitter: textSplitter,
-                codeLanguage: codeLanguage,
-                chunkSize: chunkSize,
-                chunkOverlap: chunkOverlap
+                description: documentStoreDesc
             }
             const createResp = await documentStoreApi.createDocumentStore(obj)
             if (createResp.data) {
@@ -235,12 +110,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         try {
             const saveObj = {
                 name: documentStoreName,
-                description: documentStoreDesc,
-                type: contentType,
-                splitter: textSplitter,
-                codeLanguage: codeLanguage,
-                chunkSize: chunkSize,
-                chunkOverlap: chunkOverlap
+                description: documentStoreDesc
             }
 
             const saveResp = await documentStoreApi.updateDocumentStore(docStoreId, saveObj)
@@ -324,6 +194,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         size='small'
                         sx={{ mt: 1 }}
                         type='string'
+                        disabled={dialogType === 'EDIT'}
                         fullWidth
                         key='documentStoreName'
                         onChange={(e) => setDocumentStoreName(e.target.value)}
@@ -346,109 +217,6 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         key='documentStoreDesc'
                         onChange={(e) => setDocumentStoreDesc(e.target.value)}
                         value={documentStoreDesc ?? ''}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>
-                            Content Type<span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <Dropdown
-                        key={contentType}
-                        name='variableType'
-                        options={ContentTypes}
-                        onSelect={(newValue) => setContentType(newValue)}
-                        value={contentType ?? 'choose an option'}
-                    />
-                </Box>
-                {contentType === 'text' && (
-                    <Box sx={{ p: 2 }}>
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography>
-                                Splitter<span style={{ color: 'red' }}>&nbsp;*</span>
-                            </Typography>
-                            <div style={{ flexGrow: 1 }}></div>
-                        </div>
-                        <Dropdown
-                            key={textSplitter}
-                            name='textSplitter'
-                            options={TextSplitter}
-                            onSelect={(newValue) => setTextSplitter(newValue)}
-                            value={textSplitter ?? 'choose an option'}
-                        />
-                    </Box>
-                )}
-                {contentType === 'markdown' && (
-                    <Box sx={{ p: 2 }}>
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography>
-                                Splitter<span style={{ color: 'red' }}>&nbsp;*</span>
-                            </Typography>
-                            <div style={{ flexGrow: 1 }}></div>
-                        </div>
-                        <Dropdown
-                            key={textSplitter}
-                            name='textSplitter'
-                            options={MarkdownSplitter}
-                            onSelect={(newValue) => setTextSplitter(newValue)}
-                            value={textSplitter ?? 'choose an option'}
-                        />
-                    </Box>
-                )}
-                {contentType === 'code' && (
-                    <Box sx={{ p: 2 }}>
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography>
-                                Language<span style={{ color: 'red' }}>&nbsp;*</span>
-                            </Typography>
-                            <div style={{ flexGrow: 1 }}></div>
-                        </div>
-                        <Dropdown
-                            key={textSplitter}
-                            name='textSplitter'
-                            options={Languages}
-                            onSelect={(newValue) => setCodeLanguage(newValue)}
-                            value={codeLanguage ?? 'choose an option'}
-                        />
-                    </Box>
-                )}
-
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>
-                            Chunk Size<span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <OutlinedInput
-                        size='small'
-                        multiline={false}
-                        sx={{ mt: 1 }}
-                        type='number'
-                        fullWidth
-                        key='chunkSize'
-                        onChange={(e) => setChunkSize(e.target.value)}
-                        value={chunkSize ?? 1000}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>
-                            Chunk Overlap<span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <OutlinedInput
-                        size='small'
-                        multiline={false}
-                        sx={{ mt: 1 }}
-                        type='number'
-                        fullWidth
-                        key='chunkOverlap'
-                        onChange={(e) => setChunkOverlap(e.target.value)}
-                        value={chunkOverlap ?? 50}
                     />
                 </Box>
             </DialogContent>

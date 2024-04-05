@@ -157,9 +157,26 @@ const DocumentStoreDetails = () => {
             storeId: storeId,
             uploadFiles: value
         }
-        const response = await documentsApi.uploadFileToStore(data)
-        if (response.data) {
-            getSpecificDocumentStore.request(storeId)
+        try {
+            const response = await documentsApi.uploadFileToStore(storeId, data)
+            if (response.data) {
+                getSpecificDocumentStore.request(storeId)
+            }
+        } catch (error) {
+            const errorData = error.response.data?.message || 'Unknown Error'
+            enqueueSnackbar({
+                message: `Failed to upload file: ${errorData}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
     }
 
@@ -169,28 +186,23 @@ const DocumentStoreDetails = () => {
     }
 
     const onEditClicked = async () => {
-        if (getSpecificDocumentStore.data?.files.length > 0) {
-            const confirmPayload = {
-                title: `Warning`,
-                description: `Editing the configuration might result in all files being reprocessed. Kindly Confirm ?`,
-                confirmButtonName: 'Yes, Edit Config',
-                cancelButtonName: 'Cancel'
-            }
-
-            const isConfirmed = await confirm(confirmPayload)
-
-            if (!isConfirmed) {
-                return
-            }
-        }
+        // if (getSpecificDocumentStore.data?.files.length > 0) {
+        //     const confirmPayload = {
+        //         title: `Warning`,
+        //         description: `Editing the configuration might result in all files being reprocessed. Kindly Confirm ?`,
+        //         confirmButtonName: 'Yes, Edit Config',
+        //         cancelButtonName: 'Cancel'
+        //     }
+        //
+        //     const isConfirmed = await confirm(confirmPayload)
+        //
+        //     if (!isConfirmed) {
+        //         return
+        //     }
+        // }
         const data = {
             name: documentStore.name,
             description: documentStore.description,
-            contentType: documentStore.type,
-            textSplitter: documentStore.splitter,
-            codeLanguage: documentStore.codeLanguage,
-            chunkSize: documentStore.chunkSize,
-            chunkOverlap: documentStore.chunkOverlap,
             id: documentStore.id
         }
         const dialogProp = {
@@ -235,7 +247,7 @@ const DocumentStoreDetails = () => {
                         <Grid item>
                             {getSpecificDocumentStore.data?.status !== 'STALE' && (
                                 <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
-                                    Edit Config
+                                    Edit Description
                                 </Button>
                             )}
                             {getSpecificDocumentStore.data?.status === 'STALE' && (
@@ -312,22 +324,14 @@ const DocumentStoreDetails = () => {
                                         </TableCell>
                                         <TableCell>{formatBytes(file.size)}</TableCell>
                                         <TableCell>{moment(file.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
-                                        <TableCell>{file.status === 'NEW' ? 'Processing...' : file.totalChunks + ' chunks'}</TableCell>
                                         <TableCell>
-                                            <IconButton
-                                                disabled={file.status === 'NEW'}
-                                                title='Chunks'
-                                                color='primary'
-                                                onClick={() => openChunks(file.id)}
-                                            >
+                                            {file.status === 'NEW' ? 'Pending Processing...' : file.totalChunks + ' chunks'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <IconButton title='Chunks' color='primary' onClick={() => openChunks(file.id)}>
                                                 <IconFileStack />
                                             </IconButton>
-                                            <IconButton
-                                                disabled={file.status === 'NEW'}
-                                                title='Delete'
-                                                color='error'
-                                                onClick={() => onFileDelete(file)}
-                                            >
+                                            <IconButton title='Delete' color='error' onClick={() => onFileDelete(file)}>
                                                 <IconTrash />
                                             </IconButton>
                                         </TableCell>
@@ -345,13 +349,13 @@ const DocumentStoreDetails = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                {getSpecificDocumentStore.data?.status === 'STALE' && (
-                    <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                        <Typography color='warning' style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}>
-                            Some files are still being processed. Refresh this document store to see the latest changes.
-                        </Typography>
-                    </div>
-                )}
+                {/*{getSpecificDocumentStore.data?.status === 'STALE' && (*/}
+                {/*    <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>*/}
+                {/*        <Typography color='warning' style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}>*/}
+                {/*            Some files are pending processing. Click on t.*/}
+                {/*        </Typography>*/}
+                {/*    </div>*/}
+                {/*)}*/}
             </MainCard>
             {showDialog && (
                 <AddDocStoreDialog
