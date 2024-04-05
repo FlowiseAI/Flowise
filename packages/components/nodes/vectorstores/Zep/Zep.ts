@@ -1,9 +1,9 @@
 import { flatten } from 'lodash'
 import { IDocument, ZepClient } from '@getzep/zep-js'
-import { ZepVectorStore, IZepConfig } from 'langchain/vectorstores/zep'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/zep'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
@@ -22,7 +22,7 @@ class Zep_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep'
+        this.label = 'Zep Collection - Open Source'
         this.name = 'zep'
         this.version = 2.0
         this.type = 'Zep'
@@ -106,7 +106,7 @@ class Zep_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const baseURL = nodeData.inputs?.baseURL as string
             const zepCollection = nodeData.inputs?.zepCollection as string
             const dimension = (nodeData.inputs?.dimension as number) ?? 1536
@@ -134,6 +134,7 @@ class Zep_VectorStores implements INode {
 
             try {
                 await ZepVectorStore.fromDocuments(finalDocs, embeddings, zepConfig)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

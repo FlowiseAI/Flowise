@@ -1,6 +1,6 @@
+import { GoogleCustomSearch } from '@langchain/community/tools/google_custom_search'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GoogleCustomSearch } from 'langchain/tools'
 
 class GoogleCustomSearchAPI_Tools implements INode {
     label: string

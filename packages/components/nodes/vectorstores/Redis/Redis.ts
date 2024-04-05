@@ -1,11 +1,32 @@
-import { flatten } from 'lodash'
-import { createClient, SearchOptions } from 'redis'
-import { Embeddings } from 'langchain/embeddings/base'
-import { RedisVectorStore, RedisVectorStoreConfig } from 'langchain/vectorstores/redis'
-import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { flatten, isEqual } from 'lodash'
+import { createClient, SearchOptions, RedisClientOptions } from 'redis'
+import { Embeddings } from '@langchain/core/embeddings'
+import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/community/vectorstores/redis'
+import { Document } from '@langchain/core/documents'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { escapeAllStrings, escapeSpecialChars, unEscapeSpecialChars } from './utils'
+
+let redisClientSingleton: ReturnType<typeof createClient>
+let redisClientOption: RedisClientOptions
+
+const getRedisClient = async (option: RedisClientOptions) => {
+    if (!redisClientSingleton) {
+        // if client doesn't exists
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        // if client exists but option changed
+        redisClientSingleton.quit()
+        redisClientSingleton = createClient(option)
+        await redisClientSingleton.connect()
+        redisClientOption = option
+        return redisClientSingleton
+    }
+    return redisClientSingleton
+}
 
 class Redis_VectorStores implements INode {
     label: string
@@ -117,7 +138,7 @@ class Redis_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const indexName = nodeData.inputs?.indexName as string
             let contentKey = nodeData.inputs?.contentKey as string
@@ -149,8 +170,7 @@ class Redis_VectorStores implements INode {
             }
 
             try {
-                const redisClient = createClient({ url: redisUrl })
-                await redisClient.connect()
+                const redisClient = await getRedisClient({ url: redisUrl })
 
                 const storeConfig: RedisVectorStoreConfig = {
                     redisClient: redisClient,
@@ -183,6 +203,8 @@ class Redis_VectorStores implements INode {
                         filter
                     )
                 }
+
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }
@@ -210,8 +232,7 @@ class Redis_VectorStores implements INode {
             redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
         }
 
-        const redisClient = createClient({ url: redisUrl })
-        await redisClient.connect()
+        const redisClient = await getRedisClient({ url: redisUrl })
 
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: redisClient,

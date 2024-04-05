@@ -21,6 +21,8 @@ export type CommonType = string | number | boolean | undefined | null
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
+export type ImageDetail = 'auto' | 'low' | 'high'
+
 /**
  * Others
  */
@@ -98,6 +100,7 @@ export interface INodeProperties {
     version: number
     category: string // TODO: use enum instead of string
     baseClasses: string[]
+    tags?: string[]
     description?: string
     filePath?: string
     badge?: string
@@ -110,7 +113,7 @@ export interface INode extends INodeProperties {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
     }
     vectorStoreMethods?: {
-        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
         delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
     }
@@ -145,12 +148,40 @@ export interface IUsedTool {
     toolOutput: string | object
 }
 
+export interface IFileUpload {
+    data?: string
+    type: string
+    name: string
+    mime: string
+}
+
+export interface IMultiModalOption {
+    image?: Record<string, any>
+    audio?: Record<string, any>
+}
+
+export type MessageContentText = {
+    type: 'text'
+    text: string
+}
+
+export type MessageContentImageUrl = {
+    type: 'image_url'
+    image_url:
+        | string
+        | {
+              url: string
+              detail?: ImageDetail
+          }
+}
+
 /**
  * Classes
  */
 
-import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from 'langchain/prompts'
-import { VectorStore } from 'langchain/vectorstores/base'
+import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -202,7 +233,7 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from 'langchain/schema'
+import { BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
@@ -239,4 +270,23 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+}
+
+export type IndexingResult = {
+    numAdded: number
+    numDeleted: number
+    numUpdated: number
+    numSkipped: number
+    totalKeys: number
+    addedDocs: Document[]
+}
+
+export interface IVisionChatModal {
+    id: string
+    configuredModel: string
+    multiModalOption: IMultiModalOption
+    configuredMaxToken?: number
+    setVisionModel(): void
+    revertToOriginalModel(): void
+    setMultiModalOption(multiModalOption: IMultiModalOption): void
 }

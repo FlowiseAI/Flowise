@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class HuggingFaceInference_LLMs implements INode {
     label: string

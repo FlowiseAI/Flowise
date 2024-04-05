@@ -1,8 +1,8 @@
+import { GoogleAuthOptions } from 'google-auth-library'
+import { BaseCache } from '@langchain/core/caches'
+import { ChatGoogleVertexAI, GoogleVertexAIChatInput } from '@langchain/community/chat_models/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatGoogleVertexAI, GoogleVertexAIChatInput } from 'langchain/chat_models/googlevertexai'
-import { GoogleAuthOptions } from 'google-auth-library'
-import { BaseCache } from 'langchain/schema'
 
 class GoogleVertexAI_ChatModels implements INode {
     label: string

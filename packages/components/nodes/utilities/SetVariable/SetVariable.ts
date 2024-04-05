@@ -46,8 +46,12 @@ class SetVariable_Utilities implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const inputRaw = nodeData.inputs?.input
+        let inputRaw = nodeData.inputs?.input
         const variableName = nodeData.inputs?.variableName as string
+
+        if (Array.isArray(inputRaw) && inputRaw.length === 1) {
+            inputRaw = inputRaw[0]
+        }
 
         return { output: inputRaw, dynamicVariables: { [variableName]: inputRaw } }
     }

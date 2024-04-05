@@ -1,10 +1,28 @@
 import { MongoClient, Collection, Document } from 'mongodb'
-import { MongoDBChatMessageHistory } from 'langchain/stores/message/mongodb'
+import { MongoDBChatMessageHistory } from '@langchain/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from 'langchain/schema'
+import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
+
+const getMongoClient = async (newMongoUrl: string) => {
+    if (!mongoClientSingleton) {
+        // if client does not exist
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    }
+    return mongoClientSingleton
+}
 class MongoDB_Memory implements INode {
     label: string
     name: string
@@ -79,9 +97,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-    const client = new MongoClient(mongoDBConnectUrl)
-    await client.connect()
-
+    const client = await getMongoClient(mongoDBConnectUrl)
     const collection = client.db(databaseName).collection(collectionName)
 
     const mongoDBChatMessageHistory = new MongoDBChatMessageHistory({
@@ -138,7 +154,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
         if (!this.collection) return []
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const document = await this.collection.findOne({ sessionId: id })
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
@@ -148,7 +164,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.collection) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
 
@@ -180,7 +196,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         if (!this.collection) return
 
-        const id = overrideSessionId ?? this.sessionId
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.collection.deleteOne({ sessionId: id })
         await this.clear()
     }

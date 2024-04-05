@@ -1,7 +1,7 @@
-import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from 'langchain/embeddings/googlevertexai'
+import { GoogleAuthOptions } from 'google-auth-library'
+import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from '@langchain/community/embeddings/googlevertexai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GoogleAuthOptions } from 'google-auth-library'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string

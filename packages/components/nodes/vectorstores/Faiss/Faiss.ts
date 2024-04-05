@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
-import { Document } from 'langchain/document'
-import { FaissStore } from 'langchain/vectorstores/faiss'
-import { Embeddings } from 'langchain/embeddings/base'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Document } from '@langchain/core/documents'
+import { FaissStore } from '@langchain/community/vectorstores/faiss'
+import { Embeddings } from '@langchain/core/embeddings'
+import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
 class Faiss_VectorStores implements INode {
@@ -74,7 +74,7 @@ class Faiss_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<void> {
+        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const basePath = nodeData.inputs?.basePath as string
@@ -95,6 +95,8 @@ class Faiss_VectorStores implements INode {
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
                     return await similaritySearchVectorWithScore(query, k, vectorStore)
                 }
+
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

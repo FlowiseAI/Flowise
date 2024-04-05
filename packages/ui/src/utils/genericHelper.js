@@ -99,6 +99,7 @@ export const initNode = (nodeData, newNodeId) => {
                     id: `${newNodeId}-output-${nodeData.outputs[j].name}-${baseClasses}`,
                     name: nodeData.outputs[j].name,
                     label: nodeData.outputs[j].label,
+                    description: nodeData.outputs[j].description ?? '',
                     type
                 }
                 options.push(newOutputOption)
@@ -107,6 +108,7 @@ export const initNode = (nodeData, newNodeId) => {
                 name: 'output',
                 label: 'Output',
                 type: 'options',
+                description: nodeData.outputs[0].description ?? '',
                 options,
                 default: nodeData.outputs[0].name
             }
@@ -116,6 +118,7 @@ export const initNode = (nodeData, newNodeId) => {
                 id: `${newNodeId}-output-${nodeData.name}-${nodeData.baseClasses.join('|')}`,
                 name: nodeData.name,
                 label: nodeData.type,
+                description: nodeData.description ?? '',
                 type: nodeData.baseClasses.join(' | ')
             }
             outputAnchors.push(newOutput)
@@ -231,6 +234,15 @@ export const convertDateStringToDateObject = (dateString) => {
 
 export const getFileName = (fileBase64) => {
     let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
         for (const file of files) {
@@ -277,6 +289,7 @@ export const generateExportFlowData = (flowData) => {
             name: node.data.name,
             type: node.data.type,
             baseClasses: node.data.baseClasses,
+            tags: node.data.tags,
             category: node.data.category,
             description: node.data.description,
             inputParams: node.data.inputParams,
@@ -349,6 +362,11 @@ export const getUpsertDetails = (nodes, edges) => {
                 if (vsNode.data.inputs.embeddings) {
                     const embeddingsId = vsNode.data.inputs.embeddings.replace(/{{|}}/g, '').split('.')[0]
                     innerNodes.push(nodes.find((node) => node.data.id === embeddingsId))
+                }
+
+                if (vsNode.data.inputs.recordManager) {
+                    const recordManagerId = vsNode.data.inputs.recordManager.replace(/{{|}}/g, '').split('.')[0]
+                    innerNodes.push(nodes.find((node) => node.data.id === recordManagerId))
                 }
 
                 for (const doc of connectedDocs) {
@@ -602,4 +620,26 @@ export const getConfigExamplesForCurl = (configData, bodyType, isMultiple, stopN
         else finalStr += bodyType === 'json' ? `, ` : ` \\`
     }
     return finalStr
+}
+
+export const getOS = () => {
+    let userAgent = window.navigator.userAgent.toLowerCase(),
+        macosPlatforms = /(macintosh|macintel|macppc|mac68k|macos)/i,
+        windowsPlatforms = /(win32|win64|windows|wince)/i,
+        iosPlatforms = /(iphone|ipad|ipod)/i,
+        os = null
+
+    if (macosPlatforms.test(userAgent)) {
+        os = 'macos'
+    } else if (iosPlatforms.test(userAgent)) {
+        os = 'ios'
+    } else if (windowsPlatforms.test(userAgent)) {
+        os = 'windows'
+    } else if (/android/.test(userAgent)) {
+        os = 'android'
+    } else if (!os && /linux/.test(userAgent)) {
+        os = 'linux'
+    }
+
+    return os
 }

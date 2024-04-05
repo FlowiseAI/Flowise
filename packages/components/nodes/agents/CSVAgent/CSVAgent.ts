@@ -1,10 +1,15 @@
-import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
+import { LLMChain } from 'langchain/chains'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
-import { LLMChain } from 'langchain/chains'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import path from 'path'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
 
 class CSV_Agents implements INode {
     label: string
@@ -20,7 +25,7 @@ class CSV_Agents implements INode {
     constructor() {
         this.label = 'CSV Agent'
         this.name = 'csvAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'CSVagent.svg'
@@ -47,6 +52,14 @@ class CSV_Agents implements INode {
                 optional: true,
                 placeholder:
                     'I want you to act as a document that I am having a conversation with. Your name is "AI Assistant". You will provide me with answers from the given info. If the answer is not included, say exactly "Hmm, I am not sure." and stop after that. Refuse to answer any question not about the info. Never break character.'
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -56,29 +69,56 @@ class CSV_Agents implements INode {
         return undefined
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const model = nodeData.inputs?.model as BaseLanguageModel
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the CSV agent
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let files: string[] = []
-
-        if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
-            files = JSON.parse(csvFileBase64)
-        } else {
-            files = [csvFileBase64]
-        }
-
         let base64String = ''
 
-        for (const file of files) {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            base64String = splitDataURI.pop() ?? ''
+        if (csvFileBase64.startsWith('FILE-STORAGE::')) {
+            const fileName = csvFileBase64.replace('FILE-STORAGE::', '')
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
+            } else {
+                files = [fileName]
+            }
+            const chatflowid = options.chatflowid
+
+            for (const file of files) {
+                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+                const fileData = fs.readFileSync(fileInStorage)
+                base64String += fileData.toString('base64')
+            }
+        } else {
+            if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
+                files = JSON.parse(csvFileBase64)
+            } else {
+                files = [csvFileBase64]
+            }
+
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                base64String += splitDataURI.pop() ?? ''
+            }
         }
 
         const pyodide = await LoadPyodide()

@@ -1,5 +1,6 @@
 {
     "name": "make_webhook",
+    "framework": "Langchain",
     "description": "Useful when you need to send message to Discord",
     "color": "linear-gradient(rgb(19,94,2), rgb(19,124,59))",
     "iconSrc": "https://github.com/FlowiseAI/Flowise/assets/26460777/517fdab2-8a6e-4781-b3c8-fb92cc78aa0b",

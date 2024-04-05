@@ -1,4 +1,4 @@
-import { LLM, BaseLLMParams } from 'langchain/llms/base'
+import { LLM, BaseLLMParams } from '@langchain/core/language_models/llms'
 
 export interface CohereInput extends BaseLLMParams {
     /** Sampling temperature to use */
@@ -72,7 +72,7 @@ export class Cohere extends LLM implements CohereInput {
             const { default: cohere } = await import('cohere-ai')
             return { cohere }
         } catch (e) {
-            throw new Error('Please install cohere-ai as a dependency with, e.g. `yarn add cohere-ai`')
+            throw new Error('Please install cohere-ai as a dependency with, e.g. `pnpm install cohere-ai`')
         }
     }
 }
