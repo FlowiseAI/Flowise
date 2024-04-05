@@ -15,20 +15,14 @@ export class DocumentStore implements IDocumentStore {
     @Column({ nullable: false, type: 'text' })
     subFolder: string
 
-    @Column({ nullable: false, type: 'text' })
+    @Column({ nullable: true, type: 'text' })
     metrics: string
 
-    @Column({ nullable: false, type: 'text' })
+    @Column({ nullable: true, type: 'text' })
     files: string
 
-    @Column({ nullable: false, type: 'text' })
+    @Column({ nullable: true, type: 'text' })
     whereUsed: string
-
-    @Column({ nullable: false, type: 'text' })
-    type: string
-
-    @Column({ nullable: false, type: 'text' })
-    config: string // JSON string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()

@@ -17,6 +17,8 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
         const dir = path.join(getStoragePath(), 'datasource', subFolder)
         if (fs.existsSync(dir)) {
             return res.status(500).send(new Error(`Document store ${body.name} already exists. Subfolder: ${subFolder}`))
+        } else {
+            fs.mkdirSync(dir)
         }
         const docStore = DocumentStoreDTO.toEntity(body)
         const apiResponse = await documentStoreService.createDocumentStore(docStore)
@@ -42,7 +44,7 @@ const deleteFileFromDocumentStore = async (req: Request, res: Response, next: Ne
             return res.status(500).send(new Error(`Document store file delete missing key information.`))
         }
         const apiResponse = await documentStoreService.deleteFileFromDocumentStore(storeId, fileId)
-        return res.json(apiResponse)
+        return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
         next(error)
     }

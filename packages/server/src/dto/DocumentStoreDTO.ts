@@ -9,7 +9,6 @@ export class DocumentStoreDTO {
     subFolder: string
     files: any[]
     whereUsed: any[]
-    type: string
     createdDate: Date
     updatedDate: Date
     status: DocumentStoreStatus
@@ -25,17 +24,11 @@ export class DocumentStoreDTO {
 
     static fromEntity(entity: DocumentStore): DocumentStoreDTO {
         let documentStoreDTO = new DocumentStoreDTO()
-        // let config = JSON.parse(entity.config)
 
         Object.assign(documentStoreDTO, entity)
         documentStoreDTO.id = entity.id
         documentStoreDTO.name = entity.name
         documentStoreDTO.description = entity.description
-        documentStoreDTO.type = entity.type
-        // documentStoreDTO.splitter = config.splitter
-        // documentStoreDTO.codeLanguage = config.codeLanguage
-        // documentStoreDTO.chunkSize = config.chunkSize
-        // documentStoreDTO.chunkOverlap = config.chunkOverlap
         documentStoreDTO.subFolder = entity.subFolder
         if (entity.whereUsed) {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
@@ -50,9 +43,7 @@ export class DocumentStoreDTO {
         }
         documentStoreDTO.status = entity.status
         if (entity.files) {
-            const filesObj = JSON.parse(entity.files)
-            documentStoreDTO.files = filesObj
-            documentStoreDTO.totalFiles = filesObj.length
+            documentStoreDTO.files = JSON.parse(entity.files)
         }
         return documentStoreDTO
     }

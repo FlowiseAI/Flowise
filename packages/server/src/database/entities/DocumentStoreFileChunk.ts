@@ -10,6 +10,7 @@ export class DocumentStoreFileChunk implements IDocumentStoreFileChunk {
     @Column({ type: 'uuid' })
     docId: string
 
+    @Index()
     @Column({ type: 'uuid' })
     storeId: string
 

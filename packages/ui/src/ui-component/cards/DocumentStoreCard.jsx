@@ -41,9 +41,6 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                             <Typography style={{ wordWrap: 'break-word' }} variant='h4' component='div'>
                                 {data.name}
                             </Typography>
-                            <Typography style={{ marginBottom: 1.5 }} color='text.secondary'>
-                                Type: {data.type}
-                            </Typography>
                             <Typography style={{ wordBreak: 'break-word' }} variant='body2'>
                                 {data.description}
                             </Typography>

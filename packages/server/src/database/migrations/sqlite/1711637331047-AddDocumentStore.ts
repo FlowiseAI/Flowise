@@ -6,13 +6,12 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
             `CREATE TABLE IF NOT EXISTS "document_store" (
                 "id" varchar PRIMARY KEY NOT NULL, 
                 "name" varchar NOT NULL, 
-                "description" varchar NOT NULL, 
+                "description" varchar, 
                 "subFolder" varchar NOT NULL, 
-                "type" varchar NOT NULL, 
                 "status" varchar NOT NULL, 
                 "files" text, 
                 "metrics" text, 
-                "config" text, 
+                "whereUsed" text, 
                 "updatedDate" datetime NOT NULL DEFAULT (datetime('now')),
                 "createdDate" datetime NOT NULL DEFAULT (datetime('now')));`
         )
@@ -25,6 +24,8 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 "metadata" text 
             );`
         )
+        await queryRunner.query(`CREATE INDEX "IDX_e674527422272fd838f4f0f3d4" ON "document_store_file_chunk" ("docId") ;`)
+        await queryRunner.query(`CREATE INDEX "IDX_e774527522272fd838f4f0f3d5" ON "document_store_file_chunk" ("storeId") ;`)
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

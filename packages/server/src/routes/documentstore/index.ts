@@ -5,7 +5,7 @@ const router = express.Router()
 router.post('/', documentStoreController.createDocumentStore)
 router.get('/', documentStoreController.getAllDocumentStores)
 // delete file from document store
-router.delete('/:id', documentStoreController.deleteFileFromDocumentStore)
+router.delete('/:id/:fileId', documentStoreController.deleteFileFromDocumentStore)
 // upload file to document store
 router.post('/:id/files', documentStoreController.uploadFileToDocumentStore)
 // chunking preview

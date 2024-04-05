@@ -175,7 +175,7 @@ const DocumentStoreChunks = () => {
     const [contentType, setContentType] = useState('text')
     const [textSplitter, setTextSplitter] = useState('recursive-splitter')
     const [codeLanguage, setCodeLanguage] = useState('')
-    const [customSeparator, setCustomSeparator] = useState('\n')
+    const [customSeparator, setCustomSeparator] = useState('\\n')
     const [chunkSize, setChunkSize] = useState(1500)
     const [chunkOverlap, setChunkOverlap] = useState(50)
     const [pdfUsage, setPdfUsage] = useState('perPage')
