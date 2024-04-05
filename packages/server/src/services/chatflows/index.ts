@@ -17,6 +17,7 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -184,8 +185,24 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
 const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+        let dbResponse: ChatFlow
+        if (containsBase64File(newChatFlow)) {
+            // we need a 2-step process, as we need to save the chatflow first and then update the file paths
+            // this is because we need the chatflow id to create the file paths
+
+            // step 1 - save with empty flowData
+            const incomingFlowData = newChatFlow.flowData
+            newChatFlow.flowData = JSON.stringify({})
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            // step 2 - convert base64 to file paths and update the chatflow
+            step1Results.flowData = updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
+        } else {
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+        }
         await appServer.telemetry.sendTelemetry('chatflow_created', {
             version: await getAppVersion(),
             chatflowId: dbResponse.id,
@@ -200,6 +217,9 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+        if (containsBase64File(updateChatFlow)) {
+            updateChatFlow.flowData = updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
+        }
         const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
         // chatFlowPool is initialized only when a flow is opened
