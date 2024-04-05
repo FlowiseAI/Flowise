@@ -1,7 +1,5 @@
 {
-  "chatModels": {
-    "type": "ChatModels",
-    "models": [
+  "chatModels": [
       {
         "name": "awsBedrock",
         "options": [
@@ -66,11 +64,8 @@
         ],
         "default": "gpt-35-turbo"
       }
-    ]
-  },
-  "llm": {
-    "type": "LLM",
-    "models": [
+    ],
+  "llm": [
       {
         "name": "AWSBedRock",
         "options": [
@@ -98,5 +93,4 @@
         ]
       }
     ]
-  }
 }
