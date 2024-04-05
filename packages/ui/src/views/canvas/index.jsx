@@ -409,7 +409,6 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            
             const error = getSpecificChatflowApi.error
             if (error.response?.status === 401) {
                 setNoAccessDialogOpenOpen(true)
