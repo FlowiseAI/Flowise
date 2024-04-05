@@ -109,7 +109,7 @@ API_URL = "${baseURL}/api/v1/vector/upsert/${dialogProps.chatflowid}"
 
 def query(payload):
     response = requests.post(API_URL, json=payload)
-    return response.text
+    return response.json()
 
 output = query({
     ${isMultiple ? `"stopNodeId": "${vectorNodeId}",\n    ` : ``}"overrideConfig": {${getConfigExamplesForPython(
@@ -133,7 +133,7 @@ output = query({
             body: JSON.stringify(data)
         }
     );
-    const result = await response.text();
+    const result = await response.json();
     return result;
 }
 
@@ -184,7 +184,7 @@ body_data = {${getConfigExamplesForPython(configData, 'formData', isMultiple, ve
 
 def query(form_data, body_data):
     response = requests.post(API_URL, files=form_data, data=body_data)
-    return response.text
+    return response.json()
 
 output = query(form_data, body_data)
 `
@@ -200,7 +200,7 @@ async function query(formData) {
             body: formData
         }
     );
-    const result = await response.text();
+    const result = await response.json();
     return result;
 }
 
