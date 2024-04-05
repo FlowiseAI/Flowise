@@ -301,7 +301,7 @@ const Variables = () => {
                                             <>
                                                 {variables.filter(filterVariables).map((variable, index) => (
                                                     <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                                        <StyledTableCell scope='row'>
+                                                        <StyledTableCell component='th' scope='row'>
                                                             <div
                                                                 style={{
                                                                     display: 'flex',
