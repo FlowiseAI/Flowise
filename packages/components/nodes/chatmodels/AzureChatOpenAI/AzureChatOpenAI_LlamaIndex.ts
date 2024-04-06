@@ -1,6 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
+import { getModels } from '../../../src/modelLoader'
 
 interface AzureOpenAIConfig {
     apiKey?: string
@@ -42,25 +43,8 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo',
-                        name: 'gpt-3.5-turbo'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-16k',
-                        name: 'gpt-3.5-turbo-16k'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'gpt-3.5-turbo-16k',
                 optional: true
             },
@@ -97,6 +81,13 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels('chatModels', 'azureChatOpenAI_LlamaIndex')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

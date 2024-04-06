@@ -1,9 +1,10 @@
 import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
+import { getModels } from '../../../src/modelLoader'
 
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
@@ -42,30 +43,8 @@ class AzureChatOpenAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    },
-                    {
-                        label: 'gpt-35-turbo',
-                        name: 'gpt-35-turbo'
-                    },
-                    {
-                        label: 'gpt-35-turbo-16k',
-                        name: 'gpt-35-turbo-16k'
-                    },
-                    {
-                        label: 'gpt-4-vision-preview',
-                        name: 'gpt-4-vision-preview'
-                    }
-                ],
-                default: 'gpt-35-turbo',
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 optional: true
             },
             {
@@ -141,6 +120,13 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels('chatModels', 'azureChatOpenAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
