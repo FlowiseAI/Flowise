@@ -4,7 +4,7 @@ import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
-import { getModels, getRegions } from '../../../src/modelLoader'
+import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 
 /**
  * @author Michael Connor <mlconnor@yahoo.com>
@@ -100,10 +100,10 @@ class AWSChatBedrock_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
-            return await getModels('chatModels', 'awsChatBedrock')
+            return await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock')
         },
         async listRegions(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
-            return await getRegions('chatModels', 'awsChatBedrock')
+            return await getRegions(MODEL_TYPE.CHAT, 'awsChatBedrock')
         }
     }
 

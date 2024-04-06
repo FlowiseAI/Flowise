@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
-import { getModels } from '../../../src/modelLoader'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface AzureOpenAIConfig {
     apiKey?: string
@@ -86,7 +86,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
-            return await getModels('chatModels', 'azureChatOpenAI_LlamaIndex')
+            return await getModels(MODEL_TYPE.CHAT, 'azureChatOpenAI_LlamaIndex')
         }
     }
 

@@ -4,7 +4,7 @@ import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatAnthropic } from './FlowiseChatAnthropic'
-import { getModels } from "../../../src/modelLoader";
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -95,7 +95,7 @@ class ChatAnthropic_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
-            return await getModels('chatModels', 'chatAnthropic')
+            return await getModels(MODEL_TYPE.CHAT, 'chatAnthropic')
         }
     }
 
