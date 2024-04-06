@@ -6,6 +6,7 @@ import path from 'path'
 import { NextFunction, Request, Response } from 'express'
 import { convertToValidFilename } from '../../utils'
 import documentStoreService from '../../services/documentstore'
+import { DocumentStore } from '../../database/entities/DocumentStore'
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -18,7 +19,7 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
         if (fs.existsSync(dir)) {
             return res.status(500).send(new Error(`Document store ${body.name} already exists. Subfolder: ${subFolder}`))
         } else {
-            fs.mkdirSync(dir)
+            fs.mkdirSync(dir, { recursive: true })
         }
         const docStore = DocumentStoreDTO.toEntity(body)
         const apiResponse = await documentStoreService.createDocumentStore(docStore)
@@ -144,7 +145,8 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
             return res.status(404).send(`DocumentStore ${req.params.id} not found in the database`)
         }
         const body = req.body
-        const updateDocStore = DocumentStoreDTO.toEntity(body)
+        const updateDocStore = new DocumentStore()
+        Object.assign(updateDocStore, body)
         const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {

@@ -23,7 +23,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // API
-import documentsApi from '@/api/documents'
+import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -61,7 +61,7 @@ const DocumentStoreDetails = () => {
     const fileUploadRef = useRef(null)
 
     const openChunks = (id) => {
-        navigate('/documentStores/' + storeId + '/' + id)
+        navigate('/document-stores/' + storeId + '/' + id)
     }
 
     const handleUploadClick = async (e) => {

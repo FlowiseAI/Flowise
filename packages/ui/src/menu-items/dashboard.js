@@ -71,7 +71,7 @@ const dashboard = {
             id: 'documents',
             title: 'Document Stores',
             type: 'item',
-            url: '/documentStores',
+            url: '/document-stores',
             icon: icons.IconFiles,
             breadcrumbs: true
         }

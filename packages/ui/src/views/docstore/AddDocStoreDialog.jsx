@@ -15,7 +15,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { IconX, IconFileStack } from '@tabler/icons'
 
 // API
-import documentStoreApi from '@/api/documents'
+import documentStoreApi from '@/api/documentstore'
 
 // Hooks
 
@@ -88,7 +88,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
-            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response?.status}: ${err.response?.statusText}`
+            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response.data.message}`
             enqueueSnackbar({
                 message: `Failed to add new Document Store: ${errorData}`,
                 options: {

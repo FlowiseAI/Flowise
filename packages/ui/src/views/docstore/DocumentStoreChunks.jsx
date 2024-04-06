@@ -10,7 +10,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // API
-import documentsApi from '@/api/documents'
+import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -212,7 +212,7 @@ const DocumentStoreChunks = () => {
     }, [getChunksApi.data])
 
     const openDS = (storeId) => {
-        navigate('/documentStores/' + storeId)
+        navigate('/document-stores/' + storeId)
     }
 
     const showPreview = () => {

@@ -16,7 +16,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 
 // API
-import documentsApi from '@/api/documents'
+import documentsApi from '@/api/documentstore'
 
 // icons
 import { IconPlus } from '@tabler/icons'
@@ -34,7 +34,7 @@ const Documents = () => {
     const [dialogProps, setDialogProps] = useState({})
 
     const openDS = (id) => {
-        navigate('/documentStores/' + id)
+        navigate('/document-stores/' + id)
     }
 
     const addNew = () => {

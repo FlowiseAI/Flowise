@@ -69,15 +69,15 @@ const MainRoutes = {
             element: <Variables />
         },
         {
-            path: '/documentStores',
+            path: '/document-stores',
             element: <Documents />
         },
         {
-            path: '/documentStores/:id',
+            path: '/document-stores/:id',
             element: <DocumentStoreDetail />
         },
         {
-            path: '/documentStores/:id/:id',
+            path: '/document-stores/:id/:id',
             element: <DocumentStoreChunks />
         }
     ]
