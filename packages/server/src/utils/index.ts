@@ -243,6 +243,15 @@ export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INode
  */
 export const getFileName = (fileBase64: string): string => {
     let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
         for (const file of files) {
