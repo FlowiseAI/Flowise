@@ -1,7 +1,7 @@
 import { addAPIKey, deleteAPIKey, getAPIKeys, updateAPIKey } from '../../utils/apiKey'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
 import { getApiKey } from '../../utils/apiKey'
-import { InternalServerError } from '../../errors/internalServerError'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
 const getAllApiKeys = async () => {
@@ -49,7 +49,7 @@ const verifyApiKey = async (paramApiKey: string): Promise<any> => {
     try {
         const apiKey = await getApiKey(paramApiKey)
         if (!apiKey) {
-            throw new InternalServerError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         const dbResponse = 'OK'
         return dbResponse

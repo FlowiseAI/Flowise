@@ -1,4 +1,4 @@
-export class InternalServerError extends Error {
+export class InternalFlowiseError extends Error {
     statusCode: number
     constructor(statusCode: number, message: string) {
         super(message)

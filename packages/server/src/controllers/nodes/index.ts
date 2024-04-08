@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import nodesService from '../../services/nodes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const getAllNodes = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -13,7 +15,7 @@ const getAllNodes = async (req: Request, res: Response, next: NextFunction) => {
 const getNodeByName = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.name === 'undefined' || req.params.name === '') {
-            throw new Error(`Error: nodesController.getNodeByName - name not provided!`)
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: nodesController.getNodeByName - name not provided!`)
         }
         const apiResponse = await nodesService.getNodeByName(req.params.name)
         return res.json(apiResponse)
@@ -25,7 +27,7 @@ const getNodeByName = async (req: Request, res: Response, next: NextFunction) =>
 const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.name === 'undefined' || req.params.name === '') {
-            throw new Error(`Error: nodesController.getSingleNodeIcon - name not provided!`)
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: nodesController.getSingleNodeIcon - name not provided!`)
         }
         const apiResponse = await nodesService.getSingleNodeIcon(req.params.name)
         return res.sendFile(apiResponse)
@@ -37,10 +39,16 @@ const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction
 const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error(`Error: nodesController.getSingleNodeAsyncOptions - body not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: nodesController.getSingleNodeAsyncOptions - body not provided!`
+            )
         }
         if (typeof req.params.name === 'undefined' || req.params.name === '') {
-            throw new Error(`Error: nodesController.getSingleNodeAsyncOptions - name not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: nodesController.getSingleNodeAsyncOptions - name not provided!`
+            )
         }
         const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, req.body)
         return res.json(apiResponse)
@@ -52,7 +60,10 @@ const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: Next
 const executeCustomFunction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error(`Error: nodesController.executeCustomFunction - body not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: nodesController.executeCustomFunction - body not provided!`
+            )
         }
         const apiResponse = await nodesService.executeCustomFunction(req.body)
         return res.json(apiResponse)

@@ -1,12 +1,12 @@
 import { webCrawl, xmlScrape } from 'flowise-components'
-import { InternalServerError } from '../../errors/internalServerError'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
 const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, queryLimit: string): Promise<any> => {
     try {
         const url = decodeURIComponent(requestUrl)
         if (!relativeLinksMethod) {
-            throw new InternalServerError(
+            throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 `Please choose a Relative Links Method in Additional Parameters!`
             )
@@ -21,7 +21,7 @@ const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, quer
         }
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: fetchLinksService.getAllLinks - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: fetchLinksService.getAllLinks - ${error}`)
     }
 }
 

@@ -1,7 +1,7 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Tool } from '../../database/entities/Tool'
 import { getAppVersion } from '../../utils'
-import { InternalServerError } from '../../errors/internalServerError'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
 const creatTool = async (requestBody: any): Promise<any> => {
@@ -18,7 +18,7 @@ const creatTool = async (requestBody: any): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.creatTool - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.creatTool - ${error}`)
     }
 }
 
@@ -30,7 +30,7 @@ const deleteTool = async (toolId: string): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.deleteTool - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.deleteTool - ${error}`)
     }
 }
 
@@ -40,7 +40,7 @@ const getAllTools = async (): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).find()
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${error}`)
     }
 }
 
@@ -51,11 +51,11 @@ const getToolById = async (toolId: string): Promise<any> => {
             id: toolId
         })
         if (!dbResponse) {
-            throw new InternalServerError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
     }
 }
 
@@ -66,7 +66,7 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
             id: toolId
         })
         if (!tool) {
-            throw new InternalServerError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
         }
         const updateTool = new Tool()
         Object.assign(updateTool, toolBody)
@@ -74,7 +74,7 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
         return dbResponse
     } catch (error) {
-        throw new InternalServerError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getToolById - ${error}`)
     }
 }
 

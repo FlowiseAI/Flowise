@@ -1,10 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
 import assistantsService from '../../services/assistants'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const creatAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error(`Error: assistantsController.creatAssistant - body not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: assistantsController.creatAssistant - body not provided!`
+            )
         }
         const apiResponse = await assistantsService.creatAssistant(req.body)
         return res.json(apiResponse)
@@ -16,7 +21,10 @@ const creatAssistant = async (req: Request, res: Response, next: NextFunction) =
 const deleteAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: assistantsController.deleteAssistant - id not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: assistantsController.deleteAssistant - id not provided!`
+            )
         }
         const apiResponse = await assistantsService.deleteAssistant(req.params.id, req.query.isDeleteBoth)
 
@@ -39,7 +47,10 @@ const getAllAssistants = async (req: Request, res: Response, next: NextFunction)
 const getAssistantById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: assistantsController.getAssistantById - id not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: assistantsController.getAssistantById - id not provided!`
+            )
         }
         const apiResponse = await assistantsService.getAssistantById(req.params.id)
 
@@ -52,10 +63,16 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
 const updateAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: assistantsController.updateAssistant - id not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: assistantsController.updateAssistant - id not provided!`
+            )
         }
         if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error(`Error: assistantsController.updateAssistant - body not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: assistantsController.updateAssistant - body not provided!`
+            )
         }
         const apiResponse = await assistantsService.updateAssistant(req.params.id, req.body)
 
