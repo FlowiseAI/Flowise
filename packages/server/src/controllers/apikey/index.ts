@@ -15,7 +15,7 @@ const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) =>
 
 const createApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body.keyName === 'undefined' || req.body.keyName === '') {
+        if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.createApiKey - keyName not provided!`)
         }
         const apiResponse = await apikeyService.createApiKey(req.body.keyName)

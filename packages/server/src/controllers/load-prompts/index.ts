@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const createPrompt = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || typeof req.body.promptName === 'undefined' || req.body.promptName === '') {
+        if (typeof req.body === 'undefined' || !req.body.promptName) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: loadPromptsController.createPrompt - promptName not provided!`

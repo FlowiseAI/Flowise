@@ -16,7 +16,7 @@ const getAllComponentsCredentials = async (req: Request, res: Response, next: Ne
 // Get component credential via name
 const getComponentByName = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.name === 'undefined' || req.params.name === '') {
+        if (typeof req.params === 'undefined' || !req.params.name) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: componentsCredentialsController.getComponentByName - name not provided!`
@@ -32,7 +32,7 @@ const getComponentByName = async (req: Request, res: Response, next: NextFunctio
 // Returns specific component credential icon via name
 const getSingleComponentsCredentialIcon = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.name === 'undefined' || req.params.name === '') {
+        if (typeof req.params === 'undefined' || !req.params.name) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: componentsCredentialsController.getSingleComponentsCredentialIcon - name not provided!`

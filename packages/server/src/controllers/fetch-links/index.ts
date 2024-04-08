@@ -5,16 +5,16 @@ import { StatusCodes } from 'http-status-codes'
 
 const getAllLinks = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.query.url === 'undefined' || req.query.url === '') {
+        if (typeof req.query === 'undefined' || !req.query.url) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: fetchLinksController.getAllLinks - url not provided!`)
         }
-        if (typeof req.query.relativeLinksMethod === 'undefined' || req.query.relativeLinksMethod === '') {
+        if (typeof req.query === 'undefined' || !req.query.relativeLinksMethod) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: fetchLinksController.getAllLinks - relativeLinksMethod not provided!`
             )
         }
-        if (typeof req.query.limit === 'undefined' || req.query.limit === '') {
+        if (typeof req.query === 'undefined' || !req.query.limit) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: fetchLinksController.getAllLinks - limit not provided!`)
         }
         const apiResponse = await fetchLinksService.getAllLinks(

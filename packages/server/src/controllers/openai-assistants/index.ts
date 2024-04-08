@@ -10,7 +10,7 @@ import { StatusCodes } from 'http-status-codes'
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.query.credential === 'undefined' || req.query.credential === '') {
+        if (typeof req.query === 'undefined' || !req.query.credential) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: openaiAssistantsController.getAllOpenaiAssistants - credential not provided!`
@@ -32,7 +32,7 @@ const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextF
                 `Error: openaiAssistantsController.getSingleOpenaiAssistant - id not provided!`
             )
         }
-        if (typeof req.query.credential === 'undefined' || req.query.credential === '') {
+        if (typeof req.query === 'undefined' || !req.query.credential) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: openaiAssistantsController.getSingleOpenaiAssistant - credential not provided!`
