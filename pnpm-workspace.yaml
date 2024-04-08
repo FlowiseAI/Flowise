@@ -1,2 +1,4 @@
 packages:
+    - 'demo'
+    - 'embeds/*'
     - 'packages/*'
