@@ -3,21 +3,27 @@ import { getRateLimiter } from '../../utils/rateLimit'
 import chatflowsService from '../../services/chatflows'
 import logger from '../../utils/logger'
 import predictionsServices from '../../services/predictions'
-import { ApiError } from '../../errors/apiError'
+import { InternalServerError } from '../../errors/internalServerError'
 import { StatusCodes } from 'http-status-codes'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new ApiError(StatusCodes.PRECONDITION_FAILED, `Error: predictionsController.createPrediction - id not provided!`)
+            throw new InternalServerError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: predictionsController.createPrediction - id not provided!`
+            )
         }
         if (typeof req.body === 'undefined' || req.body === '') {
-            throw new ApiError(StatusCodes.PRECONDITION_FAILED, `Error: predictionsController.createPrediction - body not provided!`)
+            throw new InternalServerError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: predictionsController.createPrediction - body not provided!`
+            )
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
         if (!chatflow) {
-            throw new ApiError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
+            throw new InternalServerError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }
         let isDomainAllowed = true
         logger.info(`[server]: Request originated from ${req.headers.origin}`)
@@ -44,7 +50,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             const apiResponse = await predictionsServices.buildChatflow(req, req?.io)
             return res.json(apiResponse)
         } else {
-            throw new ApiError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
+            throw new InternalServerError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
         }
     } catch (error) {
         next(error)
