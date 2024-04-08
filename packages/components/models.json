@@ -267,43 +267,377 @@
                     "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
                 }
             ]
+        },
+        {
+            "name": "chatAnthropic_LlamaIndex",
+            "models": [
+                {
+                    "label": "claude-3-opus",
+                    "name": "claude-3-opus",
+                    "description": "Most powerful model for highly complex tasks"
+                },
+                {
+                    "label": "claude-3-sonnet",
+                    "name": "claude-3-sonnet",
+                    "description": "Ideal balance of intelligence and speed for enterprise workloads"
+                },
+                {
+                    "label": "claude-2.1",
+                    "name": "claude-2.1",
+                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
+                },
+                {
+                    "label": "claude-instant-1.2",
+                    "name": "claude-instant-1.2",
+                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
+                }
+            ]
+        },
+        {
+            "name": "chatGoogleGenerativeAI",
+            "models": [
+                {
+                    "label": "gemini-pro",
+                    "name": "gemini-pro"
+                }
+            ]
+        },
+        {
+            "name": "chatGooglePaLM",
+            "models": [
+                {
+                    "label": "models/chat-bison-001",
+                    "name": "models/chat-bison-001"
+                }
+            ]
+        },
+        {
+            "name": "chatGoogleVertexAI",
+            "models": [
+                {
+                    "label": "chat-bison",
+                    "name": "chat-bison"
+                },
+                {
+                    "label": "codechat-bison",
+                    "name": "codechat-bison"
+                },
+                {
+                    "label": "chat-bison-32k",
+                    "name": "chat-bison-32k"
+                },
+                {
+                    "label": "codechat-bison-32k",
+                    "name": "codechat-bison-32k"
+                }
+            ]
+        },
+        {
+            "name": "chatOpenAI",
+            "models": [
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-turbo-preview",
+                    "name": "gpt-4-turbo-preview"
+                },
+                {
+                    "label": "gpt-4-0125-preview",
+                    "name": "gpt-4-0125-preview"
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview"
+                },
+                {
+                    "label": "gpt-4-1106-vision-preview",
+                    "name": "gpt-4-1106-vision-preview"
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview"
+                },
+                {
+                    "label": "gpt-4-0613",
+                    "name": "gpt-4-0613"
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k"
+                },
+                {
+                    "label": "gpt-4-32k-0613",
+                    "name": "gpt-4-32k-0613"
+                },
+                {
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo"
+                },
+                {
+                    "label": "gpt-3.5-turbo-0125",
+                    "name": "gpt-3.5-turbo-0125"
+                },
+                {
+                    "label": "gpt-3.5-turbo-1106",
+                    "name": "gpt-3.5-turbo-1106"
+                },
+                {
+                    "label": "gpt-3.5-turbo-0613",
+                    "name": "gpt-3.5-turbo-0613"
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k"
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k-0613",
+                    "name": "gpt-3.5-turbo-16k-0613"
+                }            ]
+        },
+        {
+            "name": "chatOpenAI_LlamaIndex",
+            "models": [
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-turbo-preview",
+                    "name": "gpt-4-turbo-preview"
+                },
+                {
+                    "label": "gpt-4-0125-preview",
+                    "name": "gpt-4-0125-preview"
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview"
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview"
+                },
+                {
+                    "label": "gpt-4-0613",
+                    "name": "gpt-4-0613"
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k"
+                },
+                {
+                    "label": "gpt-4-32k-0613",
+                    "name": "gpt-4-32k-0613"
+                },
+                {
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo"
+                },
+                {
+                    "label": "gpt-3.5-turbo-1106",
+                    "name": "gpt-3.5-turbo-1106"
+                },
+                {
+                    "label": "gpt-3.5-turbo-0613",
+                    "name": "gpt-3.5-turbo-0613"
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k"
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k-0613",
+                    "name": "gpt-3.5-turbo-16k-0613"
+                }     
+            ]
         }
     ],
     "llm": [
         {
-            "name": "AWSBedRock",
+            "name": "awsBedrock",
+            "models": [
+                { "label": "amazon.titan-tg1-large", "name": "amazon.titan-tg1-large" },
+                { "label": "amazon.titan-e1t-medium", "name": "amazon.titan-e1t-medium" },
+                { "label": "cohere.command-text-v14", "name": "cohere.command-text-v14" },
+                { "label": "cohere.command-light-text-v14", "name": "cohere.command-light-text-v14" },
+                { "label": "ai21.j2-grande-instruct", "name": "ai21.j2-grande-instruct" },
+                { "label": "ai21.j2-jumbo-instruct", "name": "ai21.j2-jumbo-instruct" },
+                { "label": "ai21.j2-mid", "name": "ai21.j2-mid" },
+                { "label": "ai21.j2-ultra", "name": "ai21.j2-ultra" }
+            ],
+            "regions": [
+                { "label": "af-south-1", "name": "af-south-1" },
+                { "label": "ap-east-1", "name": "ap-east-1" },
+                { "label": "ap-northeast-1", "name": "ap-northeast-1" },
+                { "label": "ap-northeast-2", "name": "ap-northeast-2" },
+                { "label": "ap-northeast-3", "name": "ap-northeast-3" },
+                { "label": "ap-south-1", "name": "ap-south-1" },
+                { "label": "ap-south-2", "name": "ap-south-2" },
+                { "label": "ap-southeast-1", "name": "ap-southeast-1" },
+                { "label": "ap-southeast-2", "name": "ap-southeast-2" },
+                { "label": "ap-southeast-3", "name": "ap-southeast-3" },
+                { "label": "ap-southeast-4", "name": "ap-southeast-4" },
+                { "label": "ap-southeast-5", "name": "ap-southeast-5" },
+                { "label": "ap-southeast-6", "name": "ap-southeast-6" },
+                { "label": "ca-central-1", "name": "ca-central-1" },
+                { "label": "ca-west-1", "name": "ca-west-1" },
+                { "label": "cn-north-1", "name": "cn-north-1" },
+                { "label": "cn-northwest-1", "name": "cn-northwest-1" },
+                { "label": "eu-central-1", "name": "eu-central-1" },
+                { "label": "eu-central-2", "name": "eu-central-2" },
+                { "label": "eu-north-1", "name": "eu-north-1" },
+                { "label": "eu-south-1", "name": "eu-south-1" },
+                { "label": "eu-south-2", "name": "eu-south-2" },
+                { "label": "eu-west-1", "name": "eu-west-1" },
+                { "label": "eu-west-2", "name": "eu-west-2" },
+                { "label": "eu-west-3", "name": "eu-west-3" },
+                { "label": "il-central-1", "name": "il-central-1" },
+                { "label": "me-central-1", "name": "me-central-1" },
+                { "label": "me-south-1", "name": "me-south-1" },
+                { "label": "sa-east-1", "name": "sa-east-1" },
+                { "label": "us-east-1", "name": "us-east-1" },
+                { "label": "us-east-2", "name": "us-east-2" },
+                { "label": "us-gov-east-1", "name": "us-gov-east-1" },
+                { "label": "us-gov-west-1", "name": "us-gov-west-1" },
+                { "label": "us-west-1", "name": "us-west-1" },
+                { "label": "us-west-2", "name": "us-west-2" }
+            ]
+        },
+        {
+            "name": "azureOpenAI",
             "models": [
                 {
-                    "label": "amazon.titan-tg1-large",
-                    "name": "amazon.titan-tg1-large"
+                    "label": "text-davinci-003",
+                    "name": "text-davinci-003"
                 },
                 {
-                    "label": "amazon.titan-e1t-medium",
-                    "name": "amazon.titan-e1t-medium"
+                    "label": "ada",
+                    "name": "ada"
                 },
                 {
-                    "label": "cohere.command-text-v14",
-                    "name": "cohere.command-text-v14"
+                    "label": "text-ada-001",
+                    "name": "text-ada-001"
                 },
                 {
-                    "label": "cohere.command-light-text-v14",
-                    "name": "cohere.command-light-text-v14"
+                    "label": "babbage",
+                    "name": "babbage"
                 },
                 {
-                    "label": "ai21.j2-grande-instruct",
-                    "name": "ai21.j2-grande-instruct"
+                    "label": "text-babbage-001",
+                    "name": "text-babbage-001"
                 },
                 {
-                    "label": "ai21.j2-jumbo-instruct",
-                    "name": "ai21.j2-jumbo-instruct"
+                    "label": "curie",
+                    "name": "curie"
                 },
                 {
-                    "label": "ai21.j2-mid",
-                    "name": "ai21.j2-mid"
+                    "label": "text-curie-001",
+                    "name": "text-curie-001"
                 },
                 {
-                    "label": "ai21.j2-ultra",
-                    "name": "ai21.j2-ultra"
+                    "label": "davinci",
+                    "name": "davinci"
+                },
+                {
+                    "label": "text-davinci-001",
+                    "name": "text-davinci-001"
+                },
+                {
+                    "label": "text-davinci-002",
+                    "name": "text-davinci-002"
+                },
+                {
+                    "label": "text-davinci-fine-tune-002",
+                    "name": "text-davinci-fine-tune-002"
+                },
+                {
+                    "label": "gpt-35-turbo",
+                    "name": "gpt-35-turbo"
+                },
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k"
+                }
+            ]
+        },
+        {
+            "name": "cohere",
+            "models": [
+                {
+                    "label": "command",
+                    "name": "command"
+                },
+                {
+                    "label": "command-light",
+                    "name": "command-light"
+                },
+                {
+                    "label": "command-nightly",
+                    "name": "command-nightly"
+                },
+                {
+                    "label": "command-light-nightly",
+                    "name": "command-light-nightly"
+                },
+                {
+                    "label": "base",
+                    "name": "base"
+                },
+                {
+                    "label": "base-light",
+                    "name": "base-light"
+                }
+            ]
+        },
+        {
+            "name": "googlevertexai",
+            "models": [
+                {
+                    "label": "text-bison",
+                    "name": "text-bison"
+                },
+                {
+                    "label": "code-bison",
+                    "name": "code-bison"
+                },
+                {
+                    "label": "code-gecko",
+                    "name": "code-gecko"
+                },
+                {
+                    "label": "text-bison-32k",
+                    "name": "text-bison-32k"
+                },
+                {
+                    "label": "code-bison-32k",
+                    "name": "code-bison-32k"
+                },
+                {
+                    "label": "code-gecko-32k",
+                    "name": "code-gecko-32k"
+                }
+            ]
+        },
+        {
+            "name": "openAI",
+            "models": [
+                {
+                    "label": "gpt-3.5-turbo-instruct",
+                    "name": "gpt-3.5-turbo-instruct"
+                },
+                {
+                    "label": "babbage-002",
+                    "name": "babbage-002"
+                },
+                {
+                    "label": "davinci-002",
+                    "name": "davinci-002"
                 }
             ]
         }
