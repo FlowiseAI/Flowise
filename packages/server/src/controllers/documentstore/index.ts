@@ -154,6 +154,19 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+const processChunksWithLoader = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.processChunksWithLoader - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.processChunksWithLoader(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createDocumentStore,
     getAllDocumentStores,
@@ -163,5 +176,6 @@ export default {
     uploadFileToDocumentStore,
     updateDocumentStore,
     previewFileChunks,
-    processFileChunks
+    processFileChunks,
+    processChunksWithLoader
 }

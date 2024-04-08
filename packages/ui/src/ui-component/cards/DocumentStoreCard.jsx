@@ -37,7 +37,7 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
             ) : (
                 <CardWrapper onClick={onClick}>
                     <Card>
-                        <CardContent style={{ padding: 1, minHeight: '100px' }}>
+                        <CardContent style={{ padding: 2.25, minHeight: '100px' }}>
                             <Typography style={{ wordWrap: 'break-word' }} variant='h4' component='div'>
                                 {data.name}
                             </Typography>
@@ -45,7 +45,7 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                                 {data.description}
                             </Typography>
                         </CardContent>
-                        <CardActions style={{ padding: 1, marginTop: 15 }}>
+                        <CardActions style={{ padding: 2, marginTop: 15 }}>
                             <Typography style={{ marginBottom: 1.5 }} color='text.secondary'>
                                 {data.totalFiles}: Files
                             </Typography>

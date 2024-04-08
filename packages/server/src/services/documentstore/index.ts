@@ -1,12 +1,14 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 // @ts-ignore
-import { DocumentStoreProcessor, getStoragePath } from 'flowise-components'
+import { DocumentStoreProcessor, getStoragePath, ICommonObject } from 'flowise-components'
 import fs from 'fs'
 import path from 'path'
 import { DocumentStoreStatus } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
+import { databaseEntities } from '../../utils'
+import logger from '../../utils/logger'
 
 // Create new document store
 const createDocumentStore = async (newDocumentStore: DocumentStore) => {
@@ -253,6 +255,38 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
     }
 }
 
+const processChunksWithLoader = async (data: any) => {
+    try {
+        const appServer = getRunningExpressApp()
+        let splitterInstance = null
+        if (data.splitterConfig) {
+            const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.splitterName].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const newNodeInstance = new nodeModule.nodeClass()
+            let nodeData = {
+                inputs: { ...data.splitterConfig },
+                id: 'splitter_0'
+            }
+            splitterInstance = await newNodeInstance.init(nodeData)
+        }
+        const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.loaderName].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        // doc loader configs
+        const nodeData = { inputs: { textSplitter: splitterInstance, ...data.loaderConfig }, outputs: { output: 'document' } }
+        const options: ICommonObject = {
+            chatflowid: uuidv4(),
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            logger
+        }
+        const docNodeInstance = new nodeModule.nodeClass()
+        const docs = await docNodeInstance.init(nodeData, '', options)
+        return docs
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.processChunksWithLoader - ${error}`)
+    }
+}
+
 export default {
     createDocumentStore,
     deleteFileFromDocumentStore,
@@ -262,5 +296,6 @@ export default {
     updateDocumentStore,
     uploadFileToDocumentStore,
     previewChunks,
-    processChunks
+    processChunks,
+    processChunksWithLoader
 }

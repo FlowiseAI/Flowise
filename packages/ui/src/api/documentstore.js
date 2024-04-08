@@ -9,6 +9,7 @@ const deleteFileFromStore = (id, fileId) => client.delete(`/document-store/${id}
 const previewChunks = (id, fileId, config) => client.post(`/document-store/preview/${id}/${fileId}`, config)
 const processChunks = (id, fileId, config) => client.post(`/document-store/process/${id}/${fileId}`, config)
 const getFileChunks = (storeId, fileId) => client.get(`/document-store/file/${storeId}/${fileId}`)
+const previewChunksWithLoader = (body) => client.post('/document-store/preview', body)
 
 export default {
     getAllDocumentStores,
@@ -19,5 +20,6 @@ export default {
     getFileChunks,
     updateDocumentStore,
     previewChunks,
-    processChunks
+    processChunks,
+    previewChunksWithLoader
 }

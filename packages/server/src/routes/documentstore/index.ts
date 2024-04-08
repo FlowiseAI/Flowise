@@ -9,6 +9,7 @@ router.delete('/:id/:fileId', documentStoreController.deleteFileFromDocumentStor
 // upload file to document store
 router.post('/:id/files', documentStoreController.uploadFileToDocumentStore)
 // chunking preview
+router.post('/preview', documentStoreController.processChunksWithLoader)
 router.post('/preview/:storeId/:fileId', documentStoreController.previewFileChunks)
 // chunking process
 router.post('/process/:storeId/:fileId', documentStoreController.processFileChunks)

@@ -39,6 +39,7 @@ import useNotifier from '@/utils/useNotifier'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import useConfirm from '@/hooks/useConfirm'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -59,9 +60,25 @@ const DocumentStoreDetails = () => {
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
     const fileUploadRef = useRef(null)
+    const [showDocumentLoaderListDialog, setShowDocumentLoaderListDialog] = useState(false)
+    const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
 
     const openChunks = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
+    }
+
+    const onDocLoaderSelected = (docLoaderComponent) => {
+        setShowDocumentLoaderListDialog(false)
+        console.log(docLoaderComponent)
+        navigate('/document-stores/' + storeId + '/' + docLoaderComponent)
+    }
+
+    const listLoaders = () => {
+        const dialogProp = {
+            title: 'Select Document Loader'
+        }
+        setDocumentLoaderListDialogProps(dialogProp)
+        setShowDocumentLoaderListDialog(true)
     }
 
     const handleUploadClick = async (e) => {
@@ -186,20 +203,6 @@ const DocumentStoreDetails = () => {
     }
 
     const onEditClicked = async () => {
-        // if (getSpecificDocumentStore.data?.files.length > 0) {
-        //     const confirmPayload = {
-        //         title: `Warning`,
-        //         description: `Editing the configuration might result in all files being reprocessed. Kindly Confirm ?`,
-        //         confirmButtonName: 'Yes, Edit Config',
-        //         cancelButtonName: 'Cancel'
-        //     }
-        //
-        //     const isConfirmed = await confirm(confirmPayload)
-        //
-        //     if (!isConfirmed) {
-        //         return
-        //     }
-        // }
         const data = {
             name: documentStore.name,
             description: documentStore.description,
@@ -222,7 +225,7 @@ const DocumentStoreDetails = () => {
     }
 
     const URLpath = document.location.pathname.toString().split('/')
-    const storeId = URLpath[URLpath.length - 1] === 'documentStores' ? '' : URLpath[URLpath.length - 1]
+    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
     useEffect(() => {
         getSpecificDocumentStore.request(storeId)
 
@@ -256,8 +259,16 @@ const DocumentStoreDetails = () => {
                                 </Button>
                             )}
                             <input style={{ display: 'none' }} multiple ref={fileUploadRef} type='file' onChange={handleUploadClick} />
-                            <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconPlus />} onClick={handleFileChange}>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ mr: 2, color: 'white' }}
+                                startIcon={<IconPlus />}
+                                onClick={handleFileChange}
+                            >
                                 Add Document
+                            </StyledButton>
+                            <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconPlus />} onClick={listLoaders}>
+                                Select Document Loader
                             </StyledButton>
                         </Grid>
                     </Grid>
@@ -363,6 +374,14 @@ const DocumentStoreDetails = () => {
                     show={showDialog}
                     onCancel={() => setShowDialog(false)}
                     onConfirm={onConfirm}
+                />
+            )}
+            {showDocumentLoaderListDialog && (
+                <DocumentLoaderListDialog
+                    show={showDocumentLoaderListDialog}
+                    dialogProps={documentLoaderListDialogProps}
+                    onCancel={() => setShowDocumentLoaderListDialog(false)}
+                    onDocLoaderSelected={onDocLoaderSelected}
                 />
             )}
             <ConfirmDialog />
