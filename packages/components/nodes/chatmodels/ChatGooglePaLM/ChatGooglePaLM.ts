@@ -2,7 +2,7 @@ import { ChatGooglePaLM, GooglePaLMChatInput } from '@langchain/community/chat_m
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { getModels, MODEL_TYPE } from "../../../src/modelLoader";
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatGooglePaLM_ChatModels implements INode {
     label: string

@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
-import { getModels, MODEL_TYPE } from "../../../src/modelLoader";
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatOpenAI_LlamaIndex_LLMs implements INode {
     label: string

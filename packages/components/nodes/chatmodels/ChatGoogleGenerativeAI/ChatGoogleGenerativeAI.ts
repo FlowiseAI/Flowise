@@ -2,9 +2,9 @@ import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import type { SafetySetting } from '@google/generative-ai'
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { getModels, getRegions, MODEL_TYPE } from "../../../src/modelLoader";
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class GoogleGenerativeAI_ChatModels implements INode {
     label: string

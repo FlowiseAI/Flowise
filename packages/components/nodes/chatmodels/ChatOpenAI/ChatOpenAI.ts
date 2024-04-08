@@ -5,7 +5,7 @@ import { BaseChatModelParams } from '@langchain/core/language_models/chat_models
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
-import { getModels, MODEL_TYPE } from "../../../src/modelLoader";
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
