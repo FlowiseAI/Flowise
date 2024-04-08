@@ -1,7 +1,8 @@
 import { GooglePaLM, GooglePaLMTextInput } from '@langchain/community/llms/googlepalm'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class GooglePaLM_LLMs implements INode {
     label: string
@@ -40,13 +41,8 @@ class GooglePaLM_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'models/text-bison-001',
-                        name: 'models/text-bison-001'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'models/text-bison-001',
                 optional: true
             },
@@ -124,6 +120,13 @@ class GooglePaLM_LLMs implements INode {
             } 
             */
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'GooglePaLM')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

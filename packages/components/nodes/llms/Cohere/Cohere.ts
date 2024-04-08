@@ -1,7 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Cohere, CohereInput } from './core'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class Cohere_LLMs implements INode {
     label: string
@@ -40,33 +41,8 @@ class Cohere_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'command',
-                        name: 'command'
-                    },
-                    {
-                        label: 'command-light',
-                        name: 'command-light'
-                    },
-                    {
-                        label: 'command-nightly',
-                        name: 'command-nightly'
-                    },
-                    {
-                        label: 'command-light-nightly',
-                        name: 'command-light-nightly'
-                    },
-                    {
-                        label: 'base',
-                        name: 'base'
-                    },
-                    {
-                        label: 'base-light',
-                        name: 'base-light'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'command',
                 optional: true
             },
@@ -88,6 +64,12 @@ class Cohere_LLMs implements INode {
         ]
     }
 
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'cohere')
+        }
+    }
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
