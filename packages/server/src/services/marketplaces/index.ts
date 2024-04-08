@@ -1,5 +1,7 @@
 import path from 'path'
 import * as fs from 'fs'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 // Get all templates for marketplaces
 const getAllTemplates = async () => {
@@ -49,7 +51,7 @@ const getAllTemplates = async () => {
         const dbResponse = sortedTemplates
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: marketplacesService.getAllTemplates - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: marketplacesService.getAllTemplates - ${error}`)
     }
 }
 

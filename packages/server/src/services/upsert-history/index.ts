@@ -1,6 +1,8 @@
 import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const getAllUpsertHistory = async (
     sortOrder: string | undefined,
@@ -46,7 +48,7 @@ const getAllUpsertHistory = async (
 
         return upsertHistory
     } catch (error) {
-        throw new Error(`Error: upsertHistoryServices.getAllUpsertHistory - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: upsertHistoryServices.getAllUpsertHistory - ${error}`)
     }
 }
 
@@ -56,7 +58,7 @@ const patchDeleteUpsertHistory = async (ids: string[] = []): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(UpsertHistory).delete(ids)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: upsertHistoryServices.patchUpsertHistory - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: upsertHistoryServices.patchUpsertHistory - ${error}`)
     }
 }
 

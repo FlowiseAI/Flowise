@@ -10,7 +10,7 @@ const getAllApiKeys = async () => {
         const dbResponse = await addChatflowsCount(keys)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: apikeyService.getAllApiKeys - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${error}`)
     }
 }
 
@@ -20,7 +20,7 @@ const createApiKey = async (keyName: string) => {
         const dbResponse = await addChatflowsCount(keys)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: apikeyService.createApiKey - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.createApiKey - ${error}`)
     }
 }
 
@@ -31,7 +31,7 @@ const updateApiKey = async (id: string, keyName: string) => {
         const dbResponse = await addChatflowsCount(keys)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: apikeyService.updateApiKey - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.updateApiKey - ${error}`)
     }
 }
 
@@ -41,7 +41,7 @@ const deleteApiKey = async (id: string) => {
         const dbResponse = await addChatflowsCount(keys)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: apikeyService.deleteApiKey - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.deleteApiKey - ${error}`)
     }
 }
 
@@ -54,7 +54,7 @@ const verifyApiKey = async (paramApiKey: string): Promise<any> => {
         const dbResponse = 'OK'
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: apikeyService.verifyApiKey - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.verifyApiKey - ${error}`)
     }
 }
 

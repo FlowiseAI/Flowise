@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import statsService from '../../services/stats'
 import { chatType } from '../../Interface'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const getChatflowStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: statsController.getChatflowStats - id not provided!`)
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id
         let chatTypeFilter = req.query?.chatType as chatType | undefined
