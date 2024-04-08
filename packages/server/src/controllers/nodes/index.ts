@@ -38,7 +38,7 @@ const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction
 
 const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: nodesController.getSingleNodeAsyncOptions - body not provided!`
@@ -59,7 +59,7 @@ const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: Next
 
 const executeCustomFunction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: nodesController.executeCustomFunction - body not provided!`

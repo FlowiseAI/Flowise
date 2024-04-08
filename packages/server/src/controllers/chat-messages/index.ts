@@ -11,7 +11,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const createChatMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 'Error: chatMessagesController.createChatMessage - request body not provided!'
@@ -49,7 +49,7 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatMessageController.getAllChatMessages - id not provided!`
@@ -105,7 +105,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
 const removeAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 'Error: chatMessagesController.removeAllChatMessages - id not provided!'

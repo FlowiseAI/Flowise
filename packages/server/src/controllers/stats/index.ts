@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const getChatflowStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id

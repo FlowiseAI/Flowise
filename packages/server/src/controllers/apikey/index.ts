@@ -28,10 +28,10 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
 // Update api key
 const updateApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - id not provided!`)
         }
-        if (typeof req.body.keyName === 'undefined' || req.body.keyName === '') {
+        if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
         }
         const apiResponse = await apikeyService.updateApiKey(req.params.id, req.body.keyName)
@@ -44,7 +44,7 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
 // Delete api key
 const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.deleteApiKey - id not provided!`)
         }
         const apiResponse = await apikeyService.deleteApiKey(req.params.id)
@@ -57,7 +57,7 @@ const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => 
 // Verify api key
 const verifyApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.apiKey === 'undefined' || req.params.apiKey === '') {
+        if (typeof req.params === 'undefined' || !req.params.apiKey) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.verifyApiKey - apiKey not provided!`)
         }
         const apiResponse = await apikeyService.verifyApiKey(req.params.apiKey)

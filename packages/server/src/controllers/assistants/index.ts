@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const creatAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.creatAssistant - body not provided!`
@@ -20,7 +20,7 @@ const creatAssistant = async (req: Request, res: Response, next: NextFunction) =
 
 const deleteAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.deleteAssistant - id not provided!`
@@ -46,7 +46,7 @@ const getAllAssistants = async (req: Request, res: Response, next: NextFunction)
 
 const getAssistantById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.getAssistantById - id not provided!`
@@ -62,13 +62,13 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
 
 const updateAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.updateAssistant - id not provided!`
             )
         }
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.updateAssistant - body not provided!`

@@ -9,13 +9,13 @@ import { StatusCodes } from 'http-status-codes'
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: predictionsController.createPrediction - id not provided!`
             )
         }
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: predictionsController.createPrediction - body not provided!`

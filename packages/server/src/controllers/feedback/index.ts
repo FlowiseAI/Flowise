@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const getAllChatMessageFeedback = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: feedbackController.getAllChatMessageFeedback - id not provided!`
@@ -25,7 +25,7 @@ const getAllChatMessageFeedback = async (req: Request, res: Response, next: Next
 
 const createChatMessageFeedbackForChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: feedbackController.createChatMessageFeedbackForChatflow - body not provided!`
@@ -40,13 +40,13 @@ const createChatMessageFeedbackForChatflow = async (req: Request, res: Response,
 
 const updateChatMessageFeedbackForChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: feedbackController.updateChatMessageFeedbackForChatflow - body not provided!`
             )
         }
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: feedbackController.updateChatMessageFeedbackForChatflow - id not provided!`

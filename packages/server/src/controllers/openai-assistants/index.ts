@@ -26,7 +26,7 @@ const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFun
 // Get assistant object
 const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: openaiAssistantsController.getSingleOpenaiAssistant - id not provided!`

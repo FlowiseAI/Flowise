@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const createCredential = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: credentialsController.createCredential - body not provided!`
@@ -20,7 +20,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
 
 const deleteCredentials = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: credentialsController.deleteCredentials - id not provided!`
@@ -44,7 +44,7 @@ const getAllCredentials = async (req: Request, res: Response, next: NextFunction
 
 const getCredentialById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: credentialsController.getCredentialById - id not provided!`
@@ -59,13 +59,13 @@ const getCredentialById = async (req: Request, res: Response, next: NextFunction
 
 const updateCredential = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: credentialsController.updateCredential - id not provided!`
             )
         }
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: credentialsController.updateCredential - body not provided!`

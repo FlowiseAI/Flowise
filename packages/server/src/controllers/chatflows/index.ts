@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsRouter.checkIfChatflowIsValidForStreaming - id not provided!`
@@ -23,7 +23,7 @@ const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, n
 
 const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsRouter.checkIfChatflowIsValidForUploads - id not provided!`
@@ -38,7 +38,7 @@ const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, nex
 
 const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.deleteChatflow - id not provided!`)
         }
         const apiResponse = await chatflowsService.deleteChatflow(req.params.id)
@@ -76,7 +76,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
 
 const getChatflowById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowById - id not provided!`)
         }
         const apiResponse = await chatflowsService.getChatflowById(req.params.id)
@@ -88,7 +88,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
 
 const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
         }
         const body = req.body
@@ -103,7 +103,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.updateChatflow - id not provided!`)
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
@@ -127,7 +127,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.updateChatflow - id not provided!`)
         }
         const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
@@ -139,7 +139,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
 
 const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsRouter.getSinglePublicChatbotConfig - id not provided!`

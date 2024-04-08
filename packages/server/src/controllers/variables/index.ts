@@ -24,7 +24,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
 
 const deleteVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.deleteVariable - id not provided!')
         }
         const apiResponse = await variablesService.deleteVariable(req.params.id)
@@ -45,7 +45,7 @@ const getAllVariables = async (req: Request, res: Response, next: NextFunction) 
 
 const updateVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.updateVariable - id not provided!')
         }
         if (typeof req.body === 'undefined') {

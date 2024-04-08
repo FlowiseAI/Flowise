@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 const getAllNodeConfigs = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
+        if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: nodeConfigsController.getAllNodeConfigs - body not provided!`
