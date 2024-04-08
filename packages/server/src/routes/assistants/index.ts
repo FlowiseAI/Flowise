@@ -8,12 +8,12 @@ router.post('/', assistantsController.creatAssistant)
 
 // READ
 router.get('/', assistantsController.getAllAssistants)
-router.get('/:id', assistantsController.getAssistantById)
+router.get(['/', '/:id'], assistantsController.getAssistantById)
 
 // UPDATE
-router.put('/:id', assistantsController.updateAssistant)
+router.put(['/', '/:id'], assistantsController.updateAssistant)
 
 // DELETE
-router.delete('/:id', assistantsController.deleteAssistant)
+router.delete(['/', '/:id'], assistantsController.deleteAssistant)
 
 export default router

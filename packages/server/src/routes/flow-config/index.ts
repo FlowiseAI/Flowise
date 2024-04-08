@@ -5,7 +5,7 @@ const router = express.Router()
 // CREATE
 
 // READ
-router.get('/:id', flowConfigsController.getSingleFlowConfig)
+router.get(['/', '/:id'], flowConfigsController.getSingleFlowConfig)
 
 // UPDATE
 

@@ -7,12 +7,12 @@ router.post('/', credentialsController.createCredential)
 
 // READ
 router.get('/', credentialsController.getAllCredentials)
-router.get('/:id', credentialsController.getCredentialById)
+router.get(['/', '/:id'], credentialsController.getCredentialById)
 
 // UPDATE
-router.put('/:id', credentialsController.updateCredential)
+router.put(['/', '/:id'], credentialsController.updateCredential)
 
 // DELETE
-router.delete('/:id', credentialsController.deleteCredentials)
+router.delete(['/', '/:id'], credentialsController.deleteCredentials)
 
 export default router

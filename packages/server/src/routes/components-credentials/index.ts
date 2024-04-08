@@ -4,6 +4,6 @@ const router = express.Router()
 
 // READ
 router.get('/', componentsCredentialsController.getAllComponentsCredentials)
-router.get('/:name', componentsCredentialsController.getComponentByName)
+router.get(['/', '/:name'], componentsCredentialsController.getComponentByName)
 
 export default router
