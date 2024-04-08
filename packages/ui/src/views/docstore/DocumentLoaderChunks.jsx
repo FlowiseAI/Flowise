@@ -140,10 +140,13 @@ const DocumentLoaderChunks = () => {
                     config.splitterConfig[key] = textSplitterData.inputs[key]
                 })
             }
+            if (credential) {
+                config.credential = credential
+            }
             try {
                 previewChunksApi.request(config)
             } catch (error) {
-                console.error(error)
+                //console.error(error)
             }
         }
     }
@@ -167,7 +170,6 @@ const DocumentLoaderChunks = () => {
 
     useEffect(() => {
         if (getNodeDetailsApi.data) {
-            console.log(getNodeDetailsApi.data)
             setTextSplitterNodes(undefined)
             // check and extract the textSplitter from the inputs array
             const textSplitter = getNodeDetailsApi.data.inputs.find((input) => input.name === 'textSplitter')
@@ -191,7 +193,6 @@ const DocumentLoaderChunks = () => {
 
     useEffect(() => {
         if (getNodesByCategoryApi.data) {
-            console.log(getNodesByCategoryApi.data)
             setTextSplitterNodes(getNodesByCategoryApi.data)
             const options = getNodesByCategoryApi.data.map((splitter) => ({
                 label: splitter.label,
@@ -253,7 +254,7 @@ const DocumentLoaderChunks = () => {
                                             key={credential}
                                             data={instanceData}
                                             inputParam={nodeData.credential}
-                                            onSelect={(newValue) => (instanceData.credential = newValue)}
+                                            onSelect={(newValue) => setCredential(newValue)}
                                         />
                                     </Box>
                                 )}
@@ -297,11 +298,7 @@ const DocumentLoaderChunks = () => {
                                         />
                                     ))}
                                 <Box sx={{ p: 1, textAlign: 'center' }}>
-                                    <StyledButton
-                                        variant='contained'
-                                        sx={{ color: 'white' }}
-                                        onClick={() => console.log(instanceData, textSplitterData)}
-                                    >
+                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
                                         Confirm & Process
                                     </StyledButton>{' '}
                                     <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>

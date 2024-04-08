@@ -272,7 +272,11 @@ const processChunksWithLoader = async (data: any) => {
         const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.loaderName].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         // doc loader configs
-        const nodeData = { inputs: { textSplitter: splitterInstance, ...data.loaderConfig }, outputs: { output: 'document' } }
+        const nodeData = {
+            credential: data.credential || undefined,
+            inputs: { textSplitter: splitterInstance, ...data.loaderConfig },
+            outputs: { output: 'document' }
+        }
         const options: ICommonObject = {
             chatflowid: uuidv4(),
             appDataSource: appServer.AppDataSource,

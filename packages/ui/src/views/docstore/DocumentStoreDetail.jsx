@@ -69,7 +69,6 @@ const DocumentStoreDetails = () => {
 
     const onDocLoaderSelected = (docLoaderComponent) => {
         setShowDocumentLoaderListDialog(false)
-        console.log(docLoaderComponent)
         navigate('/document-stores/' + storeId + '/' + docLoaderComponent)
     }
 
