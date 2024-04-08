@@ -14,6 +14,10 @@ import logger from '../../utils/logger'
 import { getStoragePath } from 'flowise-components'
 import { IReactFlowObject } from '../../Interface'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -105,9 +109,18 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
         try {
-            // Delete all  uploads corresponding to this chatflow
+            // Delete all uploads corresponding to this chatflow
             const directory = path.join(getStoragePath(), chatflowId)
             deleteFolderRecursive(directory)
+
+            // Delete all chat messages
+            await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
+
+            // Delete all chat feedback
+            await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete({ chatflowid: chatflowId })
+
+            // Delete all upsert history
+            await appServer.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: chatflowId })
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}: ${e}`)
         }
@@ -172,8 +185,24 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
 const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+        let dbResponse: ChatFlow
+        if (containsBase64File(newChatFlow)) {
+            // we need a 2-step process, as we need to save the chatflow first and then update the file paths
+            // this is because we need the chatflow id to create the file paths
+
+            // step 1 - save with empty flowData
+            const incomingFlowData = newChatFlow.flowData
+            newChatFlow.flowData = JSON.stringify({})
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+            // step 2 - convert base64 to file paths and update the chatflow
+            step1Results.flowData = updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
+        } else {
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+        }
         await appServer.telemetry.sendTelemetry('chatflow_created', {
             version: await getAppVersion(),
             chatflowId: dbResponse.id,
@@ -188,8 +217,12 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
+            updateChatFlow.flowData = updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
+        }
+        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
         // chatFlowPool is initialized only when a flow is opened
         // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
         if (appServer.chatflowPool) {

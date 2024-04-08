@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb'
 import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
@@ -113,7 +113,7 @@ class MongoDBAtlas_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const databaseName = nodeData.inputs?.databaseName as string
             const collectionName = nodeData.inputs?.collectionName as string
@@ -149,6 +149,7 @@ class MongoDBAtlas_VectorStores implements INode {
                     embeddingKey
                 })
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import * as fs from 'fs'
+import { cloneDeep, omit } from 'lodash'
 import { ICommonObject } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
@@ -18,7 +19,14 @@ import { utilValidateKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { UpsertHistory } from '../database/entities/UpsertHistory'
 
+/**
+ * Upsert documents
+ * @param {Request} req
+ * @param {Response} res
+ * @param {boolean} isInternal
+ */
 export const upsertVector = async (req: Request, res: Response, isInternal: boolean = false) => {
     try {
         const appServer = getRunningExpressApp()
@@ -78,6 +86,8 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
             (node) =>
                 node.data.category === 'Vector Stores' && !node.data.label.includes('Upsert') && !node.data.label.includes('Load Existing')
         )
+
+        // Check if multiple vector store nodes exist, and if stopNodeId is specified
         if (vsNodes.length > 1 && !stopNodeId) {
             return res.status(500).send('There are multiple vector nodes, please provide stopNodeId in body request')
         } else if (vsNodes.length === 1 && !stopNodeId) {
@@ -99,7 +109,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
 
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
-        await buildFlow(
+        const upsertedResult = await buildFlow(
             startingNodeIds,
             nodes,
             edges,
@@ -121,6 +131,19 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
         const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
         await appServer.chatflowPool.add(chatflowid, undefined, startingNodes, incomingInput?.overrideConfig)
+
+        // Save to DB
+        if (upsertedResult['flowData'] && upsertedResult['result']) {
+            const result = cloneDeep(upsertedResult)
+            result['flowData'] = JSON.stringify(result['flowData'])
+            result['result'] = JSON.stringify(omit(result['result'], ['totalKeys', 'addedDocs']))
+            result.chatflowid = chatflowid
+            const newUpsertHistory = new UpsertHistory()
+            Object.assign(newUpsertHistory, result)
+            const upsertHistory = appServer.AppDataSource.getRepository(UpsertHistory).create(newUpsertHistory)
+            await appServer.AppDataSource.getRepository(UpsertHistory).save(upsertHistory)
+        }
+
         await telemetryService.createEvent({
             name: `vector_upserted`,
             data: {
@@ -131,7 +154,7 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
                 stopNodeId
             }
         })
-        return res.status(201).send('Successfully Upserted')
+        return res.status(201).json(upsertedResult['result'] ?? { result: 'Successfully Upserted' })
     } catch (e: any) {
         logger.error('[server]: Error:', e)
         return res.status(500).send(e.message)
