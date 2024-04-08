@@ -29,7 +29,7 @@ import apikeyApi from '@/api/apikey'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
@@ -77,6 +77,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to add new API key: ${error.response.data.message}`,
                 options: {
@@ -113,6 +114,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to save API key: ${error.response.data.message}`,
                 options: {
@@ -227,7 +229,8 @@ APIKeyDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default APIKeyDialog

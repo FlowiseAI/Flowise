@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -16,7 +16,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
-import { IconX, IconFileExport } from '@tabler/icons'
+import { IconX, IconFileDownload, IconPlus } from '@tabler/icons'
 
 // API
 import toolsApi from '@/api/tools'
@@ -55,7 +55,7 @@ try {
     return '';
 }`
 
-const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
+const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)
@@ -159,6 +159,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             else setToolFunc('')
         }
     }, [getSpecificToolApi.data])
+
+    useEffect(() => {
+        if (getSpecificToolApi.error) {
+            setError(getSpecificToolApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificToolApi.error])
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -383,128 +390,122 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
+                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     {dialogProps.title}
-                    <div style={{ flex: 1 }} />
                     {dialogProps.type === 'EDIT' && (
-                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileExport />}>
+                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
                             Export
                         </Button>
                     )}
-                </div>
-            </DialogTitle>
-            <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Tool Name
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={'Tool name must be small capital letter with underscore. Ex: my_tool'}
-                            />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolName'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='My New Tool'
-                        value={toolName}
-                        name='toolName'
-                        onChange={(e) => setToolName(e.target.value)}
-                    />
                 </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Tool description
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
+            </DialogTitle>
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>
+                                Tool Name
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                            <TooltipWithParser title={'Tool name must be small capital letter with underscore. Ex: my_tool'} />
+                        </Stack>
+                        <OutlinedInput
+                            id='toolName'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='My New Tool'
+                            value={toolName}
+                            name='toolName'
+                            onChange={(e) => setToolName(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>
+                                Tool description
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
                             <TooltipWithParser
-                                style={{ marginLeft: 10 }}
                                 title={'Description of what the tool does. This is for ChatGPT to determine when to use this tool.'}
                             />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolDesc'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
-                        multiline={true}
-                        rows={3}
-                        value={toolDesc}
-                        name='toolDesc'
-                        onChange={(e) => setToolDesc(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>Tool Icon Src</Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolIcon'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
-                        value={toolIcon}
-                        name='toolIcon'
-                        onChange={(e) => setToolIcon(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Output Schema
-                            <TooltipWithParser style={{ marginLeft: 10 }} title={'What should be the output response in JSON format?'} />
-                        </Typography>
-                    </Stack>
-                    <Grid
-                        columns={columns}
-                        rows={toolSchema}
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        addNewRow={addNewRow}
-                        onRowUpdate={onRowUpdate}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Javascript Function
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>'
-                            />
-                        </Typography>
-                    </Stack>
-                    <Button
-                        style={{ marginBottom: 10, marginRight: 10 }}
-                        color='secondary'
-                        variant='outlined'
-                        onClick={() => setShowHowToDialog(true)}
-                    >
-                        How to use Function
-                    </Button>
-                    {dialogProps.type !== 'TEMPLATE' && (
-                        <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
-                            See Example
-                        </Button>
-                    )}
-                    <CodeEditor
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        value={toolFunc}
-                        height='calc(100vh - 220px)'
-                        theme={customization.isDarkMode ? 'dark' : 'light'}
-                        lang={'js'}
-                        onValueChange={(code) => setToolFunc(code)}
-                    />
+                        </Stack>
+                        <OutlinedInput
+                            id='toolDesc'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='Description of what the tool does. This is for ChatGPT to determine when to use this tool.'
+                            multiline={true}
+                            rows={3}
+                            value={toolDesc}
+                            name='toolDesc'
+                            onChange={(e) => setToolDesc(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>Tool Icon Source</Typography>
+                        </Stack>
+                        <OutlinedInput
+                            id='toolIcon'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
+                            value={toolIcon}
+                            name='toolIcon'
+                            onChange={(e) => setToolIcon(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
+                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                <Typography variant='overline'>Output Schema</Typography>
+                                <TooltipWithParser title={'What should be the output response in JSON format?'} />
+                            </Stack>
+                            {dialogProps.type !== 'TEMPLATE' && (
+                                <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                    Add Item
+                                </Button>
+                            )}
+                        </Stack>
+                        <Grid columns={columns} rows={toolSchema} disabled={dialogProps.type === 'TEMPLATE'} onRowUpdate={onRowUpdate} />
+                    </Box>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                <Typography variant='overline'>Javascript Function</Typography>
+                                <TooltipWithParser title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>' />
+                            </Stack>
+                            <Stack direction='row'>
+                                <Button
+                                    style={{ marginBottom: 10, marginRight: 10 }}
+                                    color='secondary'
+                                    variant='text'
+                                    onClick={() => setShowHowToDialog(true)}
+                                >
+                                    How to use Function
+                                </Button>
+                                {dialogProps.type !== 'TEMPLATE' && (
+                                    <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
+                                        See Example
+                                    </Button>
+                                )}
+                            </Stack>
+                        </Box>
+                        <CodeEditor
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            value={toolFunc}
+                            theme={customization.isDarkMode ? 'dark' : 'light'}
+                            lang={'js'}
+                            onValueChange={(code) => setToolFunc(code)}
+                        />
+                    </Box>
                 </Box>
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ p: 3 }}>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => deleteTool()}>
                         Delete
@@ -538,7 +539,8 @@ ToolDialog.propTypes = {
     dialogProps: PropTypes.object,
     onUseTemplate: PropTypes.func,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default ToolDialog
