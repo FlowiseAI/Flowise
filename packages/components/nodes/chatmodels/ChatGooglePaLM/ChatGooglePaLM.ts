@@ -1,7 +1,8 @@
 import { ChatGooglePaLM, GooglePaLMChatInput } from '@langchain/community/chat_models/googlepalm'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from "../../../src/modelLoader";
 
 class ChatGooglePaLM_ChatModels implements INode {
     label: string
@@ -40,13 +41,8 @@ class ChatGooglePaLM_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'models/chat-bison-001',
-                        name: 'models/chat-bison-001'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'models/chat-bison-001',
                 optional: true
             },
@@ -96,6 +92,13 @@ class ChatGooglePaLM_ChatModels implements INode {
             // 'The "examples" field should contain a list of pairs of strings to use as prior turns for this conversation.'
             // NB: While 'examples:[]' exists in langchain.ts backend, it is unlikely to be actually used there, since ChatOpenAI doesn't support it
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatGooglePaLM')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
