@@ -23,19 +23,26 @@ yarn add flowise-embed flowise-embed-react
 Full Page Chat
 
 ```tsx
-import { FullPageChat } from 'flowise-embed-react'
+import { FullPageChat } from "flowise-embed-react";
 
 const App = () => {
-    return <FullPageChat chatflowid='your-chatflow-id' apiHost='http://localhost:3000' />
-}
+  return (
+    <FullPageChat
+      chatflowid="your-chatflow-id"
+      apiHost="http://localhost:3000"
+    />
+  );
+};
 ```
 
 Popup Chat
 
 ```tsx
-import { BubbleChat } from 'flowise-embed-react'
+import { BubbleChat } from "flowise-embed-react";
 
 const App = () => {
-    return <BubbleChat chatflowid='your-chatflow-id' apiHost='http://localhost:3000' />
-}
+  return (
+    <BubbleChat chatflowid="your-chatflow-id" apiHost="http://localhost:3000" />
+  );
+};
 ```
