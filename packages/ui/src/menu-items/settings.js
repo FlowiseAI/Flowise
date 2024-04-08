@@ -1,5 +1,14 @@
 // assets
-import { IconTrash, IconFileUpload, IconFileExport, IconCopy, IconMessage, IconAdjustmentsHorizontal, IconUsers } from '@tabler/icons'
+import {
+    IconTrash,
+    IconFileUpload,
+    IconFileExport,
+    IconCopy,
+    IconMessage,
+    IconDatabaseExport,
+    IconAdjustmentsHorizontal,
+    IconUsers
+} from '@tabler/icons'
 
 // constant
 const icons = {
@@ -8,6 +17,7 @@ const icons = {
     IconFileExport,
     IconCopy,
     IconMessage,
+    IconDatabaseExport,
     IconAdjustmentsHorizontal,
     IconUsers
 }
@@ -32,6 +42,13 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconUsers
+        },
+        {
+            id: 'viewUpsertHistory',
+            title: 'Upsert History',
+            type: 'item',
+            url: '',
+            icon: icons.IconDatabaseExport
         },
         {
             id: 'chatflowConfiguration',

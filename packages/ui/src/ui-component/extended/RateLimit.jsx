@@ -73,12 +73,8 @@ const RateLimit = () => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response
-                ? error.response.data || `${error.response.status}: ${error.response.statusText}`
-                : error.message
             enqueueSnackbar({
-                message: `Failed to save Rate Limit Configuration: ${errorData}`,
+                message: `Failed to save Rate Limit Configuration: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

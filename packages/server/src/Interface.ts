@@ -104,6 +104,14 @@ export interface ILead {
     createdDate: Date
 }
 
+export interface IUpsertHistory {
+    id: string
+    chatflowid: string
+    result: string
+    flowData: string
+    date: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }

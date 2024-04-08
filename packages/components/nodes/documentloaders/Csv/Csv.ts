@@ -1,6 +1,9 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
+import path from 'path'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -53,7 +56,7 @@ class Csv_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const columnName = nodeData.inputs?.columnName as string
@@ -62,25 +65,50 @@ class Csv_DocumentLoaders implements INode {
         let alldocs = []
         let files: string[] = []
 
-        if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
-            files = JSON.parse(csvFileBase64)
-        } else {
-            files = [csvFileBase64]
-        }
-
-        for (const file of files) {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
-
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
+        if (csvFileBase64.startsWith('FILE-STORAGE::')) {
+            const fileName = csvFileBase64.replace('FILE-STORAGE::', '')
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
             } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
+                files = [fileName]
+            }
+            const chatflowid = options.chatflowid
+
+            for (const file of files) {
+                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+                const fileData = fs.readFileSync(fileInStorage)
+                const blob = new Blob([fileData])
+                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
+            }
+        } else {
+            if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
+                files = JSON.parse(csvFileBase64)
+            } else {
+                files = [csvFileBase64]
+            }
+
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
             }
         }
 

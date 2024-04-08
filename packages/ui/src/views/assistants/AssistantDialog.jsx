@@ -31,16 +31,16 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const assistantAvailableModels = [
     {
+        label: 'gpt-4-turbo-preview',
+        name: 'gpt-4-turbo-preview'
+    },
+    {
         label: 'gpt-4-1106-preview',
         name: 'gpt-4-1106-preview'
     },
     {
         label: 'gpt-4-0613',
         name: 'gpt-4-0613'
-    },
-    {
-        label: 'gpt-4-0314',
-        name: 'gpt-4-0314'
     },
     {
         label: 'gpt-4',
@@ -235,9 +235,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to add new Assistant: ${errorData}`,
+                message: `Failed to add new Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -289,9 +288,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Assistant: ${errorData}`,
+                message: `Failed to save Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -329,9 +327,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to sync Assistant: ${errorData}`,
+                message: `Failed to sync Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -376,9 +373,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to delete Assistant: ${errorData}`,
+                message: `Failed to delete Assistant: ${error.response.data.message}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

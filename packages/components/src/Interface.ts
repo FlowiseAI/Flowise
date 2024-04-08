@@ -113,7 +113,7 @@ export interface INode extends INodeProperties {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
     }
     vectorStoreMethods?: {
-        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
         delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
     }
@@ -181,6 +181,7 @@ export type MessageContentImageUrl = {
 
 import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
 import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -271,12 +272,20 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
+export type IndexingResult = {
+    numAdded: number
+    numDeleted: number
+    numUpdated: number
+    numSkipped: number
+    totalKeys: number
+    addedDocs: Document[]
+}
+
 export interface IVisionChatModal {
     id: string
     configuredModel: string
-    configuredMaxToken: number
     multiModalOption: IMultiModalOption
-
+    configuredMaxToken?: number
     setVisionModel(): void
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
