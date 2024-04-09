@@ -217,11 +217,12 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        if (containsBase64File(updateChatFlow)) {
+        if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
             updateChatFlow.flowData = updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
-        const newDbChatflow = await appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
         // chatFlowPool is initialized only when a flow is opened
         // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
         if (appServer.chatflowPool) {

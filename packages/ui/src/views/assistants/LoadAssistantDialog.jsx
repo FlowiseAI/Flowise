@@ -8,7 +8,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import assistantsApi from '@/api/assistants'
 import useApi from '@/hooks/useApi'
 
-const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected }) => {
+const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const getAllAvailableAssistantsApi = useApi(assistantsApi.getAllAvailableAssistants)
@@ -38,6 +38,13 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected 
             setAvailableAssistantsOptions(assistants)
         }
     }, [getAllAvailableAssistantsApi.data])
+
+    useEffect(() => {
+        if (getAllAvailableAssistantsApi.error) {
+            setError(getAllAvailableAssistantsApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAllAvailableAssistantsApi.error])
 
     const component = show ? (
         <Dialog
@@ -108,7 +115,8 @@ LoadAssistantDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onAssistantSelected: PropTypes.func
+    onAssistantSelected: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default LoadAssistantDialog
