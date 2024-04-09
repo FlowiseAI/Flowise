@@ -42,7 +42,7 @@ const getAllTemplates = async () => {
             templates.push(template)
         })
         const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
-        const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
+        const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'DevinAI Docs QnA')
         if (FlowiseDocsQnAIndex > 0) {
             sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
         }

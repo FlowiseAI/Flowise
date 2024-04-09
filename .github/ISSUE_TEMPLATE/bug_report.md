@@ -28,8 +28,8 @@ If applicable, add exported flow in order to help replicating the problem.
 
 **Setup**
 
--   Installation [e.g. docker, `npx flowise start`, `pnpm start`]
--   Flowise Version [e.g. 1.2.11]
+-   Installation [e.g. docker, `npx devinai start`, `pnpm start`]
+-   DevinAI Version [e.g. 1.2.11]
 -   OS: [e.g. macOS, Windows, Linux]
 -   Browser [e.g. chrome, safari]
 

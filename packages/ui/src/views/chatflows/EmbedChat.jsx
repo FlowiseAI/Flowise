@@ -49,7 +49,7 @@ const embedPopupHtmlCode = (chatflowid) => {
 }
 
 const embedPopupReactCode = (chatflowid) => {
-    return `import { BubbleChat } from 'flowise-embed-react'
+    return `import { BubbleChat } from 'devinai-embed-react'
 
 const App = () => {
     return (
@@ -59,7 +59,7 @@ const App = () => {
 }
 
 const embedFullpageHtmlCode = (chatflowid) => {
-    return `<flowise-fullchatbot></flowise-fullchatbot>
+    return `<devinai-fullchatbot></devinai-fullchatbot>
 <script type="module">
     import Chatbot from "https://cdn.jsdelivr.net/gh/aritellavsn/ApexMchat/dist/web.js"
     Chatbot.initFull({
@@ -70,7 +70,7 @@ const embedFullpageHtmlCode = (chatflowid) => {
 }
 
 const embedFullpageReactCode = (chatflowid) => {
-    return `import { FullPageChat } from "flowise-embed-react"
+    return `import { FullPageChat } from "devinai-embed-react"
 
 const App = () => {
     return (
@@ -85,76 +85,78 @@ const App = () => {
 const buttonConfig = (isReact = false) => {
     return isReact
         ? `button: {
-                    backgroundColor: "#3B81F6",
-                    right: 20,
-                    bottom: 20,
-                    size: "medium",
-                    iconColor: "white",
-                    customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
-                }`
+            backgroundColor: "#3888AD",
+            right: 20,
+            bottom: 20,
+            size: "medium",
+            iconColor: "white",
+            customIconSrc: "https://i.imgur.com/e8emxwj.png",
+        }`
         : `button: {
-                backgroundColor: "#3B81F6",
-                right: 20,
-                bottom: 20,
-                size: "medium",
-                iconColor: "white",
-                customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
-            }`
+            backgroundColor: "#3888AD",
+            right: 20,
+            bottom: 20,
+            size: "medium",
+            iconColor: "white",
+            customIconSrc: "https://i.imgur.com/e8emxwj.png",
+        }`
 }
 
 const chatwindowConfig = (isReact = false) => {
     return isReact
         ? `chatWindow: {
-                    welcomeMessage: "Hello! This is custom welcome message",
-                    backgroundColor: "#ffffff",
-                    height: 700,
-                    width: 400,
-                    fontSize: 16,
-                    poweredByTextColor: "#303235",
-                    botMessage: {
-                        backgroundColor: "#f7f8ff",
-                        textColor: "#303235",
-                        showAvatar: true,
-                        avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
-                    },
-                    userMessage: {
-                        backgroundColor: "#3B81F6",
-                        textColor: "#ffffff",
-                        showAvatar: true,
-                        avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
-                    },
-                    textInput: {
-                        placeholder: "Type your question",
-                        backgroundColor: "#ffffff",
-                        textColor: "#303235",
-                        sendButtonColor: "#3B81F6",
-                    }
+            title: ‘DevinAI Agent’,
+            titleAvatarSrc: 'https://i.imgur.com/x7kgWUM.png',
+            welcomeMessage: "Hello! How can I help?",
+            backgroundColor: "#ffffff",
+            fontSize: 16,
+            poweredByTextColor: "#3888AD",
+            botMessage: {
+                backgroundColor: "#f7f8ff",
+                textColor: "#303235",
+                showAvatar: true,
+                avatarSrc: "https://i.imgur.com/e8emxwj.png",
+            },
+
+            userMessage: {
+                backgroundColor: "#000000",
+                textColor: "#ffffff",
+                showAvatar: true,
+                avatarSrc: "https://i.imgur.com/6UAV5t9.png",
+            },
+            textInput: {
+                placeholder: "Type your question",
+                backgroundColor: "#ffffff",
+                textColor: "#303235",
+                sendButtonColor: "#3888AD",
+            }
                 }`
         : `chatWindow: {
-                welcomeMessage: "Hello! This is custom welcome message",
+            title: ‘DevinAI Agent’,
+            titleAvatarSrc: 'https://i.imgur.com/x7kgWUM.png',
+            welcomeMessage: "Hello! How can I help?",
+            backgroundColor: "#ffffff",
+            fontSize: 16,
+            poweredByTextColor: "#3888AD",
+            botMessage: {
+                backgroundColor: "#f7f8ff",
+                textColor: "#303235",
+                showAvatar: true,
+                avatarSrc: "https://i.imgur.com/e8emxwj.png",
+            },
+
+            userMessage: {
+                backgroundColor: "#000000",
+                textColor: "#ffffff",
+                showAvatar: true,
+                avatarSrc: "https://i.imgur.com/6UAV5t9.png",
+            },
+            textInput: {
+                placeholder: "Type your question",
                 backgroundColor: "#ffffff",
-                height: 700,
-                width: 400,
-                fontSize: 16,
-                poweredByTextColor: "#303235",
-                botMessage: {
-                    backgroundColor: "#f7f8ff",
-                    textColor: "#303235",
-                    showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
-                },
-                userMessage: {
-                    backgroundColor: "#3B81F6",
-                    textColor: "#ffffff",
-                    showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
-                },
-                textInput: {
-                    placeholder: "Type your question",
-                    backgroundColor: "#ffffff",
-                    textColor: "#303235",
-                    sendButtonColor: "#3B81F6",
-                }
+                textColor: "#303235",
+                sendButtonColor: "#3888AD",
+            }
             }`
 }
 
@@ -176,7 +178,7 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
 }
 
 const embedPopupReactCodeCustomization = (chatflowid) => {
-    return `import { BubbleChat } from 'flowise-embed-react'
+    return `import { BubbleChat } from 'devinai-embed-react'
 
 const App = () => {
     return (
@@ -193,7 +195,7 @@ const App = () => {
 }
 
 const embedFullpageHtmlCodeCustomization = (chatflowid) => {
-    return `<flowise-fullchatbot></flowise-fullchatbot>
+    return `<devinai-fullchatbot></devinai-fullchatbot>
 <script type="module">
     import Chatbot from "https://cdn.jsdelivr.net/gh/aritellavsn/ApexMchat/dist/web.js"
     Chatbot.initFull({
@@ -207,7 +209,7 @@ const embedFullpageHtmlCodeCustomization = (chatflowid) => {
 }
 
 const embedFullpageReactCodeCustomization = (chatflowid) => {
-    return `import { FullPageChat } from "flowise-embed-react"
+    return `import { FullPageChat } from "devinai-embed-react"
 
 const App = () => {
     return (
@@ -283,7 +285,7 @@ const EmbedChat = ({ chatflowid }) => {
                         <>
                             <span>
                                 Paste this anywhere in the <code>{`<body>`}</code> tag of your html file.
-                                <p>
+                                {/* <p>
                                     You can also specify a&nbsp;
                                     <a
                                         rel='noreferrer'
@@ -293,7 +295,7 @@ const EmbedChat = ({ chatflowid }) => {
                                         version
                                     </a>
                                     :&nbsp;<code>{`https://cdn.jsdelivr.net/gh/aritellavsn/ApexMchat@<version>/dist/web.js`}</code>
-                                </p>
+                    </p> */}
                             </span>
                             <div style={{ height: 10 }}></div>
                         </>
