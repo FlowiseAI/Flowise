@@ -91,7 +91,19 @@ const ItemCard = ({ data, images, onClick }) => {
                             </Typography>
                         </div>
                         {data.description && (
-                            <span style={{ marginTop: 10, overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>{data.description}</span>
+                            <span
+                                style={{
+                                    display: '-webkit-box',
+                                    marginTop: 10,
+                                    overflowWrap: 'break-word',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {data.description}
+                            </span>
                         )}
                     </Box>
                     {images && (
