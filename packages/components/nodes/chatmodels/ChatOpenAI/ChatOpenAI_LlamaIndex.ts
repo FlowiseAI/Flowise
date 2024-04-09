@@ -153,7 +153,9 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         }
 
         if (basePath) {
-            obj.baseURL = basePath;
+            obj.additionalSessionOptions = {
+                baseURL: basePath
+            }
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
