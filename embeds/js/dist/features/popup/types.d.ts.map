@@ -1,0 +1,1 @@
+{"version":3,"file":"types.d.ts","sourceRoot":"","sources":["../../../src/features/popup/types.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,WAAW,GAAG;IACxB,aAAa,CAAC,EAAE,MAAM,CAAC;IACvB,KAAK,CAAC,EAAE;QACN,KAAK,CAAC,EAAE,MAAM,CAAC;QACf,eAAe,CAAC,EAAE,MAAM,CAAC;KAC1B,CAAC;CACH,CAAC"}

@@ -12,7 +12,8 @@
 **/*.log
 
 ## build
-**/dist
+packages/**/dist
+embeds/react/dist
 **/build
 
 ## temp
