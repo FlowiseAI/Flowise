@@ -114,11 +114,14 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
+
         const body = req.body
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
+
         updateChatFlow.id = chatflow.id
         createRateLimiter(updateChatFlow)
+
         const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
         return res.json(apiResponse)
     } catch (error) {
