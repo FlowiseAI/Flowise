@@ -30,7 +30,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
     let [internalValue, setInternalValue] = useState(value ?? [])
 
     return (
-        <FormControl sx={{ width: '100%', height: '52px', ...formControlSx }} size='small'>
+        <FormControl sx={{ mt: 1, width: '100%', ...formControlSx }} size='small'>
             <Autocomplete
                 id={name}
                 disabled={disabled}
