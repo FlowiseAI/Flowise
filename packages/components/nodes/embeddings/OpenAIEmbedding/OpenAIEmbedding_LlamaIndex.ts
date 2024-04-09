@@ -73,6 +73,7 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const timeout = nodeData.inputs?.timeout as string
         const modelName = nodeData.inputs?.modelName as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -82,7 +83,11 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
             model: modelName
         }
         if (timeout) obj.timeout = parseInt(timeout, 10)
-
+        if (basePath) {
+            obj.additionalSessionOptions = {
+                baseURL: basePath
+            }
+        }
         const model = new OpenAIEmbedding(obj)
         return model
     }
