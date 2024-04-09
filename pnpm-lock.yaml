@@ -624,8 +624,8 @@ importers:
   packages/server:
     dependencies:
       '@oclif/core':
-        specifier: ^1.13.10
-        version: 1.26.2
+        specifier: 1.13.10
+        version: 1.13.10
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.14.202
@@ -6081,8 +6081,8 @@ packages:
       - supports-color
     dev: true
 
-  /@oclif/core@1.26.2:
-    resolution: {integrity: sha512-6jYuZgXvHfOIc9GIaS4T3CIKGTjPmfAxuMcbCbMRKJJl4aq/4xeRlEz0E8/hz8HxvxZBGvN2GwAUHlrGWQVrVw==}
+  /@oclif/core@1.13.10:
+    resolution: {integrity: sha512-nwpjXwWscETdvO+/z94V1zd95vnzmCB6VRaobR4BdBllwWU6jHF/eCi1Ud2Tk9RSedChoLneZuDCkKnRCmxyng==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@oclif/linewrap': 1.0.0
