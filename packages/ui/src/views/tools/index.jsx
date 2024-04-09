@@ -1,9 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Stack, Button, ButtonGroup, Skeleton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -20,16 +18,17 @@ import toolsApi from '@/api/tools'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileImport } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Tools = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
+    const [isLoading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
 
@@ -101,44 +100,79 @@ const Tools = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllToolsApi.loading)
+    }, [getAllToolsApi.loading])
+
+    useEffect(() => {
+        if (getAllToolsApi.error) {
+            setError(getAllToolsApi.error)
+        }
+    }, [getAllToolsApi.error])
+
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
-                    <h1>Tools</h1>
-                    <Grid sx={{ mb: 1.25 }} container direction='row'>
-                        <Box sx={{ flexGrow: 1 }} />
-                        <Grid item>
-                            <Button
-                                variant='outlined'
-                                sx={{ mr: 2 }}
-                                onClick={() => inputRef.current.click()}
-                                startIcon={<IconFileImport />}
-                            >
-                                Load
-                            </Button>
-                            <input ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
-                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
-                                Create
-                            </StyledButton>
-                        </Grid>
-                    </Grid>
-                </Stack>
-                <Grid container spacing={gridSpacing}>
-                    {!getAllToolsApi.loading &&
-                        getAllToolsApi.data &&
-                        getAllToolsApi.data.map((data, index) => (
-                            <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                <ItemCard data={data} onClick={() => edit(data)} />
-                            </Grid>
-                        ))}
-                </Grid>
-                {!getAllToolsApi.loading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
-                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
-                        </Box>
-                        <div>No Tools Created Yet</div>
+            <MainCard>
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader title='Tools'>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Button
+                                    variant='outlined'
+                                    onClick={() => inputRef.current.click()}
+                                    startIcon={<IconFileUpload />}
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                >
+                                    Load
+                                </Button>
+                                <input
+                                    style={{ display: 'none' }}
+                                    ref={inputRef}
+                                    type='file'
+                                    hidden
+                                    accept='.json'
+                                    onChange={(e) => handleFileUpload(e)}
+                                />
+                            </Box>
+                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                <StyledButton
+                                    variant='contained'
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                >
+                                    Create
+                                </StyledButton>
+                            </ButtonGroup>
+                        </ViewHeader>
+                        {isLoading ? (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                            </Box>
+                        ) : (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {getAllToolsApi.data &&
+                                    getAllToolsApi.data.map((data, index) => (
+                                        <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                    ))}
+                            </Box>
+                        )}
+                        {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        src={ToolEmptySVG}
+                                        alt='ToolEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Tools Created Yet</div>
+                            </Stack>
+                        )}
                     </Stack>
                 )}
             </MainCard>
@@ -147,6 +181,7 @@ const Tools = () => {
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></ToolDialog>
         </>
     )

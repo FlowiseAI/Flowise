@@ -72,7 +72,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -153,9 +153,9 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             await updateChatflowApi.request(chatflow.id, updateBody)
             await updateFlowsApi.request()
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: errorData,
+                message: error.response.data.message,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -192,9 +192,9 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
             await updateChatflowApi.request(chatflow.id, updateBody)
             await updateFlowsApi.request()
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: errorData,
+                message: error.response.data.message,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -224,9 +224,9 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 await updateFlowsApi.request()
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                setError(error)
                 enqueueSnackbar({
-                    message: errorData,
+                    message: error.response.data.message,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -373,5 +373,6 @@ export default function FlowListMenu({ chatflow, updateFlowsApi }) {
 
 FlowListMenu.propTypes = {
     chatflow: PropTypes.object,
+    setError: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }

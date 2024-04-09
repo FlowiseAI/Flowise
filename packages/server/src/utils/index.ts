@@ -238,6 +238,93 @@ export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INode
 }
 
 /**
+ * Get file name from base64 string
+ * @param {string} fileBase64
+ */
+export const getFileName = (fileBase64: string): string => {
+    let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
+    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+        const files = JSON.parse(fileBase64)
+        for (const file of files) {
+            const splitDataURI = file.split(',')
+            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+            fileNames.push(filename)
+        }
+        return fileNames.join(', ')
+    } else {
+        const splitDataURI = fileBase64.split(',')
+        const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
+        return filename
+    }
+}
+
+/**
+ * Save upsert flowData
+ * @param {INodeData} nodeData
+ * @param {Record<string, any>} upsertHistory
+ */
+export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<string, any>): ICommonObject[] => {
+    const existingUpsertFlowData = upsertHistory['flowData'] ?? []
+    const paramValues: ICommonObject[] = []
+
+    for (const input in nodeData.inputs) {
+        const inputParam = nodeData.inputParams.find((inp) => inp.name === input)
+        if (!inputParam) continue
+
+        let paramValue: ICommonObject = {}
+
+        if (!nodeData.inputs[input]) {
+            continue
+        }
+        if (
+            typeof nodeData.inputs[input] === 'string' &&
+            nodeData.inputs[input].startsWith('{{') &&
+            nodeData.inputs[input].endsWith('}}')
+        ) {
+            continue
+        }
+        // Get file name instead of the base64 string
+        if (nodeData.category === 'Document Loaders' && nodeData.inputParams.find((inp) => inp.name === input)?.type === 'file') {
+            paramValue = {
+                label: inputParam?.label,
+                name: inputParam?.name,
+                type: inputParam?.type,
+                value: getFileName(nodeData.inputs[input])
+            }
+            paramValues.push(paramValue)
+            continue
+        }
+
+        paramValue = {
+            label: inputParam?.label,
+            name: inputParam?.name,
+            type: inputParam?.type,
+            value: nodeData.inputs[input]
+        }
+        paramValues.push(paramValue)
+    }
+
+    const newFlowData = {
+        label: nodeData.label,
+        name: nodeData.name,
+        category: nodeData.category,
+        id: nodeData.id,
+        paramValues
+    }
+    existingUpsertFlowData.push(newFlowData)
+    return existingUpsertFlowData
+}
+
+/**
  * Build langchain from start to end
  * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -272,6 +359,8 @@ export const buildFlow = async (
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
+    let upsertHistory: Record<string, any> = {}
+
     // Create a Queue and add our initial node in it
     const nodeQueue = [] as INodeQueue[]
     const exploredNode = {} as IExploredNode
@@ -302,12 +391,15 @@ export const buildFlow = async (
 
             let flowNodeData = cloneDeep(reactFlowNode.data)
             if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+
+            if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
+
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
             // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
+                const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     chatId,
                     sessionId,
                     chatflowid,
@@ -319,6 +411,7 @@ export const buildFlow = async (
                     dynamicVariables,
                     uploads
                 })
+                if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
             } else {
@@ -422,7 +515,7 @@ export const buildFlow = async (
             flowNodes.push(flowNodes.splice(index, 1)[0])
         }
     }
-    return flowNodes
+    return isUpsert ? (upsertHistory as any) : flowNodes
 }
 
 /**
@@ -492,7 +585,7 @@ export const getVariableValue = (
     isAcceptVariable = false
 ) => {
     const isObject = typeof paramValue === 'object'
-    let returnVal = isObject ? JSON.stringify(paramValue) : paramValue
+    let returnVal = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
     const variableStack = []
     const variableDict = {} as IVariableDict
     let startIdx = 0
