@@ -286,7 +286,7 @@
                         "label": "Repo Link",
                         "name": "repoLink",
                         "type": "string",
-                        "placeholder": "https://github.com/FlowiseAI/Flowise",
+                        "placeholder": "https://github.com/devinai/devinai",
                         "id": "github_0-input-repoLink-string"
                     },
                     {
@@ -351,7 +351,7 @@
                     }
                 ],
                 "inputs": {
-                    "repoLink": "https://github.com/FlowiseAI/FlowiseDocs",
+                    "repoLink": "https://github.com/devinai/devinaidoc",
                     "branch": "main",
                     "recursive": true,
                     "textSplitter": "{{markdownTextSplitter_0.data.instance}}",
