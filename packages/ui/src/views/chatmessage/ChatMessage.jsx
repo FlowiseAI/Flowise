@@ -558,7 +558,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             inputFields.push(config.starterPrompts[key])
                         }
                     })
-                    setStarterPrompts(inputFields)
+                    setStarterPrompts(inputFields.filter((field) => field.prompt !== ''))
                 }
                 if (config.chatFeedback) {
                     setChatFeedbackStatus(config.chatFeedback.status)
