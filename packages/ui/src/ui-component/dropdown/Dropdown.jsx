@@ -25,7 +25,7 @@ export const Dropdown = ({ name, value, options, onSelect, disabled = false, dis
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
 
     return (
-        <FormControl sx={{ width: '100%', height: '52px' }} size='small'>
+        <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
             <Autocomplete
                 id={name}
                 disabled={disabled}
