@@ -1,13 +1,19 @@
 import { flatten } from 'lodash'
+import { v4 as uuid } from 'uuid'
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/community/vectorstores/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { index } from '../../../src/indexing'
 
 type RetrieverConfig = Partial<VectorStoreRetrieverInput<QdrantVectorStore>>
+type QdrantAddDocumentOptions = {
+    customPayload?: Record<string, any>[]
+    ids?: string[]
+}
 
 class Qdrant_VectorStores implements INode {
     label: string
@@ -26,7 +32,7 @@ class Qdrant_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant'
         this.name = 'qdrant'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -54,6 +60,13 @@ class Qdrant_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Qdrant Server URL',
@@ -138,13 +151,14 @@ class Qdrant_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
             const collectionName = nodeData.inputs?.qdrantCollection as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
             const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+            const recordManager = nodeData.inputs?.recordManager
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -178,7 +192,74 @@ class Qdrant_VectorStores implements INode {
             }
 
             try {
-                await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                if (recordManager) {
+                    const vectorStore = new QdrantVectorStore(embeddings, dbConfig)
+                    await vectorStore.ensureCollection()
+
+                    vectorStore.addVectors = async (
+                        vectors: number[][],
+                        documents: Document[],
+                        documentOptions?: QdrantAddDocumentOptions
+                    ): Promise<void> => {
+                        if (vectors.length === 0) {
+                            return
+                        }
+
+                        await vectorStore.ensureCollection()
+
+                        const points = vectors.map((embedding, idx) => ({
+                            id: documentOptions?.ids?.length ? documentOptions?.ids[idx] : uuid(),
+                            vector: embedding,
+                            payload: {
+                                content: documents[idx].pageContent,
+                                metadata: documents[idx].metadata,
+                                customPayload: documentOptions?.customPayload?.length ? documentOptions?.customPayload[idx] : undefined
+                            }
+                        }))
+
+                        try {
+                            await client.upsert(collectionName, {
+                                wait: true,
+                                points
+                            })
+                        } catch (e: any) {
+                            const error = new Error(`${e?.status ?? 'Undefined error code'} ${e?.message}: ${e?.data?.status?.error}`)
+                            throw error
+                        }
+                    }
+
+                    vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
+                        const { ids } = params
+
+                        if (ids?.length) {
+                            try {
+                                client.delete(collectionName, {
+                                    points: ids
+                                })
+                            } catch (e) {
+                                console.error('Failed to delete')
+                            }
+                        }
+                    }
+
+                    await recordManager.createSchema()
+
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: collectionName
+                        }
+                    })
+
+                    return res
+                } else {
+                    await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }

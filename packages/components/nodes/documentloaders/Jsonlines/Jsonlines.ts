@@ -1,6 +1,9 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { JSONLinesLoader } from 'langchain/document_loaders/fs/json'
+import { getStoragePath } from '../../../src'
+import fs from 'fs'
+import path from 'path'
 
 class Jsonlines_DocumentLoaders implements INode {
     label: string
@@ -52,7 +55,7 @@ class Jsonlines_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const jsonLinesFileBase64 = nodeData.inputs?.jsonlinesFile as string
         const pointerName = nodeData.inputs?.pointerName as string
@@ -62,26 +65,51 @@ class Jsonlines_DocumentLoaders implements INode {
         let files: string[] = []
 
         let pointer = '/' + pointerName.trim()
-
-        if (jsonLinesFileBase64.startsWith('[') && jsonLinesFileBase64.endsWith(']')) {
-            files = JSON.parse(jsonLinesFileBase64)
-        } else {
-            files = [jsonLinesFileBase64]
-        }
-
-        for (const file of files) {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            const loader = new JSONLinesLoader(blob, pointer)
-
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
+        //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
+        if (jsonLinesFileBase64.startsWith('FILE-STORAGE::')) {
+            const fileName = jsonLinesFileBase64.replace('FILE-STORAGE::', '')
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
             } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
+                files = [fileName]
+            }
+            const chatflowid = options.chatflowid
+
+            for (const file of files) {
+                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
+                const fileData = fs.readFileSync(fileInStorage)
+                const blob = new Blob([fileData])
+                const loader = new JSONLinesLoader(blob, pointer)
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
+            }
+        } else {
+            if (jsonLinesFileBase64.startsWith('[') && jsonLinesFileBase64.endsWith(']')) {
+                files = JSON.parse(jsonLinesFileBase64)
+            } else {
+                files = [jsonLinesFileBase64]
+            }
+
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+                const loader = new JSONLinesLoader(blob, pointer)
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
             }
         }
 

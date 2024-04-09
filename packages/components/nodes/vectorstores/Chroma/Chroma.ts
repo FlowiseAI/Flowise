@@ -2,9 +2,10 @@ import { flatten } from 'lodash'
 import { Chroma } from '@langchain/community/vectorstores/chroma'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChromaExtended } from './core'
+import { index } from '../../../src/indexing'
 
 class Chroma_VectorStores implements INode {
     label: string
@@ -23,7 +24,7 @@ class Chroma_VectorStores implements INode {
     constructor() {
         this.label = 'Chroma'
         this.name = 'chroma'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Chroma'
         this.icon = 'chroma.svg'
         this.category = 'Vector Stores'
@@ -50,6 +51,13 @@ class Chroma_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Collection Name',
@@ -95,11 +103,12 @@ class Chroma_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const collectionName = nodeData.inputs?.collectionName as string
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const chromaURL = nodeData.inputs?.chromaURL as string
+            const recordManager = nodeData.inputs?.recordManager
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const chromaApiKey = getCredentialParam('chromaApiKey', credentialData, nodeData)
@@ -121,7 +130,24 @@ class Chroma_VectorStores implements INode {
             if (chromaApiKey) obj.chromaApiKey = chromaApiKey
 
             try {
-                await ChromaExtended.fromDocuments(finalDocs, embeddings, obj)
+                if (recordManager) {
+                    const vectorStore = await ChromaExtended.fromExistingCollection(embeddings, obj)
+                    await recordManager.createSchema()
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: collectionName
+                        }
+                    })
+                    return res
+                } else {
+                    await ChromaExtended.fromDocuments(finalDocs, embeddings, obj)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }

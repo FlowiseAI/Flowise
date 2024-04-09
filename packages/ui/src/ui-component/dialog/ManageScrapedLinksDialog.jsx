@@ -82,9 +82,8 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 })
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: errorData,
+                message: error.response.data.message,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

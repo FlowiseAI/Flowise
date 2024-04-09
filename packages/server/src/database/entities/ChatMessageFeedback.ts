@@ -13,7 +13,7 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     chatflowid: string
 
     @Index()
-    @Column({ type: 'uuid' })
+    @Column({ type: 'varchar' })
     chatId: string
 
     @Column({ type: 'uuid' })
@@ -25,7 +25,7 @@ export class ChatMessageFeedback implements IChatMessageFeedback {
     @Column({ nullable: true, type: 'text' })
     content?: string
 
-    @Column({type:'timestamp'})
+    @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
 }
