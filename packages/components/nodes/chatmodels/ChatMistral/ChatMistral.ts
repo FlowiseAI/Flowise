@@ -47,7 +47,7 @@ class ChatMistral_ChatModels implements INode {
     constructor() {
         this.label = 'ChatMistralAI'
         this.name = 'chatMistralAI'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatMistralAI'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'

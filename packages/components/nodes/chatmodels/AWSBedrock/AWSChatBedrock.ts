@@ -24,7 +24,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS ChatBedrock'
         this.name = 'awsChatBedrock'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'AWSChatBedrock'
         this.icon = 'aws.svg'
         this.category = 'Chat Models'

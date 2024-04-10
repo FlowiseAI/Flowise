@@ -19,7 +19,7 @@ class Cohere_LLMs implements INode {
     constructor() {
         this.label = 'Cohere'
         this.name = 'cohere'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Cohere'
         this.icon = 'Cohere.svg'
         this.category = 'LLMs'

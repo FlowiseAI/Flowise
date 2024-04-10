@@ -20,7 +20,7 @@ class GoogleVertexAI_LLMs implements INode {
     constructor() {
         this.label = 'GoogleVertexAI'
         this.name = 'googlevertexai'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'GoogleVertexAI'
         this.icon = 'GoogleVertex.svg'
         this.category = 'LLMs'

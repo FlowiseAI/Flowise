@@ -20,7 +20,7 @@ class AzureOpenAI_LLMs implements INode {
     constructor() {
         this.label = 'Azure OpenAI'
         this.name = 'azureOpenAI'
-        this.version = 2.1
+        this.version = 3.0
         this.type = 'AzureOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'LLMs'

@@ -19,7 +19,7 @@ class ChatGooglePaLM_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGooglePaLM'
         this.name = 'chatGooglePaLM'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatGooglePaLM'
         this.icon = 'GooglePaLM.svg'
         this.category = 'Chat Models'

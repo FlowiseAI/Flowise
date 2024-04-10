@@ -20,7 +20,7 @@ class OpenAI_LLMs implements INode {
     constructor() {
         this.label = 'OpenAI'
         this.name = 'openAI'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'OpenAI'
         this.icon = 'openai.svg'
         this.category = 'LLMs'

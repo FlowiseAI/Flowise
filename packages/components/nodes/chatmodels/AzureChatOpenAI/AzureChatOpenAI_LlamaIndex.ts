@@ -26,7 +26,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
     constructor() {
         this.label = 'AzureChatOpenAI'
         this.name = 'azureChatOpenAI_LlamaIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'

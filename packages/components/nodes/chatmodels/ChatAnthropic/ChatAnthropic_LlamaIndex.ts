@@ -18,7 +18,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic_LlamaIndex'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
