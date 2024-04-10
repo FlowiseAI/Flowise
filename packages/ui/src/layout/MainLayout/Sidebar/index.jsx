@@ -11,7 +11,7 @@ import { BrowserView, MobileView } from 'react-device-detect'
 // project imports
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
-import { drawerWidth } from '@/store/constant'
+import { drawerWidth, headerHeight } from '@/store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
@@ -21,7 +21,12 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
 
     const drawer = (
         <>
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <Box
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    height: '80px'
+                }}
+            >
                 <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                     <LogoSection />
                 </Box>
@@ -30,7 +35,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                 <PerfectScrollbar
                     component='div'
                     style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
+                        height: !matchUpMd ? 'calc(100vh - 56px)' : `calc(100vh - ${headerHeight}px)`,
                         paddingLeft: '16px',
                         paddingRight: '16px'
                     }}
@@ -49,7 +54,14 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     const container = window !== undefined ? () => window.document.body : undefined
 
     return (
-        <Box component='nav' sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label='mailbox folders'>
+        <Box
+            component='nav'
+            sx={{
+                flexShrink: { md: 0 },
+                width: matchUpMd ? drawerWidth : 'auto'
+            }}
+            aria-label='mailbox folders'
+        >
             <Drawer
                 container={container}
                 variant={matchUpMd ? 'persistent' : 'temporary'}
@@ -61,10 +73,11 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                         width: drawerWidth,
                         background: theme.palette.background.default,
                         color: theme.palette.text.primary,
-                        borderRight: 'none',
                         [theme.breakpoints.up('md')]: {
-                            top: '66px'
-                        }
+                            top: `${headerHeight}px`
+                        },
+                        borderRight: drawerOpen ? '1px solid' : 'none',
+                        borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent'
                     }
                 }}
                 ModalProps={{ keepMounted: true }}
