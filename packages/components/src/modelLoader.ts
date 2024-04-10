@@ -7,7 +7,8 @@ const MASTER_MODEL_LIST =
 
 export enum MODEL_TYPE {
     CHAT = 'chat',
-    LLM = 'llm'
+    LLM = 'llm',
+    EMBEDDING = 'embedding'
 }
 
 const getModelConfig = async (category: MODEL_TYPE, name: string) => {

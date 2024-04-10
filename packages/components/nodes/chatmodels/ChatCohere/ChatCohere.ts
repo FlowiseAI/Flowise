@@ -1,10 +1,10 @@
 import { BaseCache } from '@langchain/core/caches'
+import { ChatCohere, ChatCohereInput } from '@langchain/cohere'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Cohere, CohereInput } from './core'
-import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
-class Cohere_LLMs implements INode {
+class ChatCohere_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -17,14 +17,14 @@ class Cohere_LLMs implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Cohere'
-        this.name = 'cohere'
-        this.version = 3.0
-        this.type = 'Cohere'
+        this.label = 'ChatCohere'
+        this.name = 'chatCohere'
+        this.version = 1.0
+        this.type = 'ChatCohere'
         this.icon = 'Cohere.svg'
-        this.category = 'LLMs'
-        this.description = 'Wrapper around Cohere large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(Cohere)]
+        this.category = 'Chat Models'
+        this.description = 'Wrapper around Cohere Chat Endpoints'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatCohere)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -43,7 +43,7 @@ class Cohere_LLMs implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'command'
+                default: 'command-r'
             },
             {
                 label: 'Temperature',
@@ -52,13 +52,6 @@ class Cohere_LLMs implements INode {
                 step: 0.1,
                 default: 0.7,
                 optional: true
-            },
-            {
-                label: 'Max Tokens',
-                name: 'maxTokens',
-                type: 'number',
-                step: 1,
-                optional: true
             }
         ]
     }
@@ -66,28 +59,29 @@ class Cohere_LLMs implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.LLM, 'cohere')
+            return await getModels(MODEL_TYPE.CHAT, 'chatCohere')
         }
     }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
         const cache = nodeData.inputs?.cache as BaseCache
+        const temperature = nodeData.inputs?.temperature as string
+        const streaming = nodeData.inputs?.streaming as boolean
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
 
-        const obj: CohereInput = {
-            apiKey: cohereApiKey
+        const obj: ChatCohereInput = {
+            model: modelName,
+            apiKey: cohereApiKey,
+            temperature: temperature ? parseFloat(temperature) : undefined,
+            streaming: streaming ?? true
         }
-
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (modelName) obj.model = modelName
-        if (temperature) obj.temperature = parseFloat(temperature)
         if (cache) obj.cache = cache
-        const model = new Cohere(obj)
+
+        const model = new ChatCohere(obj)
         return model
     }
 }
 
-module.exports = { nodeClass: Cohere_LLMs }
+module.exports = { nodeClass: ChatCohere_ChatModels }

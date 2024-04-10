@@ -293,7 +293,7 @@
             "data": {
                 "id": "openAIEmbeddings_1",
                 "label": "OpenAI Embeddings",
-                "version": 2,
+                "version": 3,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -310,23 +310,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "optional": true,
                         "id": "openAIEmbeddings_1-input-modelName-options"
                     },
                     {
@@ -400,7 +386,7 @@
             "data": {
                 "id": "openAIEmbeddings_2",
                 "label": "OpenAI Embeddings",
-                "version": 2,
+                "version": 3,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -417,23 +403,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "optional": true,
                         "id": "openAIEmbeddings_2-input-modelName-options"
                     },
                     {
@@ -527,7 +499,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -1027,7 +998,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_1-input-modelName-options"
                     },
                     {
@@ -1207,7 +1177,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_2-input-modelName-options"
                     },
                     {

@@ -209,7 +209,7 @@
             "data": {
                 "id": "openAIEmbedding_LlamaIndex_0",
                 "label": "OpenAI Embedding",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbedding_LlamaIndex",
                 "type": "OpenAIEmbedding",
                 "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
@@ -227,23 +227,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "optional": true,
                         "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
                     },
                     {
@@ -266,7 +252,8 @@
                 "inputAnchors": [],
                 "inputs": {
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -362,7 +349,7 @@
             "data": {
                 "id": "chatAnthropic_LlamaIndex_0",
                 "label": "ChatAnthropic",
-                "version": 2.0,
+                "version": 3.0,
                 "name": "chatAnthropic_LlamaIndex",
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel_LlamaIndex"],
@@ -382,8 +369,7 @@
                         "name": "modelName",
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
-                        "default": "claude-2",
-                        "optional": true,
+                        "default": "claude-3-haiku",
                         "id": "chatAnthropic_LlamaIndex_0-input-modelName-options"
                     },
                     {

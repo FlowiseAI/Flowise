@@ -44,8 +44,7 @@ class AzureOpenAI_LLMs implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'text-davinci-003',
-                optional: true
+                default: 'text-davinci-003'
             },
             {
                 label: 'Temperature',
@@ -108,7 +107,7 @@ class AzureOpenAI_LLMs implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.LLM, 'azureOpenAI')
         }
     }

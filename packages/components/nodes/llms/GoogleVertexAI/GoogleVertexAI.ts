@@ -78,7 +78,7 @@ class GoogleVertexAI_LLMs implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.LLM, 'googlevertexai')
         }
     }

@@ -272,6 +272,11 @@
             "name": "chatAnthropic_LlamaIndex",
             "models": [
                 {
+                    "label": "claude-3-haiku",
+                    "name": "claude-3-haiku",
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
+                },
+                {
                     "label": "claude-3-opus",
                     "name": "claude-3-opus",
                     "description": "Most powerful model for highly complex tasks"
@@ -282,12 +287,12 @@
                     "description": "Ideal balance of intelligence and speed for enterprise workloads"
                 },
                 {
-                    "label": "claude-2.1",
+                    "label": "claude-2.1 (legacy)",
                     "name": "claude-2.1",
                     "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
                 },
                 {
-                    "label": "claude-instant-1.2",
+                    "label": "claude-instant-1.2 (legacy)",
                     "name": "claude-instant-1.2",
                     "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
                 }
@@ -296,6 +301,10 @@
         {
             "name": "chatGoogleGenerativeAI",
             "models": [
+                {
+                    "label": "gemini-1.5-pro-latest",
+                    "name": "gemini-1.5-pro-latest"
+                },
                 {
                     "label": "gemini-pro",
                     "name": "gemini-pro"
@@ -333,11 +342,28 @@
             ]
         },
         {
+            "name": "chatCohere",
+            "models": [
+                {
+                    "label": "command-r",
+                    "name": "command-r"
+                },
+                {
+                    "label": "command-r-plus",
+                    "name": "command-r-plus"
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
                     "label": "gpt-4",
                     "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo"
                 },
                 {
                     "label": "gpt-4-turbo-preview",
@@ -403,6 +429,10 @@
                 {
                     "label": "gpt-4",
                     "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo"
                 },
                 {
                     "label": "gpt-4-turbo-preview",
@@ -508,10 +538,6 @@
                 {
                     "label": "mistral-large-2402",
                     "name": "mistral-large-2402"
-                },
-                {
-                    "label": "mistral-embed",
-                    "name": "mistral-embed"
                 }
             ]
         }
@@ -787,6 +813,15 @@
             ]
         },
         {
+            "name": "GooglePaLM",
+            "models": [
+                {
+                    "label": "models/text-bison-001",
+                    "name": "models/text-bison-001"
+                }
+            ]
+        },
+        {
             "name": "googlevertexai",
             "models": [
                 {
@@ -829,6 +864,318 @@
                 {
                     "label": "davinci-002",
                     "name": "davinci-002"
+                }
+            ]
+        }
+    ],
+    "embedding": [
+        {
+            "name": "openAIEmbeddings",
+            "models": [
+                {
+                    "label": "text-embedding-3-large",
+                    "name": "text-embedding-3-large"
+                },
+                {
+                    "label": "text-embedding-3-small",
+                    "name": "text-embedding-3-small"
+                },
+                {
+                    "label": "text-embedding-ada-002",
+                    "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "openAIEmbedding_LlamaIndex",
+            "models": [
+                {
+                    "label": "text-embedding-3-large",
+                    "name": "text-embedding-3-large"
+                },
+                {
+                    "label": "text-embedding-3-small",
+                    "name": "text-embedding-3-small"
+                },
+                {
+                    "label": "text-embedding-ada-002",
+                    "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "mistralAIEmbeddings",
+            "models": [
+                {
+                    "label": "mistral-embed",
+                    "name": "mistral-embed"
+                }
+            ]
+        },
+        {
+            "name": "voyageAIEmbeddings",
+            "models": [
+                {
+                    "label": "voyage-2",
+                    "name": "voyage-2",
+                    "description": "Base generalist embedding model optimized for both latency and quality"
+                },
+                {
+                    "label": "voyage-code-2",
+                    "name": "voyage-code-2",
+                    "description": "Optimized for code retrieval"
+                },
+                {
+                    "label": "voyage-large-2",
+                    "name": "voyage-large-2",
+                    "description": "Powerful generalist embedding model"
+                },
+                {
+                    "label": "voyage-lite-02-instruct",
+                    "name": "voyage-lite-02-instruct",
+                    "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                }
+            ]
+        },
+        {
+            "name": "googlePaLMEmbeddings",
+            "models": [
+                {
+                    "label": "models/embedding-gecko-001",
+                    "name": "models/embedding-gecko-001"
+                }
+            ]
+        },
+        {
+            "name": "googlevertexaiEmbeddings",
+            "models": [
+                {
+                    "label": "textembedding-gecko@001",
+                    "name": "textembedding-gecko@001"
+                },
+                {
+                    "label": "textembedding-gecko@latest",
+                    "name": "textembedding-gecko@latest"
+                },
+                {
+                    "label": "textembedding-gecko-multilingual@latest",
+                    "name": "textembedding-gecko-multilingual@latest"
+                }
+            ]
+        },
+        {
+            "name": "googleGenerativeAiEmbeddings",
+            "models": [
+                {
+                    "label": "embedding-001",
+                    "name": "embedding-001"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                }
+            ]
+        },
+        {
+            "name": "cohereEmbeddings",
+            "models": [
+                {
+                    "label": "embed-english-v3.0",
+                    "name": "embed-english-v3.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-english-light-v3.0",
+                    "name": "embed-english-light-v3.0",
+                    "description": "Embedding Dimensions: 384"
+                },
+                {
+                    "label": "embed-multilingual-v3.0",
+                    "name": "embed-multilingual-v3.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-multilingual-light-v3.0",
+                    "name": "embed-multilingual-light-v3.0",
+                    "description": "Embedding Dimensions: 384"
+                },
+                {
+                    "label": "embed-english-v2.0",
+                    "name": "embed-english-v2.0",
+                    "description": "Embedding Dimensions: 4096"
+                },
+                {
+                    "label": "embed-english-light-v2.0",
+                    "name": "embed-english-light-v2.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-multilingual-v2.0",
+                    "name": "embed-multilingual-v2.0",
+                    "description": "Embedding Dimensions: 768"
+                }
+            ]
+        },
+        {
+            "name": "AWSBedrockEmbeddings",
+            "models": [
+                {
+                    "label": "amazon.titan-embed-text-v1",
+                    "name": "amazon.titan-embed-text-v1"
+                },
+                {
+                    "label": "amazon.titan-embed-g1-text-02",
+                    "name": "amazon.titan-embed-g1-text-02"
+                },
+                {
+                    "label": "cohere.embed-english-v3",
+                    "name": "cohere.embed-english-v3"
+                },
+                {
+                    "label": "cohere.embed-multilingual-v3",
+                    "name": "cohere.embed-multilingual-v3"
+                }
+            ],
+            "regions": [
+                {
+                    "label": "af-south-1",
+                    "name": "af-south-1"
+                },
+                {
+                    "label": "ap-east-1",
+                    "name": "ap-east-1"
+                },
+                {
+                    "label": "ap-northeast-1",
+                    "name": "ap-northeast-1"
+                },
+                {
+                    "label": "ap-northeast-2",
+                    "name": "ap-northeast-2"
+                },
+                {
+                    "label": "ap-northeast-3",
+                    "name": "ap-northeast-3"
+                },
+                {
+                    "label": "ap-south-1",
+                    "name": "ap-south-1"
+                },
+                {
+                    "label": "ap-south-2",
+                    "name": "ap-south-2"
+                },
+                {
+                    "label": "ap-southeast-1",
+                    "name": "ap-southeast-1"
+                },
+                {
+                    "label": "ap-southeast-2",
+                    "name": "ap-southeast-2"
+                },
+                {
+                    "label": "ap-southeast-3",
+                    "name": "ap-southeast-3"
+                },
+                {
+                    "label": "ap-southeast-4",
+                    "name": "ap-southeast-4"
+                },
+                {
+                    "label": "ap-southeast-5",
+                    "name": "ap-southeast-5"
+                },
+                {
+                    "label": "ap-southeast-6",
+                    "name": "ap-southeast-6"
+                },
+                {
+                    "label": "ca-central-1",
+                    "name": "ca-central-1"
+                },
+                {
+                    "label": "ca-west-1",
+                    "name": "ca-west-1"
+                },
+                {
+                    "label": "cn-north-1",
+                    "name": "cn-north-1"
+                },
+                {
+                    "label": "cn-northwest-1",
+                    "name": "cn-northwest-1"
+                },
+                {
+                    "label": "eu-central-1",
+                    "name": "eu-central-1"
+                },
+                {
+                    "label": "eu-central-2",
+                    "name": "eu-central-2"
+                },
+                {
+                    "label": "eu-north-1",
+                    "name": "eu-north-1"
+                },
+                {
+                    "label": "eu-south-1",
+                    "name": "eu-south-1"
+                },
+                {
+                    "label": "eu-south-2",
+                    "name": "eu-south-2"
+                },
+                {
+                    "label": "eu-west-1",
+                    "name": "eu-west-1"
+                },
+                {
+                    "label": "eu-west-2",
+                    "name": "eu-west-2"
+                },
+                {
+                    "label": "eu-west-3",
+                    "name": "eu-west-3"
+                },
+                {
+                    "label": "il-central-1",
+                    "name": "il-central-1"
+                },
+                {
+                    "label": "me-central-1",
+                    "name": "me-central-1"
+                },
+                {
+                    "label": "me-south-1",
+                    "name": "me-south-1"
+                },
+                {
+                    "label": "sa-east-1",
+                    "name": "sa-east-1"
+                },
+                {
+                    "label": "us-east-1",
+                    "name": "us-east-1"
+                },
+                {
+                    "label": "us-east-2",
+                    "name": "us-east-2"
+                },
+                {
+                    "label": "us-gov-east-1",
+                    "name": "us-gov-east-1"
+                },
+                {
+                    "label": "us-gov-west-1",
+                    "name": "us-gov-west-1"
+                },
+                {
+                    "label": "us-west-1",
+                    "name": "us-west-1"
+                },
+                {
+                    "label": "us-west-2",
+                    "name": "us-west-2"
                 }
             ]
         }

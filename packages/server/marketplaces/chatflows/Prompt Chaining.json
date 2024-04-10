@@ -155,7 +155,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-instruct",
-                        "optional": true,
                         "id": "openAI_1-input-modelName-options"
                     },
                     {
@@ -302,7 +301,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-instruct",
-                        "optional": true,
                         "id": "openAI_2-input-modelName-options"
                     },
                     {

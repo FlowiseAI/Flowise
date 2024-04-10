@@ -43,8 +43,7 @@ class GooglePaLM_LLMs implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'models/text-bison-001',
-                optional: true
+                default: 'models/text-bison-001'
             },
             {
                 label: 'Temperature',
@@ -124,7 +123,7 @@ class GooglePaLM_LLMs implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.LLM, 'GooglePaLM')
         }
     }

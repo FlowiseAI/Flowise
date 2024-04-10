@@ -161,7 +161,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-16k",
-                        "optional": true,
                         "id": "azureChatOpenAI_LlamaIndex_0-input-modelName-options"
                     },
                     {

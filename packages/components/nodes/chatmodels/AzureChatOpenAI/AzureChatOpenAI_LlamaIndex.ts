@@ -45,8 +45,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gpt-3.5-turbo-16k',
-                optional: true
+                default: 'gpt-3.5-turbo-16k'
             },
             {
                 label: 'Temperature',
@@ -85,7 +84,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'azureChatOpenAI_LlamaIndex')
         }
     }

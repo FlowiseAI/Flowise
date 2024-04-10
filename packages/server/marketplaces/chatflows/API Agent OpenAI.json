@@ -120,7 +120,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_1-input-modelName-options"
                     },
                     {
@@ -367,7 +366,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_2-input-modelName-options"
                     },
                     {

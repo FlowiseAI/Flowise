@@ -1,6 +1,7 @@
 import { CohereEmbeddings, CohereEmbeddingsParams } from '@langchain/cohere'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class CohereEmbedding_Embeddings implements INode {
     label: string
@@ -17,7 +18,7 @@ class CohereEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Cohere Embeddings'
         this.name = 'cohereEmbeddings'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'CohereEmbeddings'
         this.icon = 'Cohere.svg'
         this.category = 'Embeddings'
@@ -33,46 +34,9 @@ class CohereEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'embed-english-v3.0',
-                        name: 'embed-english-v3.0',
-                        description: 'Embedding Dimensions: 1024'
-                    },
-                    {
-                        label: 'embed-english-light-v3.0',
-                        name: 'embed-english-light-v3.0',
-                        description: 'Embedding Dimensions: 384'
-                    },
-                    {
-                        label: 'embed-multilingual-v3.0',
-                        name: 'embed-multilingual-v3.0',
-                        description: 'Embedding Dimensions: 1024'
-                    },
-                    {
-                        label: 'embed-multilingual-light-v3.0',
-                        name: 'embed-multilingual-light-v3.0',
-                        description: 'Embedding Dimensions: 384'
-                    },
-                    {
-                        label: 'embed-english-v2.0',
-                        name: 'embed-english-v2.0',
-                        description: 'Embedding Dimensions: 4096'
-                    },
-                    {
-                        label: 'embed-english-light-v2.0',
-                        name: 'embed-english-light-v2.0',
-                        description: 'Embedding Dimensions: 1024'
-                    },
-                    {
-                        label: 'embed-multilingual-v2.0',
-                        name: 'embed-multilingual-v2.0',
-                        description: 'Embedding Dimensions: 768'
-                    }
-                ],
-                default: 'embed-english-v2.0',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'embed-english-v2.0'
             },
             {
                 label: 'Type',
@@ -106,6 +70,13 @@ class CohereEmbedding_Embeddings implements INode {
                 optional: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'cohereEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

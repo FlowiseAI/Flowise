@@ -44,8 +44,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
-                loadMethod: 'listModels',
-                optional: true
+                loadMethod: 'listModels'
             },
             {
                 label: 'Temperature',
@@ -124,7 +123,7 @@ class AzureChatOpenAI_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'azureChatOpenAI')
         }
     }

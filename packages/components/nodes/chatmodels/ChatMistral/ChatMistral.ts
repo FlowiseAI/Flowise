@@ -131,8 +131,8 @@ class ChatMistral_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.LLM, 'GooglePaLM')
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'chatMistralAI')
         }
     }
 

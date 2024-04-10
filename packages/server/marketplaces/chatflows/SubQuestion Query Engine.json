@@ -227,7 +227,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_LlamaIndex_0-input-modelName-options"
                     },
                     {
@@ -305,7 +304,7 @@
             "data": {
                 "id": "openAIEmbedding_LlamaIndex_0",
                 "label": "OpenAI Embedding",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbedding_LlamaIndex",
                 "type": "OpenAIEmbedding",
                 "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
@@ -319,6 +318,14 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbedding_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
                     },
                     {
                         "label": "Timeout",
@@ -340,7 +347,8 @@
                 "inputAnchors": [],
                 "inputs": {
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -519,7 +527,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_LlamaIndex_1-input-modelName-options"
                     },
                     {
@@ -597,7 +604,7 @@
             "data": {
                 "id": "openAIEmbedding_LlamaIndex_1",
                 "label": "OpenAI Embedding",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbedding_LlamaIndex",
                 "type": "OpenAIEmbedding",
                 "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
@@ -611,6 +618,14 @@
                         "type": "credential",
                         "credentialNames": ["openAIApi"],
                         "id": "openAIEmbedding_LlamaIndex_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_1-input-modelName-options"
                     },
                     {
                         "label": "Timeout",
@@ -632,7 +647,8 @@
                 "inputAnchors": [],
                 "inputs": {
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {

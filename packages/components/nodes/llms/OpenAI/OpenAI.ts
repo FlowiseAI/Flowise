@@ -44,8 +44,7 @@ class OpenAI_LLMs implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gpt-3.5-turbo-instruct',
-                optional: true
+                default: 'gpt-3.5-turbo-instruct'
             },
             {
                 label: 'Temperature',
@@ -130,7 +129,7 @@ class OpenAI_LLMs implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.LLM, 'openAI')
         }
     }

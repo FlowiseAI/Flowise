@@ -160,7 +160,7 @@
             "data": {
                 "id": "chatAnthropic_0",
                 "label": "ChatAnthropic",
-                "version": 5.0,
+                "version": 6.0,
                 "name": "chatAnthropic",
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -180,7 +180,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "claude-3-haiku",
-                        "optional": true,
                         "id": "chatAnthropic_0-input-modelName-options"
                     },
                     {

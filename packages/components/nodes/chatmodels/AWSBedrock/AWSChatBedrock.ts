@@ -99,10 +99,10 @@ class AWSChatBedrock_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock')
         },
-        async listRegions(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listRegions(): Promise<INodeOptionsValue[]> {
             return await getRegions(MODEL_TYPE.CHAT, 'awsChatBedrock')
         }
     }

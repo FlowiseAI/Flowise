@@ -89,10 +89,10 @@ class AWSBedrock_LLMs implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.LLM, 'awsBedrock')
         },
-        async listRegions(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listRegions(): Promise<INodeOptionsValue[]> {
             return await getRegions(MODEL_TYPE.LLM, 'awsBedrock')
         }
     }

@@ -91,10 +91,10 @@
                     },
                     {
                         "label": "Model Name",
+                        "name": "modelName",
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-instruct",
-                        "optional": true,
                         "id": "openAI_0-input-modelName-options"
                     },
                     {

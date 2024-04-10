@@ -45,8 +45,7 @@ class ChatAnthropic_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'claude-3-haiku',
-                optional: true
+                default: 'claude-3-haiku'
             },
             {
                 label: 'Temperature',
@@ -94,7 +93,7 @@ class ChatAnthropic_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'chatAnthropic')
         }
     }

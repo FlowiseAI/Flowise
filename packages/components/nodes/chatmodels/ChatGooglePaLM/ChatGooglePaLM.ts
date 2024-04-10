@@ -43,8 +43,7 @@ class ChatGooglePaLM_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'models/chat-bison-001',
-                optional: true
+                default: 'models/chat-bison-001'
             },
             {
                 label: 'Temperature',
@@ -96,7 +95,7 @@ class ChatGooglePaLM_ChatModels implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+        async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'chatGooglePaLM')
         }
     }

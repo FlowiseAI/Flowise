@@ -407,7 +407,6 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -561,7 +560,7 @@
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
                 "name": "openAIEmbeddings",
-                "version": 2,
+                "version": 3,
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
@@ -577,23 +576,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "optional": true,
                         "id": "openAIEmbeddings_0-input-modelName-options"
                     },
                     {
