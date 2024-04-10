@@ -15,8 +15,9 @@ import {
     ChatMessageChunk
 } from '@langchain/core/messages'
 import { ChatMistralAI as LangchainChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface TokenUsage {
     completionTokens?: number
@@ -68,9 +69,8 @@ class ChatMistral_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                description:
-                    'Refer to <a target="_blank" href="https://docs.mistral.ai/guides/model-selection/">Model Selection</a> for more available models',
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'mistral-tiny'
             },
             {
@@ -127,6 +127,13 @@ class ChatMistral_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'GooglePaLM')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

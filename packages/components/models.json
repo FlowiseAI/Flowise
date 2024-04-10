@@ -453,6 +453,67 @@
                     "name": "gpt-3.5-turbo-16k-0613"
                 }
             ]
+        },
+        {
+            "name": "chatMistralAI",
+            "models": [
+                {
+                    "label": "open-mistral-7b",
+                    "name": "open-mistral-7b"
+                },
+                {
+                    "label": "mistral-tiny-2312",
+                    "name": "mistral-tiny-2312"
+                },
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny"
+                },
+                {
+                    "label": "open-mixtral-8x7b",
+                    "name": "open-mixtral-8x7b"
+                },
+                {
+                    "label": "mistral-small-2312",
+                    "name": "mistral-small-2312"
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small"
+                },
+                {
+                    "label": "mistral-small-2402",
+                    "name": "mistral-small-2402"
+                },
+                {
+                    "label": "mistral-small-latest",
+                    "name": "mistral-small-latest"
+                },
+                {
+                    "label": "mistral-medium-latest",
+                    "name": "mistral-medium-latest"
+                },
+                {
+                    "label": "mistral-medium-2312",
+                    "name": "mistral-medium-2312"
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium"
+                },
+                {
+                    "label": "mistral-large-latest",
+                    "name": "mistral-large-latest"
+                },
+                {
+                    "label": "mistral-large-2402",
+                    "name": "mistral-large-2402"
+                },
+                {
+                    "label": "mistral-embed",
+                    "name": "mistral-embed"
+                }
+            ]
         }
     ],
     "llm": [
