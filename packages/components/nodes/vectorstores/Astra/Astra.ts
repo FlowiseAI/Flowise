@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { AstraDBVectorStore, AstraLibArgs } from '@langchain/community/vectorstores/astradb'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
@@ -101,7 +101,7 @@ class Astra_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const vectorDimension = nodeData.inputs?.vectorDimension as number
@@ -142,6 +142,7 @@ class Astra_VectorStores implements INode {
 
             try {
                 await AstraDBVectorStore.fromDocuments(finalDocs, embeddings, astraConfig)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }
@@ -149,7 +150,6 @@ class Astra_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const vectorDimension = nodeData.inputs?.vectorDimension as number
         const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
@@ -176,14 +176,6 @@ class Astra_VectorStores implements INode {
                     dimension: vectorDimension ?? 1536,
                     metric: similarityMetric ?? 'cosine'
                 }
-            }
-        }
-
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                finalDocs.push(new Document(flattenDocs[i]))
             }
         }
 

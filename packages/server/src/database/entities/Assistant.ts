@@ -10,7 +10,7 @@ export class Assistant implements IAssistant {
     @Column({ type: 'text' })
     details: string
 
-    @Column({ type: 'uuid'})
+    @Column({ type: 'uuid' })
     credential: string
 
     @Column({ nullable: true })

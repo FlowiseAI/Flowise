@@ -174,7 +174,7 @@ class Puppeteer_DocumentLoaders implements INode {
             else if (limit < 0) throw new Error('Limit cannot be less than 0')
             const pages: string[] =
                 selectedLinks && selectedLinks.length > 0
-                    ? selectedLinks.slice(0, limit)
+                    ? selectedLinks.slice(0, limit === 0 ? undefined : limit)
                     : relativeLinksMethod === 'webCrawl'
                     ? await webCrawl(url, limit)
                     : await xmlScrape(url, limit)

@@ -16,7 +16,7 @@
                 "id": "csvAgent_0",
                 "label": "CSV Agent",
                 "name": "csvAgent",
-                "version": 2,
+                "version": 3,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -45,6 +45,16 @@
                         "optional": true,
                         "list": true,
                         "id": "csvAgent_0-input-inputModeration-Moderation"
+                    },
+                    {
+                        "label": "Custom Pandas Read_CSV Code",
+                        "description": "Custom Pandas <a target=\"_blank\" href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html\">read_csv</a> function. Takes in an input: \"csv_data\"",
+                        "name": "customReadCSV",
+                        "default": "read_csv(csv_data)",
+                        "type": "code",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "csvAgent_0-input-customReadCSV-code"
                     }
                 ],
                 "inputs": {
