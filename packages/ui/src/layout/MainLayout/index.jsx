@@ -61,10 +61,10 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
-    const [isInIframe, setIsInIframe] = useState(false)
+    const [isInIframe, setIsInIframe] = useState(window?.parent !== window)
 
     // Handle left drawer
-    const leftDrawerOpened = useSelector((state) => state.customization.opened)
+    const leftDrawerOpened = useSelector((state) => (isInIframe ? true : state.customization.opened))
     const dispatch = useDispatch()
     const handleLeftDrawerToggle = () => {
         dispatch({ type: SET_MENU, opened: !leftDrawerOpened })

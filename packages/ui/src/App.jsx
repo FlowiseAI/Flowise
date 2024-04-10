@@ -13,23 +13,28 @@ import themes from '@/themes'
 // project imports
 import NavigationScroll from '@/layout/NavigationScroll'
 import { useAuth0 } from '@auth0/auth0-react'
+import useNotifyParentOfNavigation from './utils/useNotifyParentOfNavigation'
 
 // ==============================|| APP ||============================== //
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
     const { user, error, isAuthenticated, isLoading, loginWithRedirect, getAccessTokenSilently } = useAuth0()
-    const [token, setToken] = React.useState(null)
-
+    useNotifyParentOfNavigation()
     React.useEffect(() => {
         ;(async () => {
             try {
                 const newToken = await getAccessTokenSilently({
-                    scope: 'openid profile email write:sidekicks',
-                    authorizationParams: {}
+                    authorizationParams: {
+                        // organization:
+                        //     import.meta.env.VITE_AUTH_ORGANIZATION_ID !== '' ? import.meta.env.VITE_AUTH_ORGANIZATION_ID : undefined,
+                        // redirect_uri: window.location.origin,
+                        // audience: import.meta.env.VITE_AUTH_AUDIENCE,
+                        scope: 'write:admin'
+                    }
                 })
+                console.log(newToken)
                 localStorage.setItem('access_token', newToken)
-                setToken(newToken)
             } catch (err) {
                 console.log(err)
             }

@@ -23,7 +23,8 @@
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "pnpm typeorm migration:create"
+        "migration:create": "turbo typeorm:migration-generate",
+        "migration:run": "turbo typeorm:migration-run"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

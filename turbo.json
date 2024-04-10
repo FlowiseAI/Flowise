@@ -11,6 +11,12 @@
         "dev": {
             "dependsOn": ["^build"],
             "cache": false
+        },
+        "typeorm:migration-run": {
+            "cache": false
+        },
+        "typeorm:migration-generate": {
+            "cache": false
         }
     }
 }

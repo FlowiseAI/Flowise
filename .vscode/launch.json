@@ -5,7 +5,7 @@
             "name": "Debug Entire App with Yarn Dev",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "yarn",
+            "runtimeExecutable": "pnpm",
             "runtimeArgs": ["dev"],
             "timeout": 30000,
             "stopOnEntry": false,
