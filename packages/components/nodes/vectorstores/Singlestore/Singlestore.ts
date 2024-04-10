@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from '@langchain/community/vectorstores/singlestore'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class SingleStore_VectorStores implements INode {
@@ -118,7 +118,7 @@ class SingleStore_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const user = getCredentialParam('user', credentialData, nodeData)
             const password = getCredentialParam('password', credentialData, nodeData)
@@ -151,6 +151,7 @@ class SingleStore_VectorStores implements INode {
             try {
                 const vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
                 vectorStore.addDocuments.bind(vectorStore)(finalDocs)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

@@ -221,6 +221,9 @@ class ChatOpenAI_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
 
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
+        }
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 

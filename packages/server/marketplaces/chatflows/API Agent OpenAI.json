@@ -1,11 +1,11 @@
 {
-    "description": "Use OpenAI Function Agent and Chain to automatically decide which API to call, generating url and body request from conversation",
-    "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,OpenAI Function Agent,Langchain",
+    "description": "Use OpenAI Tool Agent and Chain to automatically decide which API to call, generating url and body request from conversation",
+    "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,OpenAI Tool Agent,Langchain",
     "framework": "Langchain",
     "nodes": [
         {
             "width": 300,
-            "height": 491,
+            "height": 540,
             "id": "openApiChain_1",
             "position": {
                 "x": 1203.1825726424859,
@@ -90,7 +90,7 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 792.3201947594027,
@@ -324,7 +324,7 @@
         },
         {
             "width": 300,
-            "height": 602,
+            "height": 601,
             "id": "chainTool_0",
             "position": {
                 "x": 1635.3466862861876,
@@ -375,7 +375,7 @@
                 "inputs": {
                     "name": "comic-qa",
                     "description": "useful for when you need to ask question about comic",
-                    "returnDirect": "",
+                    "returnDirect": false,
                     "baseChain": "{{openApiChain_1.data.instance}}"
                 },
                 "outputAnchors": [
@@ -398,91 +398,7 @@
         },
         {
             "width": 300,
-            "height": 383,
-            "id": "openAIFunctionAgent_0",
-            "position": {
-                "x": 2076.1829525256576,
-                "y": 706.1299276365058
-            },
-            "type": "customNode",
-            "data": {
-                "id": "openAIFunctionAgent_0",
-                "label": "OpenAI Function Agent",
-                "name": "openAIFunctionAgent",
-                "version": 4,
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
-                "category": "Agents",
-                "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
-                "inputParams": [
-                    {
-                        "label": "System Message",
-                        "name": "systemMessage",
-                        "type": "string",
-                        "rows": 4,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "openAIFunctionAgent_0-input-systemMessage-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "openAIFunctionAgent_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseChatMemory",
-                        "id": "openAIFunctionAgent_0-input-memory-BaseChatMemory"
-                    },
-                    {
-                        "label": "OpenAI/Azure Chat Model",
-                        "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "openAIFunctionAgent_0-input-model-BaseChatModel"
-                    },
-                    {
-                        "label": "Input Moderation",
-                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-                        "name": "inputModeration",
-                        "type": "Moderation",
-                        "optional": true,
-                        "list": true,
-                        "id": "openAIFunctionAgent_0-input-inputModeration-Moderation"
-                    }
-                ],
-                "inputs": {
-                    "inputModeration": "",
-                    "tools": ["{{chainTool_0.data.instance}}"],
-                    "memory": "{{bufferMemory_0.data.instance}}",
-                    "model": "{{chatOpenAI_2.data.instance}}",
-                    "systemMessage": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "openAIFunctionAgent_0-output-openAIFunctionAgent-AgentExecutor|BaseChain",
-                        "name": "openAIFunctionAgent",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 2076.1829525256576,
-                "y": 706.1299276365058
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_2",
             "position": {
                 "x": 1645.450699499575,
@@ -769,6 +685,91 @@
                 "y": 967.8215757228843
             },
             "selected": false
+        },
+        {
+            "id": "openAIToolAgent_0",
+            "position": {
+                "x": 2083.8842813850474,
+                "y": 749.3536850926545
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIToolAgent_0",
+                "label": "OpenAI Tool Agent",
+                "version": 1,
+                "name": "openAIToolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIToolAgent_0-input-systemMessage-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "openAIToolAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "OpenAI/Azure Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "openAIToolAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{chainTool_0.data.instance}}"],
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "model": "{{chatOpenAI_2.data.instance}}",
+                    "systemMessage": "",
+                    "inputModeration": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIToolAgent_0-output-openAIToolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "openAIToolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 433,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2083.8842813850474,
+                "y": 749.3536850926545
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -797,35 +798,26 @@
         {
             "source": "chainTool_0",
             "sourceHandle": "chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-tools-Tool",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "chainTool_0-chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool-openAIFunctionAgent_0-openAIFunctionAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "chainTool_0-chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
         },
         {
             "source": "bufferMemory_0",
             "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-memory-BaseChatMemory",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIFunctionAgent_0-openAIFunctionAgent_0-input-memory-BaseChatMemory",
-            "data": {
-                "label": ""
-            }
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIToolAgent_0-openAIToolAgent_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_2",
             "sourceHandle": "chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "openAIFunctionAgent_0",
-            "targetHandle": "openAIFunctionAgent_0-input-model-BaseChatModel",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIFunctionAgent_0-openAIFunctionAgent_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chatOpenAI_2-chatOpenAI_2-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIToolAgent_0-openAIToolAgent_0-input-model-BaseChatModel"
         }
     ]
 }
