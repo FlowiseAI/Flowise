@@ -7,7 +7,7 @@ import useNotifier from '@/utils/useNotifier'
 import useApi from '@/hooks/useApi'
 
 // Material-UI
-import { Box, Button, Card, CardContent, Divider, Grid, Stack, Typography } from '@mui/material'
+import { Box, Button, Card, CardContent, Divider, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
 import { IconArrowBack, IconX } from '@tabler/icons'
 
 // Project
@@ -72,6 +72,9 @@ const DocumentLoaderChunks = () => {
 
     const [documentChunks, setDocumentChunks] = useState([])
     const [totalChunks, setTotalChunks] = useState(0)
+
+    const [currentPreviewCount, setCurrentPreviewCount] = useState(0)
+    const [previewChunkCount, setPreviewChunkCount] = useState(20)
 
     const dispatch = useDispatch()
 
@@ -143,6 +146,7 @@ const DocumentLoaderChunks = () => {
             if (credential) {
                 config.credential = credential
             }
+            config.previewChunkCount = previewChunkCount
             try {
                 previewChunksApi.request(config)
             } catch (error) {
@@ -153,9 +157,9 @@ const DocumentLoaderChunks = () => {
 
     useEffect(() => {
         if (previewChunksApi.data) {
-            setTotalChunks(previewChunksApi.data.length)
-            setDocumentChunks(previewChunksApi.data)
-            // setCurrentPreviewCount(previewApi.data.previewChunkCount)
+            setTotalChunks(previewChunksApi.data.totalChunks)
+            setDocumentChunks(previewChunksApi.data.chunks)
+            setCurrentPreviewCount(previewChunksApi.data.previewChunkCount)
             setLoading(false)
         }
 
@@ -200,6 +204,7 @@ const DocumentLoaderChunks = () => {
             }))
 
             setSplitterOptions(options)
+            onSplitterChange('recursiveCharacterTextSplitter')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,6 +302,24 @@ const DocumentLoaderChunks = () => {
                                             isAdditionalParams={inputParam.additionalParams}
                                         />
                                     ))}
+                                <Box sx={{ p: 1 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Typography>
+                                            Show Chunks in Preview<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        </Typography>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                    </div>
+                                    <OutlinedInput
+                                        size='small'
+                                        multiline={false}
+                                        sx={{ mt: 1 }}
+                                        type='number'
+                                        fullWidth
+                                        key='previewChunkCount'
+                                        onChange={(e) => setPreviewChunkCount(e.target.value)}
+                                        value={previewChunkCount ?? 25}
+                                    />
+                                </Box>
                                 <Box sx={{ p: 1, textAlign: 'center' }}>
                                     <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
                                         Confirm & Process
@@ -309,9 +332,9 @@ const DocumentLoaderChunks = () => {
                         </Grid>
                         <Grid item xs={8} md={6} lg={6} sm={8}>
                             <Typography style={{ marginBottom: 5, wordWrap: 'break-word', textAlign: 'left' }} variant='h4'>
-                                Preview: Showing {totalChunks} Chunks.
+                                Preview: Showing {currentPreviewCount} of {totalChunks} Chunks.
                             </Typography>
-                            <div style={{ height: '800px', overflow: 'scroll' }}>
+                            <div style={{ height: '800px', overflow: 'scroll', padding: '5px' }}>
                                 <Grid container spacing={2}>
                                     {documentChunks &&
                                         documentChunks?.map((row, index) => (

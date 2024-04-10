@@ -15,8 +15,8 @@ router.post('/preview/:storeId/:fileId', documentStoreController.previewFileChun
 router.post('/process/:storeId/:fileId', documentStoreController.processFileChunks)
 // Get specific store
 router.get('/:id', documentStoreController.getDocumentStoreById)
-// Get specific file from a store
-router.get('/file/:storeId/:fileId', documentStoreController.getDocumentStoreFileChunks)
+// Get specific file chunks from the store
+router.get('/chunks/:storeId/:fileId', documentStoreController.getDocumentStoreFileChunks)
 // Update documentStore
 router.put('/:id', documentStoreController.updateDocumentStore)
 

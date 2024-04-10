@@ -63,8 +63,12 @@ const DocumentStoreDetails = () => {
     const [showDocumentLoaderListDialog, setShowDocumentLoaderListDialog] = useState(false)
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
 
-    const openChunks = (id) => {
+    const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
+    }
+
+    const showStoredChunks = (id) => {
+        navigate('/document-stores/chunks/' + storeId + '/' + id)
     }
 
     const onDocLoaderSelected = (docLoaderComponent) => {
@@ -325,7 +329,7 @@ const DocumentStoreDetails = () => {
                                             >
                                                 <Button
                                                     disabled={file.status === 'NEW'}
-                                                    onClick={() => openChunks(file.id)}
+                                                    onClick={() => showStoredChunks(file.id)}
                                                     style={{ textAlign: 'left' }}
                                                 >
                                                     {file.name}
@@ -338,7 +342,7 @@ const DocumentStoreDetails = () => {
                                             {file.status === 'NEW' ? 'Pending Processing...' : file.totalChunks + ' chunks'}
                                         </TableCell>
                                         <TableCell>
-                                            <IconButton title='Chunks' color='primary' onClick={() => openChunks(file.id)}>
+                                            <IconButton title='Chunks' color='primary' onClick={() => openPreviewSettings(file.id)}>
                                                 <IconFileStack />
                                             </IconButton>
                                             <IconButton title='Delete' color='error' onClick={() => onFileDelete(file)}>

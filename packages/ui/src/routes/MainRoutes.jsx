@@ -28,7 +28,7 @@ const Variables = Loadable(lazy(() => import('@/views/variables')))
 // documents routing
 const Documents = Loadable(lazy(() => import('@/views/docstore')))
 const DocumentStoreDetail = Loadable(lazy(() => import('@/views/docstore/DocumentStoreDetail')))
-const DocumentStoreChunks = Loadable(lazy(() => import('@/views/docstore/DocumentStoreChunks')))
+const ShowStoredChunks = Loadable(lazy(() => import('@/views/docstore/ShowStoredChunks')))
 const DocumentLoaderChunks = Loadable(lazy(() => import('@/views/docstore/DocumentLoaderChunks')))
 
 // ==============================|| MAIN ROUTING ||============================== //
@@ -77,10 +77,10 @@ const MainRoutes = {
             path: '/document-stores/:id',
             element: <DocumentStoreDetail />
         },
-        // {
-        //     path: '/document-stores/:id/:id',
-        //     element: <DocumentStoreChunks />
-        // },
+        {
+            path: '/document-stores/chunks/:id/:id',
+            element: <ShowStoredChunks />
+        },
         {
             path: '/document-stores/:id/:name',
             element: <DocumentLoaderChunks />

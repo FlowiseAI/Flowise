@@ -284,8 +284,16 @@ const processChunksWithLoader = async (data: any) => {
             logger
         }
         const docNodeInstance = new nodeModule.nodeClass()
-        const docs = await docNodeInstance.init(nodeData, '', options)
-        return docs
+        let docs = await docNodeInstance.init(nodeData, '', options)
+        const totalChunks = docs.length
+        // if -1, return all chunks
+        if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
+        // return all docs if the user ask for more than we have
+        if (totalChunks <= data.previewChunkCount) data.previewChunkCount = totalChunks
+        // return only the first n chunks
+        if (totalChunks > data.previewChunkCount) docs = docs.slice(0, data.previewChunkCount)
+
+        return { chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
     } catch (error) {
         throw new Error(`Error: documentStoreServices.processChunksWithLoader - ${error}`)
     }
