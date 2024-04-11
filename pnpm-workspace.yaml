@@ -2,3 +2,4 @@ packages:
     - 'packages/components'
     - 'packages/server'
     - 'packages/ui'
+    - 'packages/embed'

@@ -11,7 +11,7 @@ import logger from './utils/logger'
 import { expressRequestLogger } from './utils/logger'
 import { v4 as uuidv4 } from 'uuid'
 import OpenAI from 'openai'
-import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { DataSource, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between, Brackets } from 'typeorm'
 import {
     IChatFlow,
     IncomingInput,
@@ -171,18 +171,19 @@ export class App {
         const whitelistURLs = [
             // '/api/v1/verify/apikey/',
             // '/api/v1/chatflows/apikey/',
-            // '/api/v1/public-chatflows',
-            // '/api/v1/public-chatbotConfig',
-            '/api/v1/prediction/',
+            '/api/v1/public-chatflows',
+            '/api/v1/public-chatbotConfig',
+            '/api/v1/public-prediction/',
+            // '/api/v1/prediction/',
             // '/api/v1/vector/upsert/',
             '/api/v1/node-icon/',
-            '/api/v1/components-credentials-icon/'
-            // '/api/v1/chatflows-streaming',
-            // '/api/v1/chatflows-uploads',
+            '/api/v1/components-credentials-icon/',
+            '/api/v1/chatflows-streaming',
+            '/api/v1/chatflows-uploads',
             // '/api/v1/openai-assistants-file',
             // '/api/v1/feedback',
             // '/api/v1/get-upload-file',
-            // '/api/v1/ip'
+            '/api/v1/ip'
         ]
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
@@ -225,9 +226,9 @@ export class App {
         this.app.use((req, res, next) => {
             /// ADD Authorization cookie
             if (req.url.includes('/api/v1/') && !whitelistURLs.some((url) => req.url.includes(url))) {
-                if (res.locals?.cookie?.Authorization && !req.headers.authorization) {
-                    req.headers.authorization = `Bearer ${res.locals.cookie.Authorization}`
-                }
+                // if (res.locals?.cookie?.Authorization && !req.headers.authorization) {
+                //     req.headers.authorization = `Bearer ${res.locals.cookie.Authorization}`
+                // }
                 return jwtCheck(req, res, next)
             } else next()
         })
@@ -236,6 +237,8 @@ export class App {
             if (req.url.includes('/api/v1/')) {
                 if (!whitelistURLs.some((url) => req.url.includes(url))) {
                     if (req.auth?.token) {
+                        // TODO: Confirm if sub for auth0 is enough (it includes the provider as prefix)
+                        req.auth.payload.id = req.auth.payload.sub
                         res.cookie('Authorization', req.auth?.token, {
                             // name:
                             //   process.env.NODE_ENV === 'production'
@@ -1530,34 +1533,40 @@ export class App {
         // Prediction
         // ----------------------------------------
 
-        // Send input message and get prediction result (External)
-        this.app.post(
-            '/api/v1/prediction/:id',
-            upload.array('files'),
-            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
+        const handlePrediction =
+            ({ isPublic }: { isPublic: boolean }) =>
             async (req: Request, res: Response) => {
-                const chatflow = await this.AppDataSource.getRepository(ChatFlow).findOneBy({
-                    id: req.params.id
-                })
+                let chatflowQuery = this.AppDataSource.getRepository(ChatFlow)
+                    .createQueryBuilder('chatflow')
+                    .where('chatflow.id = :id', { id: req.params.id })
+
+                if (isPublic) {
+                    chatflowQuery = chatflowQuery.andWhere(
+                        new Brackets((qb) => {
+                            qb.where('chatflow.isPublic = :isPublic', { isPublic: true })
+                        })
+                    )
+                }
+
+                const chatflow = await chatflowQuery.getOne()
                 if (!chatflow) return res.status(404).send(`Chatflow ${req.params.id} not found`)
+
                 let isDomainAllowed = true
                 logger.info(`[server]: Request originated from ${req.headers.origin}`)
                 if (chatflow.chatbotConfig) {
                     const parsedConfig = JSON.parse(chatflow.chatbotConfig)
-                    // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
                     const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
                     if (isValidAllowedOrigins) {
                         const originHeader = req.headers.origin as string
                         const origin = new URL(originHeader).host
-                        isDomainAllowed =
-                            parsedConfig.allowedOrigins.filter((domain: string) => {
-                                try {
-                                    const allowedOrigin = new URL(domain).host
-                                    return origin === allowedOrigin
-                                } catch (e) {
-                                    return false
-                                }
-                            }).length > 0
+                        isDomainAllowed = parsedConfig.allowedOrigins.filter((domain: string) => {
+                            try {
+                                const allowedOrigin = new URL(domain).host
+                                return origin === allowedOrigin
+                            } catch (e) {
+                                return false
+                            }
+                        })
                     }
                 }
 
@@ -1567,6 +1576,19 @@ export class App {
                     return res.status(401).send(`This site is not allowed to access this chatbot`)
                 }
             }
+
+        this.app.post(
+            '/api/v1/public-prediction/:id',
+            upload.array('files'),
+            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
+            handlePrediction({ isPublic: true })
+        )
+
+        this.app.post(
+            '/api/v1/prediction/:id',
+            upload.array('files'),
+            (req: Request, res: Response, next: NextFunction) => getRateLimiter(req, res, next),
+            handlePrediction({ isPublic: false })
         )
 
         // Send input message and get prediction result (Internal)

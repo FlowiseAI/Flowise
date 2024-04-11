@@ -55,7 +55,7 @@ export const updateFeedbackQuery = ({ id, apiHost = 'http://localhost:3000', bod
 export const sendMessageQuery = ({ chatflowid, apiHost = 'http://localhost:3000', body }: MessageRequest) =>
   sendRequest<any>({
     method: 'POST',
-    url: `${apiHost}/api/v1/prediction/${chatflowid}`,
+    url: `${apiHost}/api/v1/public-prediction/${chatflowid}`,
     body,
   });
 

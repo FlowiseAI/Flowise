@@ -13,8 +13,9 @@ import { drawerWidth } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
 
 // styles
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open, isInIframe }) => ({
     ...theme.typography.mainContent,
+    ...(!isInIframe && { marginTop: '75px' }),
     ...(!open && {
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
@@ -101,7 +102,7 @@ const MainLayout = () => {
                 </>
             )}
             {/* main content */}
-            <Main theme={theme} open={leftDrawerOpened}>
+            <Main theme={theme} open={leftDrawerOpened} isInIframe={isInIframe}>
                 <Outlet />
             </Main>
         </Box>

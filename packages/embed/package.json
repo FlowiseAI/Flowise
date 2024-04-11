@@ -11,8 +11,7 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "lint-fix": "eslint --fix \"src/**/*.ts*\"",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
-    "prepare": "husky install"
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,md,mdx}\""
   },
   "license": "MIT",
   "dependencies": {
