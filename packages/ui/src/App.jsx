@@ -19,7 +19,7 @@ import useNotifyParentOfNavigation from './utils/useNotifyParentOfNavigation'
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
-    const { user, error, isAuthenticated, isLoading, loginWithRedirect, getAccessTokenSilently } = useAuth0()
+    const { getAccessTokenSilently } = useAuth0()
     useNotifyParentOfNavigation()
     React.useEffect(() => {
         ;(async () => {
@@ -40,17 +40,14 @@ const App = () => {
             }
         })()
     }, [getAccessTokenSilently])
-    React.useEffect(() => {
-        if (!isLoading && !isAuthenticated && !error) {
-            loginWithRedirect()
-        }
-    }, [user, error, isLoading, isAuthenticated, loginWithRedirect])
 
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={themes(customization)}>
                 <CssBaseline />
-                <NavigationScroll>{isAuthenticated && <Routes />}</NavigationScroll>
+                <NavigationScroll>
+                    <Routes />
+                </NavigationScroll>
                 {error && (
                     <>
                         <h1>{error.message}</h1>

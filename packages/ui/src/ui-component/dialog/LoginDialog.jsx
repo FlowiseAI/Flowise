@@ -10,10 +10,10 @@ import { useAuth0 } from '@auth0/auth0-react'
 const LoginDialog = ({ show, dialogProps, onConfirm }) => {
     const { user, isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
+        if (show && !isLoading && !isAuthenticated) {
             loginWithRedirect()
         }
-    }, [isLoading, isAuthenticated, loginWithRedirect])
+    }, [show, isLoading, isAuthenticated, loginWithRedirect])
     // const portalElement = document.getElementById('portal')
     // const usernameInput = {
     //     label: 'Username',
