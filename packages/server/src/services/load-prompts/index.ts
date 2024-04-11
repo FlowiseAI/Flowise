@@ -1,7 +1,8 @@
 import { Client } from 'langchainhub'
+import { StatusCodes } from 'http-status-codes'
 import { parsePrompt } from '../../utils/hub'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
 const createPrompt = async (promptName: string): Promise<any> => {
     try {
@@ -15,7 +16,10 @@ const createPrompt = async (promptName: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: loadPromptsService.createPrompt - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: loadPromptsService.createPrompt - ${getErrorMessage(error)}`
+        )
     }
 }
 

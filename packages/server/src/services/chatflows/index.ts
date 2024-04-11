@@ -20,6 +20,7 @@ import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { getErrorMessage } from '../../errors/utils'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -78,7 +79,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.checkIfChatflowIsValidForStreaming - ${error}`
+            `Error: chatflowsService.checkIfChatflowIsValidForStreaming - ${getErrorMessage(error)}`
         )
     }
 }
@@ -91,7 +92,7 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.checkIfChatflowIsValidForUploads - ${error}`
+            `Error: chatflowsService.checkIfChatflowIsValidForUploads - ${getErrorMessage(error)}`
         )
     }
 }
@@ -118,7 +119,10 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getAllChatflows - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.deleteChatflow - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -128,7 +132,10 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getAllChatflows - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getAllChatflows - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -147,7 +154,10 @@ const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getChatflowByApiKey - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getChatflowByApiKey - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -162,7 +172,10 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getAllChatflows - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getChatflowById - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -194,7 +207,10 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.saveChatflow - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.saveChatflow - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -215,7 +231,10 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.updateChatflow - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.updateChatflow - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -233,7 +252,10 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
         }
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getSinglePublicChatflow - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -261,7 +283,10 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         }
         return 'OK'
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getSinglePublicChatbotConfig - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getSinglePublicChatbotConfig - ${getErrorMessage(error)}`
+        )
     }
 }
 

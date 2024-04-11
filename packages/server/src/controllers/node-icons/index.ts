@@ -11,7 +11,7 @@ const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction
             const nodeInstance = appServer.nodesPool.componentNodes[req.params.name]
             if (nodeInstance.icon === undefined) {
                 throw new InternalFlowiseError(
-                    StatusCodes.PRECONDITION_FAILED,
+                    StatusCodes.NOT_FOUND,
                     `Error: nodeIconController.getSingleNodeIcon - Node ${req.params.name} icon not found`
                 )
             }
@@ -27,7 +27,7 @@ const getSingleNodeIcon = async (req: Request, res: Response, next: NextFunction
             }
         } else {
             throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
+                StatusCodes.NOT_FOUND,
                 `Error: nodeIconController.getSingleNodeIcon - Node ${req.params.name} not found`
             )
         }

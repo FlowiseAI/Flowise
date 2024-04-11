@@ -1,7 +1,8 @@
 import { cloneDeep } from 'lodash'
+import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
 // Get all component credentials
 const getAllComponentsCredentials = async (): Promise<any> => {
@@ -16,7 +17,7 @@ const getAllComponentsCredentials = async (): Promise<any> => {
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: componentsCredentialsService.getAllComponentsCredentials - ${error}`
+            `Error: componentsCredentialsService.getAllComponentsCredentials - ${getErrorMessage(error)}`
         )
     }
 }
@@ -29,7 +30,7 @@ const getComponentByName = async (credentialName: string) => {
                 return appServer.nodesPool.componentCredentials[credentialName]
             } else {
                 throw new InternalFlowiseError(
-                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    StatusCodes.NOT_FOUND,
                     `Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${credentialName} not found`
                 )
             }
@@ -40,7 +41,7 @@ const getComponentByName = async (credentialName: string) => {
                     dbResponse.push(appServer.nodesPool.componentCredentials[name])
                 } else {
                     throw new InternalFlowiseError(
-                        StatusCodes.INTERNAL_SERVER_ERROR,
+                        StatusCodes.NOT_FOUND,
                         `Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${name} not found`
                     )
                 }
@@ -50,7 +51,7 @@ const getComponentByName = async (credentialName: string) => {
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: componentsCredentialsService.getSingleComponentsCredential - ${error}`
+            `Error: componentsCredentialsService.getSingleComponentsCredential - ${getErrorMessage(error)}`
         )
     }
 }
@@ -62,7 +63,7 @@ const getSingleComponentsCredentialIcon = async (credentialName: string) => {
         if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, credentialName)) {
             const credInstance = appServer.nodesPool.componentCredentials[credentialName]
             if (credInstance.icon === undefined) {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Credential ${credentialName} icon not found`)
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialName} icon not found`)
             }
 
             if (credInstance.icon.endsWith('.svg') || credInstance.icon.endsWith('.png') || credInstance.icon.endsWith('.jpg')) {
@@ -72,12 +73,12 @@ const getSingleComponentsCredentialIcon = async (credentialName: string) => {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Credential ${credentialName} icon is missing icon`)
             }
         } else {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Credential ${credentialName} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialName} not found`)
         }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: componentsCredentialsService.getSingleComponentsCredentialIcon - ${error}`
+            `Error: componentsCredentialsService.getSingleComponentsCredentialIcon - ${getErrorMessage(error)}`
         )
     }
 }

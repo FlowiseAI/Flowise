@@ -4,7 +4,7 @@ import assistantsController from '../../controllers/assistants'
 const router = express.Router()
 
 // CREATE
-router.post('/', assistantsController.creatAssistant)
+router.post('/', assistantsController.createAssistant)
 
 // READ
 router.get('/', assistantsController.getAllAssistants)

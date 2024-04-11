@@ -61,7 +61,10 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
 const getChatflowByApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.apiKey) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowById - apiKey not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsRouter.getChatflowByApiKey - apiKey not provided!`
+            )
         }
         const apiKey = await getApiKey(req.params.apiKey)
         if (!apiKey) {
@@ -128,7 +131,10 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.updateChatflow - id not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsRouter.getSinglePublicChatflow - id not provided!`
+            )
         }
         const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
         return res.json(apiResponse)

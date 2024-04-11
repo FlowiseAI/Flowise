@@ -1,15 +1,16 @@
 import OpenAI from 'openai'
 import path from 'path'
 import * as fs from 'fs'
+import { StatusCodes } from 'http-status-codes'
 import { uniqWith, isEqual } from 'lodash'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { getUserHome, decryptCredentialData, getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
-const creatAssistant = async (requestBody: any): Promise<any> => {
+const createAssistant = async (requestBody: any): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -111,7 +112,7 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
 
             requestBody.details = JSON.stringify(newAssistantDetails)
         } catch (error) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant: ${error}`)
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant - ${getErrorMessage(error)}`)
         }
         const newAssistant = new Assistant()
         Object.assign(newAssistant, requestBody)
@@ -125,7 +126,10 @@ const creatAssistant = async (requestBody: any): Promise<any> => {
         })
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.creatTool - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.createAssistant - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -163,11 +167,14 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             if (error.status === 404 && error.type === 'invalid_request_error') {
                 return 'OK'
             } else {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant: ${error}`)
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
             }
         }
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.deleteTool - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.deleteAssistant - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -177,7 +184,10 @@ const getAllAssistants = async (): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getAllAssistants - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.getAllAssistants - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -192,7 +202,10 @@ const getAssistantById = async (assistantId: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getAssistantById - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.getAssistantById - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -300,15 +313,18 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant: ${error}`)
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant - ${getErrorMessage(error)}`)
         }
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.updateAssistant - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.updateAssistant - ${getErrorMessage(error)}`
+        )
     }
 }
 
 export default {
-    creatAssistant,
+    createAssistant,
     deleteAssistant,
     getAllAssistants,
     getAssistantById,

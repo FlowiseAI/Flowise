@@ -1,7 +1,8 @@
 import path from 'path'
 import * as fs from 'fs'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 const getVersion = async () => {
     try {
@@ -31,10 +32,10 @@ const getVersion = async () => {
                 version: parsedContent.version
             }
         } catch (error) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Version not found: ${error}`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Version not found- ${getErrorMessage(error)}`)
         }
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: versionService.getVersion - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: versionService.getVersion - ${getErrorMessage(error)}`)
     }
 }
 

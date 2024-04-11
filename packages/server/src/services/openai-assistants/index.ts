@@ -1,9 +1,10 @@
 import OpenAI from 'openai'
+import { StatusCodes } from 'http-status-codes'
 import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
 // ----------------------------------------
 // Assistants
@@ -32,7 +33,7 @@ const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: openaiAssistantsService.getAllOpenaiAssistants - ${error}`
+            `Error: openaiAssistantsService.getAllOpenaiAssistants - ${getErrorMessage(error)}`
         )
     }
 }
@@ -65,7 +66,7 @@ const getSingleOpenaiAssistant = async (credentialId: string, assistantId: strin
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: openaiAssistantsService.getSingleOpenaiAssistant - ${error}`
+            `Error: openaiAssistantsService.getSingleOpenaiAssistant - ${getErrorMessage(error)}`
         )
     }
 }

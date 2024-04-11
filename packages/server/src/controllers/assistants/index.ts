@@ -3,15 +3,15 @@ import assistantsService from '../../services/assistants'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
-const creatAssistant = async (req: Request, res: Response, next: NextFunction) => {
+const createAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: assistantsController.creatAssistant - body not provided!`
+                `Error: assistantsController.createAssistant - body not provided!`
             )
         }
-        const apiResponse = await assistantsService.creatAssistant(req.body)
+        const apiResponse = await assistantsService.createAssistant(req.body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -27,7 +27,6 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
             )
         }
         const apiResponse = await assistantsService.deleteAssistant(req.params.id, req.query.isDeleteBoth)
-
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -37,7 +36,6 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
 const getAllAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await assistantsService.getAllAssistants()
-
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -53,7 +51,6 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
             )
         }
         const apiResponse = await assistantsService.getAssistantById(req.params.id)
-
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -75,7 +72,6 @@ const updateAssistant = async (req: Request, res: Response, next: NextFunction) 
             )
         }
         const apiResponse = await assistantsService.updateAssistant(req.params.id, req.body)
-
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -83,7 +79,7 @@ const updateAssistant = async (req: Request, res: Response, next: NextFunction) 
 }
 
 export default {
-    creatAssistant,
+    createAssistant,
     deleteAssistant,
     getAllAssistants,
     getAssistantById,

@@ -1,9 +1,10 @@
+import { StatusCodes } from 'http-status-codes'
 import { findAvailableConfigs } from '../../utils'
 import { IReactFlowObject } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import chatflowsService from '../chatflows'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
 const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
     try {
@@ -18,7 +19,10 @@ const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
         const dbResponse = findAvailableConfigs(nodes, appServer.nodesPool.componentCredentials)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: flowConfigService.getSingleFlowConfig - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: flowConfigService.getSingleFlowConfig - ${getErrorMessage(error)}`
+        )
     }
 }
 
