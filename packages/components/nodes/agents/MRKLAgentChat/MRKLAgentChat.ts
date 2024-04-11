@@ -58,6 +58,13 @@ class MRKLAgentChat_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -69,6 +76,7 @@ class MRKLAgentChat_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const maxIterations = nodeData.inputs?.maxIterations as string
         const model = nodeData.inputs?.model as BaseChatModel
         let tools = nodeData.inputs?.tools as Tool[]
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
@@ -120,7 +128,8 @@ class MRKLAgentChat_Agents implements INode {
         const executor = new AgentExecutor({
             agent,
             tools,
-            verbose: process.env.DEBUG === 'true'
+            verbose: process.env.DEBUG === 'true',
+            maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
 
         const callbacks = await additionalCallbacks(nodeData, options)

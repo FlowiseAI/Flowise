@@ -71,6 +71,13 @@ class ConversationalRetrievalAgent_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -131,6 +138,7 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
     const model = nodeData.inputs?.model as ChatOpenAI
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
+    const maxIterations = nodeData.inputs?.maxIterations as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
@@ -168,7 +176,8 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
         chatId: flowObj?.chatId,
         input: flowObj?.input,
         returnIntermediateSteps: true,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor
