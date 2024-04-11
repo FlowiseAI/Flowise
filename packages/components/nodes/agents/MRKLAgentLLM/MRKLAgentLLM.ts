@@ -50,6 +50,13 @@ class MRKLAgentLLM_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -60,6 +67,7 @@ class MRKLAgentLLM_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const model = nodeData.inputs?.model as BaseLanguageModel
+        const maxIterations = nodeData.inputs?.maxIterations as string
         let tools = nodeData.inputs?.tools as Tool[]
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
@@ -87,7 +95,8 @@ class MRKLAgentLLM_Agents implements INode {
         const executor = new AgentExecutor({
             agent,
             tools,
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true' ? true : false,
+            maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
 
         const callbacks = await additionalCallbacks(nodeData, options)
