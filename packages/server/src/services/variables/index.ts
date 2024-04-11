@@ -1,5 +1,8 @@
+import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Variable } from '../../database/entities/Variable'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 const createVariable = async (newVariable: Variable) => {
     try {
@@ -8,7 +11,10 @@ const createVariable = async (newVariable: Variable) => {
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.createVariable - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variablesServices.createVariable - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -18,7 +24,10 @@ const deleteVariable = async (variableId: string): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).delete({ id: variableId })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.deleteVariable - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variablesServices.deleteVariable - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -28,7 +37,10 @@ const getAllVariables = async () => {
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).find()
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.getAllVariables - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variablesServices.getAllVariables - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -40,7 +52,10 @@ const getVariableById = async (variableId: string) => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.getVariableById - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variablesServices.getVariableById - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -51,7 +66,10 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: variablesServices.updateVariable - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variablesServices.updateVariable - ${getErrorMessage(error)}`
+        )
     }
 }
 

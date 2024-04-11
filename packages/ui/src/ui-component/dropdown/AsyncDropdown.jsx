@@ -114,7 +114,7 @@ export const AsyncDropdown = ({
                 disabled={disabled}
                 disableClearable={disableClearable}
                 size='small'
-                sx={{ width: '100%', height: '52px' }}
+                sx={{ mt: 1, width: '100%' }}
                 open={open}
                 onOpen={() => {
                     setOpen(true)

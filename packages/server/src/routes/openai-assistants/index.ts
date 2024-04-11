@@ -6,7 +6,7 @@ const router = express.Router()
 
 // READ
 router.get('/', openaiAssistantsController.getAllOpenaiAssistants)
-router.get('/:id', openaiAssistantsController.getSingleOpenaiAssistant)
+router.get(['/', '/:id'], openaiAssistantsController.getSingleOpenaiAssistant)
 
 // UPDATE
 

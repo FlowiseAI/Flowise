@@ -1,11 +1,14 @@
-import { Request, Response } from 'express'
+import { Request } from 'express'
+import { StatusCodes } from 'http-status-codes'
 import { upsertVector } from '../../utils/upsertVector'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
-const upsertVectorMiddleware = async (req: Request, res: Response, isInternal: boolean = false) => {
+const upsertVectorMiddleware = async (req: Request, isInternal: boolean = false) => {
     try {
-        await upsertVector(req, res, isInternal)
+        return await upsertVector(req, isInternal)
     } catch (error) {
-        throw new Error(`Error: vectorsService.getRateLimiter - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: vectorsService.upsertVector - ${getErrorMessage(error)}`)
     }
 }
 

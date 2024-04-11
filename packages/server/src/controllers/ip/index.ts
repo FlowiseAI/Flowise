@@ -1,10 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 // Configure number of proxies in Host Environment
 const configureProxyNrInHostEnv = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.ip === 'undefined' || req.ip) {
-            throw new Error(`Error: ipController.configureProxyNrInHostEnv - ip not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: ipController.configureProxyNrInHostEnv - ip not provided!`
+            )
         }
         const apiResponse = {
             ip: req.ip,

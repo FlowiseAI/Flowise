@@ -162,7 +162,8 @@ const initalizeRedis = async (nodeData: INodeData, options: ICommonObject): Prom
         chatHistory: redisChatMessageHistory,
         sessionId,
         windowSize,
-        redisClient: client
+        redisClient: client,
+        sessionTTL
     })
 
     return memory
@@ -172,18 +173,21 @@ interface BufferMemoryExtendedInput {
     redisClient: Redis
     sessionId: string
     windowSize?: number
+    sessionTTL?: number
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
     redisClient: Redis
     windowSize?: number
+    sessionTTL?: number
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.sessionId = fields.sessionId
         this.redisClient = fields.redisClient
         this.windowSize = fields.windowSize
+        this.sessionTTL = fields.sessionTTL
     }
 
     async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
@@ -207,12 +211,14 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             const newInputMessage = new HumanMessage(input.text)
             const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
             await this.redisClient.lpush(id, JSON.stringify(messageToAdd[0]))
+            if (this.sessionTTL) await this.redisClient.expire(id, this.sessionTTL)
         }
 
         if (output) {
             const newOutputMessage = new AIMessage(output.text)
             const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
             await this.redisClient.lpush(id, JSON.stringify(messageToAdd[0]))
+            if (this.sessionTTL) await this.redisClient.expire(id, this.sessionTTL)
         }
     }
 

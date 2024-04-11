@@ -1,9 +1,12 @@
 import { cloneDeep } from 'lodash'
+import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { INodeData } from '../../Interface'
 import { INodeOptionsValue, ICommonObject, handleEscapeCharacters } from 'flowise-components'
 import { databaseEntities } from '../../utils'
 import logger from '../../utils/logger'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 // Get all component nodes
 const getAllNodes = async () => {
@@ -16,7 +19,7 @@ const getAllNodes = async () => {
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: nodesService.getAllNodes - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: nodesService.getAllNodes - ${getErrorMessage(error)}`)
     }
 }
 
@@ -28,10 +31,10 @@ const getNodeByName = async (nodeName: string) => {
             const dbResponse = appServer.nodesPool.componentNodes[nodeName]
             return dbResponse
         } else {
-            throw new Error(`Node ${nodeName} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node ${nodeName} not found`)
         }
     } catch (error) {
-        throw new Error(`Error: nodesService.getAllNodes - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: nodesService.getAllNodes - ${getErrorMessage(error)}`)
     }
 }
 
@@ -42,20 +45,23 @@ const getSingleNodeIcon = async (nodeName: string) => {
         if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, nodeName)) {
             const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
             if (nodeInstance.icon === undefined) {
-                throw new Error(`Node ${nodeName} icon not found`)
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node ${nodeName} icon not found`)
             }
 
             if (nodeInstance.icon.endsWith('.svg') || nodeInstance.icon.endsWith('.png') || nodeInstance.icon.endsWith('.jpg')) {
                 const filepath = nodeInstance.icon
                 return filepath
             } else {
-                throw new Error(`Node ${nodeName} icon is missing icon`)
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Node ${nodeName} icon is missing icon`)
             }
         } else {
-            throw new Error(`Node ${nodeName} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node ${nodeName} not found`)
         }
     } catch (error) {
-        throw new Error(`Error: nodesService.getSingleNodeIcon - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: nodesService.getSingleNodeIcon - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -78,14 +84,13 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
                 return []
             }
         } else {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Node ${nodeName} not found`
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node ${nodeName} not found`)
         }
     } catch (error) {
-        throw new Error(`Error: nodesService.getSingleNodeAsyncOptions - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: nodesService.getSingleNodeAsyncOptions - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -115,21 +120,16 @@ const executeCustomFunction = async (requestBody: any) => {
 
                 return dbResponse
             } catch (error) {
-                return {
-                    executionError: true,
-                    status: 500,
-                    msg: `Error running custom function: ${error}`
-                }
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error running custom function: ${error}`)
             }
         } else {
-            return {
-                executionError: true,
-                status: 404,
-                msg: `Node customFunction not found`
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node customFunction not found`)
         }
     } catch (error) {
-        throw new Error(`Error: nodesService.executeCustomFunction - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: nodesService.executeCustomFunction - ${getErrorMessage(error)}`
+        )
     }
 }
 

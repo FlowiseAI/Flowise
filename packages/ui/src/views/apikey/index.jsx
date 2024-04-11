@@ -286,7 +286,9 @@ const APIKey = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete API key: ${error.response.data.message}`,
+                    message: `Failed to delete API key: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
