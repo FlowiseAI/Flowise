@@ -1144,16 +1144,18 @@ export const redactCredentialWithPasswordType = (
  * API/Embed + UI:
  * (3) Hard-coded sessionId in UI
  * (4) Not specified on UI nor API, default to chatId
- * @param {any} instance
+ * @param {IReactFlowNode | undefined} memoryNode
  * @param {IncomingInput} incomingInput
  * @param {string} chatId
+ * @param {boolean} isInternal
+ * @returns {string}
  */
 export const getMemorySessionId = (
-    memoryNode: IReactFlowNode,
+    memoryNode: IReactFlowNode | undefined,
     incomingInput: IncomingInput,
     chatId: string,
     isInternal: boolean
-): string | undefined => {
+): string => {
     if (!isInternal) {
         // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
         if (incomingInput.overrideConfig?.sessionId) {
@@ -1166,7 +1168,7 @@ export const getMemorySessionId = (
     }
 
     // Hard-coded sessionId in UI
-    if (memoryNode.data.inputs?.sessionId) {
+    if (memoryNode && memoryNode.data.inputs?.sessionId) {
         return memoryNode.data.inputs.sessionId
     }
 
@@ -1175,18 +1177,21 @@ export const getMemorySessionId = (
 }
 
 /**
- * Replace chatHistory if incomingInput.history is empty and sessionId/chatId is provided
+ * Get chat messages from sessionId
  * @param {IReactFlowNode} memoryNode
- * @param {IncomingInput} incomingInput
+ * @param {string} sessionId
+ * @param {IReactFlowNode} memoryNode
+ * @param {IComponentNodes} componentNodes
  * @param {DataSource} appDataSource
  * @param {IDatabaseEntity} databaseEntities
  * @param {any} logger
- * @returns {string}
+ * @returns {IMessage[]}
  */
 export const getSessionChatHistory = async (
+    chatflowid: string,
+    sessionId: string,
     memoryNode: IReactFlowNode,
     componentNodes: IComponentNodes,
-    incomingInput: IncomingInput,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
     logger: any
@@ -1196,19 +1201,18 @@ export const getSessionChatHistory = async (
     const newNodeInstance = new nodeModule.nodeClass()
 
     // Replace memory's sessionId/chatId
-    if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
-        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
-    } else if (incomingInput.chatId && memoryNode.data.inputs) {
-        memoryNode.data.inputs.sessionId = incomingInput.chatId
+    if (memoryNode.data.inputs) {
+        memoryNode.data.inputs.sessionId = sessionId
     }
 
     const initializedInstance: FlowiseMemory = await newNodeInstance.init(memoryNode.data, '', {
+        chatflowid,
         appDataSource,
         databaseEntities,
         logger
     })
 
-    return (await initializedInstance.getChatMessages()) as IMessage[]
+    return (await initializedInstance.getChatMessages(sessionId)) as IMessage[]
 }
 
 /**
@@ -1216,7 +1220,7 @@ export const getSessionChatHistory = async (
  * In a chatflow, there should only be 1 memory node
  * @param {IReactFlowNode[]} nodes
  * @param {IReactFlowEdge[]} edges
- * @returns {string | undefined}
+ * @returns {IReactFlowNode | undefined}
  */
 export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined => {
     const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
@@ -1228,6 +1232,7 @@ export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[])
             return memoryNode
         }
     }
+
     return undefined
 }
 

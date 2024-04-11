@@ -1,20 +1,20 @@
 import {
-    FlowiseSummaryMemory,
     IMessage,
     IDatabaseEntity,
     INode,
     INodeData,
     INodeParams,
     MemoryMethods,
-    ICommonObject
+    ICommonObject,
+    FlowiseSummaryBufferMemory
 } from '../../../src/Interface'
 import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { BaseMessage, SystemMessage } from '@langchain/core/messages'
-import { ConversationSummaryMemory, ConversationSummaryMemoryInput } from 'langchain/memory'
+import { BaseMessage, getBufferString } from '@langchain/core/messages'
+import { ConversationSummaryBufferMemory, ConversationSummaryBufferMemoryInput } from 'langchain/memory'
 import { DataSource } from 'typeorm'
 
-class ConversationSummaryMemory_Memory implements INode {
+class ConversationSummaryBufferMemory_Memory implements INode {
     label: string
     name: string
     version: number
@@ -26,19 +26,26 @@ class ConversationSummaryMemory_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Conversation Summary Memory'
-        this.name = 'conversationSummaryMemory'
-        this.version = 2.0
-        this.type = 'ConversationSummaryMemory'
+        this.label = 'Conversation Summary Buffer Memory'
+        this.name = 'conversationSummaryBufferMemory'
+        this.version = 1.0
+        this.type = 'ConversationSummaryBufferMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
-        this.description = 'Summarizes the conversation and stores the current summary in memory'
-        this.baseClasses = [this.type, ...getBaseClasses(ConversationSummaryMemory)]
+        this.description = 'Uses token length to decide when to summarize conversations'
+        this.baseClasses = [this.type, ...getBaseClasses(ConversationSummaryBufferMemory)]
         this.inputs = [
             {
                 label: 'Chat Model',
                 name: 'model',
                 type: 'BaseChatModel'
+            },
+            {
+                label: 'Max Token Limit',
+                name: 'maxTokenLimit',
+                type: 'number',
+                default: 2000,
+                description: 'Summarize conversations once token limit is reached. Default to 2000'
             },
             {
                 label: 'Session Id',
@@ -62,6 +69,8 @@ class ConversationSummaryMemory_Memory implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
+        const _maxTokenLimit = nodeData.inputs?.maxTokenLimit as string
+        const maxTokenLimit = _maxTokenLimit ? parseInt(_maxTokenLimit, 10) : 2000
         const sessionId = nodeData.inputs?.sessionId as string
         const memoryKey = (nodeData.inputs?.memoryKey as string) ?? 'chat_history'
 
@@ -69,17 +78,18 @@ class ConversationSummaryMemory_Memory implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
 
-        const obj: ConversationSummaryMemoryInput & BufferMemoryExtendedInput = {
+        const obj: ConversationSummaryBufferMemoryInput & BufferMemoryExtendedInput = {
             llm: model,
-            memoryKey,
-            returnMessages: true,
             sessionId,
+            memoryKey,
+            maxTokenLimit,
+            returnMessages: true,
             appDataSource,
             databaseEntities,
             chatflowid
         }
 
-        return new ConversationSummaryMemoryExtended(obj)
+        return new ConversationSummaryBufferMemoryExtended(obj)
     }
 }
 
@@ -90,13 +100,13 @@ interface BufferMemoryExtendedInput {
     chatflowid: string
 }
 
-class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements MemoryMethods {
+class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory implements MemoryMethods {
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
     chatflowid: string
     sessionId = ''
 
-    constructor(fields: ConversationSummaryMemoryInput & BufferMemoryExtendedInput) {
+    constructor(fields: ConversationSummaryBufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.sessionId = fields.sessionId
         this.appDataSource = fields.appDataSource
@@ -108,7 +118,6 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         if (!id) return []
 
-        this.buffer = ''
         let chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
                 sessionId: id,
@@ -119,33 +128,48 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
             }
         })
 
-        const baseMessages = mapChatMessageToBaseMessage(chatMessage)
+        let baseMessages = mapChatMessageToBaseMessage(chatMessage)
 
-        // Get summary
+        // Prune baseMessages if it exceeds max token limit
+        if (this.movingSummaryBuffer) {
+            baseMessages = [new this.summaryChatMessageClass(this.movingSummaryBuffer), ...baseMessages]
+        }
+
+        let currBufferLength = 0
+
         if (this.llm && typeof this.llm !== 'string') {
-            this.buffer = baseMessages.length ? await this.predictNewSummary(baseMessages.slice(-2), this.buffer) : ''
+            currBufferLength = await this.llm.getNumTokens(getBufferString(baseMessages, this.humanPrefix, this.aiPrefix))
+            if (currBufferLength > this.maxTokenLimit) {
+                const prunedMemory = []
+                while (currBufferLength > this.maxTokenLimit) {
+                    const poppedMessage = baseMessages.shift()
+                    if (poppedMessage) {
+                        prunedMemory.push(poppedMessage)
+                        currBufferLength = await this.llm.getNumTokens(getBufferString(baseMessages, this.humanPrefix, this.aiPrefix))
+                    }
+                }
+                this.movingSummaryBuffer = await this.predictNewSummary(prunedMemory, this.movingSummaryBuffer)
+            }
+        }
+
+        // ----------- Finished Pruning ---------------
+
+        if (this.movingSummaryBuffer) {
+            baseMessages = [new this.summaryChatMessageClass(this.movingSummaryBuffer), ...baseMessages]
         }
 
         if (returnBaseMessages) {
-            return [new SystemMessage(this.buffer)]
-        }
-
-        if (this.buffer) {
-            return [
-                {
-                    message: this.buffer,
-                    type: 'apiMessage'
-                }
-            ]
+            return baseMessages
         }
 
         let returnIMessages: IMessage[] = []
-        for (const m of chatMessage) {
+        for (const m of baseMessages) {
             returnIMessages.push({
                 message: m.content as string,
-                type: m.role
+                type: m._getType() === 'human' ? 'userMessage' : 'apiMessage'
             })
         }
+
         return returnIMessages
     }
 
@@ -160,4 +184,4 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
     }
 }
 
-module.exports = { nodeClass: ConversationSummaryMemory_Memory }
+module.exports = { nodeClass: ConversationSummaryBufferMemory_Memory }

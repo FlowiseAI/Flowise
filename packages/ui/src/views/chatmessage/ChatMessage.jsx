@@ -392,11 +392,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
 
-        // Send user question and history to API
+        // Send user question to Prediction Internal API
         try {
             const params = {
                 question: input,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
             if (urls && urls.length > 0) params.uploads = urls
@@ -447,7 +446,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         }
                     ])
                 }
-                setLocalStorageChatflow(chatflowid, data.chatId, messages)
+                setLocalStorageChatflow(chatflowid, data.chatId)
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -520,7 +519,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
-            setLocalStorageChatflow(chatflowid, chatId, messages)
+            setLocalStorageChatflow(chatflowid, chatId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -132,7 +132,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 socketIOClientId: req.body.socketIOClientId
             }
         }
@@ -146,8 +145,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
         const memoryType = memoryNode?.data.label
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Node Data already exists in pool
@@ -225,9 +223,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             // Once custom function ending node exists, flow is always unavailable to stream
             isStreamValid = isEndingNodeExists ? false : isStreamValid
 
-            let chatHistory: IMessage[] = incomingInput.history ?? []
+            let chatHistory: IMessage[] = []
 
-            // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
+            // When {{chat_history}} is used in Format Prompt Value, fetch the chat conversations from memory node
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
 
@@ -238,16 +236,15 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
                 if (!memoryNode) continue
 
-                if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                    chatHistory = await getSessionChatHistory(
-                        memoryNode,
-                        appServer.nodesPool.componentNodes,
-                        incomingInput,
-                        appServer.AppDataSource,
-                        databaseEntities,
-                        logger
-                    )
-                }
+                chatHistory = await getSessionChatHistory(
+                    chatflowid,
+                    getMemorySessionId(memoryNode, incomingInput, chatId, isInternal),
+                    memoryNode,
+                    appServer.nodesPool.componentNodes,
+                    appServer.AppDataSource,
+                    databaseEntities,
+                    logger
+                )
             }
 
             /*** Get Starting Nodes with Reversed Graph ***/
@@ -314,7 +311,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
@@ -326,7 +322,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,

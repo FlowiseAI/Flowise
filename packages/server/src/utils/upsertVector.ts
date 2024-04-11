@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import * as fs from 'fs'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject } from 'flowise-components'
+import { ICommonObject, IMessage } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
@@ -66,7 +66,6 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 stopNodeId: req.body.stopNodeId
             }
         }
@@ -78,14 +77,13 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const edges = parsedFlowData.edges
 
         let stopNodeId = incomingInput?.stopNodeId ?? ''
-        let chatHistory = incomingInput?.history
+        let chatHistory: IMessage[] = []
         let chatId = incomingInput.chatId ?? ''
         let isUpsert = true
 
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         const vsNodes = nodes.filter(
             (node) =>

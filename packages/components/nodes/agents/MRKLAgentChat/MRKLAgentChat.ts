@@ -125,8 +125,7 @@ class MRKLAgentChat_Agents implements INode {
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const prevChatHistory = options.chatHistory
-        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prevChatHistory)) as IMessage[]) ?? []
+        const chatHistory = ((await memory.getChatMessages(this.sessionId, false)) as IMessage[]) ?? []
         const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
 
         const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })

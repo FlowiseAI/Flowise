@@ -83,7 +83,7 @@ class ContextChatEngine_LlamaIndex implements INode {
 
         const chatEngine = new ContextChatEngine({ chatModel: model, retriever: vectorStoreRetriever })
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

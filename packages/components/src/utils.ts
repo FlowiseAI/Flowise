@@ -7,7 +7,6 @@ import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
-import { ChatMessageHistory } from 'langchain/memory'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
@@ -576,22 +575,21 @@ export const getUserHome = (): string => {
 }
 
 /**
- * Map incoming chat history to ChatMessageHistory
- * @param {ICommonObject} options
- * @returns {ChatMessageHistory}
+ * Map ChatMessage to BaseMessage
+ * @param {IChatMessage[]} chatmessages
+ * @returns {BaseMessage[]}
  */
-export const mapChatHistory = (options: ICommonObject): ChatMessageHistory => {
+export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessage[] => {
     const chatHistory = []
-    const histories: IMessage[] = options.chatHistory ?? []
 
-    for (const message of histories) {
-        if (message.type === 'apiMessage') {
-            chatHistory.push(new AIMessage(message.message))
-        } else if (message.type === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.message))
+    for (const message of chatmessages) {
+        if (message.role === 'apiMessage') {
+            chatHistory.push(new AIMessage(message.content))
+        } else if (message.role === 'userMessage') {
+            chatHistory.push(new HumanMessage(message.content))
         }
     }
-    return new ChatMessageHistory(chatHistory)
+    return chatHistory
 }
 
 /**
@@ -615,7 +613,7 @@ export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string =
 
 /**
  * Serialize array chat history to string
- * @param {IMessage[]} chatHistory
+ * @param {string | Array<string>} chatHistory
  * @returns {string}
  */
 export const serializeChatHistory = (chatHistory: string | Array<string>) => {
