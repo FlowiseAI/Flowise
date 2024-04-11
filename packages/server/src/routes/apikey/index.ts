@@ -9,9 +9,9 @@ router.post('/', apikeyController.createApiKey)
 router.get('/', apikeyController.getAllApiKeys)
 
 // UPDATE
-router.put('/:id', apikeyController.updateApiKey)
+router.put(['/', '/:id'], apikeyController.updateApiKey)
 
 // DELETE
-router.delete('/:id', apikeyController.deleteApiKey)
+router.delete(['/', '/:id'], apikeyController.deleteApiKey)
 
 export default router

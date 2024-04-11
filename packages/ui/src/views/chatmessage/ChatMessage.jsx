@@ -406,10 +406,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
             if (response.data) {
                 const data = response.data
-                if (data.executionError) {
-                    handleError(data.msg)
-                    return
-                }
 
                 setMessages((prevMessages) => {
                     let allMessages = [...cloneDeep(prevMessages)]
