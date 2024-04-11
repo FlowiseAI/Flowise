@@ -6,11 +6,16 @@ import { clearSessionMemory } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const createChatMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error('Error: chatMessagesController.createChatMessage - request body not provided!')
+        if (!req.body) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatMessagesController.createChatMessage - request body not provided!'
+            )
         }
         const apiResponse = await chatMessagesService.createChatMessage(req.body)
         return res.json(apiResponse)
@@ -44,8 +49,11 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: chatMessageController.getAllChatMessages - id not provided!`)
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatMessageController.getAllChatMessages - id not provided!`
+            )
         }
         const apiResponse = await chatMessagesService.getAllChatMessages(
             req.params.id,
@@ -59,9 +67,6 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             messageId,
             feedback
         )
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -90,9 +95,6 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             messageId,
             feedback
         )
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -103,8 +105,11 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
 const removeAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error('Error: chatMessagesController.removeAllChatMessages - id not provided!')
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatMessagesController.removeAllChatMessages - id not provided!'
+            )
         }
         const chatflowid = req.params.id
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
@@ -139,9 +144,6 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         if (sessionId) deleteOptions.sessionId = sessionId
         if (chatType) deleteOptions.chatType = chatType
         const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)
-        if (apiResponse.executionError) {
-            res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

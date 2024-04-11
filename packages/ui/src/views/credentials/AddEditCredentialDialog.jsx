@@ -29,7 +29,7 @@ import useNotifier from '@/utils/useNotifier'
 import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
-const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -69,6 +69,20 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             setComponentCredential(getSpecificComponentCredentialApi.data)
         }
     }, [getSpecificComponentCredentialApi.data])
+
+    useEffect(() => {
+        if (getSpecificCredentialApi.error) {
+            setError(getSpecificCredentialApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificCredentialApi.error])
+
+    useEffect(() => {
+        if (getSpecificComponentCredentialApi.error) {
+            setError(getSpecificComponentCredentialApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificComponentCredentialApi.error])
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -118,8 +132,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 onConfirm(createResp.data.id)
             }
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
-                message: `Failed to add new Credential: ${error.response.data.message}`,
+                message: `Failed to add new Credential: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -167,8 +184,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
+            setError(error)
             enqueueSnackbar({
-                message: `Failed to save Credential: ${error.response.data.message}`,
+                message: `Failed to save Credential: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -284,7 +304,8 @@ AddEditCredentialDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default AddEditCredentialDialog

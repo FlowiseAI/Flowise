@@ -4,6 +4,6 @@ import chatflowsController from '../../controllers/chatflows'
 const router = express.Router()
 
 // READ
-router.get('/:id', chatflowsController.checkIfChatflowIsValidForUploads)
+router.get(['/', '/:id'], chatflowsController.checkIfChatflowIsValidForUploads)
 
 export default router

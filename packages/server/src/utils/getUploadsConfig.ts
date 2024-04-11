@@ -1,7 +1,9 @@
+import { StatusCodes } from 'http-status-codes'
+import { INodeParams } from 'flowise-components'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { IUploadFileSizeAndTypes, IReactFlowNode } from '../Interface'
-import { INodeParams } from 'flowise-components'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
 
 /**
  * Method that checks if uploads are enabled in the chatflow
@@ -12,7 +14,9 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => 
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
         id: chatflowid
     })
-    if (!chatflow) return `Chatflow ${chatflowid} not found`
+    if (!chatflow) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
 
     const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
     const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI']

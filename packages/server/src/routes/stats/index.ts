@@ -4,6 +4,6 @@ import statsController from '../../controllers/stats'
 const router = express.Router()
 
 // READ
-router.get('/:id', statsController.getChatflowStats)
+router.get(['/', '/:id'], statsController.getChatflowStats)
 
 export default router

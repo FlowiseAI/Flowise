@@ -1,5 +1,6 @@
 import { FindOptionsWhere } from 'typeorm'
 import path from 'path'
+import { StatusCodes } from 'http-status-codes'
 import { chatType, IChatMessage } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
@@ -9,6 +10,8 @@ import { getStoragePath } from 'flowise-components'
 import { deleteFolderRecursive } from '../../utils'
 import logger from '../../utils/logger'
 import { ChatMessage } from '../../database/entities/ChatMessage'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -16,7 +19,10 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
         const dbResponse = await utilAddChatMessage(chatMessage)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: chatMessagesService.createChatMessage - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatMessagesService.createChatMessage - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -48,7 +54,10 @@ const getAllChatMessages = async (
         )
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: chatMessagesService.getAllChatMessages - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatMessagesService.getAllChatMessages - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -80,7 +89,10 @@ const getAllInternalChatMessages = async (
         )
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: chatMessagesService.getAllInternalChatMessages - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatMessagesService.getAllInternalChatMessages - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -104,7 +116,10 @@ const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteO
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: chatMessagesService.removeAllChatMessages - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatMessagesService.removeAllChatMessages - ${getErrorMessage(error)}`
+        )
     }
 }
 

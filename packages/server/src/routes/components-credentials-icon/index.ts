@@ -5,7 +5,7 @@ const router = express.Router()
 // CREATE
 
 // READ
-router.get('/:name', componentsCredentialsController.getSingleComponentsCredentialIcon)
+router.get(['/', '/:name'], componentsCredentialsController.getSingleComponentsCredentialIcon)
 
 // UPDATE
 
