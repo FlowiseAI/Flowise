@@ -124,6 +124,13 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -134,6 +141,7 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -142,6 +150,12 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
             temperature: parseFloat(temperature),
             model: modelName,
             apiKey: openAIApiKey
+        }
+
+        if (basePath) {
+            obj.additionalSessionOptions = {
+                baseURL: basePath
+            }
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

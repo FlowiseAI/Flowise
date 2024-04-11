@@ -25,7 +25,7 @@ class CSV_Agents implements INode {
     constructor() {
         this.label = 'CSV Agent'
         this.name = 'csvAgent'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'CSVagent.svg'
@@ -60,6 +60,16 @@ class CSV_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Custom Pandas Read_CSV Code',
+                description:
+                    'Custom Pandas <a target="_blank" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html">read_csv</a> function. Takes in an input: "csv_data"',
+                name: 'customReadCSV',
+                default: 'read_csv(csv_data)',
+                type: 'code',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -74,6 +84,7 @@ class CSV_Agents implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const _customReadCSV = nodeData.inputs?.customReadCSV as string
 
         if (moderations && moderations.length > 0) {
             try {
@@ -126,6 +137,7 @@ class CSV_Agents implements INode {
         // First load the csv file and get the dataframe dictionary of column types
         // For example using titanic.csv: {'PassengerId': 'int64', 'Survived': 'int64', 'Pclass': 'int64', 'Name': 'object', 'Sex': 'object', 'Age': 'float64', 'SibSp': 'int64', 'Parch': 'int64', 'Ticket': 'object', 'Fare': 'float64', 'Cabin': 'object', 'Embarked': 'object'}
         let dataframeColDict = ''
+        let customReadCSVFunc = _customReadCSV ? _customReadCSV : 'read_csv(csv_data)'
         try {
             const code = `import pandas as pd
 import base64
@@ -138,7 +150,7 @@ decoded_data = base64.b64decode(base64_string)
 
 csv_data = StringIO(decoded_data.decode('utf-8'))
 
-df = pd.read_csv(csv_data)
+df = pd.${customReadCSVFunc}
 my_dict = df.dtypes.astype(str).to_dict()
 print(my_dict)
 json.dumps(my_dict)`
