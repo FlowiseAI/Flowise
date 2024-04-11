@@ -17,10 +17,12 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Stack,
+    Box
 } from '@mui/material'
-
 import { IconFileExport } from '@tabler/icons'
+import leadsEmptySVG from '@/assets/images/leads_empty.svg'
 
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -105,34 +107,46 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                     {dialogProps.title}
                     <div style={{ flex: 1 }} />
-                    <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
-                        Export
-                    </Button>
+                    {leads && leads.length > 0 && (
+                        <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
+                            Export
+                        </Button>
+                    )}
                 </div>
             </DialogTitle>
             <DialogContent>
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Email Address</TableCell>
-                                <TableCell>Phone</TableCell>
-                                <TableCell>Created Date</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {leads.map((lead, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{lead.name}</TableCell>
-                                    <TableCell>{lead.email}</TableCell>
-                                    <TableCell>{lead.phone}</TableCell>
-                                    <TableCell>{moment(lead.createdDate).format('MMMM Do, YYYY')}</TableCell>
+                {leads && leads.length == 0 && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
+                        <Box sx={{ p: 5, height: 'auto' }}>
+                            <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={leadsEmptySVG} alt='msgEmptySVG' />
+                        </Box>
+                        <div>No Leads</div>
+                    </Stack>
+                )}
+                {leads && leads.length > 0 && (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Email Address</TableCell>
+                                    <TableCell>Phone</TableCell>
+                                    <TableCell>Created Date</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {leads.map((lead, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{lead.name}</TableCell>
+                                        <TableCell>{lead.email}</TableCell>
+                                        <TableCell>{lead.phone}</TableCell>
+                                        <TableCell>{moment(lead.createdDate).format('MMMM Do, YYYY')}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
             </DialogContent>
         </Dialog>
     ) : null
