@@ -32,6 +32,8 @@
 **/build
 **/dist
 **/.sst
+**/copilot
+copilot
 docker
 node_modules
 
