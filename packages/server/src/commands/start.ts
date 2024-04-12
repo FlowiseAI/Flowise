@@ -45,7 +45,8 @@ export default class Start extends Command {
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
-        DISABLE_FLOWISE_TELEMETRY: Flags.string()
+        DISABLE_FLOWISE_TELEMETRY: Flags.string(),
+        MODEL_LIST_CONFIG_JSON: Flags.string()
     }
 
     async stopProcess() {
@@ -133,6 +134,9 @@ export default class Start extends Command {
 
         // Disable langchain warnings
         process.env.LANGCHAIN_SUPPRESS_MIGRATION_WARNINGS = 'true'
+
+        // Model list config
+        if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
 
         await (async () => {
             try {

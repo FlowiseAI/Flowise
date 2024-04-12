@@ -121,7 +121,7 @@ Flowise has 3 different modules in a single mono repository.
 Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
 | Variable                    | Description                                                                  | Type                                             | Default                             |
-| --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
+|-----------------------------|------------------------------------------------------------------------------|--------------------------------------------------| ----------------------------------- |
 | PORT                        | The HTTP port Flowise runs on                                                | Number                                           | 3000                                |
 | CORS_ORIGINS                | The allowed origins for all cross-origin HTTP calls                          | String                                           |                                     |
 | IFRAME_ORIGINS              | The allowed origins for iframe src embedding                                 | String                                           |                                     |
@@ -147,6 +147,7 @@ Flowise support different environment variables to configure your instance. You 
 | SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
 | FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
 | DISABLE_FLOWISE_TELEMETRY   | Turn off telemetry                                                           | Boolean                                          |
+| MODEL_LIST_CONFIG_JSON      | Provide this path to load the list of models from your local config file     | String                                           | `/your_model_list_config_file_path` |
 
 You can also specify the env variables when using `npx`. For example:
 

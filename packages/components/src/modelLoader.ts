@@ -2,8 +2,7 @@ import { INodeOptionsValue } from './Interface'
 import axios from 'axios'
 
 /* This is a temp URL, will be replaced with the actual URL from the main repo */
-const MASTER_MODEL_LIST =
-    'https://raw.githubusercontent.com/vinodkiran/Flowise/FEATURE/externalize-model-list/packages/components/models.json'
+const MASTER_MODEL_LIST = 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/credentials/models.json'
 
 export enum MODEL_TYPE {
     CHAT = 'chat',
@@ -13,6 +12,9 @@ export enum MODEL_TYPE {
 
 const getModelConfig = async (category: MODEL_TYPE, name: string) => {
     const modelFile = process.env.MODEL_LIST_CONFIG_JSON || MASTER_MODEL_LIST
+    // eslint-disable-next-line no-console
+    console.log(`Loading Models from path :: ${modelFile}`)
+
     if (!modelFile) {
         throw new Error('MODEL_LIST_CONFIG_JSON not set')
     }
