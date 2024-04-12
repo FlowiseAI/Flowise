@@ -132,7 +132,7 @@ class ChatMistral_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.LLM, 'chatMistralAI')
+            return await getModels(MODEL_TYPE.CHAT, 'chatMistralAI')
         }
     }
 

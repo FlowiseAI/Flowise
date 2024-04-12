@@ -591,6 +591,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIToolAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIToolAgent_0-input-maxIterations-number"
                     }
                 ],
                 "inputAnchors": [

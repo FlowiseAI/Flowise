@@ -934,6 +934,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "conversationalAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "conversationalAgent_0-input-maxIterations-number"
                     }
                 ],
                 "inputAnchors": [

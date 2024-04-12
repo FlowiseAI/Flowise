@@ -87,6 +87,14 @@
                         "optional": true,
                         "list": true,
                         "id": "mrklAgentChat_0-input-inputModeration-Moderation"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "mrklAgentChat_0-input-maxIterations-number"
                     }
                 ],
                 "inputs": {
