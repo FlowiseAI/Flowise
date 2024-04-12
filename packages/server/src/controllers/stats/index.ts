@@ -1,11 +1,14 @@
+import { StatusCodes } from 'http-status-codes'
 import { Request, Response, NextFunction } from 'express'
 import statsService from '../../services/stats'
 import { chatType } from '../../Interface'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 const getChatflowStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: statsController.getChatflowStats - id not provided!`)
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id
         let chatTypeFilter = req.query?.chatType as chatType | undefined
@@ -22,13 +25,13 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
                     chatTypeFilter = chatType.INTERNAL
                 }
             } catch (e) {
-                return res.status(500).send(e)
+                throw new InternalFlowiseError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    `Error: statsController.getChatflowStats - ${getErrorMessage(e)}`
+                )
             }
         }
         const apiResponse = await statsService.getChatflowStats(chatflowid, chatTypeFilter, startDate, endDate, '', true)
-        if (apiResponse.executionError) {
-            return res.status(apiResponse.status).send(apiResponse.msg)
-        }
         return res.json(apiResponse)
     } catch (error) {
         next(error)

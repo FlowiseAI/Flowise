@@ -257,32 +257,36 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "version": 1,
+                "version": 2,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
+                "description": "Retrieve chat messages stored in database",
                 "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
                     {
                         "label": "Memory Key",
                         "name": "memoryKey",
                         "type": "string",
                         "default": "chat_history",
+                        "additionalParams": true,
                         "id": "bufferMemory_0-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_0-input-inputKey-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
                 },
                 "outputAnchors": [
                     {

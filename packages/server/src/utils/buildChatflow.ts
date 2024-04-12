@@ -3,6 +3,7 @@ import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 
 import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
 import path from 'path'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Server } from 'socket.io'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -47,11 +48,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             id: chatflowid
         })
         if (!chatflow) {
-            return {
-                executionError: true,
-                status: StatusCodes.NOT_FOUND,
-                msg: `Chatflow ${chatflowid} not found`
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
@@ -60,11 +57,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (!isInternal) {
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isKeyValidated) {
-                return {
-                    executionError: true,
-                    status: StatusCodes.UNAUTHORIZED,
-                    msg: `Unauthorized`
-                }
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
         }
 
@@ -139,7 +132,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 socketIOClientId: req.body.socketIOClientId
             }
         }
@@ -153,8 +145,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
         const memoryType = memoryNode?.data.label
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Node Data already exists in pool
@@ -189,11 +180,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             const directedGraph = graph
             const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
             if (!endingNodeIds.length) {
-                return {
-                    executionError: true,
-                    status: 500,
-                    msg: `Ending nodes not found`
-                }
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending nodes not found`)
             }
 
             const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
@@ -203,11 +190,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
                 if (!endingNodeData) {
-                    return {
-                        executionError: true,
-                        status: 500,
-                        msg: `Ending node ${endingNode.id} data not found`
-                    }
+                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node ${endingNode.id} data not found`)
                 }
 
                 const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
@@ -219,11 +202,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                         endingNodeData.category !== 'Agents' &&
                         endingNodeData.category !== 'Engine'
                     ) {
-                        return {
-                            executionError: true,
-                            status: 500,
-                            msg: `Ending node must be either a Chain or Agent`
-                        }
+                        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
                     }
 
                     if (
@@ -231,11 +210,10 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                         Object.keys(endingNodeData.outputs).length &&
                         !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
                     ) {
-                        return {
-                            executionError: true,
-                            status: 500,
-                            msg: `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                        }
+                        throw new InternalFlowiseError(
+                            StatusCodes.INTERNAL_SERVER_ERROR,
+                            `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                        )
                     }
                 }
 
@@ -245,9 +223,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             // Once custom function ending node exists, flow is always unavailable to stream
             isStreamValid = isEndingNodeExists ? false : isStreamValid
 
-            let chatHistory: IMessage[] = incomingInput.history ?? []
+            let chatHistory: IMessage[] = []
 
-            // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
+            // When {{chat_history}} is used in Format Prompt Value, fetch the chat conversations from memory node
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
 
@@ -258,16 +236,15 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
                 if (!memoryNode) continue
 
-                if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                    chatHistory = await getSessionChatHistory(
-                        memoryNode,
-                        appServer.nodesPool.componentNodes,
-                        incomingInput,
-                        appServer.AppDataSource,
-                        databaseEntities,
-                        logger
-                    )
-                }
+                chatHistory = await getSessionChatHistory(
+                    chatflowid,
+                    getMemorySessionId(memoryNode, incomingInput, chatId, isInternal),
+                    memoryNode,
+                    appServer.nodesPool.componentNodes,
+                    appServer.AppDataSource,
+                    databaseEntities,
+                    logger
+                )
             }
 
             /*** Get Starting Nodes with Reversed Graph ***/
@@ -311,11 +288,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     ? reactFlowNodes.find((node: IReactFlowNode) => endingNodeIds[0] === node.id)
                     : reactFlowNodes[reactFlowNodes.length - 1]
             if (!nodeToExecute) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `Node not found`
-                }
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
             if (incomingInput.overrideConfig) {
@@ -338,7 +311,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
@@ -350,7 +322,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
@@ -417,10 +388,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         return result
     } catch (e: any) {
         logger.error('[server]: Error:', e)
-        return {
-            executionError: true,
-            status: 500,
-            msg: e.message
-        }
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, e.message)
     }
 }

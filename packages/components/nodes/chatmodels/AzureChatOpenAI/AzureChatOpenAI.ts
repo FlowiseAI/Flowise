@@ -85,6 +85,14 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Frequency Penalty',
                 name: 'frequencyPenalty',
                 type: 'number',
@@ -152,6 +160,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
         const cache = nodeData.inputs?.cache as BaseCache
+        const topP = nodeData.inputs?.topP as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
@@ -177,6 +186,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (topP) obj.topP = parseFloat(topP)
 
         const multiModalOption: IMultiModalOption = {
             image: {

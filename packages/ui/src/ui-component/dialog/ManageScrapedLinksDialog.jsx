@@ -83,7 +83,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: error.response.data.message,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
