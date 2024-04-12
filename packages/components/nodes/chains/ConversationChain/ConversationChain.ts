@@ -217,7 +217,6 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
 }
 
 const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
-    const chatHistory = options.chatHistory
     let model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
@@ -253,7 +252,7 @@ const prepareChain = (nodeData: INodeData, options: ICommonObject, sessionId?: s
         {
             [inputKey]: (input: { input: string }) => input.input,
             [memoryKey]: async () => {
-                const history = await memory.getChatMessages(sessionId, true, chatHistory)
+                const history = await memory.getChatMessages(sessionId, true)
                 return history
             },
             ...promptVariables

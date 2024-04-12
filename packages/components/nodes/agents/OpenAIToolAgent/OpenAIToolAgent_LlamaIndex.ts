@@ -61,7 +61,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
         return null
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
+    async run(nodeData: INodeData, input: string): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const model = nodeData.inputs?.model as OpenAI
         const systemMessage = nodeData.inputs?.systemMessage as string
@@ -77,7 +77,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
             })
         }
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

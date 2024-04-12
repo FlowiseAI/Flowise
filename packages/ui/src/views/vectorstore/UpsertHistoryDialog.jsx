@@ -259,7 +259,9 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
             setSelected([])
         } catch (error) {
             enqueueSnackbar({
-                message: 'Error deleting upsert history',
+                message: `Failed to delete Upsert History: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

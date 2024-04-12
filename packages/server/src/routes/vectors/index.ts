@@ -8,7 +8,12 @@ const router = express.Router()
 const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // CREATE
-router.post('/upsert/:id', upload.array('files'), vectorsController.getRateLimiterMiddleware, vectorsController.upsertVectorMiddleware)
-router.post('/internal-upsert/:id', vectorsController.createInternalUpsert)
+router.post(
+    ['/upsert/', '/upsert/:id'],
+    upload.array('files'),
+    vectorsController.getRateLimiterMiddleware,
+    vectorsController.upsertVectorMiddleware
+)
+router.post(['/internal-upsert/', '/internal-upsert/:id'], vectorsController.createInternalUpsert)
 
 export default router
