@@ -189,51 +189,29 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
     }
 }
 
-const _saveFilesToStorage = (fileBase64: string, entity: DocumentStore) => {
-    // Base64 strings
-    let files: string[] = []
-    if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-        files = JSON.parse(fileBase64)
-    } else {
-        files = [fileBase64]
-    }
-
+const _saveFileToStorage = (fileBase64: string, entity: DocumentStore) => {
     const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
     if (!fs.existsSync(dir)) {
         throw new Error(`Missing folder to upload files for Document Store ${entity.name}`)
     }
-    const filesWithMetadata: any[] = []
-    for (const file of files) {
-        const splitDataURI = file.split(',')
-        const filename = splitDataURI.pop()?.split(':')[1] ?? ''
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        const filePath = path.join(dir, filename)
-        fs.writeFileSync(filePath, bf)
-        const stats = fs.statSync(filePath)
-        filesWithMetadata.push({
-            id: uuidv4(),
-            path: filePath,
-            name: filename,
-            size: stats.size,
-            status: DocumentStoreStatus.NEW,
-            uploaded: stats.birthtime,
-            totalChunks: 0,
-            totalChars: 0
-        })
+    // const filesWithMetadata: any[] = []
+    // for (const file of files) {
+    const splitDataURI = fileBase64.split(',')
+    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+    const filePath = path.join(dir, filename)
+    fs.writeFileSync(filePath, bf)
+    const stats = fs.statSync(filePath)
+    return {
+        id: uuidv4(),
+        path: filePath,
+        name: filename,
+        size: stats.size,
+        status: DocumentStoreStatus.NEW,
+        uploaded: stats.birthtime,
+        totalChunks: 0,
+        totalChars: 0
     }
-    const existingFiles = JSON.parse(entity.files)
-    existingFiles.map((file: any) => {
-        //check if they have uploaded a file with the same as an existing file
-        const found = files.find((uFile: any) => uFile.name === file.name)
-        if (found) {
-            //remove the existing file
-            const index = existingFiles.indexOf(file)
-            if (index > -1) {
-                existingFiles.splice(index, 1)
-            }
-        }
-    })
-    return filesWithMetadata
 }
 
 const _splitIntoChunks = async (data: any) => {
@@ -311,24 +289,21 @@ const processAndSaveChunks = async (data: any) => {
             }
             if (input.startsWith('[')) {
                 const files = JSON.parse(input)
+                const fileNames: string[] = []
                 for (let j = 0; j < files.length; j++) {
                     const file = files[j]
                     if (re.test(file)) {
-                        const fileNames: string[] = []
-                        filesWithMetadata = _saveFilesToStorage(file, entity)
-                        filesWithMetadata.map((file: any) => {
-                            fileNames.push(file.name)
-                        })
-                        data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
-                        break
+                        const fileMetadata = _saveFileToStorage(file, entity)
+                        fileNames.push(fileMetadata.name)
+                        filesWithMetadata.push(fileMetadata)
                     }
                 }
+                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
-                filesWithMetadata = _saveFilesToStorage(input, entity)
-                filesWithMetadata.map((file: any) => {
-                    fileNames.push(file.name)
-                })
+                const fileMetadata = _saveFileToStorage(input, entity)
+                fileNames.push(fileMetadata.name)
+                filesWithMetadata.push(fileMetadata)
                 data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
                 break
             }
@@ -337,16 +312,31 @@ const processAndSaveChunks = async (data: any) => {
         const newLoaderId = uuidv4()
         let loader: any = {
             id: newLoaderId,
-            loaderConfig: data.loaderConfig,
-            splitterConfig: data.splitterConfig,
+            loaderId: data.loaderId,
             loaderName: data.loaderName,
-            splitterName: data.splitterName
+            loaderConfig: data.loaderConfig,
+            splitterId: data.splitterId,
+            splitterName: data.splitterName,
+            splitterConfig: data.splitterConfig
         }
         if (filesWithMetadata.length > 0) {
             loader.files = filesWithMetadata
         }
         existingFiles.push(loader)
         const metrics = JSON.parse(entity.metrics)
+        if (data.id) {
+            const found = existingFiles.find((uFile: any) => uFile.id === data.id)
+            if (found) {
+                const index = existingFiles.indexOf(found)
+                if (index > -1) {
+                    metrics.totalFiles -= found.files.length
+                    existingFiles.splice(index, 1)
+                    found.files.map((file: any) => {
+                        fs.unlinkSync(file.path)
+                    })
+                }
+            }
+        }
         metrics.totalFiles += filesWithMetadata.length
         entity.metrics = JSON.stringify(metrics)
         entity.status = DocumentStoreStatus.STALE

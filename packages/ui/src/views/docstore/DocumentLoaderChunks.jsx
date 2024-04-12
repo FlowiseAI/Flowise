@@ -25,6 +25,9 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import nodesApi from '@/api/nodes'
 import documentStoreApi from '@/api/documentstore'
 
+import { validate as uuidValidate } from 'uuid'
+import documentsApi from '@/api/documentstore'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -53,6 +56,7 @@ const DocumentLoaderChunks = () => {
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
     const previewChunksApi = useApi(documentStoreApi.previewChunks)
     const processChunksApi = useApi(documentStoreApi.processChunks)
+    const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
 
     const URLpath = document.location.pathname.toString().split('/')
     const nodeName = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -76,6 +80,7 @@ const DocumentLoaderChunks = () => {
 
     const [currentPreviewCount, setCurrentPreviewCount] = useState(0)
     const [previewChunkCount, setPreviewChunkCount] = useState(20)
+    const [editingLoader, setEditingLoader] = useState()
 
     const dispatch = useDispatch()
 
@@ -88,14 +93,18 @@ const DocumentLoaderChunks = () => {
         navigate('/document-stores/' + storeId)
     }
 
-    const onSplitterChange = (name) => {
+    const onSplitterChange = (name, preload = false) => {
+        if (preload && editingLoader) {
+            setSelectedTextSplitter(editingLoader.splitterId)
+        }
         setSelectedTextSplitter(name)
         if (textSplitterNodes) {
             const textSplitter = textSplitterNodes.find((splitter) => splitter.name === name)
             setTextSplitterInputs(textSplitter.inputs)
             const iData = { id: 'textSplitter_0', inputs: [] }
             textSplitter.inputs.map((input) => {
-                if (input.default) iData.inputs[input.name] = input.default
+                if (preload && editingLoader.splitterConfig[input.name]) iData.inputs[input.name] = editingLoader.splitterConfig[input.name]
+                else if (input.default) iData.inputs[input.name] = input.default
             })
             setTextSplitterData(iData)
         }
@@ -154,8 +163,12 @@ const DocumentLoaderChunks = () => {
     }
 
     const prepareConfig = () => {
-        const config = {
-            loaderId: nodeName
+        const config = {}
+        if (editingLoader) {
+            config.loaderId = editingLoader.loaderId
+            config.id = editingLoader.id
+        } else {
+            config.loaderId = nodeName
         }
         config.loaderConfig = {}
         Object.keys(instanceData.inputs).map((key) => {
@@ -190,7 +203,20 @@ const DocumentLoaderChunks = () => {
     }, [previewChunksApi.data])
 
     useEffect(() => {
-        getNodeDetailsApi.request(nodeName)
+        if (processChunksApi.data) {
+            setLoading(false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [processChunksApi.data])
+
+    useEffect(() => {
+        if (uuidValidate(nodeName)) {
+            // this is a document store edit config
+            getSpecificDocumentStoreApi.request(storeId)
+        } else {
+            getNodeDetailsApi.request(nodeName)
+        }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -208,11 +234,23 @@ const DocumentLoaderChunks = () => {
                 setTextSplitterMandatory(!textSplitter.optional)
             }
             setNodeData(data)
-            const iData = { id: storeId, inputs: [] }
-            data.inputs.map((input) => {
-                if (input.default) iData.inputs[input.name] = input.default
-            })
-            setInstanceData(iData)
+            if (editingLoader) {
+                const iData = { id: storeId, inputs: [] }
+                data.inputs.map((input) => {
+                    if (editingLoader.loaderConfig[input.name]) iData.inputs[input.name] = editingLoader.loaderConfig[input.name]
+                    else if (input.default) iData.inputs[input.name] = input.default
+                })
+                setInstanceData(iData)
+                if (editingLoader.credential) {
+                    setCredential(editingLoader.credential)
+                }
+            } else {
+                const iData = { id: storeId, inputs: [] }
+                data.inputs.map((input) => {
+                    if (input.default) iData.inputs[input.name] = input.default
+                })
+                setInstanceData(iData)
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,11 +265,29 @@ const DocumentLoaderChunks = () => {
             }))
 
             setSplitterOptions(options)
-            onSplitterChange('recursiveCharacterTextSplitter')
+            if (editingLoader) {
+                onSplitterChange(editingLoader.splitterId, true)
+            } else {
+                onSplitterChange('recursiveCharacterTextSplitter')
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getNodesByCategoryApi.data])
+
+    useEffect(() => {
+        if (getSpecificDocumentStoreApi.data) {
+            if (getSpecificDocumentStoreApi.data?.loaders.length > 0) {
+                const loader = getSpecificDocumentStoreApi.data.loaders.find((loader) => loader.id === nodeName)
+                if (loader) {
+                    setEditingLoader(loader)
+                    getNodeDetailsApi.request(loader.loaderId)
+                }
+            }
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificDocumentStoreApi.data])
 
     return (
         <>

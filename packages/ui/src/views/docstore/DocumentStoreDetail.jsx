@@ -18,28 +18,28 @@ import {
     Collapse
 } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
+import Button from '@mui/material/Button'
+import { tableCellClasses } from '@mui/material/TableCell'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 // API
 import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useNavigate } from 'react-router-dom'
+import useConfirm from '@/hooks/useConfirm'
+import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconChevronsUp, IconChevronsDown } from '@tabler/icons'
-import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import Button from '@mui/material/Button'
-import { useNavigate } from 'react-router-dom'
-import useNotifier from '@/utils/useNotifier'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import useConfirm from '@/hooks/useConfirm'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
-import { tableCellClasses } from '@mui/material/TableCell'
+import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconChevronsUp, IconChevronsDown, IconFileStack } from '@tabler/icons'
 import moment from 'moment'
 import * as PropTypes from 'prop-types'
 
@@ -211,7 +211,7 @@ const DocumentStoreDetails = () => {
                 )}
                 <br />
                 <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                    <Table aria-label='documents table'>
+                    <Table aria-label='documents table' size='small'>
                         <TableHead
                             sx={{
                                 backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
@@ -221,9 +221,10 @@ const DocumentStoreDetails = () => {
                             <TableRow>
                                 <TableCell>Loader</TableCell>
                                 <TableCell>Splitter</TableCell>
-                                <TableCell>File Count</TableCell>
                                 <TableCell>Files</TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>View Chunks</TableCell>
+                                <TableCell>Edit Config</TableCell>
+                                <TableCell>Delete</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -235,57 +236,9 @@ const DocumentStoreDetails = () => {
                                         loader={loader}
                                         theme={theme}
                                         onEditClick={() => openPreviewSettings(loader.id)}
+                                        onViewChunksClick={() => showStoredChunks(loader.id)}
                                         onDeleteClick={() => onFileDelete(loader.id)}
                                     />
-                                    // <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    //     <TableCell style={{ width: '2%' }}>
-                                    //         <div
-                                    //             style={{
-                                    //                 display: 'flex',
-                                    //                 width: '20px',
-                                    //                 height: '20px',
-                                    //                 backgroundColor: loader?.status === 'NEW' ? '#ffe57f' : 'green',
-                                    //                 borderRadius: '50%'
-                                    //             }}
-                                    //         ></div>
-                                    //     </TableCell>
-                                    //     <TableCell component='th' scope='row'>
-                                    //         <div
-                                    //             style={{
-                                    //                 display: 'flex',
-                                    //                 flexDirection: 'row',
-                                    //                 alignItems: 'center'
-                                    //             }}
-                                    //         >
-                                    //             <Button
-                                    //                 disabled={loader?.status === 'NEW'}
-                                    //                 onClick={() => showStoredChunks(file.id)}
-                                    //                 style={{ textAlign: 'left' }}
-                                    //             >
-                                    //                 {loader.loaderName}
-                                    //             </Button>
-                                    //         </div>
-                                    //     </TableCell>
-                                    //     <TableCell>{loader.splitterName ?? 'None'}</TableCell>
-                                    //     <TableCell>{loader.files.length}</TableCell>
-                                    //     <TableCell>
-                                    //         {loader.files?.length > 0 &&
-                                    //             loader.files.map((file, index) => (
-                                    //                 <Typography key={index} style={{ wordWrap: 'break-word' }} variant='h5'>
-                                    //                     {file.name} {file.size.toLocaleString()}
-                                    //                 </Typography>
-                                    //             ))}
-                                    //     </TableCell>
-                                    //     <TableCell> </TableCell>
-                                    //     <TableCell>
-                                    //         <IconButton title='Chunks' color='primary' onClick={() => openPreviewSettings(file.id)}>
-                                    //             <IconFileStack />
-                                    //         </IconButton>
-                                    //         <IconButton title='Delete' color='error' onClick={() => onFileDelete(file)}>
-                                    //             <IconTrash />
-                                    //         </IconButton>
-                                    //     </TableCell>
-                                    // </TableRow>
                                 ))}
                             {getSpecificDocumentStore.data?.loaders?.length === 0 && (
                                 <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -336,15 +289,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
         color: theme.palette.grey[900]
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        height: 64
-    }
-}))
-
-const StyledTableRow = styled(TableRow)(() => ({
-    // hide last border
-    '&:last-child td, &:last-child th': {
-        border: 0
+        fontSize: 14
     }
 }))
 
@@ -368,7 +313,12 @@ function LoaderRow(props) {
                     )}
                 </StyledTableCell>
                 <StyledTableCell>
-                    <IconButton title='Settings' color='primary' onClick={() => props.onEditClick(loader.id)}>
+                    <IconButton title='Chunks' color='primary' onClick={props.onViewChunksClick}>
+                        <IconFileStack />
+                    </IconButton>
+                </StyledTableCell>
+                <StyledTableCell>
+                    <IconButton title='Settings' color='primary' onClick={props.onEditClick}>
                         <IconEdit />
                     </IconButton>
                 </StyledTableCell>
@@ -380,18 +330,18 @@ function LoaderRow(props) {
             </TableRow>
             {open && (
                 <TableRow sx={{ '& td': { border: 0 } }}>
-                    <StyledTableCell sx={{ p: 2 }} colSpan={5}>
+                    <StyledTableCell sx={{ p: 2 }} colSpan={6}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
                             <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
-                                <Table aria-label='chatflow table'>
-                                    <TableHead sx={{ height: 48 }}>
+                                <Table aria-label='loader files table' size='small'>
+                                    <TableHead>
                                         <TableRow>
-                                            <StyledTableCell sx={{ width: '20%' }}> </StyledTableCell>
+                                            <StyledTableCell sx={{ width: '5%' }}> </StyledTableCell>
                                             <StyledTableCell sx={{ width: '20%' }}>File Name</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Size</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Updated On</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '10%' }}>Chars</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '10%' }}>Chunks</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '15%' }}>Size</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>Uploaded On</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>Chars</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>Chunks</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -410,7 +360,7 @@ function LoaderRow(props) {
                                                 </StyledTableCell>
                                                 <StyledTableCell>{file.name}</StyledTableCell>
                                                 <StyledTableCell>{file.size.toLocaleString()}</StyledTableCell>
-                                                <StyledTableCell>{moment(file.uploaded).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                <StyledTableCell>{moment(file.uploaded).format('MMMM Do, YYYY, HH:mm')}</StyledTableCell>
                                                 <StyledTableCell>{file.totalChars.toLocaleString()}</StyledTableCell>
                                                 <StyledTableCell>{file.totalChunks.toLocaleString()}</StyledTableCell>
                                             </TableRow>
@@ -431,6 +381,7 @@ LoaderRow.propTypes = {
     showApiKeys: PropTypes.arrayOf(PropTypes.any),
     open: PropTypes.bool,
     theme: PropTypes.any,
+    onViewChunksClick: PropTypes.func,
     onEditClick: PropTypes.func,
     onDeleteClick: PropTypes.func
 }
