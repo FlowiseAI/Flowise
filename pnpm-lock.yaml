@@ -83,14 +83,14 @@ importers:
         specifier: ^4.8.4
         version: 4.9.5
 
-  demo:
+  embeds/demo/react:
     dependencies:
       flowise-embed:
         specifier: workspace:*
-        version: link:../embeds/js
+        version: link:../../js
       flowise-embed-react:
         specifier: workspace:*
-        version: link:../embeds/react
+        version: link:../../react
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -222,6 +222,9 @@ importers:
       react:
         specifier: 18.2.0
         version: 18.2.0
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
       rollup:
         specifier: 3.23.0
         version: 3.23.0
@@ -289,6 +292,9 @@ importers:
       react:
         specifier: 18.2.0
         version: 18.2.0
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
       rollup:
         specifier: 3.20.2
         version: 3.20.2

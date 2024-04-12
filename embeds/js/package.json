@@ -11,7 +11,9 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "lint-fix": "eslint --fix \"src/**/*.ts*\"",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,md,mdx}\""
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,md,mdx}\"",
+    "clean": "rimraf dist",
+    "nuke": "rimraf dist node_modules .turbo"
   },
   "license": "MIT",
   "dependencies": {
@@ -47,6 +49,7 @@
     "eslint-plugin-solid": "0.12.0",
     "postcss": "8.4.21",
     "react": "18.2.0",
+    "rimraf": "^5.0.5",
     "rollup": "3.23.0",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-postcss": "4.0.2",
