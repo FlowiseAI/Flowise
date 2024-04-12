@@ -51,7 +51,8 @@ const DocumentLoaderChunks = () => {
 
     const getNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
-    const previewChunksApi = useApi(documentStoreApi.previewChunksWithLoader)
+    const previewChunksApi = useApi(documentStoreApi.previewChunks)
+    const processChunksApi = useApi(documentStoreApi.processChunks)
 
     const URLpath = document.location.pathname.toString().split('/')
     const nodeName = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -129,30 +130,52 @@ const DocumentLoaderChunks = () => {
     const onPreviewChunks = () => {
         if (checkMandatoryFields()) {
             setLoading(true)
-            const config = {
-                loaderName: nodeName
-            }
-            config.loaderConfig = {}
-            Object.keys(instanceData.inputs).map((key) => {
-                config.loaderConfig[key] = instanceData.inputs[key]
-            })
-            if (selectedTextSplitter) config.splitterName = selectedTextSplitter
-            config.splitterConfig = {}
-            if (textSplitterData) {
-                Object.keys(textSplitterData.inputs).map((key) => {
-                    config.splitterConfig[key] = textSplitterData.inputs[key]
-                })
-            }
-            if (credential) {
-                config.credential = credential
-            }
+            const config = prepareConfig()
             config.previewChunkCount = previewChunkCount
             try {
+                console.log(config)
                 previewChunksApi.request(config)
             } catch (error) {
-                //console.error(error)
+                console.error(error)
             }
         }
+    }
+
+    const onSaveAndProcess = () => {
+        if (checkMandatoryFields()) {
+            setLoading(true)
+            const config = prepareConfig()
+            try {
+                processChunksApi.request(config)
+            } catch (error) {
+                console.error(error)
+            }
+        }
+    }
+
+    const prepareConfig = () => {
+        const config = {
+            loaderId: nodeName
+        }
+        config.loaderConfig = {}
+        Object.keys(instanceData.inputs).map((key) => {
+            config.loaderConfig[key] = instanceData.inputs[key]
+        })
+        config.loaderName = nodeData?.label
+        if (selectedTextSplitter) config.splitterId = selectedTextSplitter
+        config.splitterConfig = {}
+        if (textSplitterData) {
+            Object.keys(textSplitterData.inputs).map((key) => {
+                config.splitterConfig[key] = textSplitterData.inputs[key]
+            })
+            const textSplitter = textSplitterNodes.find((splitter) => splitter.name === selectedTextSplitter)
+            config.splitterName = textSplitter.label
+        }
+        if (credential) {
+            config.credential = credential
+        }
+        config.storeId = storeId
+        return config
     }
 
     useEffect(() => {
@@ -321,7 +344,7 @@ const DocumentLoaderChunks = () => {
                                     />
                                 </Box>
                                 <Box sx={{ p: 1, textAlign: 'center' }}>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
+                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onSaveAndProcess}>
                                         Confirm & Process
                                     </StyledButton>{' '}
                                     <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>

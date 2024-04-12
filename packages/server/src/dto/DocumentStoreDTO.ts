@@ -19,6 +19,7 @@ export class DocumentStoreDTO {
     totalChunks: number
     totalChars: number
     chunkSize: number
+    loaders: any[]
 
     constructor() {}
 
@@ -41,10 +42,10 @@ export class DocumentStoreDTO {
             documentStoreDTO.totalChars = metrics.totalChars
             documentStoreDTO.totalChunks = metrics.totalChunks
         }
-        documentStoreDTO.status = entity.status
         if (entity.files) {
-            documentStoreDTO.files = JSON.parse(entity.files)
+            documentStoreDTO.loaders = JSON.parse(entity.files)
         }
+        documentStoreDTO.status = entity.status
         return documentStoreDTO
     }
 

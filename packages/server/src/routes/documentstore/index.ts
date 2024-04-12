@@ -7,12 +7,12 @@ router.get('/', documentStoreController.getAllDocumentStores)
 // delete file from document store
 router.delete('/:id/:fileId', documentStoreController.deleteFileFromDocumentStore)
 // upload file to document store
-router.post('/:id/files', documentStoreController.uploadFileToDocumentStore)
+// router.post('/:id/files', documentStoreController.uploadFileToDocumentStore)
 // chunking preview
-router.post('/preview', documentStoreController.processChunksWithLoader)
-router.post('/preview/:storeId/:fileId', documentStoreController.previewFileChunks)
+router.post('/preview', documentStoreController.previewFileChunks)
+
 // chunking process
-router.post('/process/:storeId/:fileId', documentStoreController.processFileChunks)
+router.post('/process', documentStoreController.processFileChunks)
 // Get specific store
 router.get('/:id', documentStoreController.getDocumentStoreById)
 // Get specific file chunks from the store
