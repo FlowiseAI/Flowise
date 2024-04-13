@@ -69,6 +69,7 @@ const ShowStoredChunks = () => {
     }
 
     useEffect(() => {
+        setLoading(true)
         getChunksApi.request(storeId, fileId)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -78,18 +79,7 @@ const ShowStoredChunks = () => {
             const data = getChunksApi.data
             setTotalChunks(data.count)
             setDocumentChunks(data.chunks)
-            if (data.file.config) {
-                const fileConfig = JSON.parse(data.file.config)
-                // setTextSplitter(fileConfig.splitter)
-                // setChunkSize(fileConfig.chunkSize)
-                // setChunkOverlap(fileConfig.chunkOverlap)
-                // setCustomSeparator(fileConfig.separator)
-                // setPreviewChunkCount(fileConfig.previewChunkCount)
-                // if (data?.file?.name?.toLowerCase().endsWith('pdf')) {
-                //     setPdfUsage(fileConfig.pdfUsage)
-                //     setPdfLegacyBuild(fileConfig.pdfLegacyBuild)
-                // }
-            }
+            setLoading(false)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,27 +96,25 @@ const ShowStoredChunks = () => {
                     <Grid container direction='row'>
                         <div>
                             <h1>
-                                {getChunksApi.data?.file?.loaderName} ({getChunksApi.data?.file?.splitterName})
+                                {getChunksApi.data?.file?.loaderName} Loader ({getChunksApi.data?.file?.splitterName})
                             </h1>
                             <Table>
-                                <TableRow>
-                                    <TableCell component='th' scope='row'>
-                                        <strong>Chunks:</strong>
-                                    </TableCell>
-                                    <TableCell>{totalChunks}</TableCell>
-                                    <TableCell component='th' scope='row'>
-                                        <strong>File Size:</strong>
-                                    </TableCell>
-                                    <TableCell>{formatBytes(getChunksApi.data?.file?.size)}</TableCell>
-                                    <TableCell component='th' scope='row'>
-                                        <strong>Total Chars:</strong>
-                                    </TableCell>
-                                    <TableCell>{getChunksApi.data?.file?.totalChars?.toLocaleString()}</TableCell>
-                                    <TableCell component='th' scope='row'>
-                                        <strong>Uploaded:</strong>
-                                    </TableCell>
-                                    <TableCell>{moment(getChunksApi.data?.file?.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
-                                </TableRow>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell component='th' scope='row'>
+                                            <strong>Chunks:</strong>
+                                        </TableCell>
+                                        <TableCell>{totalChunks}</TableCell>
+                                        <TableCell component='th' scope='row'>
+                                            <strong>Total Chars:</strong>
+                                        </TableCell>
+                                        <TableCell>{getChunksApi.data?.file?.totalChars?.toLocaleString()}</TableCell>
+                                        <TableCell component='th' scope='row'>
+                                            <strong>Uploaded:</strong>
+                                        </TableCell>
+                                        <TableCell>{moment(getChunksApi.data?.file?.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
+                                    </TableRow>
+                                </TableHead>
                             </Table>
                         </div>
                         <Box sx={{ flexGrow: 1 }} />
@@ -177,58 +165,62 @@ const ShowStoredChunks = () => {
                                 <Table size='small'>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell colspan={2}>
+                                            <TableCell colSpan={2}>
                                                 <Typography variant='h4' gutterBottom>
                                                     Selected Chunk : #{selectedChunkNumber}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
+                                        {selectedChunk && (
+                                            <>
+                                                <TableRow>
+                                                    <TableCell component='th' scope='row'>
+                                                        <strong>Id</strong>
+                                                    </TableCell>
+                                                    <TableCell>{selectedChunk.id}</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell component='th' scope='row'>
+                                                        <strong>Chars</strong>
+                                                    </TableCell>
+                                                    <TableCell>{selectedChunk.pageContent.length}</TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
+                                                        <strong>Content</strong>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>
+                                                        <Typography
+                                                            sx={{ wordWrap: 'break-word' }}
+                                                            variant='body2'
+                                                            style={{ fontSize: 12 }}
+                                                        >
+                                                            {selectedChunk.pageContent}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
+                                                        <strong>Metadata</strong>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>
+                                                        <ReactJson
+                                                            theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
+                                                            style={{ padding: 10, borderRadius: 10 }}
+                                                            src={JSON.parse(selectedChunk.metadata)}
+                                                            name={null}
+                                                            quotesOnKeys={false}
+                                                            displayDataTypes={false}
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            </>
+                                        )}
                                     </TableHead>
-                                    {selectedChunk && (
-                                        <>
-                                            <TableRow>
-                                                <TableCell component='th' scope='row'>
-                                                    <strong>Id</strong>
-                                                </TableCell>
-                                                <TableCell>{selectedChunk.id}</TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell component='th' scope='row'>
-                                                    <strong>Chars</strong>
-                                                </TableCell>
-                                                <TableCell>{selectedChunk.pageContent.length}</TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell style={{ border: 0 }} component='th' scope='row' colspan={2}>
-                                                    <strong>Content</strong>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell colspan={2}>
-                                                    <Typography sx={{ wordWrap: 'break-word' }} variant='body2' style={{ fontSize: 12 }}>
-                                                        {selectedChunk.pageContent}
-                                                    </Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell style={{ border: 0 }} component='th' scope='row' colspan={2}>
-                                                    <strong>Metadata</strong>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell colspan={2}>
-                                                    <ReactJson
-                                                        theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
-                                                        style={{ padding: 10, borderRadius: 10 }}
-                                                        src={JSON.parse(selectedChunk.metadata)}
-                                                        name={null}
-                                                        quotesOnKeys={false}
-                                                        displayDataTypes={false}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        </>
-                                    )}
                                 </Table>
                             </div>
                         </Grid>

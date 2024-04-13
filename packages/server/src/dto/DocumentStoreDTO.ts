@@ -45,7 +45,12 @@ export class DocumentStoreDTO {
         if (entity.files) {
             documentStoreDTO.loaders = JSON.parse(entity.files)
         }
-        documentStoreDTO.status = entity.status
+        documentStoreDTO.status = DocumentStoreStatus.SYNC
+        documentStoreDTO.loaders.map((loader) => {
+            if (loader.status !== 'SYNC') {
+                documentStoreDTO.status = DocumentStoreStatus.STALE
+            }
+        })
         return documentStoreDTO
     }
 

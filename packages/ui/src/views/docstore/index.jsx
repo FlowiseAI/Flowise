@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import useApi from '@/hooks/useApi'
 
 // material-ui
-import { Grid, Box, Stack } from '@mui/material'
+import { Grid, Box, Stack, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -20,6 +20,8 @@ import documentsApi from '@/api/documentstore'
 
 // icons
 import { IconPlus } from '@tabler/icons'
+import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -27,6 +29,8 @@ const Documents = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
+    const [error, setError] = useState(null)
+    const [isLoading, setLoading] = useState(true)
 
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
 
@@ -61,33 +65,43 @@ const Documents = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
-                    <Grid sx={{ mb: 1.25 }} container direction='row'>
-                        <h1>Document Stores</h1>
-                        <Box sx={{ flexGrow: 1 }} />
-                        <Grid item>
-                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
+            <MainCard>
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader search={false} title='Document Store'>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: '100%' }}
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                                id='btn_createVariable'
+                            >
                                 New Document Store
                             </StyledButton>
+                        </ViewHeader>
+                        <Grid container spacing={gridSpacing}>
+                            {!getAllDocumentStores.loading &&
+                                getAllDocumentStores.data &&
+                                getAllDocumentStores.data.map((data, index) => (
+                                    <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
+                                        <DocumentStoreCard data={data} onClick={() => openDS(data.id)} />
+                                    </Grid>
+                                ))}
                         </Grid>
-                    </Grid>
-                </Stack>
-                <Grid container spacing={gridSpacing}>
-                    {!getAllDocumentStores.loading &&
-                        getAllDocumentStores.data &&
-                        getAllDocumentStores.data.map((data, index) => (
-                            <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                <DocumentStoreCard data={data} onClick={() => openDS(data.id)} />
-                            </Grid>
-                        ))}
-                </Grid>
-                {!getAllDocumentStores.loading && (!getAllDocumentStores.data || getAllDocumentStores.data.length === 0) && (
-                    <Stack style={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                            <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
-                        </Box>
-                        <div>No Document Stores Created Yet</div>
+                        {!getAllDocumentStores.loading && (!getAllDocumentStores.data || getAllDocumentStores.data.length === 0) && (
+                            <Stack style={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
+                                        src={ToolEmptySVG}
+                                        alt='ToolEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Document Stores Created Yet</div>
+                            </Stack>
+                        )}
                     </Stack>
                 )}
             </MainCard>

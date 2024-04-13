@@ -15,7 +15,6 @@ import {
     TableCell,
     TableBody,
     IconButton,
-    Collapse,
     Chip
 } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
@@ -41,7 +40,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // icons
 import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconFileStack } from '@tabler/icons'
-import moment from 'moment'
 import * as PropTypes from 'prop-types'
 
 // ==============================|| DOCUMENTS ||============================== //
@@ -175,7 +173,7 @@ const DocumentStoreDetails = () => {
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
                 <Stack flexDirection='row'>
-                    <Grid sx={{ mb: 1.25 }} container direction='row'>
+                    <Grid style={{ marginBottom: 1.25 }} container direction='row'>
                         <h1>{getSpecificDocumentStore.data?.name}</h1>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
@@ -200,14 +198,14 @@ const DocumentStoreDetails = () => {
                         <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
                             {getSpecificDocumentStore.data?.description}
                         </Typography>
-                        {getSpecificDocumentStore.data?.totalFiles > 0 && (
-                            <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>
-                                {getSpecificDocumentStore.data?.totalFiles}{' '}
-                                {getSpecificDocumentStore.data?.totalFiles === 1 ? 'File' : 'Files'};{' '}
-                                {getSpecificDocumentStore.data?.totalChars?.toLocaleString()} Chars;{' '}
-                                {getSpecificDocumentStore.data?.totalChunks} Chunks.
-                            </Typography>
-                        )}
+                        {/*{getSpecificDocumentStore.data?.totalFiles > 0 && (*/}
+                        {/*    <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>*/}
+                        {/*        {getSpecificDocumentStore.data?.totalFiles}{' '}*/}
+                        {/*        {getSpecificDocumentStore.data?.totalFiles === 1 ? 'File' : 'Files'};{' '}*/}
+                        {/*        {getSpecificDocumentStore.data?.totalChars?.toLocaleString()} Chars;{' '}*/}
+                        {/*        {getSpecificDocumentStore.data?.totalChunks} Chunks.*/}
+                        {/*    </Typography>*/}
+                        {/*)}*/}
                     </>
                 )}
                 <br />
@@ -234,6 +232,7 @@ const DocumentStoreDetails = () => {
                                 getSpecificDocumentStore.data?.loaders.map((loader, index) => (
                                     <LoaderRow
                                         key={index}
+                                        index={index}
                                         loader={loader}
                                         theme={theme}
                                         onEditClick={() => openPreviewSettings(loader.id)}
@@ -295,12 +294,9 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }))
 
 function LoaderRow(props) {
-    const [open, setOpen] = useState(false)
-    const theme = useTheme()
-
     return (
         <>
-            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+            <TableRow key={props.index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <StyledTableCell scope='row' style={{ width: '5%' }}>
                     <div
                         style={{
@@ -317,7 +313,8 @@ function LoaderRow(props) {
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '30%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
                 <StyledTableCell style={{ width: '20%' }}>
-                    {props.loader.files?.length > 0 && props.loader.files.map((file, index) => <Typography key={index}>{file.name}</Typography>)}
+                    {props.loader.files?.length > 0 &&
+                        props.loader.files.map((file, index) => <Typography key={index}>{file.name}</Typography>)}
                     {!props.loader.loaderConfig.url && (props.loader.files === undefined || props.loader.files?.length === 0) && 'No files'}
                     {props.loader.loaderConfig.url && 'URL: ' + props.loader.loaderConfig.url}
                 </StyledTableCell>
@@ -337,45 +334,13 @@ function LoaderRow(props) {
                     </IconButton>
                 </StyledTableCell>
             </TableRow>
-            {open && (
-                <TableRow sx={{ '& td': { border: 0 } }}>
-                    <StyledTableCell sx={{ p: 2 }} colSpan={6}>
-                        <Collapse in={open} timeout='auto' unmountOnExit>
-                            <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
-                                <Table aria-label='loader files table' size='small'>
-                                    <TableHead>
-                                        <TableRow>
-                                            <StyledTableCell sx={{ width: '20%' }}>File Name</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '15%' }}>Size</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Uploaded On</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Chars</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Chunks</StyledTableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {props.loader.files.map((file, index) => (
-                                            <TableRow key={index}>
-                                                <StyledTableCell>{file.name}</StyledTableCell>
-                                                <StyledTableCell>{file.size.toLocaleString()}</StyledTableCell>
-                                                <StyledTableCell>{moment(file.uploaded).format('MMMM Do, YYYY, HH:mm')}</StyledTableCell>
-                                                <StyledTableCell>{file.totalChars.toLocaleString()}</StyledTableCell>
-                                                <StyledTableCell>{file.totalChunks.toLocaleString()}</StyledTableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Box>
-                        </Collapse>
-                    </StyledTableCell>
-                </TableRow>
-            )}
         </>
     )
 }
 
 LoaderRow.propTypes = {
     loader: PropTypes.any,
-    showApiKeys: PropTypes.arrayOf(PropTypes.any),
+    index: PropTypes.number,
     open: PropTypes.bool,
     theme: PropTypes.any,
     onViewChunksClick: PropTypes.func,

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import { styled } from '@mui/material/styles'
-import { CardActions, Typography } from '@mui/material'
+import { CardActions, Chip, Typography } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -37,7 +37,7 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
             ) : (
                 <CardWrapper onClick={onClick}>
                     <Card style={{ paddingTop: 18 }}>
-                        <CardContent style={{ padding: 2.25, minHeight: '100px' }}>
+                        <CardContent style={{ padding: 1.25 }}>
                             <Typography style={{ wordWrap: 'break-word' }} variant='h4' component='div'>
                                 {data.name}
                             </Typography>
@@ -47,7 +47,19 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                         </CardContent>
                         <CardActions style={{ padding: 2, marginTop: 15 }}>
                             <Typography style={{ marginBottom: 1.0 }} color='text.secondary'>
-                                {data.loaders?.length === 0 ? 0 : data.loaders.length}: Loaders
+                                {data.loaders?.length > 0 &&
+                                    data.loaders.map((loader, index) => (
+                                        <Chip
+                                            size='small'
+                                            color={loader.status === 'SYNC' ? 'success' : 'warning'}
+                                            style={{ margin: 3.5 }}
+                                            key={index}
+                                            label={loader.loaderName}
+                                        />
+                                    ))}
+                                {data.loaders?.length === 0 && (
+                                    <Chip size='small' color='error' style={{ marginBottom: 3.5 }} label='No Loaders Found' />
+                                )}
                             </Typography>
                         </CardActions>
                     </Card>
