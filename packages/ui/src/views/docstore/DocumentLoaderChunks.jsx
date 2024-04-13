@@ -142,10 +142,21 @@ const DocumentLoaderChunks = () => {
             const config = prepareConfig()
             config.previewChunkCount = previewChunkCount
             try {
-                console.log(config)
                 previewChunksApi.request(config)
             } catch (error) {
-                console.error(error)
+                setLoading(false)
+                enqueueSnackbar({
+                    message: 'Error invoking Preview Chunks API. Please try again.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
             }
         }
     }
@@ -157,7 +168,19 @@ const DocumentLoaderChunks = () => {
             try {
                 processChunksApi.request(config)
             } catch (error) {
-                console.error(error)
+                setLoading(false)
+                enqueueSnackbar({
+                    message: 'Error invoking Process Chunks API. Please try again.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
             }
         }
     }
@@ -205,10 +228,42 @@ const DocumentLoaderChunks = () => {
     useEffect(() => {
         if (processChunksApi.data) {
             setLoading(false)
+            enqueueSnackbar({
+                message: 'File submitted for processing. Redirected to Document Store.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            navigate('/document-stores/' + storeId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [processChunksApi.data])
+
+    useEffect(() => {
+        if (loading && previewChunksApi.error) {
+            setLoading(false)
+            enqueueSnackbar({
+                message: 'Error invoking Process Chunks API. Please try again.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [processChunksApi.error])
 
     useEffect(() => {
         if (uuidValidate(nodeName)) {
@@ -263,13 +318,14 @@ const DocumentLoaderChunks = () => {
                 label: splitter.label,
                 name: splitter.name
             }))
-
-            setSplitterOptions(options)
-            if (editingLoader) {
-                onSplitterChange(editingLoader.splitterId, true)
-            } else {
-                onSplitterChange('recursiveCharacterTextSplitter')
-            }
+            setTimeout(() => {
+                setSplitterOptions(options)
+                if (editingLoader) {
+                    onSplitterChange(editingLoader.splitterId, true)
+                } else {
+                    onSplitterChange('recursiveCharacterTextSplitter')
+                }
+            }, 250)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -32,7 +32,7 @@ const getAllDocumentStores = async () => {
     }
 }
 
-const deleteFileFromDocumentStore = async (storeId: string, fileId: string) => {
+const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -43,32 +43,33 @@ const deleteFileFromDocumentStore = async (storeId: string, fileId: string) => {
         if (!fs.existsSync(dir)) {
             throw new Error(`Missing folder to delete files for Document Store ${entity.name}`)
         }
-        const existingFiles = JSON.parse(entity.files)
-        const found = existingFiles.find((uFile: any) => uFile.id === fileId)
+        const existingLoaders = JSON.parse(entity.files)
+        const found = existingLoaders.find((uFile: any) => uFile.id === loaderId)
         const metrics = JSON.parse(entity.metrics)
         if (found) {
-            //remove the existing file
-            fs.unlinkSync(found.path)
-            const index = existingFiles.indexOf(found)
-            if (index > -1) {
-                existingFiles.splice(index, 1)
+            if (found.path) {
+                //remove the existing files, if any of the file loaders were used.
+                fs.unlinkSync(found.path)
+                metrics.totalFiles--
             }
-            metrics.totalFiles--
-            metrics.totalChunks -= found.totalChunks
-            metrics.totalChars -= found.totalChars
-            entity.status = DocumentStoreStatus.SYNC
-
+            const index = existingLoaders.indexOf(found)
+            if (index > -1) {
+                existingLoaders.splice(index, 1)
+            }
+            metrics.totalChunks -= found.totalChunks ?? 0
+            metrics.totalChars -= found.totalChars ?? 0
+            // remove the chunks
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: found.id })
 
-            entity.files = JSON.stringify(existingFiles)
+            entity.files = JSON.stringify(existingLoaders)
             entity.metrics = JSON.stringify(metrics)
             const results = await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
             return results
         } else {
-            throw new Error(`Unable to locate file in Document Store ${entity.name}`)
+            throw new Error(`Unable to locate loader in Document Store ${entity.name}`)
         }
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.deleteFileFromDocumentStore - ${error}`)
+        throw new Error(`Error: documentStoreServices.deleteLoaderFromDocumentStore - ${error}`)
     }
 }
 
@@ -206,6 +207,7 @@ const _saveFileToStorage = (fileBase64: string, entity: DocumentStore) => {
         id: uuidv4(),
         path: filePath,
         name: filename,
+        mimePrefix: splitDataURI.pop(),
         size: stats.size,
         status: DocumentStoreStatus.NEW,
         uploaded: stats.birthtime,
@@ -250,8 +252,64 @@ const _splitIntoChunks = async (data: any) => {
     }
 }
 
+const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
+    const keys = Object.getOwnPropertyNames(data.loaderConfig)
+    let rehydrated = false
+    for (let i = 0; i < keys.length; i++) {
+        const input = data.loaderConfig[keys[i]]
+        if (!input) {
+            continue
+        }
+        if (typeof input !== 'string') {
+            continue
+        }
+        let documentStoreEntity: DocumentStore | null = entity
+        if (input.startsWith('FILE-STORAGE::')) {
+            if (!documentStoreEntity) {
+                const appServer = getRunningExpressApp()
+                documentStoreEntity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+                    id: data.storeId
+                })
+                if (!documentStoreEntity) throw new Error(`Document store ${data.storeId} not found`)
+            }
+            const fileName = input.replace('FILE-STORAGE::', '')
+            let files: string[] = []
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
+            } else {
+                files = [fileName]
+            }
+            const dir = path.join(getStoragePath(), 'datasource', documentStoreEntity.subFolder)
+            if (!fs.existsSync(dir)) {
+                throw new Error(`Missing folder to upload files for Document Store ${documentStoreEntity.name}`)
+            }
+            const loaders = JSON.parse(documentStoreEntity.files)
+            const currentLoader = loaders.find((uFile: any) => uFile.id === data.id)
+            if (!currentLoader) {
+                throw new Error(`Document store file ${data.id} not found`)
+            }
+            const base64Files: string[] = []
+            for (const file of files) {
+                const fileInStorage = path.join(dir, file)
+                const fileData = fs.readFileSync(fileInStorage)
+                const bf = Buffer.from(fileData)
+                // find the file entry that has the same name as the file
+                const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
+                const base64String = uploadedFile.mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
+                base64Files.push(base64String)
+            }
+            data.loaderConfig[keys[i]] = JSON.stringify(base64Files)
+            rehydrated = true
+        }
+    }
+    data.rehydrated = rehydrated
+}
+
 const previewChunks = async (data: any) => {
     try {
+        if (!data.rehydrated) {
+            await _normalizeFilePaths(data, null)
+        }
         let docs = await _splitIntoChunks(data)
         const totalChunks = docs.length
         // if -1, return all chunks
@@ -268,126 +326,148 @@ const previewChunks = async (data: any) => {
 }
 
 const processAndSaveChunks = async (data: any) => {
-    const re = new RegExp('^data.*;base64', 'i')
-
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: data.storeId
         })
         if (!entity) throw new Error(`Document store ${data.storeId} not found`)
-
-        let filesWithMetadata = []
-        const keys = Object.getOwnPropertyNames(data.loaderConfig)
-        for (let i = 0; i < keys.length; i++) {
-            const input = data.loaderConfig[keys[i]]
-            if (!input) {
-                continue
-            }
-            if (typeof input !== 'string') {
-                continue
-            }
-            if (input.startsWith('[')) {
-                const files = JSON.parse(input)
-                const fileNames: string[] = []
-                for (let j = 0; j < files.length; j++) {
-                    const file = files[j]
-                    if (re.test(file)) {
-                        const fileMetadata = _saveFileToStorage(file, entity)
-                        fileNames.push(fileMetadata.name)
-                        filesWithMetadata.push(fileMetadata)
-                    }
-                }
-                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
-            } else if (re.test(input)) {
-                const fileNames: string[] = []
-                const fileMetadata = _saveFileToStorage(input, entity)
-                fileNames.push(fileMetadata.name)
-                filesWithMetadata.push(fileMetadata)
-                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
-                break
-            }
-        }
-        const existingFiles = JSON.parse(entity.files)
-        const newLoaderId = uuidv4()
-        let loader: any = {
-            id: newLoaderId,
-            loaderId: data.loaderId,
-            loaderName: data.loaderName,
-            loaderConfig: data.loaderConfig,
-            splitterId: data.splitterId,
-            splitterName: data.splitterName,
-            splitterConfig: data.splitterConfig
-        }
-        if (filesWithMetadata.length > 0) {
-            loader.files = filesWithMetadata
-        }
-        existingFiles.push(loader)
-        const metrics = JSON.parse(entity.metrics)
-        if (data.id) {
-            const found = existingFiles.find((uFile: any) => uFile.id === data.id)
-            if (found) {
-                const index = existingFiles.indexOf(found)
-                if (index > -1) {
-                    metrics.totalFiles -= found.files.length
-                    existingFiles.splice(index, 1)
-                    found.files.map((file: any) => {
-                        fs.unlinkSync(file.path)
-                    })
-                }
-            }
-        }
-        metrics.totalFiles += filesWithMetadata.length
-        entity.metrics = JSON.stringify(metrics)
-        entity.status = DocumentStoreStatus.STALE
-        entity.files = JSON.stringify(existingFiles)
-        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
-        // previewChunks(data).then((response) => {
-        //     //{ chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
-        // })
-        // return results
-        // const files = JSON.parse(entity.files)
-        // const metrics = JSON.parse(entity.metrics)
-        // const found = files.find((uFile: any) => uFile.id === fileId)
-        // let totalNewChars = 0
-        // if (found) {
-        //     await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: found.id })
-        //
-        //     metrics.totalChunks -= found.totalChunks
-        //     metrics.totalChars -= found.totalChars
-        //     found.totalChunks = docs.length
-        //     found.status = 'SYNC'
-        //     found.config = JSON.stringify(config)
-        //     if (docs) {
-        //         docs.map(async (chunk: any) => {
-        //             const docChunk: DocumentStoreFileChunk = {
-        //                 docId: fileId,
-        //                 storeId: storeId,
-        //                 id: uuidv4(),
-        //                 pageContent: chunk.pageContent,
-        //                 metadata: JSON.stringify(chunk.metadata)
-        //             }
-        //             totalNewChars += chunk.pageContent.length
-        //             const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
-        //             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
-        //         })
-        //         found.totalChars = totalNewChars
-        //     }
-        //     metrics.totalChunks += found.totalChunks
-        //     metrics.totalChars += totalNewChars
-        // }
-        // entity.metrics = JSON.stringify(metrics)
-        // entity.files = JSON.stringify(files)
-        // await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        const newLoaderId = data.id ?? uuidv4()
+        console.log('processAndSaveChunks - delegate')
+        // this method will run async, will have to be moved to a worker thread
+        _saveChunksToStorage(data, entity, newLoaderId).then(() => {})
         return getDocumentStoreFileChunks(data.storeId, newLoaderId)
     } catch (error) {
         throw new Error(`Error: documentStoreServices.processChunks - ${error}`)
     }
 }
 
+const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderId: string) => {
+    const re = new RegExp('^data.*;base64', 'i')
+
+    try {
+        const appServer = getRunningExpressApp()
+        console.log('_saveChunksToStorage - before preview')
+        //step 1: restore the full paths, if any
+        await _normalizeFilePaths(data, entity)
+        //step 2: split the file into chunks
+        previewChunks(data).then(async (response) => {
+            //{ chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
+            console.log('_saveChunksToStorage - after preview')
+
+            //step 3: remove base64 files and save them to storage, this needs to be rewritten
+            let filesWithMetadata = []
+            const keys = Object.getOwnPropertyNames(data.loaderConfig)
+            for (let i = 0; i < keys.length; i++) {
+                const input = data.loaderConfig[keys[i]]
+                if (!input) {
+                    continue
+                }
+                if (typeof input !== 'string') {
+                    continue
+                }
+                if (input.startsWith('[')) {
+                    const files = JSON.parse(input)
+                    const fileNames: string[] = []
+                    for (let j = 0; j < files.length; j++) {
+                        const file = files[j]
+                        if (re.test(file)) {
+                            const fileMetadata = _saveFileToStorage(file, entity)
+                            fileNames.push(fileMetadata.name)
+                            filesWithMetadata.push(fileMetadata)
+                        }
+                    }
+                    data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
+                } else if (re.test(input)) {
+                    const fileNames: string[] = []
+                    const fileMetadata = _saveFileToStorage(input, entity)
+                    fileNames.push(fileMetadata.name)
+                    filesWithMetadata.push(fileMetadata)
+                    data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
+                    break
+                }
+            }
+            //step 4: create a new loader and save it to the document store
+            const existingLoaders = JSON.parse(entity.files)
+            let loader: any = {
+                id: newLoaderId,
+                loaderId: data.loaderId,
+                loaderName: data.loaderName,
+                loaderConfig: data.loaderConfig,
+                splitterId: data.splitterId,
+                splitterName: data.splitterName,
+                splitterConfig: data.splitterConfig
+            }
+            if (data.credential) {
+                loader.credential = data.credential
+            }
+            if (filesWithMetadata.length > 0) {
+                loader.files = filesWithMetadata
+            }
+            existingLoaders.push(loader)
+            const metrics = JSON.parse(entity.metrics)
+            if (data.id) {
+                //step 5: remove all files and chunks associated with the previous loader
+                const found = existingLoaders.find((ldr: any) => ldr.id === data.id)
+                if (found) {
+                    const index = existingLoaders.indexOf(found)
+                    if (index > -1) {
+                        metrics.totalChunks -= found.totalChunks
+                        metrics.totalChars -= found.totalChars
+                        existingLoaders.splice(index, 1)
+                        if (!data.rehydrated) {
+                            if (found.files) {
+                                metrics.totalFiles -= found.files.length
+                                found.files.map((file: any) => {
+                                    fs.unlinkSync(file.path)
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+            if (!data.rehydrated) {
+                metrics.totalFiles += filesWithMetadata.length
+            }
+            //step 6: update metrics and status
+            entity.status = DocumentStoreStatus.STALE
+            metrics.totalChunks += response.totalChunks
+            const totalChars = response.chunks.reduce((acc: number, chunk: any) => acc + chunk.pageContent.length, 0)
+            metrics.totalChars += totalChars
+            const found = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
+            //step 7: remove all previous chunks
+            await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
+            if (response.chunks) {
+                //step 8: now save the new chunks
+                response.chunks.map(async (chunk: any) => {
+                    const docChunk: DocumentStoreFileChunk = {
+                        docId: newLoaderId,
+                        storeId: data.storeId,
+                        id: uuidv4(),
+                        pageContent: chunk.pageContent,
+                        metadata: JSON.stringify(chunk.metadata)
+                    }
+                    const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+                    await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+                })
+                found.totalChunks = response.totalChunks
+                found.totalChars = totalChars
+            }
+            found.status = 'SYNC'
+            entity.metrics = JSON.stringify(metrics)
+            entity.files = JSON.stringify(existingLoaders)
+            //step 8: update the entity in the database
+            await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+            return
+        })
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices._saveChunksToStorage - ${error}`)
+    }
+}
+
 export default {
     createDocumentStore,
-    deleteFileFromDocumentStore,
+    deleteLoaderFromDocumentStore,
     getAllDocumentStores,
     getDocumentStoreById,
     getDocumentStoreFileChunks,

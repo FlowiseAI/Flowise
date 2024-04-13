@@ -47,7 +47,7 @@ const DocumentStoreCard = ({ isLoading, data, onClick }) => {
                         </CardContent>
                         <CardActions style={{ padding: 2, marginTop: 15 }}>
                             <Typography style={{ marginBottom: 1.0 }} color='text.secondary'>
-                                {data.totalFiles}: Files
+                                {data.loaders?.length === 0 ? 0 : data.loaders.length}: Loaders
                             </Typography>
                         </CardActions>
                     </Card>

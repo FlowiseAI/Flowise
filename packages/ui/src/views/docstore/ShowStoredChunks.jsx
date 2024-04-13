@@ -105,7 +105,9 @@ const ShowStoredChunks = () => {
                 <Stack flexDirection='row'>
                     <Grid container direction='row'>
                         <div>
-                            <h1>{getChunksApi.data?.file?.name}</h1>
+                            <h1>
+                                {getChunksApi.data?.file?.loaderName} ({getChunksApi.data?.file?.splitterName})
+                            </h1>
                             <Table>
                                 <TableRow>
                                     <TableCell component='th' scope='row'>
@@ -152,8 +154,8 @@ const ShowStoredChunks = () => {
                                             <Typography variant='h6' color='textSecondary' gutterBottom>{`#${index + 1}. Characters: ${
                                                 row.pageContent.length
                                             }`}</Typography>
-                                            <CardWrapper>
-                                                <Card style={{ padding: 0 }} onClick={() => chunkSelected(row.id)}>
+                                            <CardWrapper style={{ borderColor: 'red' }} onClick={() => chunkSelected(row.id)}>
+                                                <Card style={{ padding: 0 }}>
                                                     <CardContent style={{ padding: 0 }}>
                                                         <Typography
                                                             sx={{ wordWrap: 'break-word' }}
@@ -195,6 +197,18 @@ const ShowStoredChunks = () => {
                                                     <strong>Chars</strong>
                                                 </TableCell>
                                                 <TableCell>{selectedChunk.pageContent.length}</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell style={{ border: 0 }} component='th' scope='row' colspan={2}>
+                                                    <strong>Content</strong>
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell colspan={2}>
+                                                    <Typography sx={{ wordWrap: 'break-word' }} variant='body2' style={{ fontSize: 12 }}>
+                                                        {selectedChunk.pageContent}
+                                                    </Typography>
+                                                </TableCell>
                                             </TableRow>
                                             <TableRow>
                                                 <TableCell style={{ border: 0 }} component='th' scope='row' colspan={2}>

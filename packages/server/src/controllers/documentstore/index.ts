@@ -36,15 +36,15 @@ const getAllDocumentStores = async (req: Request, res: Response, next: NextFunct
         next(error)
     }
 }
-const deleteFileFromDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
+const deleteLoaderFromDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const storeId = req.params.id
-        const fileId = req.params.fileId
+        const loaderId = req.params.loaderId
 
-        if (!storeId || !fileId) {
-            return res.status(500).send(new Error(`Document store file delete missing key information.`))
+        if (!storeId || !loaderId) {
+            return res.status(500).send(new Error(`Document store loader delete missing key information.`))
         }
-        const apiResponse = await documentStoreService.deleteFileFromDocumentStore(storeId, fileId)
+        const apiResponse = await documentStoreService.deleteLoaderFromDocumentStore(storeId, loaderId)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
         next(error)
@@ -145,7 +145,7 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
 export default {
     createDocumentStore,
     getAllDocumentStores,
-    deleteFileFromDocumentStore,
+    deleteLoaderFromDocumentStore,
     getDocumentStoreById,
     getDocumentStoreFileChunks,
     // uploadFileToDocumentStore,
