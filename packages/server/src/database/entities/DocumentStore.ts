@@ -19,7 +19,7 @@ export class DocumentStore implements IDocumentStore {
     metrics: string
 
     @Column({ nullable: true, type: 'text' })
-    files: string
+    loaders: string
 
     @Column({ nullable: true, type: 'text' })
     whereUsed: string

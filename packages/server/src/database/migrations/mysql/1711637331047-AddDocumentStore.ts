@@ -8,7 +8,7 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 \`name\` varchar(255) NOT NULL,
                 \`description\` varchar(255),
                 \`subFolder\` varchar(255) NOT NULL,
-                \`files\` text,
+                \`loaders\` text,
                 \`metrics\` text,
                 \`whereUsed\` text,
                 \`status\` varchar(20) NOT NULL,

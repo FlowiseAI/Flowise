@@ -9,7 +9,7 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 "description" varchar, 
                 "subFolder" varchar NOT NULL, 
                 "status" varchar NOT NULL, 
-                "files" text, 
+                "loaders" text, 
                 "metrics" text, 
                 "whereUsed" text, 
                 "updatedDate" datetime NOT NULL DEFAULT (datetime('now')),

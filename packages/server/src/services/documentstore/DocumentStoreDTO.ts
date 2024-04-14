@@ -1,6 +1,6 @@
-import { DocumentStoreStatus } from '../Interface'
-import { DocumentStore } from '../database/entities/DocumentStore'
-import { convertToValidFilename } from '../utils'
+import { DocumentStoreStatus } from '../../Interface'
+import { DocumentStore } from '../../database/entities/DocumentStore'
+import { convertToValidFilename } from '../../utils'
 
 export class DocumentStoreDTO {
     id: string
@@ -42,11 +42,40 @@ export class DocumentStoreDTO {
             documentStoreDTO.totalChars = metrics.totalChars
             documentStoreDTO.totalChunks = metrics.totalChunks
         }
-        if (entity.files) {
-            documentStoreDTO.loaders = JSON.parse(entity.files)
+        if (entity.loaders) {
+            documentStoreDTO.loaders = JSON.parse(entity.loaders)
         }
         documentStoreDTO.status = DocumentStoreStatus.SYNC
         documentStoreDTO.loaders.map((loader) => {
+            switch (loader.loaderId) {
+                case 'pdfFile':
+                    loader.source = loader.loaderConfig.pdfFile.replace('FILE-STORAGE::', '')
+                    break
+                case 'apiLoader':
+                    loader.source = loader.loaderConfig.url + ' (' + loader.loaderConfig.method + ')'
+                    break
+                case 'folderFiles':
+                    loader.source = loader.loaderConfig.folderPath.replace('FILE-STORAGE::', '')
+                    break
+                case 'cheerioWebScraper':
+                    loader.source = loader.loaderConfig.url
+                    break
+                case 'jsonFile':
+                    loader.source = loader.loaderConfig.jsonFile.replace('FILE-STORAGE::', '')
+                    break
+                case 'docxFile':
+                    loader.source = loader.loaderConfig.docxFile.replace('FILE-STORAGE::', '')
+                    break
+                case 'textFile':
+                    loader.source = loader.loaderConfig.txtFile.replace('FILE-STORAGE::', '')
+                    break
+                case 'unstructuredFileLoader':
+                    loader.source = loader.loaderConfig.filePath
+                    break
+                default:
+                    loader.source = 'None'
+                    break
+            }
             if (loader.status !== 'SYNC') {
                 documentStoreDTO.status = DocumentStoreStatus.STALE
             }
@@ -62,15 +91,8 @@ export class DocumentStoreDTO {
         const docStore = new DocumentStore()
         Object.assign(docStore, body)
         docStore.subFolder = convertToValidFilename(docStore.name)
-        docStore.files = '[]'
+        docStore.loaders = '[]'
         docStore.whereUsed = '[]'
-        // const config = {
-        //     splitter: body.splitter,
-        //     codeLanguage: body.codeLanguage,
-        //     chunkSize: body.chunkSize,
-        //     chunkOverlap: body.chunkOverlap
-        // }
-        // docStore.config = JSON.stringify(config)
         docStore.metrics = JSON.stringify({
             totalFiles: 0,
             totalChars: 0,

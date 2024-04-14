@@ -27,6 +27,8 @@ import documentStoreApi from '@/api/documentstore'
 
 import { validate as uuidValidate } from 'uuid'
 import documentsApi from '@/api/documentstore'
+import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -67,6 +69,7 @@ const DocumentLoaderChunks = () => {
     const [credential, setCredential] = useState(false)
 
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
     const [textSplitterNodes, setTextSplitterNodes] = useState({})
     const [textSplitterMandatory, setTextSplitterMandatory] = useState(false)
@@ -200,7 +203,7 @@ const DocumentLoaderChunks = () => {
         config.loaderName = nodeData?.label
         if (selectedTextSplitter) config.splitterId = selectedTextSplitter
         config.splitterConfig = {}
-        if (textSplitterData) {
+        if (textSplitterData && textSplitterData.inputs) {
             Object.keys(textSplitterData.inputs).map((key) => {
                 config.splitterConfig[key] = textSplitterData.inputs[key]
             })
@@ -247,7 +250,8 @@ const DocumentLoaderChunks = () => {
     }, [processChunksApi.data])
 
     useEffect(() => {
-        if (loading && previewChunksApi.error) {
+        if (loading && processChunksApi.error) {
+            setError(processChunksApi.error)
             setLoading(false)
             enqueueSnackbar({
                 message: 'Error invoking Process Chunks API. Please try again.',
@@ -295,10 +299,11 @@ const DocumentLoaderChunks = () => {
                     if (editingLoader.loaderConfig[input.name]) iData.inputs[input.name] = editingLoader.loaderConfig[input.name]
                     else if (input.default) iData.inputs[input.name] = input.default
                 })
-                setInstanceData(iData)
                 if (editingLoader.credential) {
                     setCredential(editingLoader.credential)
+                    iData.credential = editingLoader.credential
                 }
+                setInstanceData(iData)
             } else {
                 const iData = { id: storeId, inputs: [] }
                 data.inputs.map((input) => {
@@ -345,17 +350,38 @@ const DocumentLoaderChunks = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificDocumentStoreApi.data])
 
+    useEffect(() => {
+        if (getSpecificDocumentStoreApi.error) {
+            setError(getSpecificDocumentStoreApi.error)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificDocumentStoreApi.error])
+
+    useEffect(() => {
+        if (getNodeDetailsApi.error) {
+            setError(getNodeDetailsApi.error)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getNodeDetailsApi.error])
+
+    useEffect(() => {
+        if (getNodesByCategoryApi.error) {
+            setError(getNodesByCategoryApi.error)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getNodesByCategoryApi.error])
+
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
-                    <Grid container direction='row'>
-                        <div>
-                            <h1>{nodeData?.label}</h1>
-                            <h3>{nodeData?.description}</h3>
-                        </div>
-                        <Box sx={{ flexGrow: 1 }} />
-                        <Grid item>
+            <MainCard>
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader search={false} title={nodeData?.label}>
                             <StyledButton
                                 variant='contained'
                                 sx={{ color: 'white' }}
@@ -364,139 +390,145 @@ const DocumentLoaderChunks = () => {
                             >
                                 Back to Document Store
                             </StyledButton>
-                        </Grid>
-                    </Grid>
-                </Stack>
-                {loading && <BackdropLoader open={loading} />}
-                <Box>
-                    <Grid container spacing='2'>
-                        <Grid item xs={4} md={6} lg={6} sm={4}>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    paddingRight: 15
-                                }}
-                            >
-                                {nodeData && nodeData.credential && (
-                                    <Box sx={{ p: 1 }}>
-                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <Typography>
-                                                {nodeData.credential.label}
-                                                {!nodeData.credential.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                                {nodeData.credential.description && (
-                                                    <TooltipWithParser style={{ marginLeft: 10 }} title={nodeData.credential.description} />
-                                                )}
-                                            </Typography>
-                                            <div style={{ flexGrow: 1 }}></div>
-                                        </div>
-                                        <CredentialInputHandler
-                                            key={credential}
-                                            data={instanceData}
-                                            inputParam={nodeData.credential}
-                                            onSelect={(newValue) => setCredential(newValue)}
-                                        />
-                                    </Box>
-                                )}
-                                {nodeData &&
-                                    nodeData.inputs &&
-                                    nodeData.inputs
-                                        .filter((inputParam) => !inputParam.hidden)
-                                        .map((inputParam, index) => (
-                                            <InputHandler
-                                                key={index}
-                                                data={instanceData}
-                                                inputParam={inputParam}
-                                                isAdditionalParams={inputParam.additionalParams}
+                        </ViewHeader>
+                        {/*<div>*/}
+                        {/*    <h3>{nodeData?.description}</h3>*/}
+                        {/*</div>*/}
+                        {loading && <BackdropLoader open={loading} />}
+                        <Box>
+                            <Grid container spacing='2'>
+                                <Grid item xs={4} md={6} lg={6} sm={4}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            paddingRight: 15
+                                        }}
+                                    >
+                                        {nodeData && nodeData.credential && (
+                                            <Box sx={{ p: 1 }}>
+                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                    <Typography>
+                                                        {nodeData.credential.label}
+                                                        {!nodeData.credential.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                                        {nodeData.credential.description && (
+                                                            <TooltipWithParser
+                                                                style={{ marginLeft: 10 }}
+                                                                title={nodeData.credential.description}
+                                                            />
+                                                        )}
+                                                    </Typography>
+                                                    <div style={{ flexGrow: 1 }}></div>
+                                                </div>
+                                                <CredentialInputHandler
+                                                    key={credential}
+                                                    data={instanceData}
+                                                    inputParam={nodeData.credential}
+                                                    onSelect={(newValue) => setCredential(newValue)}
+                                                />
+                                            </Box>
+                                        )}
+                                        {nodeData &&
+                                            nodeData.inputs &&
+                                            nodeData.inputs
+                                                .filter((inputParam) => !inputParam.hidden)
+                                                .map((inputParam, index) => (
+                                                    <InputHandler
+                                                        key={index}
+                                                        data={instanceData}
+                                                        inputParam={inputParam}
+                                                        isAdditionalParams={inputParam.additionalParams}
+                                                    />
+                                                ))}
+                                        {textSplitterNodes && Object.keys(textSplitterNodes).length > 0 && (
+                                            <Box sx={{ p: 1 }}>
+                                                <Divider textAlign='center'>
+                                                    Text Splitter{' '}
+                                                    <Typography>
+                                                        {textSplitterMandatory && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                                    </Typography>
+                                                </Divider>
+                                                <Dropdown
+                                                    key={selectedTextSplitter}
+                                                    name='textSplitter'
+                                                    options={splitterOptions}
+                                                    onSelect={(newValue) => onSplitterChange(newValue)}
+                                                    value={selectedTextSplitter ?? 'choose an option'}
+                                                />
+                                            </Box>
+                                        )}
+                                        {textSplitterNodes &&
+                                            selectedTextSplitter &&
+                                            textSplitterInputs.map((inputParam, index) => (
+                                                <InputHandler
+                                                    key={index}
+                                                    data={textSplitterData}
+                                                    inputParam={inputParam}
+                                                    isAdditionalParams={inputParam.additionalParams}
+                                                />
+                                            ))}
+                                        <Box sx={{ p: 1 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                <Typography>
+                                                    Show Chunks in Preview<span style={{ color: 'red' }}>&nbsp;*</span>
+                                                </Typography>
+                                                <div style={{ flexGrow: 1 }}></div>
+                                            </div>
+                                            <OutlinedInput
+                                                size='small'
+                                                multiline={false}
+                                                sx={{ mt: 1 }}
+                                                type='number'
+                                                fullWidth
+                                                key='previewChunkCount'
+                                                onChange={(e) => setPreviewChunkCount(e.target.value)}
+                                                value={previewChunkCount ?? 25}
                                             />
-                                        ))}
-                                {textSplitterNodes && (
-                                    <Box sx={{ p: 1 }}>
-                                        <Divider textAlign='center'>
-                                            Text Splitter{' '}
-                                            <Typography>
-                                                {textSplitterMandatory && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                            </Typography>
-                                        </Divider>
-                                        <Dropdown
-                                            key={selectedTextSplitter}
-                                            name='textSplitter'
-                                            options={splitterOptions}
-                                            onSelect={(newValue) => onSplitterChange(newValue)}
-                                            value={selectedTextSplitter ?? 'choose an option'}
-                                        />
-                                    </Box>
-                                )}
-                                {textSplitterNodes &&
-                                    selectedTextSplitter &&
-                                    textSplitterInputs.map((inputParam, index) => (
-                                        <InputHandler
-                                            key={index}
-                                            data={textSplitterData}
-                                            inputParam={inputParam}
-                                            isAdditionalParams={inputParam.additionalParams}
-                                        />
-                                    ))}
-                                <Box sx={{ p: 1 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                        <Typography>
-                                            Show Chunks in Preview<span style={{ color: 'red' }}>&nbsp;*</span>
-                                        </Typography>
-                                        <div style={{ flexGrow: 1 }}></div>
+                                        </Box>
+                                        <Box sx={{ p: 1, textAlign: 'center' }}>
+                                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onSaveAndProcess}>
+                                                Confirm & Process
+                                            </StyledButton>{' '}
+                                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
+                                                Preview
+                                            </StyledButton>
+                                        </Box>
                                     </div>
-                                    <OutlinedInput
-                                        size='small'
-                                        multiline={false}
-                                        sx={{ mt: 1 }}
-                                        type='number'
-                                        fullWidth
-                                        key='previewChunkCount'
-                                        onChange={(e) => setPreviewChunkCount(e.target.value)}
-                                        value={previewChunkCount ?? 25}
-                                    />
-                                </Box>
-                                <Box sx={{ p: 1, textAlign: 'center' }}>
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onSaveAndProcess}>
-                                        Confirm & Process
-                                    </StyledButton>{' '}
-                                    <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
-                                        Preview
-                                    </StyledButton>
-                                </Box>
-                            </div>
-                        </Grid>
-                        <Grid item xs={8} md={6} lg={6} sm={8}>
-                            <Typography style={{ marginBottom: 5, wordWrap: 'break-word', textAlign: 'left' }} variant='h4'>
-                                Preview: Showing {currentPreviewCount} of {totalChunks} Chunks.
-                            </Typography>
-                            <div style={{ height: '800px', overflow: 'scroll', padding: '5px' }}>
-                                <Grid container spacing={2}>
-                                    {documentChunks &&
-                                        documentChunks?.map((row, index) => (
-                                            <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
-                                                <CardWrapper>
-                                                    <Card style={{ padding: 0 }}>
-                                                        <CardContent style={{ padding: 0 }}>
-                                                            <Typography color='textSecondary' gutterBottom>
-                                                                {`#${index + 1}. Characters: ${row.pageContent.length}`}
-                                                            </Typography>
-                                                            <Typography
-                                                                sx={{ wordWrap: 'break-word' }}
-                                                                variant='body2'
-                                                                style={{ fontSize: 10 }}
-                                                            >
-                                                                {row.pageContent}
-                                                            </Typography>
-                                                        </CardContent>
-                                                    </Card>
-                                                </CardWrapper>
-                                            </Grid>
-                                        ))}
                                 </Grid>
-                            </div>
-                        </Grid>
-                    </Grid>
-                </Box>
+                                <Grid item xs={8} md={6} lg={6} sm={8}>
+                                    <Typography style={{ marginBottom: 5, wordWrap: 'break-word', textAlign: 'left' }} variant='h4'>
+                                        Preview: Showing {currentPreviewCount} of {totalChunks} Chunks.
+                                    </Typography>
+                                    <div style={{ height: '800px', overflow: 'scroll', padding: '5px' }}>
+                                        <Grid container spacing={2}>
+                                            {documentChunks &&
+                                                documentChunks?.map((row, index) => (
+                                                    <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
+                                                        <CardWrapper>
+                                                            <Card style={{ padding: 0 }}>
+                                                                <CardContent style={{ padding: 0 }}>
+                                                                    <Typography color='textSecondary' gutterBottom>
+                                                                        {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                                    </Typography>
+                                                                    <Typography
+                                                                        sx={{ wordWrap: 'break-word' }}
+                                                                        variant='body2'
+                                                                        style={{ fontSize: 10 }}
+                                                                    >
+                                                                        {row.pageContent}
+                                                                    </Typography>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </CardWrapper>
+                                                    </Grid>
+                                                ))}
+                                        </Grid>
+                                    </div>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </Stack>
+                )}
             </MainCard>
         </>
     )

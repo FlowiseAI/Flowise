@@ -1,4 +1,4 @@
-import { DocumentStoreDTO } from '../../dto/DocumentStoreDTO'
+import { DocumentStoreDTO } from '../../services/documentstore/DocumentStoreDTO'
 // @ts-ignore
 import { getStoragePath } from 'flowise-components'
 import fs from 'fs'

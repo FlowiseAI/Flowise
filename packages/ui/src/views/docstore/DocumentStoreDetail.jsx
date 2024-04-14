@@ -2,21 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import {
-    Grid,
-    Box,
-    Stack,
-    Typography,
-    TableContainer,
-    Paper,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    IconButton,
-    Chip
-} from '@mui/material'
+import { Stack, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Chip } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 import { tableCellClasses } from '@mui/material/TableCell'
@@ -41,6 +27,8 @@ import useNotifier from '@/utils/useNotifier'
 // icons
 import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconFileStack } from '@tabler/icons'
 import * as PropTypes from 'prop-types'
+import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -56,6 +44,9 @@ const DocumentStoreDetails = () => {
     const { confirm } = useConfirm()
 
     const getSpecificDocumentStore = useApi(documentsApi.getSpecificDocumentStore)
+
+    const [error, setError] = useState(null)
+    const [isLoading, setLoading] = useState(true)
 
     const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
@@ -171,12 +162,12 @@ const DocumentStoreDetails = () => {
 
     return (
         <>
-            <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-                <Stack flexDirection='row'>
-                    <Grid style={{ marginBottom: 1.25 }} container direction='row'>
-                        <h1>{getSpecificDocumentStore.data?.name}</h1>
-                        <Box sx={{ flexGrow: 1 }} />
-                        <Grid item>
+            <MainCard>
+                {error ? (
+                    <ErrorBoundary error={error} />
+                ) : (
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader search={false} title={getSpecificDocumentStore.data?.name}>
                             {getSpecificDocumentStore.data?.status !== 'STALE' && (
                                 <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
                                     Edit Description
@@ -188,76 +179,70 @@ const DocumentStoreDetails = () => {
                                 </Button>
                             )}
                             <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconPlus />} onClick={listLoaders}>
-                                Select Document Loader
+                                Add Document Loader
                             </StyledButton>
-                        </Grid>
-                    </Grid>
-                </Stack>
-                {!getSpecificDocumentStore.loading && getSpecificDocumentStore.data && (
-                    <>
-                        <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
-                            {getSpecificDocumentStore.data?.description}
-                        </Typography>
-                        {/*{getSpecificDocumentStore.data?.totalFiles > 0 && (*/}
-                        {/*    <Typography style={{ wordWrap: 'break-word', fontStyle: 'italic' }} variant='h5'>*/}
-                        {/*        {getSpecificDocumentStore.data?.totalFiles}{' '}*/}
-                        {/*        {getSpecificDocumentStore.data?.totalFiles === 1 ? 'File' : 'Files'};{' '}*/}
-                        {/*        {getSpecificDocumentStore.data?.totalChars?.toLocaleString()} Chars;{' '}*/}
-                        {/*        {getSpecificDocumentStore.data?.totalChunks} Chunks.*/}
-                        {/*    </Typography>*/}
-                        {/*)}*/}
-                    </>
-                )}
-                <br />
-                <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                    <Table aria-label='documents table' size='small'>
-                        <TableHead
-                            sx={{
-                                backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                                height: 56
-                            }}
-                        >
-                            <TableRow>
-                                <TableCell>&nbsp;</TableCell>
-                                <TableCell>Loader</TableCell>
-                                <TableCell>Splitter</TableCell>
-                                <TableCell>Source(s)</TableCell>
-                                <TableCell style={{ textAlign: 'center' }}>Chunks</TableCell>
-                                <TableCell style={{ textAlign: 'center', width: '20%' }}>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {getSpecificDocumentStore.data?.loaders &&
-                                getSpecificDocumentStore.data?.loaders.length > 0 &&
-                                getSpecificDocumentStore.data?.loaders.map((loader, index) => (
-                                    <LoaderRow
-                                        key={index}
-                                        index={index}
-                                        loader={loader}
-                                        theme={theme}
-                                        onEditClick={() => openPreviewSettings(loader.id)}
-                                        onViewChunksClick={() => showStoredChunks(loader.id)}
-                                        onDeleteClick={() => onLoaderDelete(loader)}
-                                    />
-                                ))}
-                            {getSpecificDocumentStore.data?.loaders?.length === 0 && (
-                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    <TableCell colSpan='6'>
-                                        <Typography style={{ color: 'darkred' }} variant='h5'>
-                                            Empty Document Store. Please add a document to this store.
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                {getSpecificDocumentStore.data?.status === 'STALE' && (
-                    <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                        <Typography color='warning' style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}>
-                            Some files are pending processing. Please Refresh to get the latest status.
-                        </Typography>
-                    </div>
+                        </ViewHeader>
+                        {!getSpecificDocumentStore.loading && getSpecificDocumentStore.data && (
+                            <>
+                                <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
+                                    {getSpecificDocumentStore.data?.description}
+                                </Typography>
+                            </>
+                        )}
+                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                            <Table aria-label='documents table' size='small'>
+                                <TableHead
+                                    sx={{
+                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                                        height: 56
+                                    }}
+                                >
+                                    <TableRow>
+                                        <TableCell>&nbsp;</TableCell>
+                                        <TableCell>Loader</TableCell>
+                                        <TableCell>Splitter</TableCell>
+                                        <TableCell>Source(s)</TableCell>
+                                        <TableCell style={{ textAlign: 'center' }}>Chunks</TableCell>
+                                        <TableCell style={{ textAlign: 'center', width: '20%' }}>Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {getSpecificDocumentStore.data?.loaders &&
+                                        getSpecificDocumentStore.data?.loaders.length > 0 &&
+                                        getSpecificDocumentStore.data?.loaders.map((loader, index) => (
+                                            <LoaderRow
+                                                key={index}
+                                                index={index}
+                                                loader={loader}
+                                                theme={theme}
+                                                onEditClick={() => openPreviewSettings(loader.id)}
+                                                onViewChunksClick={() => showStoredChunks(loader.id)}
+                                                onDeleteClick={() => onLoaderDelete(loader)}
+                                            />
+                                        ))}
+                                    {getSpecificDocumentStore.data?.loaders?.length === 0 && (
+                                        <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell colSpan='6'>
+                                                <Typography style={{ color: 'darkred' }} variant='h5'>
+                                                    Empty Document Store. Please add a document to this store.
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        {getSpecificDocumentStore.data?.status === 'STALE' && (
+                            <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>
+                                <Typography
+                                    color='warning'
+                                    style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}
+                                >
+                                    Some files are pending processing. Please Refresh to get the latest status.
+                                </Typography>
+                            </div>
+                        )}
+                    </Stack>
                 )}
             </MainCard>
             {showDialog && (
@@ -313,14 +298,13 @@ function LoaderRow(props) {
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '30%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
                 <StyledTableCell style={{ width: '20%' }}>
-                    {props.loader.files?.length > 0 &&
-                        props.loader.files.map((file, index) => <Typography key={index}>{file.name}</Typography>)}
-                    {!props.loader.loaderConfig.url && (props.loader.files === undefined || props.loader.files?.length === 0) && 'No files'}
-                    {props.loader.loaderConfig.url && 'URL: ' + props.loader.loaderConfig.url}
+                    {props.loader.source}
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
                     {!props.loader.totalChunks && <Chip color='warning' size='small' label='0' />}
-                    {props.loader.totalChunks && <Chip color='success' size='small' label={props.loader.totalChunks} />}
+                    {props.loader.totalChunks && props.loader.totalChunks > 0 && (
+                        <Chip color='success' size='small' label={props.loader.totalChunks} />
+                    )}
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
                     <IconButton title='Settings' color='primary' onClick={props.onViewChunksClick}>

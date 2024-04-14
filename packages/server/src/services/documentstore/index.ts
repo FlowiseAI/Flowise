@@ -43,7 +43,7 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
         if (!fs.existsSync(dir)) {
             throw new Error(`Missing folder to delete files for Document Store ${entity.name}`)
         }
-        const existingLoaders = JSON.parse(entity.files)
+        const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((uFile: any) => uFile.id === loaderId)
         const metrics = JSON.parse(entity.metrics)
         if (found) {
@@ -61,7 +61,7 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
             // remove the chunks
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: found.id })
 
-            entity.files = JSON.stringify(existingLoaders)
+            entity.loaders = JSON.stringify(existingLoaders)
             entity.metrics = JSON.stringify(metrics)
             const results = await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
             return results
@@ -158,7 +158,7 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string) => {
             id: storeId
         })
         if (!entity) throw new Error(`Document store ${storeId} not found`)
-        const files = JSON.parse(entity.files)
+        const files = JSON.parse(entity.loaders)
         const found = files.find((file: any) => file.id === fileId)
         if (!found) throw new Error(`Document store file ${fileId} not found`)
 
@@ -220,7 +220,7 @@ const _splitIntoChunks = async (data: any) => {
     try {
         const appServer = getRunningExpressApp()
         let splitterInstance = null
-        if (data.splitterConfig) {
+        if (data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
             const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.splitterId].filePath as string
             const nodeModule = await import(nodeInstanceFilePath)
             const newNodeInstance = new nodeModule.nodeClass()
@@ -283,23 +283,22 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
             if (!fs.existsSync(dir)) {
                 throw new Error(`Missing folder to upload files for Document Store ${documentStoreEntity.name}`)
             }
-            const loaders = JSON.parse(documentStoreEntity.files)
-            const currentLoader = loaders.find((uFile: any) => uFile.id === data.id)
-            if (!currentLoader) {
-                throw new Error(`Document store file ${data.id} not found`)
+            const loaders = JSON.parse(documentStoreEntity.loaders)
+            const currentLoader = loaders.find((ldr: any) => ldr.id === data.id)
+            if (currentLoader) {
+                const base64Files: string[] = []
+                for (const file of files) {
+                    const fileInStorage = path.join(dir, file)
+                    const fileData = fs.readFileSync(fileInStorage)
+                    const bf = Buffer.from(fileData)
+                    // find the file entry that has the same name as the file
+                    const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
+                    const base64String = uploadedFile.mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
+                    base64Files.push(base64String)
+                }
+                data.loaderConfig[keys[i]] = JSON.stringify(base64Files)
+                rehydrated = true
             }
-            const base64Files: string[] = []
-            for (const file of files) {
-                const fileInStorage = path.join(dir, file)
-                const fileData = fs.readFileSync(fileInStorage)
-                const bf = Buffer.from(fileData)
-                // find the file entry that has the same name as the file
-                const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
-                const base64String = uploadedFile.mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
-                base64Files.push(base64String)
-            }
-            data.loaderConfig[keys[i]] = JSON.stringify(base64Files)
-            rehydrated = true
         }
     }
     data.rehydrated = rehydrated
@@ -332,7 +331,18 @@ const processAndSaveChunks = async (data: any) => {
             id: data.storeId
         })
         if (!entity) throw new Error(`Document store ${data.storeId} not found`)
+
         const newLoaderId = data.id ?? uuidv4()
+        const existingLoaders = JSON.parse(entity.loaders)
+        const found = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
+        if (found) {
+            // clean up the current status and mark the loader as pending_sync
+            found.totalChunks = 0
+            found.totalChars = 0
+            found.status = DocumentStoreStatus.SYNCING
+            entity.loaders = JSON.stringify(existingLoaders)
+        }
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         console.log('processAndSaveChunks - delegate')
         // this method will run async, will have to be moved to a worker thread
         _saveChunksToStorage(data, entity, newLoaderId).then(() => {})
@@ -388,7 +398,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                 }
             }
             //step 4: create a new loader and save it to the document store
-            const existingLoaders = JSON.parse(entity.files)
+            const existingLoaders = JSON.parse(entity.loaders)
             let loader: any = {
                 id: newLoaderId,
                 loaderId: data.loaderId,
@@ -455,7 +465,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
             }
             found.status = 'SYNC'
             entity.metrics = JSON.stringify(metrics)
-            entity.files = JSON.stringify(existingLoaders)
+            entity.loaders = JSON.stringify(existingLoaders)
             //step 8: update the entity in the database
             await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
             return
