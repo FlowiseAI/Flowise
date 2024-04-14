@@ -1,6 +1,7 @@
 import { GooglePaLMEmbeddings, GooglePaLMEmbeddingsParams } from '@langchain/community/embeddings/googlepalm'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class GooglePaLMEmbedding_Embeddings implements INode {
     label: string
@@ -17,7 +18,7 @@ class GooglePaLMEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Google PaLM Embeddings'
         this.name = 'googlePaLMEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'GooglePaLMEmbeddings'
         this.icon = 'GooglePaLM.svg'
         this.category = 'Embeddings'
@@ -33,17 +34,18 @@ class GooglePaLMEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'models/embedding-gecko-001',
-                        name: 'models/embedding-gecko-001'
-                    }
-                ],
-                default: 'models/embedding-gecko-001',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'models/embedding-gecko-001'
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'googlePaLMEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

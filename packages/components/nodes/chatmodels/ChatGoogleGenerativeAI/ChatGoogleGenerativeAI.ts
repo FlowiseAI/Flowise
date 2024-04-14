@@ -2,8 +2,9 @@ import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import type { SafetySetting } from '@google/generative-ai'
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class GoogleGenerativeAI_ChatModels implements INode {
     label: string
@@ -20,7 +21,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
@@ -44,13 +45,8 @@ class GoogleGenerativeAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gemini-pro',
-                        name: 'gemini-pro'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'gemini-pro'
             },
             {
@@ -145,6 +141,13 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatGoogleGenerativeAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

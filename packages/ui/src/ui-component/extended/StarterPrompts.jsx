@@ -81,7 +81,9 @@ const StarterPrompts = ({ dialogProps }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Conversation Starter Prompts: ${error.response.data.message}`,
+                message: `Failed to save Conversation Starter Prompts: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

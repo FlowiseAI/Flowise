@@ -1,7 +1,17 @@
-import { FlowiseMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
-import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
+import {
+    FlowiseMemory,
+    IDatabaseEntity,
+    ICommonObject,
+    IMessage,
+    INode,
+    INodeData,
+    INodeParams,
+    MemoryMethods
+} from '../../../src/Interface'
+import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { BaseMessage } from '@langchain/core/messages'
+import { DataSource } from 'typeorm'
 
 class BufferMemory_Memory implements INode {
     label: string
@@ -17,64 +27,109 @@ class BufferMemory_Memory implements INode {
     constructor() {
         this.label = 'Buffer Memory'
         this.name = 'bufferMemory'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'BufferMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
-        this.description = 'Remembers previous conversational back and forths directly'
+        this.description = 'Retrieve chat messages stored in database'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
         this.inputs = [
+            {
+                label: 'Session Id',
+                name: 'sessionId',
+                type: 'string',
+                description:
+                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory#ui-and-embedded-chat">more</a>',
+                default: '',
+                additionalParams: true,
+                optional: true
+            },
             {
                 label: 'Memory Key',
                 name: 'memoryKey',
                 type: 'string',
-                default: 'chat_history'
-            },
-            {
-                label: 'Input Key',
-                name: 'inputKey',
-                type: 'string',
-                default: 'input'
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const memoryKey = nodeData.inputs?.memoryKey as string
-        const inputKey = nodeData.inputs?.inputKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const sessionId = nodeData.inputs?.sessionId as string
+        const memoryKey = (nodeData.inputs?.memoryKey as string) ?? 'chat_history'
+
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const chatflowid = options.chatflowid as string
+
         return new BufferMemoryExtended({
             returnMessages: true,
             memoryKey,
-            inputKey
+            sessionId,
+            appDataSource,
+            databaseEntities,
+            chatflowid
         })
     }
 }
 
+interface BufferMemoryExtendedInput {
+    sessionId: string
+    appDataSource: DataSource
+    databaseEntities: IDatabaseEntity
+    chatflowid: string
+}
+
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
-    constructor(fields: BufferMemoryInput) {
+    appDataSource: DataSource
+    databaseEntities: IDatabaseEntity
+    chatflowid: string
+    sessionId = ''
+
+    constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
+        this.sessionId = fields.sessionId
+        this.appDataSource = fields.appDataSource
+        this.databaseEntities = fields.databaseEntities
+        this.chatflowid = fields.chatflowid
     }
 
-    async getChatMessages(_?: string, returnBaseMessages = false, prevHistory: IMessage[] = []): Promise<IMessage[] | BaseMessage[]> {
-        await this.chatHistory.clear()
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
+        if (!id) return []
 
-        for (const msg of prevHistory) {
-            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
-            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
+        const chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
+            where: {
+                sessionId: id,
+                chatflowid: this.chatflowid
+            },
+            order: {
+                createdDate: 'ASC'
+            }
+        })
+
+        if (returnBaseMessages) {
+            return mapChatMessageToBaseMessage(chatMessage)
         }
 
-        const memoryResult = await this.loadMemoryVariables({})
-        const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
-        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+        let returnIMessages: IMessage[] = []
+        for (const m of chatMessage) {
+            returnIMessages.push({
+                message: m.content as string,
+                type: m.role
+            })
+        }
+        return returnIMessages
     }
 
     async addChatMessages(): Promise<void> {
-        // adding chat messages will be done on the fly in getChatMessages()
+        // adding chat messages is done on server level
         return
     }
 
     async clearChatMessages(): Promise<void> {
-        await this.clear()
+        // clearing chat messages is done on server level
+        return
     }
 }
 

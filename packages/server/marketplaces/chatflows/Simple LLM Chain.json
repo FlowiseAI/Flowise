@@ -75,7 +75,7 @@
             "data": {
                 "id": "openAI_0",
                 "label": "OpenAI",
-                "version": 3,
+                "version": 4.0,
                 "name": "openAI",
                 "type": "OpenAI",
                 "baseClasses": ["OpenAI", "BaseLLM", "BaseLanguageModel"],
@@ -92,23 +92,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-3.5-turbo-instruct",
-                                "name": "gpt-3.5-turbo-instruct"
-                            },
-                            {
-                                "label": "babbage-002",
-                                "name": "babbage-002"
-                            },
-                            {
-                                "label": "davinci-002",
-                                "name": "davinci-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-instruct",
-                        "optional": true,
                         "id": "openAI_0-input-modelName-options"
                     },
                     {

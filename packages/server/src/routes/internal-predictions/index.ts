@@ -3,6 +3,6 @@ import internalPredictionsController from '../../controllers/internal-prediction
 const router = express.Router()
 
 // CREATE
-router.post('/:id', internalPredictionsController.createInternalPrediction)
+router.post(['/', '/:id'], internalPredictionsController.createInternalPrediction)
 
 export default router

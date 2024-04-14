@@ -39,7 +39,7 @@ const variableTypes = [
     }
 ]
 
-const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -111,8 +111,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to add new Variable: ${error.response.data.message}`,
+                message: `Failed to add new Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -153,8 +156,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to save Variable: ${error.response.data.message}`,
+                message: `Failed to save Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -281,7 +287,8 @@ AddEditVariableDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default AddEditVariableDialog
