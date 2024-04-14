@@ -51,7 +51,7 @@ const DocumentStoreDetails = () => {
     const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
-    //const fileUploadRef = useRef(null)
+
     const [showDocumentLoaderListDialog, setShowDocumentLoaderListDialog] = useState(false)
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
 
@@ -104,6 +104,7 @@ const DocumentStoreDetails = () => {
                     onConfirm()
                 }
             } catch (error) {
+                setError(error)
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
                     message: `Failed to delete loader: ${errorData}`,
@@ -159,6 +160,13 @@ const DocumentStoreDetails = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificDocumentStore.data])
+
+    useEffect(() => {
+        if (getSpecificDocumentStore.error) {
+            setError(getSpecificDocumentStore.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificDocumentStore.error])
 
     return (
         <>
@@ -297,9 +305,7 @@ function LoaderRow(props) {
                     {props.loader.loaderName}{' '}
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '30%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
-                <StyledTableCell style={{ width: '20%' }}>
-                    {props.loader.source}
-                </StyledTableCell>
+                <StyledTableCell style={{ width: '20%' }}>{props.loader.source}</StyledTableCell>
                 <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
                     {!props.loader.totalChunks && <Chip color='warning' size='small' label='0' />}
                     {props.loader.totalChunks && props.loader.totalChunks > 0 && (
