@@ -1,5 +1,5 @@
-import logo from '@/assets/images/flowise_logo.png'
-import logoDark from '@/assets/images/flowise_logo_dark.png'
+import logo from '@/assets/images/BFD_Logo.png'
+import logoDark from '@/assets/images/BFD_NAME.png'
 
 import { useSelector } from 'react-redux'
 
@@ -11,7 +11,7 @@ const Logo = () => {
     return (
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
             <img
-                style={{ objectFit: 'contain', height: 'auto', width: 150 }}
+                style={{ objectFit: 'contain', height: 'auto', width: 75 }}
                 src={customization.isDarkMode ? logoDark : logo}
                 alt='Flowise'
             />
