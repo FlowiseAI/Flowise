@@ -33,7 +33,7 @@ export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal 
     }
 
     setVisionModel(): void {
-        super.modelName = 'gpt-4-vision-preview'
+        super.modelName = 'gpt-4-turbo'
         super.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 1024
     }
 }

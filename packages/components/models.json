@@ -324,6 +324,18 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro"
+                },
+                {
+                    "label": "gemini-1.0-pro",
+                    "name": "gemini-1.0-pro"
+                },
+                {
+                    "label": "gemini-1.0-pro-vision",
+                    "name": "gemini-1.0-pro-vision"
+                },
+                {
                     "label": "chat-bison",
                     "name": "chat-bison"
                 },
