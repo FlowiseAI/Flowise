@@ -95,10 +95,30 @@ Flowise has 3 different modules in a single mono repository.
     ```bash
     pnpm dev
     ```
+    
+    when making changes to the Flowise dashboard. 
 
     Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
 
     For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
+
+    - Run
+
+    ```bash
+    pnpm dev:embed
+    ```
+
+   when making changes to the Flowise embed.
+
+   Any changes made in `embeds/js` or `embeds/react` will be reflected on [http://localhost:5173](http://localhost:5173)
+
+    - Run
+
+    ```bash
+    pnpm dev:all
+    ```
+
+   when making changes to both dashboard and embed.
 
 10. After making all the changes, run
 

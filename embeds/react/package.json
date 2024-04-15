@@ -37,7 +37,7 @@
         "typescript": "5.0.3"
     },
     "peerDependencies": {
-        "flowise-embed": "*",
+        "flowise-embed": "workspace:*",
         "react": "18.x"
     }
 }
