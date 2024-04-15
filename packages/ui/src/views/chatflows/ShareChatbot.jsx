@@ -162,7 +162,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Chatbot Configuration: ${error.response.data.message}`,
+                message: `Failed to save Chatbot Configuration: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -197,7 +199,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Chatbot Configuration: ${error.response.data.message}`,
+                message: `Failed to save Chatbot Configuration: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

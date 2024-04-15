@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAIEmbedding } from 'llamaindex'
 
@@ -18,7 +19,7 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Embedding'
         this.name = 'openAIEmbedding_LlamaIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAIEmbedding'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -35,23 +36,9 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'text-embedding-3-large',
-                        name: 'text-embedding-3-large'
-                    },
-                    {
-                        label: 'text-embedding-3-small',
-                        name: 'text-embedding-3-small'
-                    },
-                    {
-                        label: 'text-embedding-ada-002',
-                        name: 'text-embedding-ada-002'
-                    }
-                ],
-                default: 'text-embedding-ada-002',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'text-embedding-ada-002'
             },
             {
                 label: 'Timeout',
@@ -68,6 +55,13 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'openAIEmbedding_LlamaIndex')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

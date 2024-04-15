@@ -157,11 +157,13 @@ function UpsertHistoryRow(props) {
                                                 </div>
                                             </AccordionSummary>
                                             <AccordionDetails>
-                                                <TableViewOnly
-                                                    sx={{ minWidth: 150 }}
-                                                    rows={node.paramValues}
-                                                    columns={Object.keys(node.paramValues[0])}
-                                                />
+                                                {node.paramValues[0] && (
+                                                    <TableViewOnly
+                                                        sx={{ minWidth: 150 }}
+                                                        rows={node.paramValues}
+                                                        columns={Object.keys(node.paramValues[0])}
+                                                    />
+                                                )}
                                             </AccordionDetails>
                                         </Accordion>
                                     )
@@ -259,7 +261,9 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
             setSelected([])
         } catch (error) {
             enqueueSnackbar({
-                message: 'Error deleting upsert history',
+                message: `Failed to delete Upsert History: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

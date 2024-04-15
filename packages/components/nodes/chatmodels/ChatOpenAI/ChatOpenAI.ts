@@ -2,9 +2,10 @@ import type { ClientOptions } from 'openai'
 import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, AzureOpenAIInput, LegacyOpenAIInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -21,7 +22,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 5.0
+        this.version = 6.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -43,71 +44,9 @@ class ChatOpenAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-turbo-preview',
-                        name: 'gpt-4-turbo-preview'
-                    },
-                    {
-                        label: 'gpt-4-0125-preview',
-                        name: 'gpt-4-0125-preview'
-                    },
-                    {
-                        label: 'gpt-4-1106-preview',
-                        name: 'gpt-4-1106-preview'
-                    },
-                    {
-                        label: 'gpt-4-1106-vision-preview',
-                        name: 'gpt-4-1106-vision-preview'
-                    },
-                    {
-                        label: 'gpt-4-vision-preview',
-                        name: 'gpt-4-vision-preview'
-                    },
-                    {
-                        label: 'gpt-4-0613',
-                        name: 'gpt-4-0613'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    },
-                    {
-                        label: 'gpt-4-32k-0613',
-                        name: 'gpt-4-32k-0613'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo',
-                        name: 'gpt-3.5-turbo'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-0125',
-                        name: 'gpt-3.5-turbo-0125'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-1106',
-                        name: 'gpt-3.5-turbo-1106'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-0613',
-                        name: 'gpt-3.5-turbo-0613'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-16k',
-                        name: 'gpt-3.5-turbo-16k'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-16k-0613',
-                        name: 'gpt-3.5-turbo-16k-0613'
-                    }
-                ],
-                default: 'gpt-3.5-turbo',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'gpt-3.5-turbo'
             },
             {
                 label: 'Temperature',
@@ -204,6 +143,13 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatOpenAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

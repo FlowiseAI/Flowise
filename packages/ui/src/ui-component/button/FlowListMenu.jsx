@@ -155,7 +155,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: error.response.data.message,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -194,7 +194,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: error.response.data.message,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -226,7 +226,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
             } catch (error) {
                 setError(error)
                 enqueueSnackbar({
-                    message: error.response.data.message,
+                    message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
