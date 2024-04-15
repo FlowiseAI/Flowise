@@ -147,6 +147,7 @@ Flowise support different environment variables to configure your instance. You 
 | SECRETKEY_PATH              | Location where encryption key (used to encrypt/decrypt credentials) is saved | String                                           | `your-path/Flowise/packages/server` |
 | FLOWISE_SECRETKEY_OVERWRITE | Encryption key to be used instead of the key stored in SECRETKEY_PATH        | String                                           |
 | DISABLE_FLOWISE_TELEMETRY   | Turn off telemetry                                                           | Boolean                                          |
+| MODEL_LIST_CONFIG_JSON      | File path to load list of models from your local config file                 | String                                           | `/your_model_list_config_file_path` |
 
 You can also specify the env variables when using `npx`. For example:
 
