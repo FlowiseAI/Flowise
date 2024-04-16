@@ -34,7 +34,7 @@
         "@google/generative-ai": "^0.7.0",
         "@huggingface/inference": "^2.6.1",
         "@langchain/anthropic": "^0.1.14",
-        "@langchain/cohere": "^0.0.5",
+        "@langchain/cohere": "^0.0.7",
         "@langchain/community": "^0.0.39",
         "@langchain/core": "^0.1.57",
         "@langchain/google-genai": "^0.0.10",

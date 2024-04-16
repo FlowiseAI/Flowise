@@ -122,8 +122,8 @@ importers:
                 specifier: ^0.1.14
                 version: 0.1.14
             '@langchain/cohere':
-                specifier: ^0.0.5
-                version: 0.0.5
+                specifier: ^0.0.7
+                version: 0.0.7
             '@langchain/community':
                 specifier: ^0.0.39
                 version: 0.0.39(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-bedrock-runtime@3.422.0)(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/credential-provider-node@3.529.1)(@datastax/astra-db-ts@0.1.4)(@elastic/elasticsearch@8.12.2)(@getzep/zep-js@0.9.0)(@gomomento/sdk-core@1.68.1)(@gomomento/sdk@1.68.1)(@google-ai/generativelanguage@0.2.1)(@huggingface/inference@2.6.4)(@opensearch-project/opensearch@1.2.0)(@pinecone-database/pinecone@2.1.0)(@qdrant/js-client-rest@1.8.1)(@supabase/supabase-js@2.39.8)(@upstash/redis@1.22.1)(@zilliz/milvus2-sdk-node@2.3.5)(chromadb@1.8.1)(cohere-ai@6.2.2)(faiss-node@0.5.1)(google-auth-library@9.6.3)(html-to-text@9.0.5)(ioredis@5.3.2)(jsdom@22.1.0)(lodash@4.17.21)(lunary@0.6.16)(mongodb@6.3.0)(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(replicate@0.18.1)(typeorm@0.3.20)(weaviate-ts-client@1.6.0)(ws@8.16.0)
@@ -4838,12 +4838,12 @@ packages:
             - encoding
         dev: false
 
-    /@langchain/cohere@0.0.5:
-        resolution: { integrity: sha512-4q6dHZ6XCk5NIrLBzxedNGwlmj7cROVvAtSnCaDsLKVKX2cgTUxjiSKAtzjX39RqHwCsdt919ZRdL/X15AQK/w== }
+    /@langchain/cohere@0.0.7:
+        resolution: { integrity: sha512-ICSrSOT6FzSbR+xnbkP6BxXhuom1ViPRiy8K8KrL6bHbTiR5v1UnpskTWRpyhQS1GA6+3t1gp7XHxB5CZzLyqQ== }
         engines: { node: '>=18' }
         dependencies:
             '@langchain/core': 0.1.57
-            cohere-ai: 7.7.7
+            cohere-ai: 7.9.3
         transitivePeerDependencies:
             - encoding
         dev: false
@@ -12009,6 +12009,18 @@ packages:
 
     /cohere-ai@7.7.7:
         resolution: { integrity: sha512-eLL/5lkAxFvqwV200bsBsS5ZnPHZZKur0WR3dXD5K47QT7C9r0OFv/ykJw/rCuoSsyyK3eoHm+znIi3W3QCwiQ== }
+        dependencies:
+            form-data: 4.0.0
+            js-base64: 3.7.2
+            node-fetch: 2.7.0
+            qs: 6.11.2
+            url-join: 4.0.1
+        transitivePeerDependencies:
+            - encoding
+        dev: false
+
+    /cohere-ai@7.9.3:
+        resolution: { integrity: sha512-DcZ6B9Fa1yaFFkZ3+HO/aE4R97m08cZs/ww7YpfEcTatAljznmnXtaFKRMP57olLMGKmYA/oHpkUqh/Vt4kvFA== }
         dependencies:
             form-data: 4.0.0
             js-base64: 3.7.2
