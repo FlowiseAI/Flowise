@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // material-ui
-import { Button, IconButton, OutlinedInput, Box, List, InputAdornment } from '@mui/material'
+import { Button, IconButton, OutlinedInput, Box, List, InputAdornment, Typography } from '@mui/material'
 import { IconX, IconTrash, IconPlus } from '@tabler/icons'
 
 // Project import
@@ -25,6 +25,7 @@ const AllowedDomains = ({ dialogProps }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [inputFields, setInputFields] = useState([''])
+    const [errorMessage, setErrorMessage] = useState('')
 
     const [chatbotConfig, setChatbotConfig] = useState({})
 
@@ -47,9 +48,12 @@ const AllowedDomains = ({ dialogProps }) => {
     const onSave = async () => {
         try {
             let value = {
-                allowedOrigins: [...inputFields]
+                allowedOrigins: [...inputFields],
+                allowedOriginsError: errorMessage
             }
             chatbotConfig.allowedOrigins = value.allowedOrigins
+            chatbotConfig.allowedOriginsError = value.allowedOriginsError
+
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 chatbotConfig: JSON.stringify(chatbotConfig)
             })
@@ -96,8 +100,14 @@ const AllowedDomains = ({ dialogProps }) => {
                 } else {
                     setInputFields([''])
                 }
+                if (chatbotConfig.allowedOriginsError) {
+                    setErrorMessage(chatbotConfig.allowedOriginsError)
+                } else {
+                    setErrorMessage('')
+                }
             } catch (e) {
                 setInputFields([''])
+                setErrorMessage('')
             }
         }
 
@@ -106,15 +116,30 @@ const AllowedDomains = ({ dialogProps }) => {
 
     return (
         <>
-            <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}
-            >
-                <span>Your chatbot will only work when used from the following domains.</span>
-            </div>
-            <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
+            <Box sx={{ mb: 4 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography sx={{ mb: 1 }}>Error Message</Typography>
+                    <OutlinedInput
+                        type='text'
+                        fullWidth
+                        value={errorMessage}
+                        onChange={(e) => {
+                            setErrorMessage(e.target.value)
+                        }}
+                    />
+                </div>
+            </Box>
+            <Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        mb: 1
+                    }}
+                >
+                    <Typography sx={{ mb: 1 }}>Allowed Domains</Typography>
+                    <Typography sx={{ fontSize: '0.8rem' }}>Your chatbot will only work when used from the following domains.</Typography>
+                </Box>
                 <List>
                     {inputFields.map((origin, index) => {
                         return (
