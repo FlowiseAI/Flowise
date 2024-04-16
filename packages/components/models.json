@@ -308,6 +308,10 @@
                 {
                     "label": "gemini-pro",
                     "name": "gemini-pro"
+                },
+                {
+                    "label": "gemini-pro-vision",
+                    "name": "gemini-pro-vision"
                 }
             ]
         },

@@ -19,7 +19,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => 
     }
 
     const uploadAllowedNodes = ['llmChain', 'conversationChain', 'mrklAgentChat', 'conversationalAgent']
-    const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI']
+    const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
 
     const flowObj = JSON.parse(chatflow.flowData)
     const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
