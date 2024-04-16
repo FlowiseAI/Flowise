@@ -333,6 +333,24 @@ const processAndSaveChunks = async (data: any) => {
             found.totalChars = 0
             found.status = DocumentStoreStatus.SYNCING
             entity.loaders = JSON.stringify(existingLoaders)
+        } else {
+            let loader: any = {
+                id: newLoaderId,
+                loaderId: data.loaderId,
+                loaderName: data.loaderName,
+                loaderConfig: data.loaderConfig,
+                splitterId: data.splitterId,
+                splitterName: data.splitterName,
+                splitterConfig: data.splitterConfig,
+                totalChunks: 0,
+                totalChars: 0,
+                status: DocumentStoreStatus.SYNCING
+            }
+            if (data.credential) {
+                loader.credential = data.credential
+            }
+            existingLoaders.push(loader)
+            entity.loaders = JSON.stringify(existingLoaders)
         }
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         // this method will run async, will have to be moved to a worker thread
@@ -387,41 +405,37 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
             }
             //step 4: create a new loader and save it to the document store
             const existingLoaders = JSON.parse(entity.loaders)
-            let loader: any = {
-                id: newLoaderId,
-                loaderId: data.loaderId,
-                loaderName: data.loaderName,
-                loaderConfig: data.loaderConfig,
-                splitterId: data.splitterId,
-                splitterName: data.splitterName,
-                splitterConfig: data.splitterConfig
-            }
-            if (data.credential) {
-                loader.credential = data.credential
-            }
+            // let loader: any = {
+            //     id: newLoaderId,
+            //     loaderId: data.loaderId,
+            //     loaderName: data.loaderName,
+            //     loaderConfig: data.loaderConfig,
+            //     splitterId: data.splitterId,
+            //     splitterName: data.splitterName,
+            //     splitterConfig: data.splitterConfig
+            // }
+            // if (data.credential) {
+            //     loader.credential = data.credential
+            // }
+            const loader = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
             if (filesWithMetadata.length > 0) {
                 loader.files = filesWithMetadata
             }
-            existingLoaders.push(loader)
+            //existingLoaders.push(loader)
             if (data.id) {
                 //step 5: remove all files and chunks associated with the previous loader
-                const found = existingLoaders.find((ldr: any) => ldr.id === data.id)
-                if (found) {
-                    const index = existingLoaders.indexOf(found)
-                    if (index > -1) {
-                        existingLoaders.splice(index, 1)
-                        if (!data.rehydrated) {
-                            if (found.files) {
-                                found.files.map((file: any) => {
-                                    fs.unlinkSync(file.path)
-                                })
-                            }
+                const index = existingLoaders.indexOf(loader)
+                if (index > -1) {
+                    existingLoaders.splice(index, 1)
+                    if (!data.rehydrated) {
+                        if (loader.files) {
+                            loader.files.map((file: any) => {
+                                fs.unlinkSync(file.path)
+                            })
                         }
                     }
                 }
             }
-            //step 6: find the loader to update the metrics
-            const found = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
             //step 7: remove all previous chunks
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
             if (response.chunks) {
@@ -439,10 +453,10 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                     await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
                 })
                 // update the loader with the new metrics
-                found.totalChunks = response.totalChunks
-                found.totalChars = totalChars
+                loader.totalChunks = response.totalChunks
+                loader.totalChars = totalChars
             }
-            found.status = 'SYNC'
+            loader.status = 'SYNC'
             // have a flag and iterate over the loaders and update the entity status to SYNC
             const allSynced = existingLoaders.every((ldr: any) => ldr.status === 'SYNC')
             entity.status = allSynced ? DocumentStoreStatus.SYNC : DocumentStoreStatus.STALE

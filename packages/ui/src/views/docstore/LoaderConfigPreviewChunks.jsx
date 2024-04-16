@@ -172,6 +172,7 @@ const LoaderConfigPreviewChunks = () => {
                 previewChunksApi.request(config)
             } catch (error) {
                 setLoading(false)
+                setError(error)
                 enqueueSnackbar({
                     message: 'Error invoking Preview Chunks API. Please try again.',
                     options: {
@@ -403,6 +404,14 @@ const LoaderConfigPreviewChunks = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getNodesByCategoryApi.error])
+
+    useEffect(() => {
+        if (previewChunksApi.error) {
+            setError(previewChunksApi.error)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [previewChunksApi.error])
 
     return (
         <>
