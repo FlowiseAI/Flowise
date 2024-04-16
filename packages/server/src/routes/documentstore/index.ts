@@ -4,13 +4,13 @@ const router = express.Router()
 
 /** Document Store Routes */
 // Create document store
-router.post('/', documentStoreController.createDocumentStore)
+router.post('/store', documentStoreController.createDocumentStore)
 // Get all stores
-router.get('/', documentStoreController.getAllDocumentStores)
+router.get('/stores', documentStoreController.getAllDocumentStores)
 // Get specific store
-router.get('/:id', documentStoreController.getDocumentStoreById)
+router.get('/store/:id', documentStoreController.getDocumentStoreById)
 // Update documentStore
-router.put('/:id', documentStoreController.updateDocumentStore)
+router.put('/store/:id', documentStoreController.updateDocumentStore)
 
 /** Document Store - Loaders */
 // Get all loaders

@@ -1,10 +1,10 @@
 import client from './client'
 
-const getAllDocumentStores = () => client.get('/document-store')
+const getAllDocumentStores = () => client.get('/document-store/stores')
 const getDocumentLoaders = () => client.get('/document-store/loaders')
-const getSpecificDocumentStore = (id) => client.get(`/document-store/${id}`)
-const createDocumentStore = (body) => client.post(`/document-store`, body)
-const updateDocumentStore = (id, body) => client.put(`/document-store/${id}`, body)
+const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}`)
+const createDocumentStore = (body) => client.post(`/document-store/store`, body)
+const updateDocumentStore = (id, body) => client.put(`/document-store/store/${id}`, body)
 
 const deleteLoaderFromStore = (id, fileId) => client.delete(`/document-store/loader/${id}/${fileId}`)
 const deleteChunkFromStore = (storeId, loaderId, chunkId) => client.delete(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`)

@@ -105,7 +105,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
                                 <IconX
                                     stroke={1.5}
                                     size='1rem'
-                                    onClick={() => filterSearch('')}
+                                    onClick={() => onSearchChange('')}
                                     style={{
                                         cursor: 'pointer'
                                     }}
