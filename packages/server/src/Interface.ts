@@ -257,7 +257,6 @@ export interface IDocumentStore {
     description: string
     subFolder: string
     loaders: string // JSON string
-    metrics: string // JSON string
     whereUsed: string // JSON string
     updatedDate: Date
     createdDate: Date

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { Stack, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Chip } from '@mui/material'
-import { styled, useTheme } from '@mui/material/styles'
+import { alpha, styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 import { tableCellClasses } from '@mui/material/TableCell'
 
@@ -25,12 +25,57 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconEdit, IconTrash, IconRefresh, IconX, IconFileStack } from '@tabler/icons'
+import { IconPlus, IconEdit, IconRefresh, IconX } from '@tabler/icons'
 import * as PropTypes from 'prop-types'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import MenuItem from '@mui/material/MenuItem'
+import Divider from '@mui/material/Divider'
+import FileDeleteIcon from '@mui/icons-material/Delete'
+import FileEditIcon from '@mui/icons-material/Edit'
+import FileChunksIcon from '@mui/icons-material/AppRegistration'
+import InsertVectorStoreIcon from '@mui/icons-material/ArchiveOutlined'
+import TestVectorRetrievalIcon from '@mui/icons-material/QuizOutlined'
+
+import Menu from '@mui/material/Menu'
 
 // ==============================|| DOCUMENTS ||============================== //
+const StyledMenu = styled((props) => (
+    <Menu
+        elevation={0}
+        anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+        }}
+        transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+        }}
+        {...props}
+    />
+))(({ theme }) => ({
+    '& .MuiPaper-root': {
+        borderRadius: 6,
+        marginTop: theme.spacing(1),
+        minWidth: 180,
+        boxShadow:
+            'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
+        '& .MuiMenu-list': {
+            padding: '4px 0'
+        },
+        '& .MuiMenuItem-root': {
+            '& .MuiSvgIcon-root': {
+                fontSize: 18,
+                color: theme.palette.text.secondary,
+                marginRight: theme.spacing(1.5)
+            },
+            '&:active': {
+                backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity)
+            }
+        }
+    }
+}))
 
 const DocumentStoreDetails = () => {
     const theme = useTheme()
@@ -211,6 +256,7 @@ const DocumentStoreDetails = () => {
                                         <TableCell>Splitter</TableCell>
                                         <TableCell>Source(s)</TableCell>
                                         <TableCell style={{ textAlign: 'center' }}>Chunks</TableCell>
+                                        <TableCell style={{ textAlign: 'center' }}>Chars</TableCell>
                                         <TableCell style={{ textAlign: 'center', width: '20%' }}>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -287,6 +333,16 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }))
 
 function LoaderRow(props) {
+    // actions
+    const [anchorEl, setAnchorEl] = useState(null)
+    const open = Boolean(anchorEl)
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget)
+    }
+
+    const handleClose = () => {
+        setAnchorEl(null)
+    }
     return (
         <>
             <TableRow key={props.index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -304,24 +360,65 @@ function LoaderRow(props) {
                 <StyledTableCell scope='row' style={{ width: '15%' }}>
                     {props.loader.loaderName}{' '}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '30%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
-                <StyledTableCell style={{ width: '20%' }}>{props.loader.source}</StyledTableCell>
+                <StyledTableCell style={{ width: '20%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
+                <StyledTableCell style={{ width: '10%' }}>{props.loader.source}</StyledTableCell>
                 <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
-                    {!props.loader.totalChunks && <Chip color='warning' size='small' label='0' />}
+                    {!props.loader.totalChunks && <Chip variant='outlined' size='small' label='0' />}
                     {props.loader.totalChunks && props.loader.totalChunks > 0 && (
-                        <Chip color='success' size='small' label={props.loader.totalChunks} />
+                        <Chip variant='outlined' size='small' label={props.loader.totalChunks.toLocaleString()} />
                     )}
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
-                    <IconButton title='Settings' color='primary' onClick={props.onViewChunksClick}>
-                        <IconFileStack />
-                    </IconButton>
-                    <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
-                        <IconEdit />
-                    </IconButton>
-                    <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
-                        <IconTrash />
-                    </IconButton>
+                    {!props.loader.totalChars && <Chip variant='outlined' size='small' label='0' />}
+                    {props.loader.totalChars && props.loader.totalChars > 0 && (
+                        <Chip variant='outlined' size='small' label={props.loader.totalChars.toLocaleString()} />
+                    )}
+                </StyledTableCell>
+                <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
+                    <div>
+                        <Button
+                            id='document-store-action-button'
+                            aria-controls={open ? 'document-store-action-customized-menu' : undefined}
+                            aria-haspopup='true'
+                            aria-expanded={open ? 'true' : undefined}
+                            disableElevation
+                            onClick={handleClick}
+                            endIcon={<KeyboardArrowDownIcon />}
+                        >
+                            Options
+                        </Button>
+                        <StyledMenu
+                            id='document-store-actions-customized-menu'
+                            MenuListProps={{
+                                'aria-labelledby': 'document-store-actions-customized-button'
+                            }}
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                        >
+                            <MenuItem onClick={props.onEditClick} disableRipple>
+                                <FileEditIcon />
+                                Preview & Process
+                            </MenuItem>
+                            <MenuItem onClick={props.onViewChunksClick} disableRipple>
+                                <FileChunksIcon />
+                                View & Edit Chunks
+                            </MenuItem>
+                            <MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>
+                                <InsertVectorStoreIcon />
+                                Insert into Vector Store
+                            </MenuItem>
+                            <MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>
+                                <TestVectorRetrievalIcon />
+                                Test Retrieval
+                            </MenuItem>
+                            <Divider sx={{ my: 0.5 }} />
+                            <MenuItem onClick={props.onDeleteClick} disableRipple>
+                                <FileDeleteIcon />
+                                Delete
+                            </MenuItem>
+                        </StyledMenu>
+                    </div>
                 </StyledTableCell>
             </TableRow>
         </>

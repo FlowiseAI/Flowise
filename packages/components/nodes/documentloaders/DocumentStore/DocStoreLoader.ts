@@ -78,7 +78,6 @@ class DocStore_DocumentLoaders implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        // if (options.isUpsert) {
         const selectedStore = nodeData.inputs?.selectedStore as string
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
@@ -91,9 +90,6 @@ class DocStore_DocumentLoaders implements INode {
             finalDocs.push(new Document({ pageContent: chunk.pageContent, metadata: JSON.parse(chunk.metadata) }))
         }
         return finalDocs
-        // }
-        //
-        // return {}
     }
 }
 

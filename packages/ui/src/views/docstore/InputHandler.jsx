@@ -200,23 +200,23 @@ const InputHandler = ({ inputParam, data, disabled = false, isAdditionalParams =
                                 </IconButton>
                             )}
                         </div>
-                        {inputParam.warning && (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    borderRadius: 10,
-                                    background: 'rgb(254,252,191)',
-                                    padding: 10,
-                                    marginTop: 10,
-                                    marginBottom: 10
-                                }}
-                            >
-                                <IconAlertTriangle size={30} color='orange' />
-                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
-                            </div>
-                        )}
+                        {/*{inputParam.warning && (*/}
+                        {/*    <div*/}
+                        {/*        style={{*/}
+                        {/*            display: 'flex',*/}
+                        {/*            flexDirection: 'row',*/}
+                        {/*            alignItems: 'center',*/}
+                        {/*            borderRadius: 10,*/}
+                        {/*            background: 'rgb(254,252,191)',*/}
+                        {/*            padding: 10,*/}
+                        {/*            marginTop: 10,*/}
+                        {/*            marginBottom: 10*/}
+                        {/*        }}*/}
+                        {/*    >*/}
+                        {/*        <IconAlertTriangle size={30} color='orange' />*/}
+                        {/*        <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
                         {inputParam.type === 'credential' && (
                             <CredentialInputHandler
                                 disabled={disabled}
@@ -397,12 +397,14 @@ const InputHandler = ({ inputParam, data, disabled = false, isAdditionalParams =
                     </Box>
                 </>
             )}
-            <ExpandTextDialog
-                show={showExpandDialog}
-                dialogProps={expandDialogProps}
-                onCancel={() => setShowExpandDialog(false)}
-                onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
-            ></ExpandTextDialog>
+            {showExpandDialog && (
+                <ExpandTextDialog
+                    show={showExpandDialog}
+                    dialogProps={expandDialogProps}
+                    onCancel={() => setShowExpandDialog(false)}
+                    onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
+                ></ExpandTextDialog>
+            )}
         </div>
     )
 }

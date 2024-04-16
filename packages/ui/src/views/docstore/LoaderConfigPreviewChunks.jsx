@@ -8,7 +8,7 @@ import useApi from '@/hooks/useApi'
 
 // Material-UI
 import { Box, Button, Card, CardContent, Divider, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
-import { IconArrowBack, IconX } from '@tabler/icons'
+import { IconAlertTriangle, IconArrowBack, IconDatabaseImport, IconListSearch, IconX, IconZoomReplace } from '@tabler/icons'
 
 // Project
 import MainCard from '@/ui-component/cards/MainCard'
@@ -29,6 +29,7 @@ import { validate as uuidValidate } from 'uuid'
 import documentsApi from '@/api/documentstore'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -49,7 +50,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     padding: 1
 }))
 // ===========================|| DOCUMENT LOADER CHUNKS ||=========================== //
-const DocumentLoaderChunks = () => {
+const LoaderConfigPreviewChunks = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
@@ -80,12 +81,16 @@ const DocumentLoaderChunks = () => {
 
     const [documentChunks, setDocumentChunks] = useState([])
     const [totalChunks, setTotalChunks] = useState(0)
+    const [previewWarning, setPreviewWarning] = useState(null)
 
     const [currentPreviewCount, setCurrentPreviewCount] = useState(0)
     const [previewChunkCount, setPreviewChunkCount] = useState(20)
     const [editingLoader, setEditingLoader] = useState()
 
     const dispatch = useDispatch()
+    const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
+    const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
+    const [manageLinksBtn, setManageLinksBtn] = useState(false)
 
     // ==============================|| Snackbar ||============================== //
     useNotifier()
@@ -94,6 +99,25 @@ const DocumentLoaderChunks = () => {
 
     const openDS = (storeId) => {
         navigate('/document-stores/' + storeId)
+    }
+
+    const onManageLinksDialogClicked = (url, selectedLinks, relativeLinksMethod, limit) => {
+        const dialogProps = {
+            url,
+            relativeLinksMethod,
+            limit,
+            selectedLinks,
+            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancel'
+        }
+        setManageScrapedLinksDialogProps(dialogProps)
+        setShowManageScrapedLinksDialog(true)
+    }
+
+    const onManageLinksDialogSave = (url, links) => {
+        setShowManageScrapedLinksDialog(false)
+        instanceData.inputs['url'] = url
+        instanceData.inputs['selectedLinks'] = links
     }
 
     const onSplitterChange = (name, preload = false) => {
@@ -293,6 +317,7 @@ const DocumentLoaderChunks = () => {
                 setTextSplitterMandatory(!textSplitter.optional)
             }
             setNodeData(data)
+            let loaderNodeId = nodeName
             if (editingLoader) {
                 const iData = { id: storeId, inputs: [] }
                 data.inputs.map((input) => {
@@ -304,12 +329,17 @@ const DocumentLoaderChunks = () => {
                     iData.credential = editingLoader.credential
                 }
                 setInstanceData(iData)
+                loaderNodeId = editingLoader.loaderId
             } else {
                 const iData = { id: storeId, inputs: [] }
                 data.inputs.map((input) => {
                     if (input.default) iData.inputs[input.name] = input.default
                 })
                 setInstanceData(iData)
+            }
+            if (loaderNodeId === 'cheerioWebScraper' || loaderNodeId === 'puppeteerWebScraper' || loaderNodeId === 'playwrightWebScraper') {
+                setPreviewWarning('In Preview Mode, Only the first 3 links will be scraped.')
+                setManageLinksBtn(true)
             }
         }
 
@@ -433,12 +463,32 @@ const DocumentLoaderChunks = () => {
                                             nodeData.inputs
                                                 .filter((inputParam) => !inputParam.hidden)
                                                 .map((inputParam, index) => (
-                                                    <InputHandler
-                                                        key={index}
-                                                        data={instanceData}
-                                                        inputParam={inputParam}
-                                                        isAdditionalParams={inputParam.additionalParams}
-                                                    />
+                                                    <>
+                                                        <InputHandler
+                                                            key={index}
+                                                            data={instanceData}
+                                                            inputParam={inputParam}
+                                                            isAdditionalParams={inputParam.additionalParams}
+                                                        />
+                                                        {manageLinksBtn && inputParam.name === 'url' && (
+                                                            <Box sx={{ p: 1, textAlign: 'center' }}>
+                                                                <Button
+                                                                    variant='outlined'
+                                                                    onClick={() =>
+                                                                        onManageLinksDialogClicked(
+                                                                            instanceData.inputs['url'] ?? inputParam.default ?? '',
+                                                                            instanceData.inputs.selectedLinks,
+                                                                            instanceData.inputs['relativeLinksMethod'] ?? 'webCrawl',
+                                                                            parseInt(instanceData.inputs['limit']) ?? 0
+                                                                        )
+                                                                    }
+                                                                    startIcon={<IconListSearch />}
+                                                                >
+                                                                    Manage Links
+                                                                </Button>{' '}
+                                                            </Box>
+                                                        )}
+                                                    </>
                                                 ))}
                                         {textSplitterNodes && Object.keys(textSplitterNodes).length > 0 && (
                                             <Box sx={{ p: 1 }}>
@@ -485,20 +535,36 @@ const DocumentLoaderChunks = () => {
                                                 value={previewChunkCount ?? 25}
                                             />
                                         </Box>
-                                        <Box sx={{ p: 1, textAlign: 'center' }}>
-                                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onSaveAndProcess}>
-                                                Confirm & Process
-                                            </StyledButton>{' '}
-                                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={onPreviewChunks}>
-                                                Preview
-                                            </StyledButton>
-                                        </Box>
                                     </div>
                                 </Grid>
                                 <Grid item xs={8} md={6} lg={6} sm={8}>
                                     <Typography style={{ marginBottom: 5, wordWrap: 'break-word', textAlign: 'left' }} variant='h4'>
                                         Preview: Showing {currentPreviewCount} of {totalChunks} Chunks.
                                     </Typography>
+                                    {previewWarning && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                borderRadius: 10,
+                                                background: 'rgb(254,252,191)',
+                                                padding: 10,
+                                                marginTop: 10,
+                                                marginBottom: 10
+                                            }}
+                                        >
+                                            <IconAlertTriangle size={20} color='orange' />
+                                            <span
+                                                style={{
+                                                    color: 'rgb(116,66,16)',
+                                                    marginLeft: 10
+                                                }}
+                                            >
+                                                {previewWarning}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div style={{ height: '800px', overflow: 'scroll', padding: '5px' }}>
                                         <Grid container spacing={2}>
                                             {documentChunks &&
@@ -527,11 +593,38 @@ const DocumentLoaderChunks = () => {
                                 </Grid>
                             </Grid>
                         </Box>
+                        <Box sx={{ p: 1, textAlign: 'center' }}>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ color: 'white' }}
+                                onClick={onSaveAndProcess}
+                                startIcon={<IconDatabaseImport />}
+                            >
+                                Process & Save
+                            </StyledButton>{' '}
+                            <StyledButton
+                                variant='contained'
+                                sx={{ color: 'white' }}
+                                onClick={onPreviewChunks}
+                                startIcon={<IconZoomReplace />}
+                            >
+                                Preview
+                            </StyledButton>
+                        </Box>
                     </Stack>
                 )}
             </MainCard>
+            {/* Manage Scraped Links Dialog */}
+            {manageLinksBtn && (
+                <ManageScrapedLinksDialog
+                    show={showManageScrapedLinksDialog}
+                    dialogProps={manageScrapedLinksDialogProps}
+                    onCancel={() => setShowManageScrapedLinksDialog(false)}
+                    onSave={onManageLinksDialogSave}
+                />
+            )}
         </>
     )
 }
 
-export default DocumentLoaderChunks
+export default LoaderConfigPreviewChunks

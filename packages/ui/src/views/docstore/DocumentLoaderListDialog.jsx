@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles'
 import { IconSearch, IconX } from '@tabler/icons'
 
 // API
-import nodesApi from '@/api/nodes'
+import documentStoreApi from '@/api/documentstore'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -22,7 +22,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
     const [searchValue, setSearchValue] = useState('')
     const [documentLoaders, setDocumentLoaders] = useState([])
 
-    const getNodesByCategory = useApi(nodesApi.getNodesByCategory)
+    const getDocumentLoadersApi = useApi(documentStoreApi.getDocumentLoaders)
 
     const onSearchChange = (val) => {
         setSearchValue(val)
@@ -39,21 +39,17 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
     }, [dialogProps])
 
     useEffect(() => {
-        getNodesByCategory.request('Document Loaders')
+        getDocumentLoadersApi.request()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (getNodesByCategory.data) {
-            const data = getNodesByCategory.data
-            const removeDocumentLoadersWithName = ['documentStore', 'vectorStoreToDocument']
-            // remove the document loader with above names
-            const filteredData = data.filter((node) => !removeDocumentLoadersWithName.includes(node.name))
-            setDocumentLoaders(filteredData)
+        if (getDocumentLoadersApi.data) {
+            setDocumentLoaders(getDocumentLoadersApi.data)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getNodesByCategory.data])
+    }, [getDocumentLoadersApi.data])
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })

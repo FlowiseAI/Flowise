@@ -94,10 +94,60 @@ const getDocumentStoreFileChunks = async (req: Request, res: Response, next: Nex
     }
 }
 
+const deleteDocumentStoreFileChunk = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
+            throw new Error('Error: documentStoreController.deleteDocumentStoreFileChunk - storeId not provided!')
+        }
+        if (typeof req.params.loaderId === 'undefined' || req.params.loaderId === '') {
+            throw new Error('Error: documentStoreController.deleteDocumentStoreFileChunk - loaderId not provided!')
+        }
+        if (typeof req.params.chunkId === 'undefined' || req.params.chunkId === '') {
+            throw new Error('Error: documentStoreController.deleteDocumentStoreFileChunk - chunkId not provided!')
+        }
+
+        const apiResponse = await documentStoreService.deleteDocumentStoreFileChunk(
+            req.params.storeId,
+            req.params.loaderId,
+            req.params.chunkId
+        )
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const editDocumentStoreFileChunk = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
+            throw new Error('Error: documentStoreController.editDocumentStoreFileChunk - storeId not provided!')
+        }
+        if (typeof req.params.loaderId === 'undefined' || req.params.loaderId === '') {
+            throw new Error('Error: documentStoreController.editDocumentStoreFileChunk - loaderId not provided!')
+        }
+        if (typeof req.params.chunkId === 'undefined' || req.params.chunkId === '') {
+            throw new Error('Error: documentStoreController.editDocumentStoreFileChunk - chunkId not provided!')
+        }
+        const body = req.body
+        if (typeof body === 'undefined' || body.pageContent === 'undefined' || body.pageContent === '') {
+            throw new Error('Error: documentStoreController.editDocumentStoreFileChunk - body not provided!')
+        }
+        const apiResponse = await documentStoreService.editDocumentStoreFileChunk(
+            req.params.storeId,
+            req.params.loaderId,
+            req.params.chunkId,
+            body.pageContent
+        )
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const processFileChunks = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
-            throw new Error('Error: documentStoreController.processChunksWithLoader - body not provided!')
+            throw new Error('Error: documentStoreController.processFileChunks - body not provided!')
         }
         const body = req.body
         const apiResponse = await documentStoreService.processAndSaveChunks(body)
@@ -132,10 +182,20 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
 const previewFileChunks = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
-            throw new Error('Error: documentStoreController.processChunksWithLoader - body not provided!')
+            throw new Error('Error: documentStoreController.previewFileChunks - body not provided!')
         }
         const body = req.body
+        body.preview = true
         const apiResponse = await documentStoreService.previewChunks(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getDocumentLoaders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getDocumentLoaders()
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -148,8 +208,10 @@ export default {
     deleteLoaderFromDocumentStore,
     getDocumentStoreById,
     getDocumentStoreFileChunks,
-    // uploadFileToDocumentStore,
     updateDocumentStore,
     processFileChunks,
-    previewFileChunks
+    previewFileChunks,
+    getDocumentLoaders,
+    deleteDocumentStoreFileChunk,
+    editDocumentStoreFileChunk
 }
