@@ -392,11 +392,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
 
-        // Send user question and history to API
+        // Send user question to Prediction Internal API
         try {
             const params = {
                 question: input,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
             if (urls && urls.length > 0) params.uploads = urls
@@ -447,7 +446,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         }
                     ])
                 }
-                setLocalStorageChatflow(chatflowid, data.chatId, messages)
+                setLocalStorageChatflow(chatflowid, data.chatId)
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -456,8 +455,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 }, 100)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            handleError(errorData)
+            handleError(error.response.data.message)
             return
         }
     }
@@ -521,7 +519,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
-            setLocalStorageChatflow(chatflowid, chatId, messages)
+            setLocalStorageChatflow(chatflowid, chatId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -555,7 +553,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             inputFields.push(config.starterPrompts[key])
                         }
                     })
-                    setStarterPrompts(inputFields)
+                    setStarterPrompts(inputFields.filter((field) => field.prompt !== ''))
                 }
                 if (config.chatFeedback) {
                     setChatFeedbackStatus(config.chatFeedback.status)

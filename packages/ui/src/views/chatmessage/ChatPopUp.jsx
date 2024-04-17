@@ -105,9 +105,8 @@ export const ChatPopUp = ({ chatflowid }) => {
                     }
                 })
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: errorData,
+                    message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',

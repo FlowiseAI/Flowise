@@ -1,7 +1,8 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { BedrockEmbeddings, BedrockEmbeddingsParams } from '@langchain/community/embeddings/bedrock'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
 
 class AWSBedrockEmbedding_Embeddings implements INode {
     label: string
@@ -18,7 +19,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'AWS Bedrock Embeddings'
         this.name = 'AWSBedrockEmbeddings'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'AWSBedrockEmbeddings'
         this.icon = 'aws.svg'
         this.category = 'Embeddings'
@@ -35,56 +36,15 @@ class AWSBedrockEmbedding_Embeddings implements INode {
             {
                 label: 'Region',
                 name: 'region',
-                type: 'options',
-                options: [
-                    { label: 'af-south-1', name: 'af-south-1' },
-                    { label: 'ap-east-1', name: 'ap-east-1' },
-                    { label: 'ap-northeast-1', name: 'ap-northeast-1' },
-                    { label: 'ap-northeast-2', name: 'ap-northeast-2' },
-                    { label: 'ap-northeast-3', name: 'ap-northeast-3' },
-                    { label: 'ap-south-1', name: 'ap-south-1' },
-                    { label: 'ap-south-2', name: 'ap-south-2' },
-                    { label: 'ap-southeast-1', name: 'ap-southeast-1' },
-                    { label: 'ap-southeast-2', name: 'ap-southeast-2' },
-                    { label: 'ap-southeast-3', name: 'ap-southeast-3' },
-                    { label: 'ap-southeast-4', name: 'ap-southeast-4' },
-                    { label: 'ap-southeast-5', name: 'ap-southeast-5' },
-                    { label: 'ap-southeast-6', name: 'ap-southeast-6' },
-                    { label: 'ca-central-1', name: 'ca-central-1' },
-                    { label: 'ca-west-1', name: 'ca-west-1' },
-                    { label: 'cn-north-1', name: 'cn-north-1' },
-                    { label: 'cn-northwest-1', name: 'cn-northwest-1' },
-                    { label: 'eu-central-1', name: 'eu-central-1' },
-                    { label: 'eu-central-2', name: 'eu-central-2' },
-                    { label: 'eu-north-1', name: 'eu-north-1' },
-                    { label: 'eu-south-1', name: 'eu-south-1' },
-                    { label: 'eu-south-2', name: 'eu-south-2' },
-                    { label: 'eu-west-1', name: 'eu-west-1' },
-                    { label: 'eu-west-2', name: 'eu-west-2' },
-                    { label: 'eu-west-3', name: 'eu-west-3' },
-                    { label: 'il-central-1', name: 'il-central-1' },
-                    { label: 'me-central-1', name: 'me-central-1' },
-                    { label: 'me-south-1', name: 'me-south-1' },
-                    { label: 'sa-east-1', name: 'sa-east-1' },
-                    { label: 'us-east-1', name: 'us-east-1' },
-                    { label: 'us-east-2', name: 'us-east-2' },
-                    { label: 'us-gov-east-1', name: 'us-gov-east-1' },
-                    { label: 'us-gov-west-1', name: 'us-gov-west-1' },
-                    { label: 'us-west-1', name: 'us-west-1' },
-                    { label: 'us-west-2', name: 'us-west-2' }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
                 default: 'us-east-1'
             },
             {
                 label: 'Model Name',
                 name: 'model',
-                type: 'options',
-                options: [
-                    { label: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1' },
-                    { label: 'amazon.titan-embed-g1-text-02', name: 'amazon.titan-embed-g1-text-02' },
-                    { label: 'cohere.embed-english-v3', name: 'cohere.embed-english-v3' },
-                    { label: 'cohere.embed-multilingual-v3', name: 'cohere.embed-multilingual-v3' }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'amazon.titan-embed-text-v1'
             },
             {
@@ -95,6 +55,16 @@ class AWSBedrockEmbedding_Embeddings implements INode {
                 optional: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'AWSBedrockEmbeddings')
+        },
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.EMBEDDING, 'AWSBedrockEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
