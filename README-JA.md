@@ -2,7 +2,7 @@
 
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
 
-# Flowise - LLMアプリを簡単に構築
+# Flowise - LLM アプリを簡単に構築
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -12,7 +12,7 @@
 
 [English](./README.md) | [中文](./README-ZH.md) | 日本語
 
-<h3>ドラッグ＆ドロップでカスタマイズしたLLMフローを構築できるUI</h3>
+<h3>ドラッグ＆ドロップでカスタマイズした LLM フローを構築できる UI</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
@@ -145,7 +145,7 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 
 ## 🌐 セルフホスト
 
-お客様の既存インフラに Flowise をセルフホストでデプロイ、様々な[デプロイ]をサポートします(https://docs.flowiseai.com/configuration/deployment)
+お客様の既存インフラに Flowise をセルフホストでデプロイ、様々な[デプロイ](https://docs.flowiseai.com/configuration/deployment)をサポートします
 
 -   [AWS](https://docs.flowiseai.com/deployment/aws)
 -   [Azure](https://docs.flowiseai.com/deployment/azure)
@@ -162,9 +162,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 
         [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+    -   [Hugging Face Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
-        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
+        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="Hugging Face Spaces"></a>
 
     -   [Elestio](https://elest.io/open-source/flowiseai)
 
