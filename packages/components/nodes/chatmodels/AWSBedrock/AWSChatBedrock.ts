@@ -53,7 +53,7 @@ class AWSChatBedrock_ChatModels implements INode {
             },
             {
                 label: 'Model Name',
-                name: 'model',
+                name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
                 default: 'anthropic.claude-3-haiku'
@@ -115,16 +115,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const iMax_tokens_to_sample = nodeData.inputs?.max_tokens_to_sample as string
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
-    
-        console.log('Initializing Bedrock model with the following parameters:')
-        console.log('Region:', iRegion)
-        console.log('Model Name:', modelName)
-        console.log('Custom Model:', customModel)
-        console.log('Temperature:', iTemperature)
-        console.log('Max Tokens to Sample:', iMax_tokens_to_sample)
-        console.log('Cache:', cache)
-        console.log('Streaming:', streaming)
-    
+
         const obj: BaseBedrockInput & BaseChatModelParams = {
             region: iRegion,
             model: customModel ? customModel : modelName,
@@ -132,38 +123,32 @@ class AWSChatBedrock_ChatModels implements INode {
             temperature: parseFloat(iTemperature),
             streaming: streaming ?? true
         }
-    
-        console.log('Bedrock configuration object:', obj)
-    
+
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         if (credentialData && Object.keys(credentialData).length !== 0) {
             const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
             const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
             const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-    
+
             obj.credentials = {
                 accessKeyId: credentialApiKey,
                 secretAccessKey: credentialApiSecret,
                 sessionToken: credentialApiSession
             }
-    
-            console.log('Bedrock credentials set:', obj.credentials)
         }
-    
+
         if (cache) obj.cache = cache
-    
+
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const multiModalOption: IMultiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
         }
-    
+
         const amazonBedrock = new BedrockChat(nodeData.id, obj)
         if (obj.model.includes('anthropic.claude-3')) amazonBedrock.setMultiModalOption(multiModalOption)
-    
-        console.log('Bedrock model initialized:', amazonBedrock)
-    
+
         return amazonBedrock
     }
 }
