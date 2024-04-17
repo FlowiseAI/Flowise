@@ -13,7 +13,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 RUN apk add --no-cache chromium
 
 #install PNPM globaly
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.14.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

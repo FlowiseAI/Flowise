@@ -27,7 +27,7 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   check-latest: false
-            - run: npm i -g pnpm
+            - run: npm i -g pnpm@8.14.0
             - run: pnpm install
             - run: ./node_modules/.bin/cypress install
             - run: pnpm lint
