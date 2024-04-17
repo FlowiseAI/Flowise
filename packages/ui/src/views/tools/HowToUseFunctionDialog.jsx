@@ -21,7 +21,7 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
                 <ul>
                     <li style={{ marginTop: 10 }}>You can use any libraries imported in Flowise</li>
                     <li style={{ marginTop: 10 }}>
-                        You can use properties specified in Output Schema as variables with prefix $:
+                        You can use properties specified in Input Schema as variables with prefix $:
                         <ul style={{ marginTop: 10 }}>
                             <li>
                                 Property = <code>userid</code>
