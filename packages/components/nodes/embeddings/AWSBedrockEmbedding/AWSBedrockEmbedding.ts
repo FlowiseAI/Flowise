@@ -99,37 +99,56 @@ class AWSBedrockEmbedding_Embeddings implements INode {
 
         // Avoid Illegal Invocation
         model.embedQuery = async (document: string): Promise<number[]> => {
-            return await embedText(document, client, iModel)
+            const embeddings = await embedText([document], client, iModel)
+            return embeddings[0]
         }
 
         model.embedDocuments = async (documents: string[]): Promise<number[][]> => {
-            return Promise.all(documents.map((document) => embedText(document, client, iModel)))
+            const chunkSize = 128
+            // take all the incoming documents and re-chunk them into arrays of size 128
+            // chunking text reduces round-trips to cohere
+            const chunks = chunkArray(documents, chunkSize)
+            const embeddings: number[][] = []
+
+            for (const chunk of chunks) {
+                const chunkEmbeddings = await embedText(chunk, client, iModel)
+                embeddings.push(...chunkEmbeddings)
+            }
+
+            return embeddings
         }
         return model
     }
 }
 
-const embedText = async (text: string, client: BedrockRuntimeClient, model: string): Promise<number[]> => {
-    // replace newlines, which can negatively affect performance.
-    const cleanedText = text.replace(/\n/g, ' ')
+const embedText = async (texts: string[], client: BedrockRuntimeClient, model: string): Promise<number[][]> => {
+    const cleanedTexts = texts.map((text) => text.replace(/\n/g, ' '))
 
-    const res = await client.send(
-        new InvokeModelCommand({
-            modelId: model,
-            body: JSON.stringify({
-                inputText: cleanedText
-            }),
-            contentType: 'application/json',
-            accept: 'application/json'
-        })
-    )
-
+    const command = {
+        modelId: model,
+        body: JSON.stringify({
+            texts: cleanedTexts,
+            input_type: 'search_document',
+            truncate: 'END'
+        }),
+        contentType: 'application/json',
+        accept: 'application/json'
+    }
+    const res = await client.send(new InvokeModelCommand(command))
     try {
         const body = new TextDecoder().decode(res.body)
-        return JSON.parse(body).embedding
+        return JSON.parse(body).embeddings
     } catch (e) {
         throw new Error('An invalid response was returned by Bedrock.')
     }
+}
+
+const chunkArray = <T>(arr: T[], chunkSize: number): T[][] => {
+    const chunks: T[][] = []
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        chunks.push(arr.slice(i, i + chunkSize))
+    }
+    return chunks
 }
 
 module.exports = { nodeClass: AWSBedrockEmbedding_Embeddings }
