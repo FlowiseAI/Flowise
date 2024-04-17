@@ -2,7 +2,7 @@
 
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
 
-# Flowise - Build LLM Apps Easily
+# Flowise - LLMアプリを簡単に構築
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -10,149 +10,149 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [中文](./README-ZH.md) | [日本語](./README-JA.md)
+[English](./README.md) | [中文](./README-ZH.md) | 日本語
 
-<h3>Drag & drop UI to build your customized LLM flow</h3>
+<h3>ドラッグ＆ドロップでカスタマイズしたLLMフローを構築できるUI</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡Quick Start
+## ⚡クイックスタート
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+[NodeJS](https://nodejs.org/en/download) >= 18.15.0 をダウンロードしてインストール
 
-1. Install Flowise
+1. Flowise のインストール
     ```bash
     npm install -g flowise
     ```
-2. Start Flowise
+2. Flowise の実行
 
     ```bash
     npx flowise start
     ```
 
-    With username & password
+    ユーザー名とパスワードを入力
 
     ```bash
     npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+3. [http://localhost:3000](http://localhost:3000) を開く
 
 ## 🐳 Docker
 
 ### Docker Compose
 
-1. Go to `docker` folder at the root of the project
-2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
+1. プロジェクトのルートにある `docker` フォルダに移動する
+2. `.env.example` ファイルをコピーして同じ場所に貼り付け、名前を `.env` に変更する
 3. `docker-compose up -d`
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
+4. [http://localhost:3000](http://localhost:3000) を開く
+5. コンテナを停止するには、`docker-compose stop` を使用します
 
 ### Docker Image
 
-1. Build the image locally:
+1. ローカルにイメージを構築する:
     ```bash
     docker build --no-cache -t flowise .
     ```
-2. Run image:
+2. image を実行:
 
     ```bash
     docker run -d --name flowise -p 3000:3000 flowise
     ```
 
-3. Stop image:
+3. image を停止:
     ```bash
     docker stop flowise
     ```
 
-## 👨‍💻 Developers
+## 👨‍💻 開発者向け
 
-Flowise has 3 different modules in a single mono repository.
+Flowise には、3つの異なるモジュールが1つの mono リポジトリにあります。
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
+-   `server`: API ロジックを提供する Node バックエンド
+-   `ui`: React フロントエンド
+-   `components`: サードパーティノードとの統合
 
-### Prerequisite
+### 必須条件
 
--   Install [PNPM](https://pnpm.io/installation)
+-   [PNPM](https://pnpm.io/installation) をインストール
     ```bash
     npm i -g pnpm
     ```
 
-### Setup
+### セットアップ
 
-1. Clone the repository
+1. リポジトリをクローン
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2. リポジトリフォルダに移動
 
     ```bash
     cd Flowise
     ```
 
-3. Install all dependencies of all modules:
+3. すべてのモジュールの依存関係をインストール:
 
     ```bash
     pnpm install
     ```
 
-4. Build all the code:
+4. すべてのコードをビルド:
 
     ```bash
     pnpm build
     ```
 
-5. Start the app:
+5. アプリを起動:
 
     ```bash
     pnpm start
     ```
 
-    You can now access the app on [http://localhost:3000](http://localhost:3000)
+    [http://localhost:3000](http://localhost:3000) でアプリにアクセスできるようになりました
 
-6. For development build:
+6. 開発用ビルド:
 
-    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+    - `.env` ファイルを作成し、`packages/ui` に `VITE_PORT` を指定する（`.env.example` を参照）
+    - `.env` ファイルを作成し、`packages/server` に `PORT` を指定する（`.env.example` を参照）
+    - 実行
 
         ```bash
         pnpm dev
         ```
 
-    Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
+    コードの変更は [http://localhost:8080](http://localhost:8080) に自動的にアプリをリロードします
 
-## 🔒 Authentication
+## 🔒 認証
 
-To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file in `packages/server`:
+アプリレベルの認証を有効にするには、 `FLOWISE_USERNAME` と `FLOWISE_PASSWORD` を `packages/server` の `.env` ファイルに追加します:
 
 ```
 FLOWISE_USERNAME=user
 FLOWISE_PASSWORD=1234
 ```
 
-## 🌱 Env Variables
+## 🌱 環境変数
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+Flowise は、インスタンスを設定するためのさまざまな環境変数をサポートしています。`packages/server` フォルダ内の `.env` ファイルで以下の変数を指定することができる。[続き](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)を読む
 
-## 📖 Documentation
+## 📖 ドキュメント
 
-[Flowise Docs](https://docs.flowiseai.com/)
+[Flowise ドキュメント](https://docs.flowiseai.com/)
 
-## 🌐 Self Host
+## 🌐 セルフホスト
 
-Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
+お客様の既存インフラに Flowise をセルフホストでデプロイ、様々な[デプロイ]をサポートします(https://docs.flowiseai.com/configuration/deployment)
 
 -   [AWS](https://docs.flowiseai.com/deployment/aws)
 -   [Azure](https://docs.flowiseai.com/deployment/azure)
 -   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
 -   [GCP](https://docs.flowiseai.com/deployment/gcp)
 -   <details>
-      <summary>Others</summary>
+      <summary>その他</summary>
 
     -   [Railway](https://docs.flowiseai.com/deployment/railway)
 
@@ -180,25 +180,25 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
       </details>
 
-## 💻 Cloud Hosted
+## 💻 クラウドホスト
 
-Coming soon
+近日公開
 
-## 🙋 Support
+## 🙋 サポート
 
-Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/FlowiseAI/Flowise/discussions)
+ご質問、問題提起、新機能のご要望は、[discussion](https://github.com/FlowiseAI/Flowise/discussions)までお気軽にどうぞ
 
-## 🙌 Contributing
+## 🙌 コントリビュート
 
-Thanks go to these awesome contributors
+これらの素晴らしい貢献者に感謝します
 
 <a href="https://github.com/FlowiseAI/Flowise/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
+[コントリビューティングガイド](CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
-## 📄 License
+## 📄 ライセンス
 
-Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+このリポジトリのソースコードは、[Apache License Version 2.0](LICENSE.md)の下で利用可能です。
