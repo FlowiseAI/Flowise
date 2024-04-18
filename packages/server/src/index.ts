@@ -46,7 +46,7 @@ export class App {
         // Initialize database
         this.AppDataSource.initialize()
             .then(async () => {
-                logger.info('📦 [server]: Data Source is being initialized!')
+                logger.info('📦 [server]: Data Source is initializing...')
 
                 // Run Migrations Scripts
                 await this.AppDataSource.runMigrations({ transaction: 'each' })

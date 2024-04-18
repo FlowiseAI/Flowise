@@ -1,7 +1,7 @@
-import { Request, Response } from 'express'
+import { Request } from 'express'
 import * as fs from 'fs'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject } from 'flowise-components'
+import { ICommonObject, IMessage } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
@@ -20,14 +20,15 @@ import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '.
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 /**
  * Upsert documents
  * @param {Request} req
- * @param {Response} res
  * @param {boolean} isInternal
  */
-export const upsertVector = async (req: Request, res: Response, isInternal: boolean = false) => {
+export const upsertVector = async (req: Request, isInternal: boolean = false) => {
     try {
         const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
@@ -36,11 +37,15 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
-        if (!chatflow) return res.status(404).send(`Chatflow ${chatflowid} not found`)
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        }
 
         if (!isInternal) {
             const isKeyValidated = await utilValidateKey(req, chatflow)
-            if (!isKeyValidated) return res.status(401).send('Unauthorized')
+            if (!isKeyValidated) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+            }
         }
 
         const files = (req.files as any[]) || []
@@ -61,7 +66,6 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 stopNodeId: req.body.stopNodeId
             }
         }
@@ -73,14 +77,13 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
         const edges = parsedFlowData.edges
 
         let stopNodeId = incomingInput?.stopNodeId ?? ''
-        let chatHistory = incomingInput?.history
+        let chatHistory: IMessage[] = []
         let chatId = incomingInput.chatId ?? ''
         let isUpsert = true
 
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         const vsNodes = nodes.filter(
             (node) =>
@@ -89,11 +92,14 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
 
         // Check if multiple vector store nodes exist, and if stopNodeId is specified
         if (vsNodes.length > 1 && !stopNodeId) {
-            return res.status(500).send('There are multiple vector nodes, please provide stopNodeId in body request')
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                'There are multiple vector nodes, please provide stopNodeId in body request'
+            )
         } else if (vsNodes.length === 1 && !stopNodeId) {
             stopNodeId = vsNodes[0].data.id
         } else if (!vsNodes.length && !stopNodeId) {
-            return res.status(500).send('No vector node found')
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No vector node found')
         }
 
         const { graph } = constructGraphs(nodes, edges, { isReversed: true })
@@ -154,9 +160,12 @@ export const upsertVector = async (req: Request, res: Response, isInternal: bool
                 stopNodeId
             }
         })
-        return res.status(201).json(upsertedResult['result'] ?? { result: 'Successfully Upserted' })
-    } catch (e: any) {
-        logger.error('[server]: Error:', e)
-        return res.status(500).send(e.message)
+
+        return upsertedResult['result'] ?? { result: 'Successfully Upserted' }
+    } catch (error) {
+        logger.error('[server]: Error:', error)
+        if (error instanceof Error) {
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+        }
     }
 }

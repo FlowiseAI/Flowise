@@ -16,7 +16,7 @@
                 "id": "csvAgent_0",
                 "label": "CSV Agent",
                 "name": "csvAgent",
-                "version": 2,
+                "version": 3,
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain"],
                 "category": "Agents",
@@ -45,6 +45,16 @@
                         "optional": true,
                         "list": true,
                         "id": "csvAgent_0-input-inputModeration-Moderation"
+                    },
+                    {
+                        "label": "Custom Pandas Read_CSV Code",
+                        "description": "Custom Pandas <a target=\"_blank\" href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html\">read_csv</a> function. Takes in an input: \"csv_data\"",
+                        "name": "customReadCSV",
+                        "default": "read_csv(csv_data)",
+                        "type": "code",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "csvAgent_0-input-customReadCSV-code"
                     }
                 ],
                 "inputs": {
@@ -82,7 +92,7 @@
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
                 "name": "chatOpenAI",
-                "version": 5,
+                "version": 6.0,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -98,71 +108,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-preview",
-                                "name": "gpt-4-1106-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-vision-preview",
-                                "name": "gpt-4-1106-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-vision-preview",
-                                "name": "gpt-4-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0125",
-                                "name": "gpt-3.5-turbo-0125"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-1106",
-                                "name": "gpt-3.5-turbo-1106"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
