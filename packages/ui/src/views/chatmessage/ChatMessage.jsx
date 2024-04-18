@@ -765,7 +765,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             const data = result.data
 
             if (!chatId) setChatId(data.chatId)
-            setLocalStorageChatflow(chatflowid, data.chatId, { name: leadName, email: leadEmail, phone: leadPhone })
+            localStorage.setItem(`${chatflowid}_LEAD`, JSON.stringify({ name: leadName, email: leadEmail, phone: leadPhone }))
             setIsLeadSaved(true)
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
@@ -908,7 +908,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         )}
                                         <div className='markdownanswer'>
                                             {message.type === 'leadCaptureMessage' &&
-                                            !getLocalStorageChatflow(chatflowid).lead &&
+                                            !localStorage.getItem(`${chatflowid}_LEAD`) &&
                                             leadsConfig.status ? (
                                                 <Box
                                                     sx={{
