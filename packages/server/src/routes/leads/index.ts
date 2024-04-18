@@ -3,7 +3,7 @@ import leadsController from '../../controllers/leads'
 const router = express.Router()
 
 // CREATE
-router.post('/:id', leadsController.createLeadInChatflow)
+router.post('/', leadsController.createLeadInChatflow)
 
 // READ
 router.get('/:id', leadsController.getAllLeadsForChatflow)
