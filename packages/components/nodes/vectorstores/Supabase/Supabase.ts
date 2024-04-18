@@ -1,5 +1,4 @@
 import { flatten } from 'lodash'
-import { v4 as uuid } from 'uuid'
 import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
@@ -204,8 +203,8 @@ class SupabaseUpsertVectorStore extends SupabaseVectorStore {
 
         let returnedIds: string[] = []
         for (let i = 0; i < rows.length; i += this.upsertBatchSize) {
-            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row) => {
-                return { id: uuid(), ...row }
+            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row, index) => {
+                return { id: index, ...row }
             })
 
             const res = await this.client.from(this.tableName).upsert(chunk).select()
