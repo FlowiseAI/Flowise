@@ -139,46 +139,6 @@ const Leads = ({ dialogProps }) => {
                         <SwitchInput label='Phone' onChange={(value) => handleChange('phone', value)} value={leadsConfig.phone} />
                     </Box>
                 </Box>
-                {/*<Typography variant='h4'>Configuration</Typography>
-                <Box
-                    sx={{
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'start',
-                        justifyContent: 'start',
-                        gap: 3,
-                        mb: 2
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <Typography>Trigger</Typography>
-                        <FormControl sx={{ width: '160px' }}>
-                            <Select
-                                value={leadsConfig.trigger || 'chatStart'}
-                                onChange={(event) => handleChange('trigger', event.target.value)}
-                            >
-                                <MenuItem value='chatStart'>Chat Start</MenuItem>
-                                <MenuItem value='chatEnd'>Chat End</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-                    {leadsConfig.trigger === 'chatEnd' && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Typography>Time to wait (in minutes)</Typography>
-                            <OutlinedInput
-                                id='chatEndTimeout'
-                                type='number'
-                                value={leadsConfig.chatEndTimeout}
-                                placeholder='2 minutes'
-                                name='chatEndTimeout'
-                                onChange={(e) => {
-                                    handleChange('chatEndTimeout', e.target.value)
-                                }}
-                            />
-                        </Box>
-                    )}
-                </Box>*/}
             </Box>
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
                 Save
