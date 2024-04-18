@@ -27,7 +27,8 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'unstructured-folder.svg'
         this.category = 'Document Loaders'
-        this.description = 'Use Unstructured.io to load data from a folder'
+        this.description =
+            'Use Unstructured.io to load data from a folder. Note: Currently does not support .png and .heic until langchain is updated in flowise.'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',
@@ -181,25 +182,35 @@ class UnstructuredFolder_DocumentLoaders implements INode {
             {
                 label: 'Hi-Res Model Name',
                 name: 'hiResModelName',
-                description: 'The name of the inference model used when strategy is hi_res. Default: detectron2.',
+                description: 'The name of the inference model used when strategy is hi_res. Default: detectron2_onnx.',
                 type: 'options',
                 options: [
                     {
                         label: 'chipper',
-                        name: 'chipper'
+                        name: 'chipper',
+                        description:
+                            '(beta version): the Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
                     },
                     {
-                        label: 'detectron2',
-                        name: 'detectron2'
+                        label: 'detectron2_onnx',
+                        name: 'detectron2_onnx',
+                        description:
+                            'A Computer Vision model by Facebook AI that provides object detection and segmentation algorithms with ONNX Runtime. It is the fastest model with the hi_res strategy.'
                     },
                     {
                         label: 'yolox',
-                        name: 'yolox'
+                        name: 'yolox',
+                        description: 'A single-stage real-time object detector that modifies YOLOv3 with a DarkNet53 backbone.'
+                    },
+                    {
+                        label: 'yolox_quantized',
+                        name: 'yolox_quantized',
+                        description: 'Runs faster than YoloX and its speed is closer to Detectron2.'
                     }
                 ],
                 optional: true,
                 additionalParams: true,
-                default: 'detectron2'
+                default: 'detectron2_onnx'
             },
             {
                 label: 'Chunking Strategy',
