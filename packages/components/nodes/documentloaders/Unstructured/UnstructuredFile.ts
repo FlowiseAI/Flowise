@@ -222,6 +222,17 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 default: 'by_title'
             },
             {
+                label: 'Source ID Key',
+                name: 'sourceIdKey',
+                type: 'string',
+                description:
+                    'Key used to get the true source of document, to be compared against the record. Document metadata must contain the Source ID Key.',
+                default: 'source',
+                placeholder: 'source',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Coordinates',
                 name: 'coordinates',
                 type: 'boolean',
@@ -269,6 +280,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const includePageBreaks = nodeData.inputs?.includePageBreaks as boolean
         const chunkingStrategy = nodeData.inputs?.chunkingStrategy as 'None' | 'by_title'
         const metadata = nodeData.inputs?.metadata
+        const sourceIdKey = (nodeData.inputs?.sourceIdKey as string) || 'source'
 
         const obj: UnstructuredLoaderOptions = {
             apiUrl: unstructuredAPIUrl,
@@ -295,7 +307,16 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 ...doc,
                 metadata: {
                     ...doc.metadata,
-                    ...parsedMetadata
+                    ...parsedMetadata,
+                    [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                }
+            }))
+        } else {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: {
+                    ...doc.metadata,
+                    [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
                 }
             }))
         }
