@@ -105,6 +105,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     const [leadEmail, setLeadEmail] = useState('')
     const [leadPhone, setLeadPhone] = useState('')
     const [isLeadSaving, setIsLeadSaving] = useState(false)
+    const [isLeadSaved, setIsLeadSaved] = useState(false)
 
     // drag & drop and file input
     const fileUploadRef = useRef(null)
@@ -615,6 +616,14 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
             setIsRecording(false)
 
+            // leads
+            const savedLead = localStorage.getItem(`${chatflowid}_LEAD`)
+            if (savedLead) {
+                const savedLeadObj = JSON.parse(savedLead)
+                setIsLeadSaved(!!savedLeadObj)
+                setLeadEmail(savedLeadObj.email)
+            }
+
             // SocketIO
             socket = socketIOClient(baseURL)
 
@@ -739,13 +748,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         }
     }
 
-    const handleCancelLeadCapture = () => {
-        setMessages((prevMessages) => prevMessages.filter((message) => message.type !== 'leadCaptureMessage'))
-    }
-
     const handleLeadCaptureSubmit = async (event) => {
         if (event) event.preventDefault()
-
         setIsLeadSaving(true)
 
         const body = {
@@ -761,15 +765,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             const data = result.data
 
             if (!chatId) setChatId(data.chatId)
-            localStorage.setItem(`${chatflowid}_LEAD`, true)
-            setIsLeadSaving(false)
+            localStorage.setItem(`${chatflowid}_LEAD`, JSON.stringify({ name: leadName, email: leadEmail, phone: leadPhone }))
+            setIsLeadSaved(true)
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
                 if (allMessages[allMessages.length - 1].type !== 'leadCaptureMessage') return allMessages
-                allMessages[allMessages.length - 1].message = leadsConfig.successMessage
+                allMessages[allMessages.length - 1].message =
+                    leadsConfig.successMessage || 'Thank you for submitting your contact information.'
                 return allMessages
             })
         }
+        setIsLeadSaving(false)
     }
 
     return (
@@ -912,7 +918,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                         marginTop: 2
                                                     }}
                                                 >
-                                                    <Typography>{leadsConfig.title}</Typography>
+                                                    <Typography>{leadsConfig.title || 'Let us know where we can reach you:'}</Typography>
                                                     <form
                                                         style={{
                                                             display: 'flex',
@@ -963,7 +969,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                 gap: 1
                                                             }}
                                                         >
-                                                            <Button onClick={handleCancelLeadCapture}>Cancel</Button>
                                                             <StyledButton variant='contained' type='submit'>
                                                                 {isLeadSaving ? 'Saving...' : 'Save'}
                                                             </StyledButton>
@@ -1225,7 +1230,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             // eslint-disable-next-line
                             autoFocus
                             sx={{ width: '100%' }}
-                            disabled={loading || !chatflowid}
+                            disabled={loading || !chatflowid || !isLeadSaved}
                             onKeyDown={handleEnter}
                             id='userInput'
                             name='userInput'
@@ -1257,7 +1262,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}
                                                 type='button'
-                                                disabled={loading || !chatflowid}
+                                                disabled={loading || !chatflowid || !isLeadSaved}
                                                 edge='end'
                                             >
                                                 <IconMicrophone
