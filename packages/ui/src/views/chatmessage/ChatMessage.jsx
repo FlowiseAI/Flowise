@@ -56,7 +56,7 @@ import useApi from '@/hooks/useApi'
 import { baseURL, maxScroll } from '@/store/constant'
 
 // Utils
-import { isValidURL, removeDuplicateURL, setLocalStorageChatflow } from '@/utils/genericHelper'
+import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
 const messageImageStyle = {
@@ -573,7 +573,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
                 if (config.leads) {
                     setLeadsConfig(config.leads)
-                    if (config.leads.status && !localStorage.getItem(`${chatflowid}_LEAD`)) {
+                    if (config.leads.status && !getLocalStorageChatflow(chatflowid).lead) {
                         setMessages((prevMessages) => {
                             const leadCaptureMessage = {
                                 message: '',
@@ -765,7 +765,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             const data = result.data
 
             if (!chatId) setChatId(data.chatId)
-            localStorage.setItem(`${chatflowid}_LEAD`, JSON.stringify({ name: leadName, email: leadEmail, phone: leadPhone }))
+            setLocalStorageChatflow(chatflowid, data.chatId, { name: leadName, email: leadEmail, phone: leadPhone })
             setIsLeadSaved(true)
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
@@ -908,7 +908,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         )}
                                         <div className='markdownanswer'>
                                             {message.type === 'leadCaptureMessage' &&
-                                            !localStorage.getItem(`${chatflowid}_LEAD`) &&
+                                            !getLocalStorageChatflow(chatflowid).lead &&
                                             leadsConfig.status ? (
                                                 <Box
                                                     sx={{
