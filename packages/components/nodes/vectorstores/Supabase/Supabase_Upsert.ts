@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
@@ -108,7 +109,7 @@ class SupabaseUpsert_VectorStores implements INode {
             finalDocs.push(new Document(flattenDocs[i]))
         }
 
-        const vectorStore = await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
+        const vectorStore = await SupabaseUpsertVectorStore.fromDocuments(finalDocs, embeddings, {
             client,
             tableName: tableName,
             queryName: queryName
@@ -122,6 +123,35 @@ class SupabaseUpsert_VectorStores implements INode {
             return vectorStore
         }
         return vectorStore
+    }
+}
+
+class SupabaseUpsertVectorStore extends SupabaseVectorStore {
+    async addVectors(vectors: number[][], documents: Document[]): Promise<string[]> {
+        if (vectors.length === 0) {
+            return []
+        }
+        const rows = vectors.map((embedding, idx) => ({
+            content: documents[idx].pageContent,
+            embedding,
+            metadata: documents[idx].metadata
+        }))
+
+        let returnedIds: string[] = []
+        for (let i = 0; i < rows.length; i += this.upsertBatchSize) {
+            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row) => {
+                return { id: uuid(), ...row }
+            })
+
+            const res = await this.client.from(this.tableName).upsert(chunk).select()
+            if (res.error) {
+                throw new Error(`Error inserting: ${res.error.message} ${res.status} ${res.statusText}`)
+            }
+            if (res.data) {
+                returnedIds = returnedIds.concat(res.data.map((row) => row.id))
+            }
+        }
+        return returnedIds
     }
 }
 
