@@ -52,7 +52,7 @@
         "turbo": "1.10.16",
         "typescript": "^4.8.4"
     },
-    "packageManager": "pnpm@8.14.0",
+    "packageManager": "pnpm@9.0.2",
     "pnpm": {
         "onlyBuiltDependencies": [
             "faiss-node",

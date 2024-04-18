@@ -19,15 +19,15 @@ jobs:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
             - uses: actions/checkout@v4
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v3
               with:
-                  version: 6.32.9
+                  version: 9.0.2
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
                   check-latest: false
-            - run: npm i -g pnpm@8.14.0
+            - run: npm i -g pnpm
             - run: pnpm install
             - run: ./node_modules/.bin/cypress install
             - run: pnpm lint
