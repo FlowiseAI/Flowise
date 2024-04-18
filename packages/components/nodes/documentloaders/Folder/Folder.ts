@@ -47,6 +47,22 @@ class Folder_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Pdf Usage',
+                name: 'pdfUsage',
+                type: 'options',
+                options: [
+                    {
+                        label: 'One document per page',
+                        name: 'perPage'
+                    },
+                    {
+                        label: 'One document per file',
+                        name: 'perFile'
+                    }
+                ],
+                default: 'perPage'
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -61,6 +77,7 @@ class Folder_DocumentLoaders implements INode {
         const folderPath = nodeData.inputs?.folderPath as string
         const metadata = nodeData.inputs?.metadata
         const recursive = nodeData.inputs?.recursive as boolean
+        const pdfUsage = nodeData.inputs?.pdfUsage
 
         const loader = new DirectoryLoader(
             folderPath,
@@ -69,8 +86,12 @@ class Folder_DocumentLoaders implements INode {
                 '.txt': (path) => new TextLoader(path),
                 '.csv': (path) => new CSVLoader(path),
                 '.docx': (path) => new DocxLoader(path),
-                // @ts-ignore
-                '.pdf': (path) => new PDFLoader(path, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') }),
+                '.pdf': (path) =>
+                    pdfUsage === 'perFile'
+                        ? // @ts-ignore
+                          new PDFLoader(path, { splitPages: false, pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
+                        : // @ts-ignore
+                          new PDFLoader(path, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') }),
                 '.aspx': (path) => new TextLoader(path),
                 '.asp': (path) => new TextLoader(path),
                 '.cpp': (path) => new TextLoader(path), // C++
