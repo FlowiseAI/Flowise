@@ -1,5 +1,11 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { UnstructuredDirectoryLoader, UnstructuredLoaderOptions } from 'langchain/document_loaders/fs/unstructured'
+import {
+    UnstructuredDirectoryLoader,
+    UnstructuredLoaderOptions,
+    UnstructuredLoaderStrategy,
+    SkipInferTableTypes,
+    HiResModelName
+} from 'langchain/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class UnstructuredFolder_DocumentLoaders implements INode {
@@ -17,7 +23,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Unstructured Folder Loader'
         this.name = 'unstructuredFolderLoader'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'unstructured-folder.svg'
         this.category = 'Document Loaders'
@@ -46,62 +52,189 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                 default: 'http://localhost:8000/general/v0/general'
             },
             {
-                label: 'Element Type',
-                name: 'elementType',
-                description:
-                    'Unstructured partition document into different types, select the types to return. If not selected, all types will be returned',
+                label: 'Strategy',
+                name: 'strategy',
+                description: 'The strategy to use for partitioning PDF/image. Options are fast, hi_res, auto. Default: auto.',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Hi-Res',
+                        name: 'hi_res'
+                    },
+                    {
+                        label: 'Fast',
+                        name: 'fast'
+                    },
+                    {
+                        label: 'OCR Only',
+                        name: 'ocr_only'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'auto'
+            },
+            {
+                label: 'Encoding',
+                name: 'encoding',
+                description: 'The encoding method used to decode the text input. Default: utf-8.',
+                type: 'string',
+                optional: true,
+                additionalParams: true,
+                default: 'utf-8'
+            },
+            {
+                label: 'Skip Infer Table Types',
+                name: 'skipInferTableTypes',
+                description: 'The document types that you want to skip table extraction with. Default: pdf, jpg, png, heic.',
                 type: 'multiOptions',
                 options: [
                     {
-                        label: 'FigureCaption',
-                        name: 'FigureCaption'
+                        label: 'txt',
+                        name: 'txt'
                     },
                     {
-                        label: 'NarrativeText',
-                        name: 'NarrativeText'
+                        label: 'text',
+                        name: 'text'
                     },
                     {
-                        label: 'ListItem',
-                        name: 'ListItem'
+                        label: 'pdf',
+                        name: 'pdf'
                     },
                     {
-                        label: 'Title',
-                        name: 'Title'
+                        label: 'docx',
+                        name: 'docx'
                     },
                     {
-                        label: 'Address',
-                        name: 'Address'
+                        label: 'doc',
+                        name: 'doc'
                     },
                     {
-                        label: 'Table',
-                        name: 'Table'
+                        label: 'jpg',
+                        name: 'jpg'
                     },
                     {
-                        label: 'PageBreak',
-                        name: 'PageBreak'
+                        label: 'jpeg',
+                        name: 'jpeg'
                     },
                     {
-                        label: 'Header',
-                        name: 'Header'
+                        label: 'eml',
+                        name: 'eml'
                     },
                     {
-                        label: 'Footer',
-                        name: 'Footer'
+                        label: 'heic',
+                        name: 'heic'
                     },
                     {
-                        label: 'UncategorizedText',
-                        name: 'UncategorizedText'
+                        label: 'html',
+                        name: 'html'
                     },
                     {
-                        label: 'Image',
-                        name: 'Image'
+                        label: 'htm',
+                        name: 'htm'
                     },
                     {
-                        label: 'Formula',
-                        name: 'Formula'
+                        label: 'md',
+                        name: 'md'
+                    },
+                    {
+                        label: 'pptx',
+                        name: 'pptx'
+                    },
+                    {
+                        label: 'ppt',
+                        name: 'ppt'
+                    },
+                    {
+                        label: 'msg',
+                        name: 'msg'
+                    },
+                    {
+                        label: 'rtf',
+                        name: 'rtf'
+                    },
+                    {
+                        label: 'xlsx',
+                        name: 'xlsx'
+                    },
+                    {
+                        label: 'xls',
+                        name: 'xls'
+                    },
+                    {
+                        label: 'odt',
+                        name: 'odt'
+                    },
+                    {
+                        label: 'epub',
+                        name: 'epub'
                     }
                 ],
-                default: [],
+                optional: true,
+                additionalParams: true,
+                default: ['pdf', 'jpg', 'png', 'heic']
+            },
+            {
+                label: 'Hi-Res Model Name',
+                name: 'hiResModelName',
+                description: 'The name of the inference model used when strategy is hi_res. Default: detectron2.',
+                type: 'options',
+                options: [
+                    {
+                        label: 'chipper',
+                        name: 'chipper'
+                    },
+                    {
+                        label: 'detectron2',
+                        name: 'detectron2'
+                    },
+                    {
+                        label: 'yolox',
+                        name: 'yolox'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'detectron2'
+            },
+            {
+                label: 'Chunking Strategy',
+                name: 'chunkingStrategy',
+                description:
+                    'Use one of the supported strategies to chunk the returned elements. When omitted, no chunking is performed and any other chunking parameters provided are ignored. Default: by_title',
+                type: 'options',
+                options: [
+                    {
+                        label: 'None',
+                        name: 'None'
+                    },
+                    {
+                        label: 'By Title',
+                        name: 'by_title'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'by_title'
+            },
+            {
+                label: 'Coordinates',
+                name: 'coordinates',
+                type: 'boolean',
+                description: 'If true, return coordinates for each element. Default: false.',
+                optional: true,
+                additionalParams: true,
+                default: false
+            },
+            {
+                label: 'Include Page Breaks',
+                name: 'includePageBreaks',
+                description: 'When true, the output will include page break elements when the filetype supports it.',
+                type: 'boolean',
                 optional: true,
                 additionalParams: true
             },
@@ -118,44 +251,45 @@ class UnstructuredFolder_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const folderPath = nodeData.inputs?.folderPath as string
         const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string
+        const strategy = nodeData.inputs?.strategy as UnstructuredLoaderStrategy
+        const encoding = nodeData.inputs?.encoding as string
+        const coordinates = nodeData.inputs?.coordinates as boolean
+        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes as SkipInferTableTypes[]
+        const hiResModelName = nodeData.inputs?.hiResModelName as HiResModelName
+        const includePageBreaks = nodeData.inputs?.includePageBreaks as boolean
+        const chunkingStrategy = nodeData.inputs?.chunkingStrategy as 'None' | 'by_title'
         const metadata = nodeData.inputs?.metadata
-        const elementType = nodeData.inputs?.elementType as string
 
-        const obj: UnstructuredLoaderOptions = { apiUrl: unstructuredAPIUrl }
+        const obj: UnstructuredLoaderOptions = {
+            apiUrl: unstructuredAPIUrl,
+            strategy,
+            encoding,
+            coordinates,
+            skipInferTableTypes,
+            hiResModelName,
+            includePageBreaks,
+            chunkingStrategy
+        }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const unstructuredAPIKey = getCredentialParam('unstructuredAPIKey', credentialData, nodeData)
         if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
         const loader = new UnstructuredDirectoryLoader(folderPath, obj)
-        const docs = await loader.load()
-
-        let elementTypes: string[] = []
-        if (elementType) {
-            try {
-                elementTypes = JSON.parse(elementType)
-            } catch (e) {
-                elementTypes = []
-            }
-        }
+        let docs = await loader.load()
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of docs) {
-                const newdoc = {
-                    ...doc,
-                    metadata: {
-                        ...doc.metadata,
-                        ...parsedMetadata
-                    }
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: {
+                    ...doc.metadata,
+                    ...parsedMetadata
                 }
-                finaldocs.push(newdoc)
-            }
-            return elementTypes.length ? finaldocs.filter((doc) => elementTypes.includes(doc.metadata.category)) : finaldocs
+            }))
         }
 
-        return elementTypes.length ? docs.filter((doc) => elementTypes.includes(doc.metadata.category)) : docs
+        return docs
     }
 }
 
